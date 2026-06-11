@@ -1,0 +1,202 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import ArtifactMount from '@/components/ArtifactMount.astro';
+import TopicChip from '@/components/TopicChip.astro';
+import {
+  articleUrl,
+  formatDate,
+  getArticles,
+  getTopics,
+  readingTime,
+  relatedArticles,
+} from '@/lib/content-helpers';
+import { SITE } from '@/lib/site';
+
+export const getStaticPaths = (async () => {
+  const articles = await getArticles();
+  return articles.map((article) => ({
+    params: { slug: article.data.slug },
+    props: { article },
+  }));
+}) satisfies GetStaticPaths;
+
+const { article } = Astro.props;
+const { data } = article;
+const { Content, headings } = await render(article);
+
+const topics = await getTopics();
+const allArticles = await getArticles();
+const related = relatedArticles(article, allArticles);
+const author = await getEntry('authors', data.author);
+const series = data.series ? await getEntry('series', data.series) : undefined;
+const seriesArticles = data.series
+  ? allArticles
+      .filter((a) => a.data.series === data.series)
+      .sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0))
+  : [];
+
+const minutes = readingTime(article.body);
+const toc = headings.filter((h) => h.depth === 2);
+const topicEntries = data.topics
+  .map((t) => topics.find((x) => x.id === t))
+  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: data.title,
+  description: data.description,
+  datePublished: data.pubDate.toISOString(),
+  dateModified: (data.updatedDate ?? data.pubDate).toISOString(),
+  author: { '@type': 'Organization', name: author?.data.name ?? SITE.org, url: SITE.url },
+  publisher: { '@type': 'Organization', name: SITE.org, url: SITE.url },
+  mainEntityOfPage: new URL(articleUrl(article), Astro.site).toString(),
+  keywords: [...data.topics, ...data.tags].join(', '),
+};
+---
+
+<BaseLayout
+  title={`${data.title} — Blokz`}
+  description={data.description}
+  image={`/og/${data.slug}.png`}
+  type="article"
+>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="mx-auto max-w-6xl px-5 pt-8 sm:px-6">
+    <header class="mx-auto max-w-3xl">
+      <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
+        <a href="/articles" class="hover:text-muted">articles</a>
+        <span aria-hidden="true"> / </span>
+        <span class="text-muted">{data.slug}</span>
+      </nav>
+
+      <h1
+        class="mt-5 font-display text-[clamp(1.9rem,5vw,3.2rem)] leading-[1.1] font-bold tracking-tight text-white"
+        data-split
+      >
+        {data.title}
+      </h1>
+
+      <p class="mt-5 text-lg leading-relaxed text-muted" data-reveal="0.25">{data.description}</p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-faint" data-reveal="0.35">
+        <time datetime={data.pubDate.toISOString()}>{formatDate(data.pubDate)}</time>
+        {
+          data.updatedDate && (
+            <span class="text-faint/80">(updated {formatDate(data.updatedDate)})</span>
+          )
+        }
+        <span aria-hidden="true">·</span>
+        <span>{minutes} min read</span>
+        <span aria-hidden="true">·</span>
+        <span class="capitalize">{data.difficulty}</span>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2" data-reveal="0.4">
+        {topicEntries.map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
+      </div>
+
+      {
+        series && (
+          <aside class="glass mt-8 rounded-2xl p-5" data-reveal>
+            <p class="font-mono text-[11px] tracking-[0.2em] text-violet uppercase">
+              Series · {series.data.title}
+            </p>
+            <ol class="mt-3 space-y-1.5 text-sm">
+              {seriesArticles.map((a) => (
+                <li>
+                  {a.id === article.id ? (
+                    <span class="font-medium text-white">▸ {a.data.title}</span>
+                  ) : (
+                    <a href={articleUrl(a)} class="text-muted transition-colors hover:text-white">
+                      {a.data.title}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )
+      }
+    </header>
+
+    <div class="mx-auto mt-12 flex max-w-3xl gap-12 xl:max-w-none xl:justify-center">
+      <div class="prose min-w-0 max-w-3xl grow" data-pagefind-body data-pagefind-meta={`title:${data.title}`}>
+        <Content components={{ Artifact: ArtifactMount }} />
+      </div>
+
+      {
+        toc.length > 2 && (
+          <nav class="sticky top-24 hidden h-max w-56 shrink-0 self-start xl:block" aria-label="Table of contents">
+            <p class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">On this page</p>
+            <ul class="mt-3 space-y-2 border-l border-line text-sm">
+              {toc.map((h) => (
+                <li>
+                  <a
+                    href={`#${h.slug}`}
+                    class="-ml-px block border-l border-transparent pl-3 text-muted transition-colors hover:border-accent hover:text-white"
+                  >
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
+
+    {
+      data.sources.length > 0 && (
+        <footer class="mx-auto mt-14 max-w-3xl">
+          <h2 class="font-display text-sm font-semibold tracking-wide text-white uppercase">Sources & further reading</h2>
+          <ul class="mt-3 space-y-1.5 text-sm">
+            {data.sources.map((s) => (
+              <li>
+                <a href={s.url} target="_blank" rel="noopener" class="text-accent hover:underline">
+                  {s.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </footer>
+      )
+    }
+
+    <div class="mx-auto mt-12 max-w-3xl border-t border-line pt-8">
+      <p class="text-sm text-muted">
+        Written by <span class="text-white">{author?.data.name ?? SITE.org}</span> — {author?.data.bio}
+      </p>
+      <p class="mt-2 text-xs text-faint">
+        Content licensed <a href="/about#license" class="underline hover:text-muted">CC BY 4.0</a> ·
+        <a
+          href={`${SITE.repo}/blob/main/content/articles/${data.pubDate.getUTCFullYear()}/${String(data.pubDate.getUTCMonth() + 1).padStart(2, '0')}/${data.slug}/index.mdx`}
+          target="_blank"
+          rel="noopener"
+          class="underline hover:text-muted"
+        >
+          View source on GitHub ↗
+        </a>
+      </p>
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="mx-auto mt-24 max-w-6xl px-5 sm:px-6">
+        <h2 class="mb-7 font-display text-2xl font-bold text-white" data-reveal>
+          Related articles
+        </h2>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+          {related.map((a) => (
+            <ArticleCard article={a} {topics} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

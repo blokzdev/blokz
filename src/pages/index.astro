@@ -1,0 +1,124 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import ArtifactCard from '@/components/ArtifactCard.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import TopicChip from '@/components/TopicChip.astro';
+import { getArticles, getArtifacts, getTopics } from '@/lib/content-helpers';
+import { SITE } from '@/lib/site';
+
+const articles = await getArticles();
+const artifacts = await getArtifacts();
+const topics = await getTopics();
+
+const latest = articles.slice(0, 6);
+const featuredArtifacts = [...artifacts].sort(
+  (a, b) => Number(b.data.featured) - Number(a.data.featured),
+).slice(0, 3);
+---
+
+<BaseLayout>
+  <!-- ============ HERO ============ -->
+  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden">
+    <canvas data-hero-canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
+    <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-void"
+      aria-hidden="true"
+    >
+    </div>
+
+    <div class="relative mx-auto w-full max-w-6xl px-5 pt-28 pb-20 sm:px-6">
+      <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>
+        {SITE.org}
+      </p>
+      <h1
+        class="mt-5 max-w-3xl font-display text-[clamp(2.4rem,7vw,4.8rem)] leading-[1.04] font-bold tracking-tight text-white"
+        data-split
+      >
+        Where intelligence meets the <span class="text-gradient">chain</span>.
+      </h1>
+      <p class="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg" data-reveal="0.35">
+        Deep technical writing and interactive artifacts on AI × blockchain — agents, zero-knowledge,
+        LLMs, smart contracts, and the infrastructure binding them together.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3" data-reveal="0.5">
+        <a
+          href="/articles"
+          class="rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03] active:scale-[0.98]"
+        >
+          Read the articles
+        </a>
+        <a
+          href="/artifacts"
+          class="glass rounded-xl px-6 py-3 text-sm font-semibold text-text transition-colors hover:border-accent/40 hover:text-white"
+        >
+          Explore artifacts ⬢
+        </a>
+      </div>
+
+      <div class="mt-16 flex flex-wrap gap-2" data-reveal="0.65">
+        {topics.slice(0, 8).map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LATEST ARTICLES ============ -->
+  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-6">
+    <SectionHeading eyebrow="Journal" title="Latest articles" href="/articles" />
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {latest.map((article) => <ArticleCard {article} {topics} />)}
+    </div>
+  </section>
+
+  <!-- ============ ARTIFACTS ============ -->
+  <section class="relative py-20">
+    <div
+      class="pointer-events-none absolute inset-0"
+      style="background: radial-gradient(60% 50% at 50% 50%, rgba(139,92,246,0.07), transparent 70%);"
+      aria-hidden="true"
+    >
+    </div>
+    <div class="relative mx-auto max-w-6xl px-5 sm:px-6">
+      <SectionHeading
+        eyebrow="Interactive"
+        title="Featured artifacts"
+        href="/artifacts"
+        hrefLabel="All artifacts"
+      />
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+        {featuredArtifacts.map((artifact) => <ArtifactCard {artifact} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOLLOW CTA ============ -->
+  <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-6">
+    <div class="glass ring-glow relative overflow-hidden rounded-3xl p-8 text-center sm:p-14" data-reveal>
+      <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
+      <div class="relative">
+        <h2 class="font-display text-2xl font-bold text-white sm:text-3xl">
+          Built in the open by <span class="text-gradient">Blokz Development Co.</span>
+        </h2>
+        <p class="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted sm:text-base">
+          Every article and artifact in this blog lives in a public repo. Follow the work, fork the
+          experiments, or get in touch.
+        </p>
+        <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm">
+          <a href={SITE.repo} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">GitHub ↗</a>
+          <a href={SITE.x} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">{SITE.xHandle} on X ↗</a>
+          <a href={SITE.linkedin} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">LinkedIn ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (canvas && !reduced) {
+      const start = () => import('@/islands/hero-scene').then(({ default: mountScene }) => mountScene(canvas));
+      'requestIdleCallback' in window ? requestIdleCallback(start) : setTimeout(start, 200);
+    }
+  </script>
+</BaseLayout>

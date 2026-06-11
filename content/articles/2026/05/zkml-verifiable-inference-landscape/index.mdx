@@ -1,0 +1,105 @@
+---
+slug: zkml-verifiable-inference-landscape
+title: "zkML in 2026: The State of Verifiable Inference"
+description: "Zero-knowledge proofs promised to make machine learning trustless. A field survey of where zkML actually stands — proving systems, quantization tradeoffs, and what's deployable today."
+pubDate: 2026-05-28
+author: blokz
+topics: [zero-knowledge, machine-learning, cryptography]
+tags: [zkml, snark, quantization, ezkl, inference]
+series: proof-of-intelligence
+seriesOrder: 1
+artifacts: [neural-flow]
+difficulty: advanced
+featured: true
+sources:
+  - label: "ezkl — ZK inference engine"
+    url: "https://github.com/zkonduit/ezkl"
+  - label: "Modulus Labs: The Cost of Intelligence"
+    url: "https://medium.com/@ModulusLabs"
+---
+
+When a smart contract consumes a model's output — a credit score, a content
+classification, a trading signal — it has no way to know whether the operator
+actually ran the model it claims to. **zkML** closes that gap: the operator
+ships a succinct proof that *this output came from this model on this input*,
+and the chain verifies it in milliseconds.
+
+That's the pitch. Here's what the landscape actually looks like.
+
+## The core mechanic
+
+A neural network's forward pass is, mechanically, a long chain of matrix
+multiplications and nonlinearities. Watch one ripple through a small network:
+
+<Artifact slug="neural-flow" />
+
+To prove that pass in zero knowledge, the computation is *arithmetized* —
+flattened into a constraint system over a finite field. Every multiply-add
+becomes constraints; every ReLU becomes a comparison gadget. The prover then
+convinces a verifier that all constraints hold without revealing the
+intermediate activations (or, optionally, the weights).
+
+Two costs dominate:
+
+1. **Nonlinearities.** Field arithmetic loves linear algebra and hates
+   comparisons. ReLU, softmax, and layernorm get encoded via lookup tables,
+   which is why lookup-centric proving systems (Halo2-style, and the newer
+   Lasso/Jolt lineage) took over the space.
+2. **Quantization.** Floats don't exist in finite fields. Models are
+   quantized to fixed-point — and proving cost scales with bit-width, so
+   teams push toward int8 and below, eating an accuracy gap that must be
+   measured per task.
+
+## The proving-system menu
+
+| Approach | Examples | Sweet spot |
+| --- | --- | --- |
+| Lookup-heavy SNARKs | ezkl (Halo2) | Small/medium CNNs, MLPs, tabular models |
+| Sum-check protocols | Lasso/Jolt-style provers | Larger matmuls, better asymptotics |
+| GKR-based | zkCNN lineage | Deep convolutional stacks |
+| Folding schemes | Nova-style IVC | Recurrent / autoregressive workloads |
+
+The pragmatic takeaway: **models up to a few tens of millions of parameters
+are provable today** at costs measured in seconds-to-minutes of prover time
+per inference. Proving a frontier LLM's forward pass remains far out of
+reach — which is why hybrid designs dominate real deployments.
+
+## What ships in production
+
+The deployable pattern in 2026 is *selective verification*:
+
+```solidity
+function settle(bytes calldata proof, uint256[] calldata publicInputs)
+    external
+{
+    // Verify the zk proof that model M produced output y on input x.
+    require(verifier.verify(proof, publicInputs), "invalid inference proof");
+    _applyDecision(publicInputs);
+}
+```
+
+- **Small model, full proof.** Risk models and filters in the 1M–50M
+  parameter range, proven per-inference. Works now.
+- **Big model, committed output.** The heavyweight model runs off-chain;
+  only a commitment lands on-chain, with disputes escalated to re-execution
+  or a proof over a distilled surrogate model.
+- **Proof of *training* provenance** rather than inference — proving a
+  checkpoint hash descends from a committed dataset. Early but moving fast.
+
+## Honest limitations
+
+- Prover time and memory still dominate unit economics; GPU provers help but
+  the gap to plain inference remains 3–5 orders of magnitude.
+- Quantization drift means the *proven* model is not bit-identical to the
+  model your ML team evaluated. Treat the quantized artifact as the canonical
+  model and eval it directly.
+- Most "zkML" announcements are optimistic-with-fraud-proofs, not zk. That's
+  a legitimate design — we cover it in the next entry in this series — but
+  it's a different trust model, and the marketing rarely says so.
+
+## Where this series goes next
+
+Part 2 looks at the optimistic alternative: ML oracles that skip the proof
+entirely and lean on dispute games and staked re-execution — cheaper by
+orders of magnitude, slower to final, and good enough for a surprising number
+of applications.

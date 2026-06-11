@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import { getArticles, getTopics } from '@/lib/content-helpers';
+
+export const getStaticPaths = (async () => {
+  const series = await getCollection('series');
+  return series.map((s) => ({ params: { slug: s.id }, props: { series: s } }));
+}) satisfies GetStaticPaths;
+
+const { series } = Astro.props;
+const topics = await getTopics();
+const articles = (await getArticles())
+  .filter((a) => a.data.series === series.id)
+  .sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0));
+---
+
+<BaseLayout title={`${series.data.title} — Blokz Series`} description={series.data.description}>
+  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6">
+    <p class="font-mono text-xs tracking-[0.3em] text-violet uppercase" data-reveal>
+      Series · {series.data.status}
+    </p>
+    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+      {series.data.title}
+    </h1>
+    <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">{series.data.description}</p>
+  </header>
+
+  <section class="mx-auto max-w-6xl px-5 sm:px-6">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {articles.map((article) => <ArticleCard {article} {topics} />)}
+    </div>
+  </section>
+</BaseLayout>

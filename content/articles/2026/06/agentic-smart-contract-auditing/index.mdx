@@ -1,0 +1,99 @@
+---
+slug: agentic-smart-contract-auditing
+title: "Agentic Smart-Contract Auditing: What LLM Swarms Catch (and Miss)"
+description: "We ran multi-agent LLM pipelines against historical exploit corpora and live audit engagements. The results reshape where AI fits in a security review — and where it absolutely doesn't."
+pubDate: 2026-06-04
+author: blokz
+topics: [agents, llm, smart-contracts, security]
+tags: [auditing, solidity, multi-agent, fuzzing, slither]
+difficulty: intermediate
+featured: true
+sources:
+  - label: "Slither — static analysis framework"
+    url: "https://github.com/crytic/slither"
+  - label: "DeFiHackLabs exploit reproductions"
+    url: "https://github.com/SunWeb3Sec/DeFiHackLabs"
+---
+
+Every audit firm now claims an "AI-assisted" pipeline. Having built several,
+we can be precise about what that means in practice: **LLM agents are a
+force multiplier on coverage and a liability on assurance** — and pipeline
+design is what separates the two.
+
+## The architecture that works
+
+A single model prompted with "find vulnerabilities in this contract" is a
+demo, not a pipeline. What holds up in real engagements is a structured
+swarm with adversarial separation of duties:
+
+- **Mapper** — builds a call-graph + state-variable inventory; outputs a
+  machine-readable model of privileged paths and value flows.
+- **Hypothesizer** — proposes candidate vulnerabilities *as falsifiable
+  claims* ("reentrancy via `withdraw → onERC721Received` because the balance
+  write lands after the external call").
+- **Falsifier** — attempts to *kill* each hypothesis: writes a Foundry PoC
+  and runs it against a fork. No compiling PoC, no finding.
+- **Triager** — dedupes survivors, scores severity, drafts the writeup with
+  the PoC attached.
+
+```text
+contracts ──▶ Mapper ──▶ Hypothesizer ──▶ Falsifier ──▶ Triager ──▶ report
+                 ▲             │           (Foundry        │
+                 └── static ───┘            fork PoCs)     ▼
+                     analysis                         human review
+```
+
+The Falsifier is the load-bearing wall. Requiring an *executable* proof of
+concept converts hallucinated findings — the failure mode that poisons naive
+LLM audits — into a compile error that never reaches a human.
+
+## What the swarm reliably catches
+
+Across our reproduction runs against historical exploits:
+
+- **Access-control gaps** — missing modifiers, mis-scoped roles,
+  initializer races. Near-ceiling detection: the Mapper's privileged-path
+  inventory makes these almost mechanical.
+- **Classic reentrancy and CEI violations**, including cross-function and
+  cross-contract variants that pattern-matching linters miss.
+- **Oracle staleness and spot-price manipulation** setups — the
+  Hypothesizer is genuinely good at "what if this price moves mid-tx".
+- **Token-standard edge cases** — fee-on-transfer, rebasing, ERC-777 hooks,
+  double-entry-point tokens.
+
+## What it consistently misses
+
+The misses cluster where the exploit lives *outside the code*:
+
+1. **Economic design flaws.** Incentive games, liquidity-dependent attacks,
+   and governance capture need a model of market behavior, not of Solidity.
+2. **Multi-protocol composition.** When the vulnerability emerges from a
+   second protocol's quirk interacting with yours, the context simply isn't
+   in the repo.
+3. **Novel primitives.** Agents interpolate from precedent; the first
+   exploit of a new mechanism has no precedent.
+
+This is the same boundary human auditors describe between "checklist
+findings" and "the finding that justified the engagement" — the swarm raises
+the floor dramatically and barely touches the ceiling.
+
+## Practical integration
+
+Treat the swarm as a *pre-audit* stage and a *regression harness*:
+
+```bash
+# Each PR: cheap scan + targeted swarm on diff'd contracts
+forge build
+slither . --json slither.json
+swarm run --scope $(git diff --name-only origin/main -- 'src/**.sol')
+```
+
+- Run static analysis first; feed its output to the Hypothesizer as priors,
+  not conclusions.
+- Gate merges on Falsifier PoCs, not raw model findings.
+- Keep humans on economic design, composition risk, and anything novel —
+  and give them the swarm's state-flow maps as a head start.
+
+The teams getting value aren't asking "can the model audit?" They're asking
+"which 70% of auditor-hours can we automate so the humans spend all of theirs
+on the 30% that actually sinks protocols?"

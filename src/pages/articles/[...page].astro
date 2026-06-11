@@ -1,0 +1,43 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import Pagination from '@/components/Pagination.astro';
+import TopicChip from '@/components/TopicChip.astro';
+import { getArticles, getTopics } from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const articles = await getArticles();
+  return paginate(articles, { pageSize: 12 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const topics = await getTopics();
+---
+
+<BaseLayout
+  title="Articles — Blokz"
+  description="The full Blokz archive: deep technical articles on AI, blockchain, agents, zero-knowledge systems, and the engineering between them."
+>
+  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6">
+    <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>Journal</p>
+    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+      Articles
+    </h1>
+    <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
+      {page.total} article{page.total === 1 ? '' : 's'} on the craft of AI × blockchain engineering.
+      <button type="button" data-search-open class="text-accent hover:underline">Search the archive</button>
+      or filter by topic:
+    </p>
+    <div class="mt-5 flex flex-wrap gap-2" data-reveal="0.3">
+      {topics.map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
+    </div>
+  </header>
+
+  <section class="mx-auto max-w-6xl px-5 sm:px-6">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {page.data.map((article) => <ArticleCard {article} {topics} />)}
+    </div>
+    <Pagination {page} />
+  </section>
+</BaseLayout>

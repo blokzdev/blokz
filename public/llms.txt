@@ -1,0 +1,27 @@
+# blokz.dev
+
+> The engineering journal of Blokz Development Co. — deep technical articles and interactive
+> artifacts at the intersection of AI and blockchain: agents, LLMs, zero-knowledge systems,
+> smart contracts, DeFi, and infrastructure.
+
+The entire site is open source: https://github.com/blokzdev/blokz
+Code is MIT-licensed; article content is CC BY 4.0 (attribute Blokz Development Co.).
+
+## Key pages
+
+- [Articles](https://blokz.dev/articles): full article archive, paginated
+- [Artifacts](https://blokz.dev/artifacts): interactive WebGL/canvas explorables
+- [Topics](https://blokz.dev/topics): browse by controlled taxonomy
+- [About](https://blokz.dev/about): about the agency and licensing
+- [RSS](https://blokz.dev/rss.xml): machine-readable feed of all articles
+
+## Source of truth
+
+Article MDX sources live under `content/articles/YYYY/MM/<slug>/index.mdx` in the repo, and a
+machine-readable catalog of all content is maintained at `content/_index.json`.
+
+## Contact
+
+- GitHub: https://github.com/blokzdev
+- X: https://x.com/blokzdev
+- LinkedIn: https://www.linkedin.com/company/blokzdev

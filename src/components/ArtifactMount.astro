@@ -1,0 +1,88 @@
+---
+import { getEntry } from 'astro:content';
+
+/**
+ * Mounts an interactive artifact by slug. Lazy: the entry module in
+ * src/islands/artifacts/<slug>.ts is dynamically imported only when the
+ * stage scrolls into view. Usable in pages and directly inside MDX.
+ */
+interface Props {
+  slug: string;
+  /** Override the manifest aspect ratio, e.g. "21/9". */
+  aspect?: string;
+  class?: string;
+}
+
+const { slug, aspect, class: className } = Astro.props;
+const artifact = await getEntry('artifacts', slug);
+if (!artifact) {
+  throw new Error(`<ArtifactMount slug="${slug}"> — no manifest at content/artifacts/${slug}/manifest.json`);
+}
+const ratio = aspect ?? artifact.data.aspect;
+---
+
+<figure class:list={['not-prose my-8', className]}>
+  <div
+    data-artifact={slug}
+    class="ring-glow relative overflow-hidden rounded-2xl border border-line bg-void"
+    style={`aspect-ratio: ${ratio};`}
+  >
+    <div
+      data-artifact-placeholder
+      class="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
+      style="background: radial-gradient(100% 100% at 50% 100%, rgba(91,140,255,0.12), transparent 65%);"
+    >
+      <span class="font-mono text-xs tracking-widest text-faint uppercase">loading artifact…</span>
+    </div>
+  </div>
+  <figcaption class="mt-2.5 flex flex-wrap items-baseline justify-between gap-2 px-1 text-xs text-faint">
+    <span>
+      <span class="font-medium text-muted">{artifact.data.title}</span>
+      {artifact.data.controls.length > 0 && <span> — {artifact.data.controls.join(' · ')}</span>}
+    </span>
+    <a href={`/artifacts/${slug}`} class="text-accent hover:underline">open artifact ↗</a>
+  </figcaption>
+</figure>
+
+<script>
+  type Mounter = { default: (el: HTMLElement) => () => void };
+  const modules = import.meta.glob<Mounter>('../islands/artifacts/*.ts');
+
+  const stages = document.querySelectorAll<HTMLElement>('[data-artifact]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const el = entry.target as HTMLElement;
+        io.unobserve(el);
+        const slug = el.dataset.artifact;
+        const loader = modules[`../islands/artifacts/${slug}.ts`];
+        if (!loader) {
+          console.warn(`[artifact] no module for "${slug}" in src/islands/artifacts/`);
+          continue;
+        }
+        loader().then(({ default: mountArtifact }) => {
+          mountArtifact(el);
+          el.querySelector('[data-artifact-placeholder]')?.classList.add('opacity-0', 'pointer-events-none');
+        });
+      }
+    },
+    { rootMargin: '160px' },
+  );
+
+  stages.forEach((el) => {
+    if (reduced) {
+      // Respect reduced motion: keep the static placeholder, offer opt-in.
+      const ph = el.querySelector<HTMLElement>('[data-artifact-placeholder]');
+      if (ph) {
+        ph.innerHTML =
+          '<button type="button" class="rounded-lg border border-line px-4 py-2 font-mono text-xs text-muted hover:text-white">▶ run animation</button>';
+        ph.querySelector('button')?.addEventListener('click', () => io.observe(el), { once: true });
+      }
+      return;
+    }
+    io.observe(el);
+  });
+</script>

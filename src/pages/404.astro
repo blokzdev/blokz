@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — Blokz" description="This block doesn't exist on our chain.">
+  <section class="relative flex min-h-[60dvh] flex-col items-center justify-center px-5 text-center">
+    <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
+    <p class="relative font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>
+      Block not found
+    </p>
+    <h1 class="relative mt-4 font-display text-7xl font-bold text-white sm:text-8xl" data-split>
+      4<span class="text-gradient">0</span>4
+    </h1>
+    <p class="relative mt-5 max-w-md text-muted" data-reveal="0.2">
+      This hash doesn't resolve to anything on our chain. The page may have been reorged away.
+    </p>
+    <a
+      href="/"
+      class="relative mt-8 rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03]"
+      data-reveal="0.3"
+    >
+      ← Back to genesis
+    </a>
+  </section>
+</BaseLayout>

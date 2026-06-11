@@ -1,0 +1,95 @@
+---
+slug: optimistic-ml-oracles
+title: "Optimistic ML Oracles: Verifiable Inference Without the Proof Overhead"
+description: "Zero-knowledge proofs aren't the only path to trustworthy on-chain AI. Optimistic schemes trade latency for a 1000x cost reduction — here's how dispute games over inference actually work."
+pubDate: 2026-06-11
+author: blokz
+topics: [blockchain, machine-learning, infrastructure]
+tags: [oracles, optimistic, dispute-games, inference, staking]
+series: proof-of-intelligence
+seriesOrder: 2
+artifacts: [block-mesh]
+difficulty: intermediate
+sources:
+  - label: "Arbitrum Nitro interactive fraud proofs"
+    url: "https://docs.arbitrum.io/how-arbitrum-works/fraud-proofs/challenge-manager"
+---
+
+[Part 1 of this series](/articles/zkml-verifiable-inference-landscape) ended
+on an honest note: proving a large model's forward pass in zero knowledge
+costs orders of magnitude more than running it. The optimistic alternative
+inverts the deal — **assume the result is honest, make it expensive to lie,
+and only pay for verification when someone disputes.**
+
+## The mechanism
+
+An optimistic ML oracle has three roles, all staked:
+
+1. A **proposer** runs the inference off-chain and posts the result with a
+   bond.
+2. **Watchers** re-execute it. Determinism is non-negotiable here: fixed
+   quantization, pinned kernels, a canonical runtime hash. Any watcher whose
+   re-execution disagrees opens a challenge by matching the bond.
+3. A **dispute game** bisects the computation — layer by layer, then
+   operation by operation — until the disagreement narrows to a single step
+   small enough for the chain itself to re-execute. Whoever lied loses the
+   bond.
+
+The network of proposers and watchers gossiping results and challenges looks
+a lot like any other p2p overlay:
+
+<Artifact slug="block-mesh" />
+
+## Why determinism is the hard part
+
+The dispute game only terminates cleanly if honest parties *always* agree.
+Floating-point nondeterminism across GPUs breaks that assumption, so
+production systems canonicalize aggressively:
+
+```python
+runtime = CanonicalRuntime(
+    model_hash="0x7be3…",      # weights, committed on-chain
+    quantization="int8",        # bit-exact across hardware
+    kernels="reference-cpu",    # disputes resolve on reference impl
+    seed=public_input_hash,     # no hidden sampling entropy
+)
+```
+
+The fast path can run on whatever hardware is cheapest — disputes resolve
+against the slow, bit-exact reference implementation. This mirrors how
+optimistic rollups separate execution from fraud-proof semantics.
+
+## The economics
+
+The security argument is crypto-economic, not cryptographic:
+
+- **Cost of corruption** ≈ proposer bond + probability-weighted loss of
+  future fees.
+- **Cost of vigilance** ≈ one redundant inference per watcher. Cheap enough
+  that a handful of independent watchers is rational at modest fee levels.
+- **Finality latency** = the challenge window. Minutes-to-hours, versus
+  seconds for a zk proof — this is the real price, not compute.
+
+Where zkML burns prover-time on every inference, the optimistic scheme burns
+it *only on disputes*, which honest-majority economics push toward zero. In
+steady state you pay roughly **2–4x raw inference cost** (proposer plus
+watchers) instead of 1000x-plus.
+
+## Choosing between the two
+
+| Dimension | zkML | Optimistic |
+| --- | --- | --- |
+| Per-inference overhead | 10³–10⁵× | 2–4× |
+| Finality | seconds | challenge window |
+| Model size ceiling | ~tens of M params | whatever you can re-execute |
+| Trust assumption | cryptographic | ≥1 honest watcher |
+| Privacy of inputs/weights | possible | none — watchers re-execute |
+
+The decision usually collapses to two questions. **Can you tolerate a
+challenge window?** Liquidations can't; weekly settlement can. **Do the
+inputs need privacy?** Re-execution requires sharing them; zk doesn't.
+
+Hybrids are emerging as the grown-up answer: optimistic by default, with the
+dispute game's final step settled by a zk proof of a single layer — bounding
+the on-chain worst case while keeping the happy path nearly free. Part 3
+will build one end-to-end.

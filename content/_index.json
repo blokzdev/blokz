@@ -1,0 +1,129 @@
+{
+  "counts": {
+    "articles": 3,
+    "artifacts": 2
+  },
+  "topicCounts": {
+    "agents": 1,
+    "blockchain": 1,
+    "cryptography": 1,
+    "infrastructure": 1,
+    "llm": 1,
+    "machine-learning": 2,
+    "security": 1,
+    "smart-contracts": 1,
+    "zero-knowledge": 1
+  },
+  "articles": [
+    {
+      "slug": "optimistic-ml-oracles",
+      "path": "content/articles/2026/06/optimistic-ml-oracles/index.mdx",
+      "url": "/articles/optimistic-ml-oracles",
+      "title": "Optimistic ML Oracles: Verifiable Inference Without the Proof Overhead",
+      "description": "Zero-knowledge proofs aren't the only path to trustworthy on-chain AI. Optimistic schemes trade latency for a 1000x cost reduction — here's how dispute games over inference actually work.",
+      "pubDate": "2026-06-11",
+      "topics": [
+        "blockchain",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "oracles",
+        "optimistic",
+        "dispute-games",
+        "inference",
+        "staking"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 2,
+      "artifacts": [
+        "block-mesh"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "agentic-smart-contract-auditing",
+      "path": "content/articles/2026/06/agentic-smart-contract-auditing/index.mdx",
+      "url": "/articles/agentic-smart-contract-auditing",
+      "title": "Agentic Smart-Contract Auditing: What LLM Swarms Catch (and Miss)",
+      "description": "We ran multi-agent LLM pipelines against historical exploit corpora and live audit engagements. The results reshape where AI fits in a security review — and where it absolutely doesn't.",
+      "pubDate": "2026-06-04",
+      "topics": [
+        "agents",
+        "llm",
+        "smart-contracts",
+        "security"
+      ],
+      "tags": [
+        "auditing",
+        "solidity",
+        "multi-agent",
+        "fuzzing",
+        "slither"
+      ],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "zkml-verifiable-inference-landscape",
+      "path": "content/articles/2026/05/zkml-verifiable-inference-landscape/index.mdx",
+      "url": "/articles/zkml-verifiable-inference-landscape",
+      "title": "zkML in 2026: The State of Verifiable Inference",
+      "description": "Zero-knowledge proofs promised to make machine learning trustless. A field survey of where zkML actually stands — proving systems, quantization tradeoffs, and what's deployable today.",
+      "pubDate": "2026-05-28",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "cryptography"
+      ],
+      "tags": [
+        "zkml",
+        "snark",
+        "quantization",
+        "ezkl",
+        "inference"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 1,
+      "artifacts": [
+        "neural-flow"
+      ],
+      "difficulty": "advanced",
+      "draft": false
+    }
+  ],
+  "artifacts": [
+    {
+      "slug": "block-mesh",
+      "path": "content/artifacts/block-mesh/manifest.json",
+      "module": "src/islands/artifacts/block-mesh.ts",
+      "url": "/artifacts/block-mesh",
+      "title": "Block Mesh",
+      "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
+      "pubDate": "2026-06-11",
+      "type": "three",
+      "topics": [
+        "blockchain",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "neural-flow",
+      "path": "content/artifacts/neural-flow/manifest.json",
+      "module": "src/islands/artifacts/neural-flow.ts",
+      "url": "/artifacts/neural-flow",
+      "title": "Neural Flow",
+      "description": "Forward passes through a small feed-forward network, animated: signals ripple layer to layer, weights set the glow, and activations heat the neurons they reach.",
+      "pubDate": "2026-06-11",
+      "type": "canvas",
+      "topics": [
+        "machine-learning",
+        "ai"
+      ],
+      "draft": false
+    }
+  ]
+}

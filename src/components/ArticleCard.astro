@@ -1,0 +1,54 @@
+---
+import TopicChip from '@/components/TopicChip.astro';
+import { articleUrl, formatDate, readingTime, type Article, type Topic } from '@/lib/content-helpers';
+
+interface Props {
+  article: Article;
+  topics: Topic[];
+  /** Larger typography for hero placements. */
+  featured?: boolean;
+}
+
+const { article, topics, featured = false } = Astro.props;
+const { data } = article;
+const minutes = readingTime(article.body);
+const topicEntries = data.topics
+  .map((t) => topics.find((x) => x.id === t))
+  .filter((t): t is Topic => Boolean(t));
+---
+
+<article
+  class="card-hover glass group relative flex h-full flex-col rounded-2xl p-5 sm:p-6"
+  data-reveal-item
+>
+  <div class="flex flex-wrap gap-1.5">
+    {topicEntries.slice(0, 3).map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
+  </div>
+
+  <h3
+    class:list={[
+      'mt-3.5 font-display font-bold text-white',
+      featured ? 'text-xl leading-snug sm:text-2xl' : 'text-lg leading-snug',
+    ]}
+  >
+    <a href={articleUrl(article)} class="after:absolute after:inset-0">
+      <span class="transition-colors group-hover:text-gradient">{data.title}</span>
+    </a>
+  </h3>
+
+  <p class="mt-2.5 line-clamp-3 text-sm leading-relaxed text-muted">{data.description}</p>
+
+  <div class="mt-auto flex items-center gap-2 pt-4 text-xs text-faint">
+    <time datetime={data.pubDate.toISOString()}>{formatDate(data.pubDate)}</time>
+    <span aria-hidden="true">·</span>
+    <span>{minutes} min read</span>
+    {
+      data.artifacts.length > 0 && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span class="text-cyan">⬢ interactive</span>
+        </>
+      )
+    }
+  </div>
+</article>

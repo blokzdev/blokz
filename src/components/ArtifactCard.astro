@@ -1,0 +1,48 @@
+---
+import { artifactUrl, formatDate, type Artifact } from '@/lib/content-helpers';
+
+interface Props {
+  artifact: Artifact;
+}
+
+const { artifact } = Astro.props;
+const { data } = artifact;
+
+const typeLabel: Record<typeof data.type, string> = {
+  three: 'WebGL · Three.js',
+  canvas: 'Canvas 2D',
+  svg: 'SVG',
+  dom: 'DOM',
+};
+---
+
+<article class="card-hover glass group relative flex h-full flex-col overflow-hidden rounded-2xl" data-reveal-item>
+  <div class="relative aspect-video overflow-hidden border-b border-line bg-void">
+    <div
+      class="absolute inset-0 opacity-70"
+      style={`background: radial-gradient(120% 100% at 50% 100%, rgba(91,140,255,0.22), transparent 60%), radial-gradient(80% 80% at 80% 0%, rgba(139,92,246,0.18), transparent 60%);`}
+      aria-hidden="true"
+    >
+    </div>
+    <span
+      class="absolute top-3 left-3 rounded-md border border-line bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-cyan uppercase backdrop-blur"
+    >
+      {typeLabel[data.type]}
+    </span>
+    <span class="absolute right-4 bottom-3 font-display text-4xl font-bold text-white/8 select-none" aria-hidden="true">
+      ⬢
+    </span>
+  </div>
+
+  <div class="flex grow flex-col p-5">
+    <h3 class="font-display text-lg leading-snug font-bold text-white">
+      <a href={artifactUrl(artifact)} class="after:absolute after:inset-0">
+        <span class="transition-colors group-hover:text-gradient">{data.title}</span>
+      </a>
+    </h3>
+    <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{data.description}</p>
+    <p class="mt-auto pt-4 text-xs text-faint">
+      <time datetime={data.pubDate.toISOString()}>{formatDate(data.pubDate)}</time>
+    </p>
+  </div>
+</article>

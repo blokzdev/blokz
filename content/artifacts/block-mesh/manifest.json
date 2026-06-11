@@ -1,0 +1,11 @@
+{
+  "slug": "block-mesh",
+  "title": "Block Mesh",
+  "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
+  "pubDate": "2026-06-11",
+  "type": "three",
+  "topics": ["blockchain", "infrastructure"],
+  "aspect": "16/9",
+  "featured": true,
+  "controls": ["drag to orbit"]
+}

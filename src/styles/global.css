@@ -1,0 +1,230 @@
+@import 'tailwindcss';
+
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource-variable/inter';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
+@theme {
+  /* ---- Blokz design tokens (see docs/DESIGN-SYSTEM.md) ---- */
+  --color-void: #05070d; /* page background — deep space */
+  --color-ink: #0a0e1a; /* raised surface */
+  --color-panel: #0d1322; /* cards / panels */
+  --color-line: rgba(124, 140, 255, 0.14); /* hairline borders */
+  --color-text: #e7eaf3;
+  --color-muted: #8d95ad;
+  --color-faint: #5b6378;
+  --color-accent: #5b8cff; /* electric blue */
+  --color-violet: #8b5cf6;
+  --color-cyan: #22d3ee;
+
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-void);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    scrollbar-color: rgba(124, 140, 255, 0.3) transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    overflow-x: clip;
+    font-feature-settings: 'ss01';
+  }
+
+  ::selection {
+    background: rgba(91, 140, 255, 0.35);
+    color: #fff;
+  }
+
+  /* Search-result highlights (pagefind excerpts). */
+  mark {
+    background: rgba(34, 211, 238, 0.18);
+    color: var(--color-cyan);
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Until motion JS takes over, reveal targets stay visible (no-JS safe). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility glass {
+  background: color-mix(in srgb, var(--color-panel) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--color-line);
+}
+
+@utility text-gradient {
+  background: linear-gradient(100deg, var(--color-accent), var(--color-violet) 55%, var(--color-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility ring-glow {
+  box-shadow:
+    0 0 0 1px rgba(124, 140, 255, 0.18),
+    0 8px 40px -12px rgba(91, 140, 255, 0.35);
+}
+
+@layer components {
+  /* Ambient grid backdrop used behind hero sections. */
+  .grid-veil {
+    background-image:
+      linear-gradient(rgba(124, 140, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 140, 255, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+  }
+
+  .card-hover {
+    transition:
+      transform 0.45s var(--ease-out-expo),
+      border-color 0.45s var(--ease-out-expo),
+      box-shadow 0.45s var(--ease-out-expo);
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    border-color: rgba(124, 140, 255, 0.35);
+    box-shadow: 0 16px 48px -16px rgba(91, 140, 255, 0.25);
+  }
+
+  /* ---- Article prose (dark, hand-tuned) ---- */
+  .prose {
+    font-size: 1.0625rem;
+    line-height: 1.78;
+    color: var(--color-text);
+  }
+  .prose > * + * {
+    margin-top: 1.25em;
+  }
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #fff;
+    scroll-margin-top: 6rem;
+  }
+  .prose h2 {
+    font-size: 1.65rem;
+    margin-top: 2.4em;
+  }
+  .prose h3 {
+    font-size: 1.3rem;
+    margin-top: 2em;
+  }
+  .prose h4 {
+    font-size: 1.1rem;
+    margin-top: 1.6em;
+  }
+  .prose a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(91, 140, 255, 0.35);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s;
+  }
+  .prose a:hover {
+    text-decoration-color: var(--color-accent);
+  }
+  .prose strong {
+    color: #fff;
+    font-weight: 600;
+  }
+  .prose ul,
+  .prose ol {
+    padding-left: 1.4em;
+  }
+  .prose ul {
+    list-style: disc;
+  }
+  .prose ol {
+    list-style: decimal;
+  }
+  .prose li {
+    margin-top: 0.45em;
+  }
+  .prose li::marker {
+    color: var(--color-accent);
+  }
+  .prose blockquote {
+    border-left: 2px solid var(--color-violet);
+    padding-left: 1.25em;
+    color: var(--color-muted);
+    font-style: italic;
+  }
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+  .prose :not(pre) > code {
+    background: rgba(124, 140, 255, 0.1);
+    border: 1px solid rgba(124, 140, 255, 0.15);
+    border-radius: 6px;
+    padding: 0.15em 0.4em;
+    color: var(--color-cyan);
+  }
+  .prose pre {
+    background: #11141f !important; /* matches shiki tokyo-night */
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+  .prose img {
+    border-radius: 14px;
+    border: 1px solid var(--color-line);
+  }
+  .prose hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-line), transparent);
+    margin: 3em 0;
+  }
+  .prose table {
+    width: 100%;
+    font-size: 0.925rem;
+    border-collapse: collapse;
+  }
+  .prose th {
+    font-family: var(--font-display);
+    text-align: left;
+    color: #fff;
+    border-bottom: 1px solid rgba(124, 140, 255, 0.3);
+    padding: 0.5em 0.75em;
+  }
+  .prose td {
+    border-bottom: 1px solid var(--color-line);
+    padding: 0.5em 0.75em;
+  }
+}

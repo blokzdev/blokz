@@ -1,0 +1,46 @@
+{
+  "name": "blokz",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blokz — the AI × Blockchain dev blog by Blokz Development Co.",
+  "homepage": "https://blokz.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blokzdev/blokz"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "astro": "astro",
+    "new:article": "node scripts/new-article.mjs",
+    "new:artifact": "node scripts/new-artifact.mjs",
+    "validate": "node scripts/validate.mjs",
+    "index": "node scripts/build-index.mjs",
+    "check": "npm run validate && astro check"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/rss": "^4.0.0",
+    "@astrojs/sitemap": "^3.2.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10",
+    "@tailwindcss/vite": "^4.0.0",
+    "astro": "^5.0.0",
+    "gsap": "^3.12.0",
+    "satori": "^0.12.0",
+    "sharp": "^0.33.0",
+    "tailwindcss": "^4.0.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/three": "^0.170.0",
+    "gray-matter": "^4.0.3",
+    "pagefind": "^1.3.0",
+    "typescript": "^5.9.3",
+    "zod": "^3.24.0"
+  }
+}

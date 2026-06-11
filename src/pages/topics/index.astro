@@ -1,0 +1,51 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getArticles, getTopics } from '@/lib/content-helpers';
+
+const topics = await getTopics();
+const articles = await getArticles();
+const counts = new Map<string, number>();
+for (const a of articles) for (const t of a.data.topics) counts.set(t, (counts.get(t) ?? 0) + 1);
+
+const sorted = [...topics].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
+---
+
+<BaseLayout
+  title="Topics — Blokz"
+  description="Browse the Blokz archive by topic: AI, agents, zero-knowledge, smart contracts, DeFi, infrastructure, and more."
+>
+  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6">
+    <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>Index</p>
+    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+      Topics
+    </h1>
+    <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
+      A controlled taxonomy keeps the archive navigable at any scale — every article maps to one or
+      more of these.
+    </p>
+  </header>
+
+  <section class="mx-auto max-w-6xl px-5 sm:px-6">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {
+        sorted.map((t) => (
+          <a
+            href={`/topics/${t.id}`}
+            class="card-hover glass group rounded-2xl p-5"
+            style={`--chip-hue: ${t.data.hue}`}
+            data-reveal-item
+          >
+            <div class="flex items-center justify-between">
+              <span class="size-2.5 rounded-full bg-[hsl(var(--chip-hue)_85%_70%)] shadow-[0_0_12px_hsl(var(--chip-hue)_85%_70%/0.8)]" aria-hidden="true" />
+              <span class="font-mono text-xs text-faint">{counts.get(t.id) ?? 0} article{(counts.get(t.id) ?? 0) === 1 ? '' : 's'}</span>
+            </div>
+            <h2 class="mt-3 font-display text-lg font-bold text-white transition-colors group-hover:text-[hsl(var(--chip-hue)_85%_78%)]">
+              {t.data.label}
+            </h2>
+            <p class="mt-1.5 text-sm leading-relaxed text-muted">{t.data.description}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

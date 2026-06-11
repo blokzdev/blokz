@@ -1,0 +1,56 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import Pagination from '@/components/Pagination.astro';
+import { getArticles, getTopics } from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const topics = await getTopics();
+  const articles = await getArticles();
+  return topics.flatMap((topic) =>
+    paginate(
+      articles.filter((a) => a.data.topics.includes(topic.id)),
+      { params: { topic: topic.id }, props: { topic }, pageSize: 12 },
+    ),
+  );
+}) satisfies GetStaticPaths;
+
+const { page, topic } = Astro.props;
+const topics = await getTopics();
+---
+
+<BaseLayout
+  title={`${topic.data.label} — Blokz Topics`}
+  description={`${topic.data.description} ${page.total} article${page.total === 1 ? '' : 's'} on ${topic.data.label} from the Blokz archive.`}
+>
+  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6" style={`--chip-hue: ${topic.data.hue}`}>
+    <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
+      <a href="/topics" class="hover:text-muted">topics</a>
+      <span aria-hidden="true"> / </span>
+      <span class="text-muted">{topic.id}</span>
+    </nav>
+    <h1 class="mt-4 flex items-center gap-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+      <span class="size-3 rounded-full bg-[hsl(var(--chip-hue)_85%_70%)] shadow-[0_0_16px_hsl(var(--chip-hue)_85%_70%/0.8)]" aria-hidden="true"></span>
+      {topic.data.label}
+    </h1>
+    <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">{topic.data.description}</p>
+  </header>
+
+  <section class="mx-auto max-w-6xl px-5 sm:px-6">
+    {
+      page.data.length > 0 ? (
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+          {page.data.map((article) => (
+            <ArticleCard {article} {topics} />
+          ))}
+        </div>
+      ) : (
+        <p class="glass rounded-2xl p-8 text-center text-muted">
+          Nothing here yet — this topic is waiting for its first article.
+        </p>
+      )
+    }
+    <Pagination {page} />
+  </section>
+</BaseLayout>

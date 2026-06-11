@@ -1,0 +1,48 @@
+---
+import { SITE } from '@/lib/site';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path to an OG image; defaults to the site-wide card. */
+  image?: string;
+  type?: 'website' | 'article';
+}
+
+const { title, description, image = '/og/site.png', type = 'website' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const imageUrl = new URL(image, Astro.site);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="generator" content={Astro.generator} />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="canonical" href={canonical} />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={SITE.title}
+  href={new URL('rss.xml', Astro.site)}
+/>
+
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+<meta name="theme-color" content="#05070d" />
+
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:site_name" content={SITE.name} />
+
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:site" content={SITE.xHandle} />
+<meta property="twitter:url" content={canonical} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={imageUrl} />

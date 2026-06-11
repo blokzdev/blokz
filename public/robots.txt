@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://blokz.dev/sitemap-index.xml

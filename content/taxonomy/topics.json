@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ai",
+    "label": "AI",
+    "description": "Artificial intelligence in the large — models, systems, capabilities, and consequences.",
+    "hue": 225
+  },
+  {
+    "id": "machine-learning",
+    "label": "Machine Learning",
+    "description": "Training, inference, optimization, and the engineering of learning systems.",
+    "hue": 200
+  },
+  {
+    "id": "llm",
+    "label": "LLMs",
+    "description": "Large language models: prompting, fine-tuning, evaluation, and production deployment.",
+    "hue": 260
+  },
+  {
+    "id": "agents",
+    "label": "Agents",
+    "description": "Autonomous and semi-autonomous AI systems — planning, tool use, multi-agent coordination.",
+    "hue": 280
+  },
+  {
+    "id": "blockchain",
+    "label": "Blockchain",
+    "description": "Consensus, networking, and the core architecture of distributed ledgers.",
+    "hue": 190
+  },
+  {
+    "id": "smart-contracts",
+    "label": "Smart Contracts",
+    "description": "On-chain programs: Solidity, VMs, design patterns, upgradeability, and verification.",
+    "hue": 150
+  },
+  {
+    "id": "defi",
+    "label": "DeFi",
+    "description": "Decentralized finance — protocols, mechanisms, MEV, and market microstructure.",
+    "hue": 120
+  },
+  {
+    "id": "zero-knowledge",
+    "label": "Zero-Knowledge",
+    "description": "ZK proofs and their applications: SNARKs, STARKs, rollups, and private computation.",
+    "hue": 300
+  },
+  {
+    "id": "cryptography",
+    "label": "Cryptography",
+    "description": "The mathematical foundations: signatures, commitments, MPC, FHE, and beyond.",
+    "hue": 330
+  },
+  {
+    "id": "web3",
+    "label": "Web3",
+    "description": "The user-facing decentralized web — wallets, identity, UX, and adoption.",
+    "hue": 210
+  },
+  {
+    "id": "infrastructure",
+    "label": "Infrastructure",
+    "description": "Nodes, indexers, RPCs, GPUs, and the operational backbone of AI and chain systems.",
+    "hue": 35
+  },
+  {
+    "id": "security",
+    "label": "Security",
+    "description": "Audits, exploits, threat models, and defensive engineering across the stack.",
+    "hue": 0
+  },
+  {
+    "id": "tokenomics",
+    "label": "Tokenomics",
+    "description": "Incentive design, token engineering, and crypto-economic mechanisms.",
+    "hue": 45
+  },
+  {
+    "id": "data",
+    "label": "Data",
+    "description": "On-chain analytics, datasets, embeddings, and the pipelines that feed models.",
+    "hue": 175
+  },
+  {
+    "id": "tooling",
+    "label": "Tooling",
+    "description": "Developer experience: frameworks, testing, CI, and the tools we build and use.",
+    "hue": 90
+  },
+  {
+    "id": "research",
+    "label": "Research",
+    "description": "Paper walkthroughs, literature surveys, and frontier results made practical.",
+    "hue": 250
+  }
+]

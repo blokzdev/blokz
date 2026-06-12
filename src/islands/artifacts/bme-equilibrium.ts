@@ -46,9 +46,16 @@ export default function mount(container: HTMLElement): () => void {
       background:rgba(34,211,238,.08); }
     .bme-toggle input { accent-color:#22d3ee; cursor:pointer; }
     .bme-root.bme-narrow .bme-toggle { grid-column:1 / -1; justify-content:center; }
-    .bme-barwrap { position:relative; border:1px solid rgba(124,140,255,.14);
+    .bme-barwrap { border:1px solid rgba(124,140,255,.14);
       border-radius:12px; background:#0d1322; padding:12px 14px 8px; }
-    .bme-barwrap svg { width:100%; height:96px; display:block; }
+    .bme-stage { position:relative; }
+    .bme-stage svg { width:100%; height:96px; display:block; }
+    /* Bar labels live in DOM, not the stretched SVG (preserveAspectRatio:none
+       distorts glyphs); the stage div keeps them aligned to the bars. */
+    .bme-stagelabel { position:absolute; transform:translateY(-50%); font-size:10px;
+      pointer-events:none; white-space:nowrap; }
+    .bme-eqlabel { position:absolute; top:50%; transform:translate(-50%,-50%);
+      font-size:9px; color:#8d95ad; pointer-events:none; white-space:nowrap; }
     .bme-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .bme-root.bme-narrow .bme-panels { grid-template-columns:1fr; }
     .bme-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
@@ -118,12 +125,24 @@ export default function mount(container: HTMLElement): () => void {
   const NS = 'http://www.w3.org/2000/svg';
   const barWrap = document.createElement('div');
   barWrap.className = 'bme-barwrap';
+  const stage = document.createElement('div');
+  stage.className = 'bme-stage';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 600 96');
   svg.setAttribute('preserveAspectRatio', 'none');
   svg.setAttribute('aria-hidden', 'true');
-  barWrap.appendChild(svg);
+  stage.appendChild(svg);
+  barWrap.appendChild(stage);
   root.appendChild(barWrap);
+
+  const mkStageLabel = (css: string, color: string, text = '') => {
+    const div = document.createElement('div');
+    div.className = 'bme-stagelabel';
+    div.style.cssText = css + `color:${color};`;
+    div.textContent = text;
+    stage.appendChild(div);
+    return div;
+  };
 
   const mkRect = (y: number, fill: string) => {
     const r = document.createElementNS(NS, 'rect');
@@ -135,28 +154,16 @@ export default function mount(container: HTMLElement): () => void {
     svg.appendChild(r);
     return r;
   };
-  const mkText = (x: number, y: number, fill: string, anchor = 'start', size = 10) => {
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', String(x));
-    t.setAttribute('y', String(y));
-    t.setAttribute('fill', fill);
-    t.setAttribute('font-size', String(size));
-    t.setAttribute('text-anchor', anchor);
-    t.setAttribute('font-family', "'JetBrains Mono', monospace");
-    svg.appendChild(t);
-    return t;
-  };
-
   const trackMint = mkRect(14, 'rgba(91,140,255,.12)');
   const trackBurn = mkRect(56, 'rgba(34,211,238,.12)');
   trackMint.setAttribute('width', '500');
   trackBurn.setAttribute('width', '500');
   const barMint = mkRect(14, '#5b8cff');
   const barBurn = mkRect(56, '#22d3ee');
-  mkText(0, 29, '#5b8cff').textContent = 'minted';
-  mkText(0, 71, '#22d3ee').textContent = 'burned';
-  const mintVal = mkText(584, 29, '#e7eaf3', 'end');
-  const burnVal = mkText(584, 71, '#e7eaf3', 'end');
+  mkStageLabel('left:0;top:26%;', '#5b8cff', 'minted');
+  mkStageLabel('left:0;top:70%;', '#22d3ee', 'burned');
+  const mintVal = mkStageLabel('right:0;top:26%;', '#e7eaf3');
+  const burnVal = mkStageLabel('right:0;top:70%;', '#e7eaf3');
   // Equilibrium marker: the burn bar must reach the mint bar's end.
   const eqLine = document.createElementNS(NS, 'line');
   eqLine.setAttribute('y1', '8');
@@ -165,8 +172,10 @@ export default function mount(container: HTMLElement): () => void {
   eqLine.setAttribute('stroke-width', '1');
   eqLine.setAttribute('stroke-dasharray', '3 4');
   svg.appendChild(eqLine);
-  const eqLabel = mkText(0, 50, '#8d95ad', 'middle', 9);
+  const eqLabel = document.createElement('div');
+  eqLabel.className = 'bme-eqlabel';
   eqLabel.textContent = 'equilibrium';
+  stage.appendChild(eqLabel);
 
   /* ---- Panels ---- */
   const panels = document.createElement('div');
@@ -232,7 +241,7 @@ export default function mount(container: HTMLElement): () => void {
     const eqX = 90 + mint * scale;
     eqLine.setAttribute('x1', String(eqX));
     eqLine.setAttribute('x2', String(eqX));
-    eqLabel.setAttribute('x', String(Math.min(Math.max(eqX, 120), 560)));
+    eqLabel.style.left = `${Math.min(Math.max((eqX / 600) * 100, 18), 90)}%`;
     mintVal.textContent = `${fmt(mint)} /mo`;
     burnVal.textContent = `${fmt(burn)} /mo`;
 

@@ -78,25 +78,27 @@ export default function mount(container: HTMLElement): () => void {
 
   const style = el('style');
   style.textContent = `
-    .pt-caption { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; letter-spacing: .08em; }
+    /* Sizes are viewBox units — the chart renders at ~0.45× on phones, so
+       type runs as large as the 800-unit layout allows. */
+    .pt-caption { fill: #5b6378; font: 500 12.5px 'JetBrains Mono', monospace; letter-spacing: .08em; }
     .pt-grid { stroke: rgba(124,140,255,0.10); }
-    .pt-axis { fill: #5b6378; font: 500 10px 'JetBrains Mono', monospace; }
+    .pt-axis { fill: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
     .pt-row { cursor: pointer; }
     .pt-row:focus-visible { outline: none; }
-    .pt-label { fill: #8d95ad; font: 500 11.5px 'JetBrains Mono', monospace; transition: fill .2s; }
-    .pt-range { fill: #5b6378; font: 500 10px 'JetBrains Mono', monospace; transition: fill .2s; }
+    .pt-label { fill: #8d95ad; font: 500 12px 'JetBrains Mono', monospace; transition: fill .2s; }
+    .pt-range { fill: #5b6378; font: 500 11.5px 'JetBrains Mono', monospace; transition: fill .2s; }
     .pt-bar { transition: fill-opacity .2s, stroke-opacity .2s; stroke-width: 1.25; fill-opacity: .16; stroke-opacity: .55; }
     .pt-row.pt-on .pt-bar, .pt-row:focus-visible .pt-bar { fill-opacity: .38; stroke-opacity: 1; }
     .pt-row.pt-on .pt-label, .pt-row:focus-visible .pt-label { fill: #e7eaf3; }
     .pt-row.pt-on .pt-range { fill: #8d95ad; }
-    .pt-legend { fill: #5b6378; font: 500 9.5px 'JetBrains Mono', monospace; }
+    .pt-legend { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; }
     .pt-panel { fill: #0d1322; stroke: rgba(124,140,255,0.18); }
-    .pt-d-title { fill: #e7eaf3; font: 700 13px 'Space Grotesk', sans-serif; }
-    .pt-d-buys { font: 500 10px 'JetBrains Mono', monospace; letter-spacing: .08em; }
-    .pt-d-key { fill: #5b6378; font: 500 10.5px 'JetBrains Mono', monospace; }
-    .pt-d-val { fill: #8d95ad; font: 500 10.5px 'JetBrains Mono', monospace; }
-    .pt-d-note { fill: #8d95ad; font: 400 11px Inter, sans-serif; }
-    .pt-d-src { fill: #5b6378; font: 500 9.5px 'JetBrains Mono', monospace; }
+    .pt-d-title { fill: #e7eaf3; font: 700 15px 'Space Grotesk', sans-serif; }
+    .pt-d-buys { font: 500 11.5px 'JetBrains Mono', monospace; letter-spacing: .08em; }
+    .pt-d-key { fill: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
+    .pt-d-val { fill: #8d95ad; font: 500 12px 'JetBrains Mono', monospace; }
+    .pt-d-note { fill: #8d95ad; font: 400 12.5px Inter, sans-serif; }
+    .pt-d-src { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; }
   `;
   svg.appendChild(style);
 
@@ -111,12 +113,12 @@ export default function mount(container: HTMLElement): () => void {
     ['privacy', 'privacy'],
     ['both', 'both'],
   ];
-  let lx = 558;
+  let lx = 540;
   for (const [cat, label] of legendItems) {
     svg.appendChild(el('circle', { cx: String(lx), cy: '22', r: '3.5', fill: COLOR[cat] }));
-    const t = el('text', { x: String(lx + 8), y: '25.5', class: 'pt-legend' }, label);
+    const t = el('text', { x: String(lx + 8), y: '26', class: 'pt-legend' }, label);
     svg.appendChild(t);
-    lx += 8 + label.length * 6.4 + 16;
+    lx += 8 + label.length * 7.2 + 16;
   }
 
   /* ---- Axis grid ---- */
@@ -216,8 +218,8 @@ export default function mount(container: HTMLElement): () => void {
     dTrust.textContent = a.trust;
     dFin.textContent = a.finality;
     dNote.textContent = '';
-    wrap(a.note, 104).slice(0, 2).forEach((line, li) => {
-      dNote.appendChild(el('tspan', { x: '40', dy: li === 0 ? '0' : '14' }, line));
+    wrap(a.note, 92).slice(0, 2).forEach((line, li) => {
+      dNote.appendChild(el('tspan', { x: '40', dy: li === 0 ? '0' : '16' }, line));
     });
     dSrc.textContent = a.source.label === 'baseline' ? '' : `source: ${a.source.label}`;
   }

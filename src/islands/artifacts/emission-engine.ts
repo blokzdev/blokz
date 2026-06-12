@@ -93,6 +93,9 @@ export default function mount(container: HTMLElement): () => void {
       font-size:10px; letter-spacing:.06em; }
     .ee-legend span { display:inline-flex; align-items:center; gap:5px; }
     .ee-legend i { width:14px; height:2px; border-radius:1px; display:inline-block; }
+    /* Axis labels live in DOM, not the stretched SVG (preserveAspectRatio:none
+       distorts glyphs). */
+    .ee-axislabel { position:absolute; font-size:10px; color:#5b6378; pointer-events:none; }
     .ee-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .ee-root.ee-narrow .ee-panels { grid-template-columns:1fr; }
     .ee-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
@@ -186,23 +189,17 @@ export default function mount(container: HTMLElement): () => void {
   const basePath = mkPath('rgba(91,99,120,.8)', '4 4');
   const flowPath = mkPath('#22d3ee');
   const pricePath = mkPath('#5b8cff');
-  const axisLabels: SVGTextElement[] = [];
-  for (const [x, y, anchor, text] of [
-    [6, 14, 'start', ''],
-    [6, 196, 'start', ''],
-    [594, 196, 'end', 'days 0 → 90'],
-  ] as const) {
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', String(x));
-    t.setAttribute('y', String(y));
-    t.setAttribute('text-anchor', anchor);
-    t.setAttribute('fill', '#5b6378');
-    t.setAttribute('font-size', '10');
-    t.setAttribute('font-family', "'JetBrains Mono', monospace");
-    t.textContent = text;
-    svg.appendChild(t);
-    axisLabels.push(t);
-  }
+  const mkAxisLabel = (css: string, text = '') => {
+    const div = document.createElement('div');
+    div.className = 'ee-axislabel';
+    div.style.cssText = css;
+    div.textContent = text;
+    chartWrap.appendChild(div);
+    return div;
+  };
+  const yMaxLabel = mkAxisLabel('top:6px;left:8px;');
+  const yMinLabel = mkAxisLabel('bottom:4px;left:8px;');
+  mkAxisLabel('bottom:4px;right:10px;', 'days 0 → 90');
 
   /* ---- Result panels ---- */
   const panels = document.createElement('div');
@@ -277,8 +274,8 @@ export default function mount(container: HTMLElement): () => void {
     let d = `M0 ${Y(r.flowShare(0))}`;
     for (let t = 1; t <= HORIZON; t++) d += ` L${X(t).toFixed(1)} ${Y(r.flowShare(t)).toFixed(2)}`;
     flowPath.setAttribute('d', d);
-    axisLabels[0]!.textContent = pct(yMax);
-    axisLabels[1]!.textContent = pct(yMin);
+    yMaxLabel.textContent = pct(yMax);
+    yMinLabel.textContent = pct(yMin);
 
     priceDds[0]!.textContent = `× ${r.priceMult.toFixed(2)}`;
     priceDds[1]!.textContent = `${pct(inp.share0)} → ${pct(r.priceShare)}`;

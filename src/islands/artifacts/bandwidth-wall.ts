@@ -125,17 +125,20 @@ export default function mount(container: HTMLElement): () => void {
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .bw-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .bw-grid { stroke:rgba(124,140,255,.1); }
-    .bw-gridlabel, .bw-axis { fill:#5b6378; font:500 10px 'JetBrains Mono', monospace; }
-    .bw-cat { fill:#8d95ad; font:500 10.5px 'JetBrains Mono', monospace; }
-    .bw-sec { fill:#e7eaf3; font:600 12px 'JetBrains Mono', monospace;
+    /* Sizes are viewBox units — the chart renders at ~0.45× on phones, so
+       type is set ~25% larger than it reads at desktop scale. */
+    .bw-gridlabel, .bw-axis { fill:#5b6378; font:500 12.5px 'JetBrains Mono', monospace; }
+    .bw-cat { fill:#8d95ad; font:500 13px 'JetBrains Mono', monospace; }
+    .bw-sec { fill:#e7eaf3; font:600 15px 'JetBrains Mono', monospace;
       font-variant-numeric:tabular-nums; }
-    .bw-mb { fill:#5b6378; font:500 9px 'JetBrains Mono', monospace; }
+    .bw-mb { fill:#5b6378; font:500 11.5px 'JetBrains Mono', monospace; }
     .bw-bar { cursor:pointer; }
     .bw-bar rect { transition:filter .2s; }
     .bw-bar:hover rect, .bw-bar:focus-visible rect { filter:brightness(1.45); }
     .bw-bar:focus-visible { outline:none; }
     .bw-bar:focus-visible rect { stroke:#e7eaf3; stroke-width:1.5; }
-    .bw-legend { fill:#5b6378; font:500 10px 'JetBrains Mono', monospace; }
+    .bw-legend { fill:#5b6378; font:500 12px 'JetBrains Mono', monospace; }
+    .bw-root.bw-narrow .bw-legend { display:none; }
     .bw-readout { min-height:18px; font-size:11px; color:#8d95ad;
       font-variant-numeric:tabular-nums; }
     .bw-readout b { color:#e7eaf3; font-weight:600; }
@@ -273,7 +276,7 @@ export default function mount(container: HTMLElement): () => void {
 
     const cat = document.createElementNS(NS, 'text');
     cat.setAttribute('x', String(cx));
-    cat.setAttribute('y', String(Y_BASE + 22));
+    cat.setAttribute('y', String(Y_BASE + 25));
     cat.setAttribute('text-anchor', 'middle');
     cat.setAttribute('class', 'bw-cat');
     if (isBaseline) cat.setAttribute('fill', '#5b8cff');
@@ -299,8 +302,8 @@ export default function mount(container: HTMLElement): () => void {
     const y = yOf(b.value);
     b.rect.setAttribute('y', String(y));
     b.rect.setAttribute('height', String(Y_BASE - y));
-    b.sec.setAttribute('y', String(y - 20));
-    b.mb.setAttribute('y', String(y - 7));
+    b.sec.setAttribute('y', String(y - 24));
+    b.mb.setAttribute('y', String(y - 8));
     b.sec.textContent = fmtSeconds(secsFor(model().rows[i]!.mbPerStep));
     b.mb.textContent = `${fmtMb(model().rows[i]!.mbPerStep)} MB`;
   }

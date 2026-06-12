@@ -16,6 +16,7 @@ export const prefersReducedMotion = () =>
  *   data-magnetic         — element leans ±6px toward the pointer (hover devices only)
  *   data-counter="N"      — counts up to N on scroll; final value must be server-rendered
  *   data-parallax-glow    — decorative backdrop drifts vertically with scroll (scrubbed)
+ *   data-scroll-fade      — fades and drifts up as it scrolls out of view (scrubbed)
  *   data-toc-spy          — TOC container; `.is-active` tracks the heading in view
  *
  * Everything except toc-spy (state, not motion) is skipped under reduced motion;
@@ -93,6 +94,20 @@ export function initMotion(): void {
         el.textContent = String(Math.round(state.v));
       },
       scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-scroll-fade]').forEach((el) => {
+    gsap.to(el, {
+      opacity: 0,
+      yPercent: -8,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: el,
+        start: 'bottom 65%',
+        end: 'bottom 15%',
+        scrub: 0.6,
+      },
     });
   });
 

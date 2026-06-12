@@ -55,8 +55,13 @@ taxonomy via `--chip-hue` + HSL (see `TopicChip.astro`); cards opt into hue-tint
 - `noise` = fixed film-grain overlay (~2% opacity); applied once, on `<body>`.
 - `link-underline` = gradient underline that grows from the left on hover/focus (footer
   lists, view-all links).
-- Artifact gallery previews are deterministic constellations seeded by the slug
-  (`ArtifactCard.astro`) — build-time inline SVG, never live renderers.
+- Artifact identity is a deterministic constellation seeded by the slug
+  (`src/lib/constellation.ts`): gallery cards and stage placeholders render it as inline
+  SVG, and `/og/artifacts/<slug>.png` carries it into share cards (`src/lib/og-card.ts`).
+  Never live renderers in listings.
+- Article niceties injected client-side: `.code-copy` buttons on code blocks (inside a
+  `.code-frame` wrapper so they don't scroll with the code) and `.heading-anchor` hover
+  links on prose h2/h3.
 
 ## Motion grammar (GSAP)
 
@@ -72,6 +77,7 @@ Declarative via data attributes, implemented in `src/lib/motion.ts`:
 - `data-counter="N"` — count-up on scroll-enter. The final value **must** be
   server-rendered so no-JS/reduced-motion shows the truth.
 - `data-parallax-glow` — decorative `aria-hidden` backdrops drift vertically, `scrub: 1`.
+- `data-scroll-fade` — fades/drifts up as it scrolls out (scrubbed; hero content).
 - `data-toc-spy` — TOC container; the link for the heading in view gets `.is-active`.
   State, not motion: runs under reduced motion, CSS owns the transition.
 

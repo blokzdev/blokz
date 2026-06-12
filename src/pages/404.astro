@@ -14,14 +14,22 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     <p class="relative mt-5 max-w-md text-muted" data-reveal="0.2">
       This hash doesn't resolve to anything on our chain. The page may have been reorged away.
     </p>
-    <a
-      href="/"
-      class="relative mt-8 rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03]"
-      data-reveal="0.3"
-      data-magnetic
-    >
-      ← Back to genesis
-    </a>
+    <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3" data-reveal="0.3">
+      <a
+        href="/"
+        class="rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03]"
+        data-magnetic
+      >
+        ← Back to genesis
+      </a>
+      <button
+        type="button"
+        data-search-open
+        class="glass rounded-xl px-6 py-3 text-sm font-semibold text-text transition-colors hover:border-accent/40 hover:text-white"
+      >
+        Search the archive
+      </button>
+    </div>
   </section>
 </BaseLayout>
 

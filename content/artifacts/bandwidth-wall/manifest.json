@@ -1,0 +1,24 @@
+{
+  "slug": "bandwidth-wall",
+  "title": "The Bandwidth Wall",
+  "description": "How much data one GPU ships per optimizer step: AdamW-DDP vs DeMo's DCT+top-k compression, on a log scale. Toggle OLMo-300M ↔ OLMo-1B, hover a bar for exact MB/step and reduction factor, and slide the link speed to turn megabytes into seconds-per-step. Data: DeMo paper, Table 1 (arXiv:2411.19870).",
+  "pubDate": "2026-06-12",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "toggle OLMo-300M ↔ OLMo-1B",
+    "hover / focus a bar for exact MB/step + reduction",
+    "slide link speed to convert MB/step → seconds"
+  ],
+  "dataSource": {
+    "label": "DeMo paper, Table 1 (arXiv:2411.19870)",
+    "url": "https://arxiv.org/abs/2411.19870"
+  },
+  "dataAsOf": "2026-06-12"
+}

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 12,
-    "artifacts": 10
+    "artifacts": 11
   },
   "topicCounts": {
     "agents": 5,
@@ -155,6 +155,7 @@
       "title": "What the Blockchain Actually Does in Decentralized AI Training",
       "description": "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster.",
       "pubDate": "2026-06-12",
+      "updatedDate": "2026-06-12",
       "topics": [
         "machine-learning",
         "blockchain",
@@ -169,7 +170,8 @@
         "prime-intellect"
       ],
       "artifacts": [
-        "block-mesh"
+        "block-mesh",
+        "bandwidth-wall"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -347,6 +349,22 @@
       "topics": [
         "llm",
         "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "bandwidth-wall",
+      "path": "content/artifacts/bandwidth-wall/manifest.json",
+      "module": "src/islands/artifacts/bandwidth-wall.ts",
+      "url": "/artifacts/bandwidth-wall",
+      "title": "The Bandwidth Wall",
+      "description": "How much data one GPU ships per optimizer step: AdamW-DDP vs DeMo's DCT+top-k compression, on a log scale. Toggle OLMo-300M ↔ OLMo-1B, hover a bar for exact MB/step and reduction factor, and slide the link speed to turn megabytes into seconds-per-step. Data: DeMo paper, Table 1 (arXiv:2411.19870).",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

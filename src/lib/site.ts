@@ -2,9 +2,11 @@
 export const SITE = {
   name: 'Blokz',
   org: 'Blokz Development Co.',
-  title: 'Blokz — AI × Blockchain Engineering',
+  title: 'Blokz — Where the Brain Meets the Chain',
+  /** Canonical tagline. Lowercase brand moments use CSS `lowercase`, never a second string. */
+  tagline: 'Where the brain meets the chain',
   description:
-    'The Blokz dev blog: deep technical writing and interactive artifacts at the intersection of AI and blockchain — agents, zero-knowledge, LLMs, smart contracts, and the infrastructure that binds them.',
+    'blokz.dev — where the brain meets the chain. Deep technical writing and interactive artifacts on AI × blockchain: agents, zero-knowledge, LLMs, smart contracts, and the infrastructure binding them.',
   url: 'https://blokz.dev',
   repo: 'https://github.com/blokzdev/blokz',
   github: 'https://github.com/blokzdev',

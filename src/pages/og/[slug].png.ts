@@ -102,7 +102,7 @@ export const GET: APIRoute = async ({ props }) => {
               },
               children: [
                 { type: 'span', props: { style: { maxWidth: '700px' }, children: meta } },
-                { type: 'span', props: { style: { flexShrink: 0 }, children: `AI × Blockchain · ${SITE.xHandle}` } },
+                { type: 'span', props: { style: { flexShrink: 0 }, children: `${SITE.tagline} · ${SITE.xHandle}` } },
               ],
             },
           },

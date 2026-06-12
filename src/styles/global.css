@@ -87,6 +87,22 @@
   color: transparent;
 }
 
+/* Tagline gradients: "brain" cools accent→violet, "chain" warms violet→cyan,
+   encoding the left-to-right bridge the hero scene renders behind the headline. */
+@utility text-gradient-brain {
+  background: linear-gradient(100deg, var(--color-accent), var(--color-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility text-gradient-chain {
+  background: linear-gradient(100deg, var(--color-violet), var(--color-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @utility ring-glow {
   box-shadow:
     0 0 0 1px rgba(124, 140, 255, 0.18),

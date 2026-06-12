@@ -1,17 +1,18 @@
 {
   "counts": {
-    "articles": 9,
+    "articles": 10,
     "artifacts": 8
   },
   "topicCounts": {
     "agents": 5,
     "ai": 1,
-    "blockchain": 4,
+    "blockchain": 5,
     "cryptography": 1,
     "defi": 1,
     "infrastructure": 6,
     "llm": 1,
-    "machine-learning": 3,
+    "machine-learning": 4,
+    "research": 1,
     "security": 4,
     "smart-contracts": 2,
     "web3": 1,
@@ -89,6 +90,32 @@
       ],
       "artifacts": [
         "gradient-descent"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "what-the-blockchain-actually-does-in-decentralized-ai-training",
+      "path": "content/articles/2026/06/what-the-blockchain-actually-does-in-decentralized-ai-training/index.mdx",
+      "url": "/articles/what-the-blockchain-actually-does-in-decentralized-ai-training",
+      "title": "What the Blockchain Actually Does in Decentralized AI Training",
+      "description": "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "machine-learning",
+        "blockchain",
+        "research"
+      ],
+      "tags": [
+        "decentralized-training",
+        "psyche",
+        "distro",
+        "toploc",
+        "solana",
+        "prime-intellect"
+      ],
+      "artifacts": [
+        "block-mesh"
       ],
       "difficulty": "intermediate",
       "draft": false

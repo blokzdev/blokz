@@ -1,0 +1,173 @@
+---
+slug: what-the-blockchain-actually-does-in-decentralized-ai-training
+title: "What the Blockchain Actually Does in Decentralized AI Training"
+description: "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster."
+pubDate: 2026-06-12
+author: blokz
+topics: [machine-learning, blockchain, research]
+tags: [decentralized-training, psyche, distro, toploc, solana, prime-intellect]
+artifacts: [block-mesh]
+difficulty: intermediate
+sources:
+  - label: "DeMo: Decoupled Momentum Optimization (arXiv:2411.19870)"
+    url: "https://arxiv.org/abs/2411.19870"
+  - label: "TOPLOC: A Locality Sensitive Hashing Scheme for Trustless Verifiable Inference (arXiv:2501.16007)"
+    url: "https://arxiv.org/abs/2501.16007"
+  - label: "INTELLECT-2: A Reasoning Model Trained Through Globally Decentralized Reinforcement Learning (arXiv:2505.07291)"
+    url: "https://arxiv.org/abs/2505.07291"
+  - label: "Psyche in depth — official architecture docs"
+    url: "https://docs.psyche.network/explain/index.html"
+  - label: "Nous Research: Introducing Hermes 4.3"
+    url: "https://nousresearch.com/introducing-hermes-4-3"
+---
+
+"Decentralized AI training" is one of the most funded phrases in crypto, and one of the least
+examined. The pitch writes itself — idle GPUs of the world, unite — but the engineering
+question underneath rarely gets a straight answer: **when a transformer is being trained
+across untrusted machines on the public internet, what does the blockchain actually do?**
+
+It does not move gradients. It does not store weights. Two systems that have shipped real
+models — Nous Research's Psyche and Prime Intellect's INTELLECT stack — give a precise
+answer: the chain is a coordination and accountability layer measured in kilobytes per
+round, sitting beside a data plane measured in gigabytes per step. Understanding that split
+is the difference between evaluating these systems and just vibing about them.
+
+## First, the wall that makes any of this hard
+
+Standard data-parallel training is brutally chatty. Every optimizer step, every replica
+all-reduces a full gradient. For OLMo-1B in the DeMo paper's measurements, AdamW with
+distributed data parallelism moves **2,416.6 MB per step per GPU**. On datacenter
+interconnects — NVLink at hundreds of GB/s, InfiniBand at 400 Gb/s — that's fine. Over
+internet links between strangers' machines, it's disqualifying: on a symmetric 1 Gb/s
+connection, you'd spend ~19 seconds per step just shipping gradients, before any compute.
+
+[DeMo](https://arxiv.org/abs/2411.19870) (Decoupled Momentum Optimization, from Nous
+Research with Diederik Kingma of Adam fame) attacks exactly this. Instead of synchronizing
+full gradients, each node accumulates momentum locally, runs a discrete cosine transform
+over it, and transmits only the top-k fastest-moving frequency components, with the residual
+fed back into local momentum so nothing is silently dropped. The measured numbers for
+OLMo-1B:
+
+| Method | MB/step per GPU | Reduction |
+| --- | --- | --- |
+| AdamW-DDP | 2,416.6 | 1× |
+| DeMo k=32 | 110.3 | 22× |
+| DeMo k=8 | 27.6 | 88× |
+| DeMo k=1 | 3.4 | ~700× |
+
+At k=8, DeMo matched or exceeded the AdamW-DDP baseline on HellaSwag, ARC-Easy, and PIQA
+after a 100B-token pretrain. DisTrO, the production optimizer family Psyche builds on, pushes
+the same idea further — Nous reports inter-GPU traffic compressed by three to four orders of
+magnitude. That's what turns "training over broadband" from a meme into an engineering
+budget. But note what compression alone doesn't buy you: a thousand strangers who agree on
+*which* compressed updates, in *which* order, constitute the model. That's where the chain
+comes in.
+
+## What Solana actually stores: Psyche's coordinator
+
+Psyche's coordinator — the component that would be a Ray head node or a Slurm controller in
+a datacenter — is [implemented as a Solana program](https://docs.psyche.network/explain/index.html).
+What lives on-chain is the run's *control state*, not its tensors:
+
+- **The run state machine.** A run waits for a minimum quorum of clients, moves through
+  warmup (everyone downloads the checkpoint), then cycles training rounds, witness phases,
+  and cooldown. Epoch boundaries are where clients may join or leave; mid-epoch membership
+  is fixed, which is what makes the round protocol tractable.
+- **Deterministic data assignment.** Each round, the coordinator assigns disjoint slices of
+  the training data to clients from the current round state — no central scheduler to bribe
+  or DoS, and any observer can recompute who was supposed to train what.
+- **Commitments and witness proofs.** Clients broadcast their DisTrO results peer-to-peer
+  (the chain never sees them) along with a cryptographic commitment binding them to those
+  results. Each round, a random subset of clients serves as witnesses: they track which
+  results they actually received in a bloom filter and post these compact proofs to the
+  coordinator, which combines them into a consensus over which updates get applied to the
+  model. Liveness and participation become provable facts rather than operator claims, and
+  the same machinery is the hook for identifying and ejecting misbehaving clients.
+
+The division of labor is strict and worth internalizing: **Solana orders kilobyte-scale
+metadata; the p2p network moves the gigabytes.** The chain buys you a coordinator that
+nobody operates, nobody can quietly censor, and everybody can audit after the fact — the
+same reason intent settlements and fraud-proof games put their checkpoints on-chain.
+
+<Artifact slug="block-mesh" />
+
+This isn't a testnet sketch anymore. In December 2025, Nous shipped
+[Hermes 4.3](https://nousresearch.com/introducing-hermes-4-3), a 36B model (Seed-OSS-36B
+base) trained end-to-end on Psyche across **24 nodes spread over multiple datacenters,
+averaging 144,000 tokens/second** with tensor-parallel DisTrO. The same model was also
+trained conventionally (FSDP + AdamW) as a control — and the Psyche-trained version came out
+*ahead* on downstream evals. One result on one model is not a revolution, but it retires the
+claim that internet-coordinated training necessarily pays a quality tax.
+
+## Verifying strangers' GPUs: TOPLOC and INTELLECT-2
+
+Coordination keeps honest nodes in sync. It doesn't stop a dishonest node from submitting
+garbage and collecting rewards. This is the verifiable-compute problem this blog has been
+circling all series — zkML proofs cost ~1000×, [optimistic dispute games cost a challenge
+window](/articles/optimistic-ml-oracles), [TEE attestation costs trusting
+Intel](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) — and decentralized
+training picked a fourth point on the curve: **cheap statistical auditing**.
+
+Prime Intellect's [INTELLECT-2](https://arxiv.org/abs/2505.07291) — a 32B reasoning model
+trained via globally distributed reinforcement learning — splits the network into three
+roles: rollout workers generating reasoning traces (a machine with 4×RTX 3090s qualifies),
+validators checking those traces, and training workers folding verified data into GRPO
+updates, with new policy weights fanned out over SHARDCAST's HTTP tree topology. The
+architecture is fully asynchronous: they measured that training on rollouts up to **four
+policy steps stale** matched the synchronous baseline, which lets weight broadcast hide
+entirely behind compute.
+
+The validators run [TOPLOC](https://arxiv.org/abs/2501.16007), and its economics are the
+interesting part. As a worker decodes, it commits to its top-k intermediate activations via
+a locality-sensitive hash with polynomial encoding — **258 bytes per 32 tokens**, roughly
+1000× smaller than the 262 KB of raw embeddings it stands in for. A validator later
+re-derives the activations against the committed model and checks the hashes:
+
+```text
+worker:    inference  → activations → top-k LSH commit (258 B / 32 tokens)
+validator: prefill the same tokens → recompute top-k  → compare
+           mismatch ⇒ wrong model / prompt / precision ⇒ reject + slash
+```
+
+Because validation is prefill rather than token-by-token decoding, it runs up to ~100×
+faster than the original inference. In Prime Intellect's evaluations, TOPLOC caught model
+swaps, prompt tampering, and precision downgrades (the classic "serve the INT4 model, bill
+for BF16" grift) with **no false positives or negatives**, and the locality-sensitive design
+absorbs the cross-GPU nondeterminism — different hardware, tensor-parallel widths, attention
+kernels — that makes naive bitwise checks unusable. It's an audit, not a proof: a malicious
+worker with full knowledge of the scheme faces a detection lottery each time, which is
+exactly the optimistic-security shape — make cheating unprofitable, not impossible.
+
+Notice why RL post-training was the first thing to decentralize, ahead of pretraining: the
+expensive distributed part is rollout *generation*, which is inference — embarrassingly
+parallel, tolerant of staleness, and TOPLOC-auditable — while the trust-critical gradient
+update stays on a small trusted cluster.
+
+## The honest scorecard
+
+Then there's the result that keeps everyone honest. In late 2025, Prime Intellect — the lab
+that proved 32B decentralized RL works — shipped its flagship
+[INTELLECT-3](https://arxiv.org/abs/2512.16144), a 106B-parameter MoE trained with SFT and
+large-scale RL... on a **centralized cluster of 512 H200s over two months**. When iteration
+speed mattered for a frontier-adjacent model, the same team chose InfiniBand over ideology.
+MoE all-to-all traffic, RL debugging cycles, and the sheer operational gravity of a
+single cluster still beat the swarm at that scale.
+
+So the current, evidence-backed state of the art looks like this:
+
+- **Real**: 36B dense training over the internet at no quality loss (Hermes 4.3); 32B
+  globally distributed RL with statistical verification of untrusted workers (INTELLECT-2);
+  per-GPU step traffic cut 85×–1000× (DeMo/DisTrO).
+- **Real, but narrow**: the chain's role. Run state, data assignment, commitments, bloom
+  filter witness proofs — control-plane bytes. If a pitch deck implies gradients or weights
+  on-chain, it's describing a system that does not exist.
+- **Not yet real**: permissionless frontier-scale pretraining. The flagship models of both
+  leading "decentralized AI" labs were either mid-scale or trained on rented centralized
+  clusters.
+
+The pattern rhymes with how this blog has covered [agent payments](/articles/x402-agent-payments-onchain)
+and verifiable inference: the blockchain earns its place not by doing the heavy computation
+but by being the neutral referee — ordering commitments, proving participation, and making
+defection expensive — for heavy computation that happens elsewhere. In training, that
+referee role is now production-tested. The world's idle GPUs, though, are still mostly
+idle.

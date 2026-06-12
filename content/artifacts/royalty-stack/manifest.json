@@ -1,15 +1,20 @@
 {
   "slug": "royalty-stack",
   "title": "Royalty Stack",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Story Protocol's two royalty policies, runnable: tap any IP asset in a derivative chain to pay 100 WIP into it and watch LAP give every ancestor its absolute cut until the stack hits 100% and mints revert, while LRP compounds hop by hop and dilutes the original to dust.",
   "pubDate": "2026-06-12",
-  "type": "svg",
+  "type": "dom",
   "archetype": "diagram",
   "topics": [
     "web3",
     "smart-contracts"
   ],
-  "aspect": "16/9",
+  "aspect": "16/10",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap an IP asset to pay 100 WIP into it",
+    "toggle LAP ↔ LRP",
+    "drag the rev-share slider",
+    "add / remove generations"
+  ]
 }

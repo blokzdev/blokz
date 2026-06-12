@@ -42,6 +42,10 @@ export default function mount(container: HTMLElement): () => void {
 - Prefer `AdditiveBlending` + `depthWrite: false` points/lines for the house glow aesthetic
   (see `block-mesh`), and the token palette from `docs/DESIGN-SYSTEM.md`.
 - 2D canvas artifacts handle their own DPR and `document.hidden` checks (see `neural-flow`).
+- **Draggable scenes must use `attachOrbit()` from `src/lib/orbit.ts`** — the shared
+  flick/tap model (time-based momentum decay, tap detection, pointercancel handling,
+  `touch-action: pan-y`). Never hand-roll per-frame `*= 0.94` decay; it's refresh-rate
+  dependent.
 - The brand visual (neural cluster ⇄ block lattice bridge) is shared between the homepage
   hero and `synapse-chain` via `src/lib/synapse-geometry.ts` — extend it there, not in copies.
 - Budget: an artifact should stay comfortably under 60fps frame budget on a mid-range phone;

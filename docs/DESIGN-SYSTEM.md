@@ -95,7 +95,11 @@ reduced-motion pause — the global 0.01ms override would strobe them.
 - Mobile: reduce counts ~50% via `isSmallScreen()`.
 - Prefer shader-side animation (per-vertex jitter via `uTime`) and precomputed static link
   topology over per-frame CPU buffer rebuilds — see `src/lib/synapse-geometry.ts`.
-- Orbitable canvases set `touch-action: pan-y` so they never trap mobile scroll.
+- All flick/tap/orbit gestures go through `attachOrbit()` (`src/lib/orbit.ts`): velocity
+  blending, `exp(-dt·k)` momentum decay (refresh-rate independent), tap detection with
+  link/button exclusion, pointercancel handling, and `touch-action: pan-y` so canvases
+  never trap mobile scroll. Parallax inputs (mouse/tilt) write *targets*; frame loops
+  apply critically-damped smoothing — raw input never touches a rotation.
 
 ## Layout
 

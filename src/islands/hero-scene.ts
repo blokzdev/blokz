@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createScene, isSmallScreen } from '@/lib/three-utils';
 import { buildSynapse } from '@/lib/synapse-geometry';
+import { attachOrbit, clamp, hapticTick } from '@/lib/orbit';
 
 /**
  * Homepage hero: the brand visual rendered live — a neural cluster (brain)
@@ -13,8 +14,7 @@ import { buildSynapse } from '@/lib/synapse-geometry';
  * damped smoothing, so no source can ever jolt the scene):
  *   - mouse position   → parallax (hover-capable devices only)
  *   - device tilt      → parallax (phones; permission-less, inert where gated)
- *   - horizontal flick → spin momentum with exponential decay
- *   - tap / click      → fires a thought across the bridge (+ a soft haptic)
+ *   - flick / tap      → spin momentum / fire a thought (src/lib/orbit.ts)
  * Touch pointermove never steers parallax — on phones it used to fight the
  * tilt sensor and scroll-position jumps, which is what made the scene jitter.
  *
@@ -31,11 +31,6 @@ export default function mount(canvas: HTMLCanvasElement): () => void {
   // the browser restore it and the render loop resume instead of going black.
   const onContextLost = (e: Event) => e.preventDefault();
   canvas.addEventListener('webglcontextlost', onContextLost);
-
-  // Gestures attach to the whole hero section (text sits over the canvas).
-  const stage: HTMLElement = canvas.closest('section') ?? canvas.parentElement ?? canvas;
-
-  const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
   /* ---- Parallax targets (smoothed in the frame loop) ---- */
   const target = new THREE.Vector2();
@@ -57,52 +52,16 @@ export default function mount(canvas: HTMLCanvasElement): () => void {
   };
   window.addEventListener('deviceorientation', onTilt);
 
-  /* ---- Flick-to-spin + tap-to-fire ---- */
-  let spinVel = 0; // rad/s, decays exponentially in the frame loop
-  let tracking = false;
-  let pointerId = -1;
-  let lastX = 0;
-  let lastMoveAt = 0;
-  let downX = 0;
-  let downY = 0;
-  let downAt = 0;
-
-  const onDown = (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    if ((e.target as Element).closest('a, button, input')) return;
-    tracking = true;
-    pointerId = e.pointerId;
-    lastX = downX = e.clientX;
-    downY = e.clientY;
-    lastMoveAt = downAt = performance.now();
-  };
-  const onMove = (e: PointerEvent) => {
-    if (!tracking || e.pointerId !== pointerId) return;
-    const now = performance.now();
-    const dt = Math.max(now - lastMoveAt, 1); // ms
-    const v = ((e.clientX - lastX) / dt) * 2.2; // px/ms → rad/s feel
-    spinVel = spinVel * 0.5 + v * 0.5;
-    lastX = e.clientX;
-    lastMoveAt = now;
-  };
-  const onUp = (e: PointerEvent) => {
-    if (!tracking || e.pointerId !== pointerId) return;
-    tracking = false;
-    const travel = Math.hypot(e.clientX - downX, e.clientY - downY);
-    if (travel < 8 && performance.now() - downAt < 400) {
+  /* ---- Flick-to-spin + tap-to-fire (gestures cover the whole hero) ---- */
+  const stage: HTMLElement = canvas.closest('section') ?? canvas.parentElement ?? canvas;
+  const orbit = attachOrbit(stage, {
+    ambient: 0.03,
+    onTap: () => {
       synapse.fireThought();
-      navigator.vibrate?.(8); // soft haptic where supported; silently inert elsewhere
-    }
-  };
-  // The browser fires pointercancel when it claims the gesture for scrolling —
-  // drop tracking without firing, otherwise every scroll would launch thoughts.
-  const onCancel = () => {
-    tracking = false;
-  };
-  stage.addEventListener('pointerdown', onDown);
-  window.addEventListener('pointermove', onMove, { passive: true });
-  window.addEventListener('pointerup', onUp, { passive: true });
-  window.addEventListener('pointercancel', onCancel, { passive: true });
+      hapticTick();
+    },
+  });
+  stage.style.cursor = ''; // the hero is a backdrop, not a grabbable stage
 
   /* ---- Scene + frame loop ---- */
   let last = 0;
@@ -125,8 +84,7 @@ export default function mount(canvas: HTMLCanvasElement): () => void {
       const k = 1 - Math.exp(-dt * 5);
       smoothed.x += (target.x - smoothed.x) * k;
       smoothed.y += (target.y - smoothed.y) * k;
-      spinVel *= Math.exp(-dt * 1.6);
-      rotY += (0.03 + spinVel) * dt;
+      rotY += orbit.step(dt);
 
       synapse.group.rotation.y = rotY + smoothed.x * 0.12;
       synapse.group.rotation.x = smoothed.y * 0.07;
@@ -161,10 +119,7 @@ export default function mount(canvas: HTMLCanvasElement): () => void {
     portrait.removeEventListener('change', applyOrientation);
     if (hoverCapable) window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('deviceorientation', onTilt);
-    stage.removeEventListener('pointerdown', onDown);
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
-    window.removeEventListener('pointercancel', onCancel);
+    orbit.dispose();
     canvas.removeEventListener('webglcontextlost', onContextLost);
     synapse.dispose();
     handle.dispose();

@@ -10,10 +10,11 @@
 import * as THREE from 'three';
 import { createScene, isSmallScreen } from '@/lib/three-utils';
 import { buildSynapse } from '@/lib/synapse-geometry';
+import { attachOrbit, hapticTick } from '@/lib/orbit';
 
 export default function mount(container: HTMLElement): () => void {
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab;';
+  canvas.style.cssText = 'width:100%;height:100%;display:block;';
   container.appendChild(canvas);
 
   const small = isSmallScreen();
@@ -22,33 +23,13 @@ export default function mount(container: HTMLElement): () => void {
     bridgeCount: small ? 140 : 280,
   });
 
-  let dragging = false;
-  let moved = false;
-  let dragVel = 0;
-  let lastX = 0;
-  let downX = 0;
-  let downY = 0;
-  const down = (e: PointerEvent) => {
-    dragging = true;
-    moved = false;
-    lastX = downX = e.clientX;
-    downY = e.clientY;
-    canvas.style.cursor = 'grabbing';
-  };
-  const move = (e: PointerEvent) => {
-    if (!dragging) return;
-    dragVel = (e.clientX - lastX) * 0.004;
-    lastX = e.clientX;
-    if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) moved = true;
-  };
-  const up = () => {
-    if (dragging && !moved) synapse.fireThought();
-    dragging = false;
-    canvas.style.cursor = 'grab';
-  };
-  canvas.addEventListener('pointerdown', down);
-  window.addEventListener('pointermove', move, { passive: true });
-  window.addEventListener('pointerup', up);
+  const orbit = attachOrbit(canvas, {
+    ambient: 0.05,
+    onTap: () => {
+      synapse.fireThought();
+      hapticTick();
+    },
+  });
 
   let last = 0;
   const handle = createScene(
@@ -57,8 +38,7 @@ export default function mount(container: HTMLElement): () => void {
       const dt = Math.min(t - last, 0.05);
       last = t;
       synapse.update(t, dt);
-      synapse.group.rotation.y += 0.0008 + dragVel;
-      dragVel *= 0.94;
+      synapse.group.rotation.y += orbit.step(dt);
     },
     { z: 42 },
   );
@@ -67,9 +47,7 @@ export default function mount(container: HTMLElement): () => void {
   handle.scene.fog = new THREE.Fog(0x05070d, 30, 115);
 
   return () => {
-    canvas.removeEventListener('pointerdown', down);
-    window.removeEventListener('pointermove', move);
-    window.removeEventListener('pointerup', up);
+    orbit.dispose();
     synapse.dispose();
     handle.dispose();
     canvas.remove();

@@ -10,6 +10,7 @@
  */
 import * as THREE from 'three';
 import { createScene, isSmallScreen } from '@/lib/three-utils';
+import { attachOrbit, hapticTick } from '@/lib/orbit';
 
 const SIZE = 40; // world units per side
 const ACCENT = new THREE.Color(0x5b8cff);
@@ -166,31 +167,12 @@ export default function mount(container: HTMLElement): () => void {
     (trailGeo.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
   }
 
-  /* ---- Orbit drag + click-to-respawn ---- */
-  let dragging = false;
-  let moved = false;
-  let dragVel = 0;
-  let lastX = 0;
-  let downX = 0;
-  let downY = 0;
+  /* ---- Orbit flick + tap-to-respawn (shared model: src/lib/orbit.ts) ---- */
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
-
-  const down = (e: PointerEvent) => {
-    dragging = true;
-    moved = false;
-    lastX = downX = e.clientX;
-    downY = e.clientY;
-    canvas.style.cursor = 'grabbing';
-  };
-  const move = (e: PointerEvent) => {
-    if (!dragging) return;
-    dragVel = (e.clientX - lastX) * 0.004;
-    lastX = e.clientX;
-    if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) moved = true;
-  };
-  const up = (e: PointerEvent) => {
-    if (dragging && !moved) {
+  const orbit = attachOrbit(canvas, {
+    ambient: 0.07,
+    onTap: (e) => {
       const r = canvas.getBoundingClientRect();
       ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       raycaster.setFromCamera(ndc, handle.camera);
@@ -200,14 +182,10 @@ export default function mount(container: HTMLElement): () => void {
         respawn(local.x, local.z);
         pausedUntil = 0;
         needRespawn = false;
+        hapticTick();
       }
-    }
-    dragging = false;
-    canvas.style.cursor = 'grab';
-  };
-  canvas.addEventListener('pointerdown', down);
-  window.addEventListener('pointermove', move, { passive: true });
-  window.addEventListener('pointerup', up);
+    },
+  });
 
   /* ---- Frame loop ---- */
   let last = 0;
@@ -239,8 +217,7 @@ export default function mount(container: HTMLElement): () => void {
         pushTrail(px, y, pz);
       }
 
-      group.rotation.y += 0.0012 + dragVel;
-      dragVel *= 0.94;
+      group.rotation.y += orbit.step(dt);
     },
     { z: 40 },
   );
@@ -251,9 +228,7 @@ export default function mount(container: HTMLElement): () => void {
   handle.scene.fog = new THREE.Fog(0x05070d, 40, 120);
 
   return () => {
-    canvas.removeEventListener('pointerdown', down);
-    window.removeEventListener('pointermove', move);
-    window.removeEventListener('pointerup', up);
+    orbit.dispose();
     handle.dispose();
     canvas.remove();
   };

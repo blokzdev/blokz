@@ -9,7 +9,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
       Block not found
     </p>
     <h1 class="relative mt-4 font-display text-7xl font-bold text-white sm:text-8xl" data-split>
-      4<span class="text-gradient">0</span>4
+      4<span class="glitch text-gradient" data-text="0">0</span>4
     </h1>
     <p class="relative mt-5 max-w-md text-muted" data-reveal="0.2">
       This hash doesn't resolve to anything on our chain. The page may have been reorged away.
@@ -18,8 +18,88 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
       href="/"
       class="relative mt-8 rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03]"
       data-reveal="0.3"
+      data-magnetic
     >
       ← Back to genesis
     </a>
   </section>
 </BaseLayout>
+
+<style>
+  /* Occasional RGB-split glitch on the orphaned block. CSS-only; explicitly
+     disabled under reduced motion (the global 0.01ms rule would strobe an
+     infinite animation). */
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .glitch::before {
+    color: var(--color-cyan);
+    animation: glitch-a 3.6s steps(2, jump-none) infinite;
+  }
+  .glitch::after {
+    color: var(--color-accent);
+    animation: glitch-b 3.6s steps(2, jump-none) infinite;
+  }
+  @keyframes glitch-a {
+    0%,
+    90%,
+    100% {
+      opacity: 0;
+      transform: none;
+      clip-path: inset(0);
+    }
+    92% {
+      opacity: 0.8;
+      transform: translate(-4px, 2px);
+      clip-path: inset(15% 0 55% 0);
+    }
+    95% {
+      opacity: 0.8;
+      transform: translate(4px, -2px);
+      clip-path: inset(60% 0 10% 0);
+    }
+    97% {
+      opacity: 0;
+    }
+  }
+  @keyframes glitch-b {
+    0%,
+    91%,
+    100% {
+      opacity: 0;
+      transform: none;
+      clip-path: inset(0);
+    }
+    93% {
+      opacity: 0.8;
+      transform: translate(4px, 1px);
+      clip-path: inset(40% 0 30% 0);
+    }
+    96% {
+      opacity: 0.8;
+      transform: translate(-3px, -1px);
+      clip-path: inset(5% 0 70% 0);
+    }
+    98% {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glitch::before,
+    .glitch::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+</style>

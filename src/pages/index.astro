@@ -47,12 +47,14 @@ const featuredArtifacts = [...artifacts].sort(
         <a
           href="/articles"
           class="rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          data-magnetic
         >
           Read the articles
         </a>
         <a
           href="/artifacts"
           class="glass rounded-xl px-6 py-3 text-sm font-semibold text-text transition-colors hover:border-accent/40 hover:text-white"
+          data-magnetic
         >
           Explore artifacts ⬢
         </a>
@@ -63,6 +65,27 @@ const featuredArtifacts = [...artifacts].sort(
       </div>
     </div>
   </section>
+
+  <!-- ============ TOPIC TICKER ============ -->
+  <div class="border-y border-line/60 bg-ink/40">
+    <div class="marquee py-3">
+      {
+        [false, true].map((dup) => (
+          <div aria-hidden={dup ? 'true' : undefined}>
+            {topics.map((t) => (
+              <a
+                href={`/topics/${t.id}`}
+                class="font-mono text-[11px] tracking-[0.2em] whitespace-nowrap text-faint uppercase transition-colors hover:text-cyan"
+                tabindex={dup ? -1 : undefined}
+              >
+                ⬢ {t.data.label}
+              </a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
 
   <!-- ============ LATEST ARTICLES ============ -->
   <section class="mx-auto max-w-6xl px-5 py-20 sm:px-6">
@@ -78,6 +101,7 @@ const featuredArtifacts = [...artifacts].sort(
       class="pointer-events-none absolute inset-0"
       style="background: radial-gradient(60% 50% at 50% 50%, rgba(139,92,246,0.07), transparent 70%);"
       aria-hidden="true"
+      data-parallax-glow
     >
     </div>
     <div class="relative mx-auto max-w-6xl px-5 sm:px-6">
@@ -95,7 +119,7 @@ const featuredArtifacts = [...artifacts].sort(
 
   <!-- ============ FOLLOW CTA ============ -->
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-6">
-    <div class="glass ring-glow relative overflow-hidden rounded-3xl p-8 text-center sm:p-14" data-reveal>
+    <div class="gradient-border ring-glow relative overflow-hidden rounded-3xl p-8 text-center sm:p-14" data-reveal>
       <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
       <div class="relative">
         <h2 class="font-display text-2xl font-bold text-white sm:text-3xl">
@@ -105,6 +129,22 @@ const featuredArtifacts = [...artifacts].sort(
           Every article and artifact in this blog lives in a public repo. Follow the work, fork the
           experiments, or get in touch.
         </p>
+        <div class="mx-auto mt-8 grid max-w-md grid-cols-3 gap-4">
+          {
+            [
+              { n: articles.length, label: 'Articles' },
+              { n: artifacts.length, label: 'Artifacts' },
+              { n: topics.length, label: 'Topics' },
+            ].map(({ n, label }) => (
+              <div>
+                <p class="font-display text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                  <span data-counter={n}>{n}</span>
+                </p>
+                <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-faint uppercase">{label}</p>
+              </div>
+            ))
+          }
+        </div>
         <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm">
           <a href={SITE.repo} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">GitHub ↗</a>
           <a href={SITE.x} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">{SITE.xHandle} on X ↗</a>

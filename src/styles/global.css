@@ -259,6 +259,12 @@
     background: linear-gradient(90deg, var(--color-accent), var(--color-violet) 55%, var(--color-cyan));
   }
 
+  /* Active TOC entry (toggled by data-toc-spy in motion.ts). */
+  [data-toc-spy] a.is-active {
+    border-color: var(--color-accent);
+    color: #fff;
+  }
+
   /* ---- Article prose (dark, hand-tuned) ---- */
   .prose {
     font-size: 1.0625rem;

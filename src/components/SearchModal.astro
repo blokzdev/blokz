@@ -2,7 +2,10 @@
   data-search-dialog
   class="m-auto w-[min(92vw,640px)] rounded-2xl border border-line bg-ink p-0 text-text shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm"
 >
-  <form method="dialog" class="flex items-center gap-3 border-b border-line px-4 py-3">
+  <form
+    method="dialog"
+    class="flex items-center gap-3 border-b border-line px-4 py-3 transition-colors focus-within:border-accent/40"
+  >
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="shrink-0 text-muted" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
       <path d="m20 20-3.5-3.5"></path>
@@ -22,6 +25,29 @@
     <p class="px-3 py-6 text-center text-sm text-faint">Type to search the archive.</p>
   </div>
 </dialog>
+
+<style is:global>
+  /* Soft open transition; progressive enhancement (instant where unsupported). */
+  dialog[data-search-dialog] {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 0.25s var(--ease-out-expo),
+      transform 0.25s var(--ease-out-expo);
+  }
+  @starting-style {
+    dialog[data-search-dialog][open] {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  /* Keyboard-selected result (rows are injected, so this can't be scoped). */
+  [data-search-results] a.is-selected {
+    background: rgba(255, 255, 255, 0.06);
+    outline: 1px solid var(--color-line-bright);
+  }
+</style>
 
 <script>
   const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]');
@@ -72,12 +98,45 @@
     if (e.target === dialog) dialog.close();
   });
 
+  // ---- Keyboard navigation over injected result rows ----
+  let sel = -1;
+  const items = () =>
+    Array.from(results?.querySelectorAll<HTMLAnchorElement>('a[data-result]') ?? []);
+
+  function select(i: number) {
+    const list = items();
+    if (!list.length) return;
+    sel = ((i % list.length) + list.length) % list.length;
+    list.forEach((el, idx) => {
+      el.classList.toggle('is-selected', idx === sel);
+      el.setAttribute('aria-selected', String(idx === sel));
+    });
+    list[sel].scrollIntoView({ block: 'nearest' });
+  }
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      select(sel + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      select(sel - 1);
+    } else if (e.key === 'Enter') {
+      const list = items();
+      if (sel >= 0 && list[sel]) {
+        e.preventDefault();
+        list[sel].click();
+      }
+    }
+  });
+
   let timer: ReturnType<typeof setTimeout>;
   input?.addEventListener('input', () => {
     clearTimeout(timer);
     timer = setTimeout(async () => {
       const q = input.value.trim();
       if (!results) return;
+      sel = -1;
       if (!q) {
         results.innerHTML =
           '<p class="px-3 py-6 text-center text-sm text-faint">Type to search the archive.</p>';
@@ -89,13 +148,17 @@
       const top = await Promise.all(search.results.slice(0, 8).map((r) => r.data()));
       results.innerHTML = top.length
         ? top
-            .map(
-              (d) => `
-        <a href="${d.url}" class="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/5">
-          <span class="block text-sm font-medium text-white">${d.meta.title ?? d.url}</span>
+            .map((d) => {
+              const kind = d.url.includes('/artifacts/') ? '⬢ artifact' : '§ article';
+              return `
+        <a href="${d.url}" data-result class="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/5">
+          <span class="flex items-baseline justify-between gap-3">
+            <span class="text-sm font-medium text-white">${d.meta.title ?? d.url}</span>
+            <span class="shrink-0 font-mono text-[10px] tracking-wide text-faint uppercase">${kind}</span>
+          </span>
           <span class="mt-0.5 block text-xs leading-relaxed text-muted">${d.excerpt}</span>
-        </a>`,
-            )
+        </a>`;
+            })
             .join('')
         : '<p class="px-3 py-6 text-center text-sm text-faint">No results.</p>';
     }, 180);

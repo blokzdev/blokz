@@ -24,8 +24,15 @@ const topics = await getTopics();
   title={`${topic.data.label} — Blokz Topics`}
   description={`${topic.data.description} ${page.total} article${page.total === 1 ? '' : 's'} on ${topic.data.label} from the Blokz archive.`}
 >
-  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6" style={`--chip-hue: ${topic.data.hue}`}>
-    <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
+  <header class="relative mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6" style={`--chip-hue: ${topic.data.hue}`}>
+    <div
+      class="pointer-events-none absolute inset-0"
+      style={`background: radial-gradient(50% 70% at 20% 30%, hsl(${topic.data.hue} 80% 60% / 0.08), transparent 70%)`}
+      aria-hidden="true"
+      data-parallax-glow
+    >
+    </div>
+    <nav class="relative font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
       <a href="/topics" class="hover:text-muted">topics</a>
       <span aria-hidden="true"> / </span>
       <span class="text-muted">{topic.id}</span>

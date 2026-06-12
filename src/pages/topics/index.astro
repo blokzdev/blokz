@@ -32,7 +32,7 @@ const sorted = [...topics].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(
           <a
             href={`/topics/${t.id}`}
             class="card-hover glass group rounded-2xl p-5"
-            style={`--chip-hue: ${t.data.hue}`}
+            style={`--chip-hue: ${t.data.hue}; --card-hue: ${t.data.hue}`}
             data-reveal-item
           >
             <div class="flex items-center justify-between">

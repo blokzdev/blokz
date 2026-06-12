@@ -23,14 +23,21 @@
       "path": "content/articles/2026/06/erc-8004-agent-registries-onchain/index.mdx",
       "url": "/articles/erc-8004-agent-registries-onchain",
       "title": "ERC-8004 in the Wild: Auditing the Trustless Agents Registries On-Chain",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "ERC-8004's agent registries went live in January. We read them straight off the chain: ~90,000 registrations across Ethereum and Base, a $0.003 ERC-4337 registration dissected — and a reputation registry already farmed with vouch spam.",
       "pubDate": "2026-06-12",
       "topics": [
         "agents",
         "blockchain",
         "security"
       ],
-      "tags": [],
+      "tags": [
+        "erc-8004",
+        "agent-identity",
+        "reputation",
+        "registries",
+        "base",
+        "erc-4337"
+      ],
       "artifacts": [],
       "difficulty": "intermediate",
       "draft": false

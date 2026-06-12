@@ -1,22 +1,190 @@
 ---
 slug: erc-8004-agent-registries-onchain
 title: "ERC-8004 in the Wild: Auditing the Trustless Agents Registries On-Chain"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "ERC-8004's agent registries went live in January. We read them straight off the chain: ~90,000 registrations across Ethereum and Base, a $0.003 ERC-4337 registration dissected — and a reputation registry already farmed with vouch spam."
 pubDate: 2026-06-12
 author: blokz
 topics: [agents, blockchain, security]
-tags: []
+tags: [erc-8004, agent-identity, reputation, registries, base, erc-4337]
 artifacts: []
 difficulty: intermediate
-sources: []
+sources:
+  - label: "ERC-8004: Trustless Agents (specification)"
+    url: "https://eips.ethereum.org/EIPS/eip-8004"
+  - label: "erc-8004 reference contracts and deployments"
+    url: "https://github.com/erc-8004/erc-8004-contracts"
+  - label: "IdentityRegistry on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+  - label: "ReputationRegistry on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+  - label: "A live agent registration via ERC-4337 (Blockscout)"
+    url: "https://base.blockscout.com/tx/0x3e79e561ff5a468078277f56cb74ecb6f46b0cdf8a0011a4e43eb1a958e95d2a"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+When we dissected [a 1.3-cent x402 payment on Base](/articles/x402-agent-payments-dissected),
+the protocol-level gap was easy to name: **payments are not identity**. An agent can settle
+USDC all day without anyone knowing who operates it, what it claims to do, or whether anyone
+has ever been satisfied with its work. ERC-8004 — "Trustless Agents" — is Ethereum's answer
+to that gap, and unlike most agent-economy proposals it is not a whitepaper. The registries
+went live on Ethereum mainnet on January 29, 2026 and now run as singletons on 30+ chains.
 
-## Section heading
+So instead of reading the pitch, we read the chain. Four and a half months in, the registries
+hold just shy of 90,000 agent registrations across Ethereum and Base alone. The identity
+layer works, costs a third of a cent to join, and is already integrated with ERC-4337 smart
+accounts. The reputation layer also works — which is the problem, because the first thing it
+filled up with is vouch spam.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Three registries, one ERC-721, and a vanity address
 
-## Takeaways
+ERC-8004 deploys three per-chain singleton registries. The two that exist at canonical
+addresses today are easy to spot — the deployer brute-forced `0x8004` prefixes:
 
-TODO.
+- **IdentityRegistry** (`0x8004A169…a432`): an upgradeable ERC-721 (`ERC721URIStorage`
+  behind a UUPS proxy). Registering mints an `AGENT` token whose `tokenId` is the agent's
+  sequential `agentId`, and whose `tokenURI` — the `agentURI` — points to a JSON
+  *registration file* describing the agent: name, service endpoints (A2A, MCP, web),
+  `x402Support`, and a `supportedTrust` array.
+- **ReputationRegistry** (`0x8004BAa1…9b63`): anyone *except* the agent's owner or operator
+  can call `giveFeedback(agentId, value, valueDecimals, tag1, tag2, endpoint, feedbackURI,
+  feedbackHash)`. Scores are signed fixed-point (`int128` plus 0–18 decimals); evidence lives
+  off-chain behind the URI/hash pair.
+- **ValidationRegistry**: agents commit a `requestHash` to a validator contract, which
+  answers on a 0–100 scale — the hook for stake-secured re-execution, zkML, or TEE
+  attestation. Notably, the reference repo still marks this registry as *under active
+  update and discussion*, and it has no canonical vanity deployment yet. The hardest third
+  of the standard is the unfinished third.
+
+The identity contract has one mechanism worth stealing for any registry design: the
+`agentWallet`. An agent's operational wallet is bound to its identity via metadata that can
+only be set with an EIP-712 signature *from the wallet being bound* (ERC-1271 for smart
+accounts), and it auto-clears when the NFT transfers. You can't claim someone else's wallet,
+and a sold identity doesn't keep draining the old operator's account:
+
+```solidity
+// From the verified IdentityRegistryUpgradeable on Base
+function register(string agentURI) external returns (uint256 agentId);
+function setAgentWallet(
+    uint256 agentId,
+    address newWallet,
+    uint256 deadline,
+    bytes signature      // EIP-712 or ERC-1271, signed by newWallet
+) external;
+function getAgentWallet(uint256 agentId) external view returns (address);
+```
+
+## Anatomy of a real registration
+
+Registrations are public events, so we pulled the latest one at time of writing. In Base
+block 47,242,437 (June 12, 14:23 UTC), agentId **55,210** — "Bob — Crypto Trading Agent",
+deployed by the 0xWork platform — registered through an ERC-4337 `handleOps` bundle:
+the smart account minted the identity, set its `agentURI` to a hosted agent card, and bound
+its own address as `agentWallet`, all in one user operation.
+
+The economics: **273,820 gas** for the whole bundle, total fee 0.0000017 ETH — about
+**$0.0028** at that block's $1,667 ETH price, L1 data fee included. Bob's registration file
+is exactly what the spec hopes for: a `registration-v1` document listing priced services
+("Liquidity Shock Stress Test — $9 USDC") that an x402-capable client could discover on-chain
+and pay over [the gasless settlement rail we traced previously](/articles/x402-agent-payments).
+Identity, services, wallet, and payment rail, composed for less than a cent of overhead.
+
+Reading the registry takes one `getLogs` call — the `Registered` event carries the agentId,
+URI, and owner:
+
+```ts
+import { createPublicClient, http, parseAbiItem } from "viem";
+import { base } from "viem/chains";
+
+const client = createPublicClient({ chain: base, transport: http() });
+
+const registrations = await client.getLogs({
+  address: "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+  event: parseAbiItem(
+    "event Registered(uint256 indexed agentId, string agentURI, address indexed owner)"
+  ),
+  fromBlock: 47_240_000n,
+});
+// registrations[i].args -> { agentId, agentURI, owner }
+```
+
+## What 90,000 registrations actually contain
+
+The headline number first. The latest sequential `agentId` is ~55,210 on Base and ~34,437 on
+Ethereum mainnet — roughly **89,600 registrations** in 19 weeks, against 16,652 and 8,573
+distinct token holders respectively. That's 3.3 agents per holder on Base and 4 on Ethereum:
+registration is dominated by platforms minting in bulk, not individual operators.
+
+Then the contents. Walking recent `Registered` events, the registration files split into
+three buckets:
+
+1. **Real agent cards.** Hosted JSON like Bob's, with endpoints, services, and trust
+   declarations. One recent Base registration shipped a base64 `data:` URI declaring
+   `"supportedTrust": ["tee-attestation"]` and pointing at a live TEE quote endpoint — the
+   [hardware-attestation trust model](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed)
+   showing up in production metadata.
+2. **Empty strings.** `register()` has a zero-argument overload; plenty of agents are
+   identity-only placeholders with no registration file at all.
+3. **Noise.** The most recent mainnet registration at time of writing was "Sludgeglug #152",
+   a PFP-style token whose description begins "Born in the coolant tanks of a neglected
+   power plant" — `"services": []`. It cost its minter almost nothing, and the registry
+   accepted it, as designed.
+
+None of this is a protocol failure. An open permissionless registry *must* accept
+Sludgeglug. But it kills the lazy integration pattern on sight: **a row in the Identity
+Registry asserts nothing except that someone paid ~300k gas.** Discovery is real; vetting is
+entirely on you.
+
+## The reputation registry is already being farmed
+
+The reputation layer is where "on you" gets concrete. When we paged through the most recent
+`NewFeedback` events on Base, the entire first page — ten events spanning 24 blocks, about
+48 seconds — was feedback for a single agent, id 25,975. Every event had `value = 1`, tags
+`miner-vouch` / `botcoin`, an identical coordinator endpoint, and `feedbackHash = 0x0` (no
+evidence committed). The per-client `feedbackIndex` counters read 8,192… 9,778… 13,500 —
+individual "clients" that have vouched for this one agent *thousands of times each*.
+
+This is a mining scheme using the registry as free, indexed, replicated storage for its
+vouching graph. It's allowed: the contract only forbids self-feedback from the agent's owner
+or operator, and the spec is explicit that Sybil resistance is delegated to off-chain
+aggregation. But it means the naive query — "average feedback value for agent N" — is
+worthless on day 130 of the protocol's life. If you consume this registry, consume it like
+an event bus, not a score:
+
+```ts
+const feedback = await client.getLogs({
+  address: "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+  event: parseAbiItem(
+    "event NewFeedback(uint256 indexed agentId, address indexed clientAddress, uint64 feedbackIndex, int128 value, uint8 valueDecimals, string indexed indexedTag1, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash)"
+  ),
+  args: {
+    agentId: 55_210n,
+    clientAddress: TRUSTED_CLIENTS, // allowlist — never aggregate unknown reviewers
+  },
+  fromBlock: REGISTRY_DEPLOY_BLOCK,
+});
+```
+
+Filter to client addresses you already trust (or whose stake you can verify), demand a
+non-zero `feedbackHash`, and fetch the `feedbackURI` evidence before counting anything.
+That's not a workaround — it's the design. The chain gives you a tamper-evident,
+chronologically ordered feedback log; deciding *whose* feedback means something was never
+going to be solvable in 30k gas.
+
+## What to build on, and what to wait on
+
+A fair scorecard, 19 weeks in:
+
+| Layer | Status | Engineering posture |
+| --- | --- | --- |
+| Identity | Live, cheap (~$0.003 on Base), 4337-native | Build on it: stable IDs, wallet binding, portable metadata |
+| Registration files | Heterogeneous, unvetted | Parse defensively; treat `supportedTrust` as a claim to verify |
+| Reputation | Live, already Sybil-farmed | Event bus, not a score; reviewer allowlists + evidence hashes |
+| Validation | Spec still in flux, no canonical deployment | Wait, or bring your own validator contract |
+
+The pattern rhymes with every trust system the chain has hosted: the *ledger* part ships
+fast and works, and the *judgment* part gets pushed up the stack. ERC-8004 is honest about
+that split — more honest than most coverage of it. The identity registry plus
+[x402 settlement](/articles/x402-agent-payments) already gives an agent a discoverable,
+payable, wallet-bound existence for under a cent, which is genuinely new plumbing. Just
+don't let anyone tell you the trust problem is solved because the word "reputation" appears
+in a contract name. We read the contract's event log; what's accumulating in there right now
+is 13,500 identical vouches from a bot, for a bot, about a botcoin.

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 3,
-    "artifacts": 4
+    "artifacts": 5
   },
   "topicCounts": {
     "agents": 1,
@@ -107,6 +107,21 @@
       "topics": [
         "machine-learning",
         "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "merkle-cascade",
+      "path": "content/artifacts/merkle-cascade/manifest.json",
+      "module": "src/islands/artifacts/merkle-cascade.ts",
+      "url": "/artifacts/merkle-cascade",
+      "title": "Merkle Cascade",
+      "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "topics": [
+        "cryptography",
+        "blockchain"
       ],
       "draft": false
     },

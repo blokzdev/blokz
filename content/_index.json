@@ -1,6 +1,6 @@
 {
   "counts": {
-    "articles": 13,
+    "articles": 14,
     "artifacts": 12
   },
   "topicCounts": {
@@ -8,12 +8,13 @@
     "ai": 2,
     "blockchain": 7,
     "cryptography": 2,
+    "data": 1,
     "defi": 2,
     "infrastructure": 7,
     "llm": 1,
-    "machine-learning": 6,
+    "machine-learning": 7,
     "research": 1,
-    "security": 4,
+    "security": 5,
     "smart-contracts": 2,
     "web3": 2,
     "zero-knowledge": 1
@@ -120,6 +121,23 @@
       "artifacts": [
         "price-of-trust"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "gnn-vs-trees-onchain-fraud-detection",
+      "path": "content/articles/2026/06/gnn-vs-trees-onchain-fraud-detection/index.mdx",
+      "url": "/articles/gnn-vs-trees-onchain-fraud-detection",
+      "title": "When the Graph Misleads: GNNs vs. Gradient-Boosted Trees in On-Chain Fraud Detection",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

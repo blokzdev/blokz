@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 7,
+    "articles": 8,
     "artifacts": 8
   },
   "topicCounts": {
-    "agents": 3,
+    "agents": 4,
     "ai": 1,
-    "blockchain": 2,
+    "blockchain": 3,
     "cryptography": 1,
     "defi": 1,
-    "infrastructure": 5,
+    "infrastructure": 6,
     "llm": 1,
     "machine-learning": 3,
     "security": 3,
@@ -88,6 +88,30 @@
         "eip-3009",
         "payments",
         "account-abstraction"
+      ],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "x402-agent-payments-dissected",
+      "path": "content/articles/2026/06/x402-agent-payments-dissected/index.mdx",
+      "url": "/articles/x402-agent-payments-dissected",
+      "title": "Dissecting a 1.3-Cent Agent Payment: x402 on Base, by the Numbers",
+      "description": "We pulled a live x402 settlement off Base: a $0.013 USDC transfer relayed by a facilitator wallet with a nonce past 1.7 million, at an 11% gas-to-value ratio. What on-chain evidence and 100M transactions actually say about the agent economy.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "agents",
+        "blockchain",
+        "infrastructure"
+      ],
+      "tags": [
+        "x402",
+        "payments",
+        "stablecoins",
+        "base",
+        "facilitators",
+        "on-chain-data"
       ],
       "artifacts": [],
       "difficulty": "intermediate",

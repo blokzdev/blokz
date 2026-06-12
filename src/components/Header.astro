@@ -5,7 +5,7 @@ const path = Astro.url.pathname;
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
 ---
 
-<header class="fixed inset-x-0 top-0 z-50">
+<header class="fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)]">
   <div
     data-header
     class="glass header-shell mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-6 md:mt-4"

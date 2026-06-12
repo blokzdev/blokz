@@ -19,7 +19,9 @@ const featuredArtifacts = [...artifacts].sort(
 
 <BaseLayout>
   <!-- ============ HERO ============ -->
-  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden">
+  <!-- select-none: long-press on the hero must never pop a selection/callout
+       over the scene; prose below stays fully selectable. -->
+  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden select-none">
     <canvas data-hero-canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
     <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
     <div
@@ -73,7 +75,7 @@ const featuredArtifacts = [...artifacts].sort(
     </div>
 
     <div
-      class="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
+      class="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
       aria-hidden="true"
       data-reveal="1"
     >

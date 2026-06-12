@@ -42,6 +42,9 @@ const {
       import { initMotion } from '@/lib/motion';
       import { SITE } from '@/lib/site';
       initMotion();
+      // iOS Safari ignores user-scalable=no; its proprietary gesture events
+      // close the pinch-zoom gap so the fixed chrome and hero never distort.
+      document.addEventListener('gesturestart', (e) => e.preventDefault());
       // One wink for the curious.
       console.log(
         `%c⬢ blokz.dev — ${SITE.tagline.toLowerCase()}`,

@@ -47,6 +47,11 @@
     scrollbar-color: rgba(124, 140, 255, 0.3) transparent;
     scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
+    /* App feel on touch: scroll pans only (no pinch/double-tap zoom), no
+       rubber-band overscroll or pull-to-refresh, no grey tap flash. */
+    touch-action: pan-x pan-y;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   ::-webkit-scrollbar {

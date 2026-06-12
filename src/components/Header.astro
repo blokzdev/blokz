@@ -3,13 +3,24 @@ import { NAV, SITE } from '@/lib/site';
 
 const path = Astro.url.pathname;
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
+
+/*
+ * Z-index scale (documented in docs/DESIGN-SYSTEM.md):
+ *   40 mobile sheet menu · 50 header dock · 60 progress bar · 70 grain ·
+ *   100 skip link · native top layer: search dialog.
+ * The sheet sits *under* the dock so the pill (and its ✕) float above the blur.
+ */
 ---
 
-<header class="fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)]">
+<header data-site-header class="fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)]">
   <div
     data-header
-    class="glass header-shell mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-6 md:mt-4"
+    class="header-shell glass relative mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-6 md:mt-4"
   >
+    <span
+      class="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent"
+      aria-hidden="true"></span>
+
     <a href="/" class="group flex items-center gap-2.5" aria-label={`${SITE.name} home`}>
       <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true" class="logo-mark">
         <defs>
@@ -31,14 +42,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
       </span>
     </a>
 
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+    <nav data-nav class="relative hidden items-center gap-1 md:flex" aria-label="Primary">
+      <span data-nav-ink class="nav-ink" aria-hidden="true"></span>
       {
         NAV.map(({ label, href }) => (
           <a
             href={href}
             aria-current={isActive(href) ? 'page' : undefined}
             class:list={[
-              'nav-link relative rounded-lg px-3.5 py-1.5 text-sm transition-colors',
+              'nav-link relative z-10 rounded-lg px-3.5 py-1.5 text-sm transition-colors',
               isActive(href) ? 'text-white' : 'text-muted hover:text-white',
             ]}
           >
@@ -66,42 +78,90 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
       <button
         type="button"
         data-menu-toggle
-        class="rounded-lg border border-line p-2 text-muted hover:text-white md:hidden"
+        class="burger rounded-lg border border-line p-2.5 text-muted transition-colors hover:text-white md:hidden"
         aria-label="Toggle menu"
         aria-expanded="false"
+        aria-controls="mobile-menu"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16"></path>
-        </svg>
+        <span class="burger-bar" aria-hidden="true"></span>
+        <span class="burger-bar" aria-hidden="true"></span>
       </button>
     </div>
   </div>
-
-  <div data-mobile-menu class="menu-wrap mx-auto max-w-6xl px-3 md:hidden">
-    <nav aria-label="Mobile">
-      <div class="glass mt-2 flex flex-col gap-1 rounded-2xl p-3">
-        {
-          NAV.map(({ label, href }) => (
-            <a
-              href={href}
-              class:list={[
-                'rounded-lg px-4 py-2.5 text-sm',
-                isActive(href) ? 'bg-accent/12 text-white' : 'text-muted',
-              ]}
-            >
-              {label}
-            </a>
-          ))
-        }
-      </div>
-    </nav>
-  </div>
 </header>
+
+<!-- Full-screen sheet menu; sits under the dock (z-40 < z-50). -->
+<div
+  data-menu-overlay
+  id="mobile-menu"
+  class="menu-overlay fixed inset-0 z-40 md:hidden"
+  aria-hidden="true"
+>
+  <div class="menu-backdrop absolute inset-0" data-menu-close aria-hidden="true">
+    <div class="grid-veil absolute inset-0"></div>
+  </div>
+
+  <nav
+    class="relative flex h-full flex-col justify-center gap-1 px-8 pt-[env(safe-area-inset-top)]"
+    aria-label="Mobile"
+  >
+    {
+      NAV.map(({ label, href }, i) => (
+        <a
+          href={href}
+          class="menu-link group flex items-baseline gap-4 py-3"
+          style={`--i: ${i}`}
+          aria-current={isActive(href) ? 'page' : undefined}
+        >
+          <span class="font-mono text-xs text-faint tabular-nums">0{i + 1}</span>
+          <span
+            class:list={[
+              'font-display text-4xl font-bold tracking-tight transition-colors',
+              isActive(href) ? 'text-gradient' : 'text-white group-hover:text-gradient',
+            ]}
+          >
+            {label}
+          </span>
+          {isActive(href) && (
+            <span class="size-1.5 self-center rounded-full bg-cyan shadow-[0_0_10px_var(--color-cyan)]" aria-hidden="true" />
+          )}
+        </a>
+      ))
+    }
+
+    <button
+      type="button"
+      data-search-open
+      data-menu-close
+      class="menu-link group mt-4 flex items-baseline gap-4 py-3 text-left"
+      style={`--i: ${NAV.length}`}
+    >
+      <span class="font-mono text-xs text-faint">⌘K</span>
+      <span class="font-display text-4xl font-bold tracking-tight text-muted transition-colors group-hover:text-white">
+        Search
+      </span>
+    </button>
+
+    <p
+      class="menu-link absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-8 font-display text-sm font-bold lowercase"
+      style={`--i: ${NAV.length + 1}`}
+    >
+      <span class="text-gradient">{SITE.tagline}</span>
+    </p>
+  </nav>
+</div>
 
 <!-- Spacer so content clears the fixed header. -->
 <div class="h-20" aria-hidden="true"></div>
 
 <style>
+  /* ---- Dock: condense + glow when scrolled, duck away on scroll-down ---- */
+  [data-site-header] {
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+  [data-site-header].is-hidden {
+    transform: translateY(-130%);
+  }
   .header-shell {
     transition:
       margin-top 0.35s var(--ease-out-expo),
@@ -116,39 +176,89 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     box-shadow: var(--shadow-glow-sm);
   }
 
-  /* Gradient underline: grows on hover, pinned for the current page. */
-  .nav-link::after {
+  /* ---- Magic ink: a soft pill that glides between hovered links ---- */
+  .nav-ink {
+    position: absolute;
+    top: 0.125rem;
+    bottom: 0.125rem;
+    left: 0;
+    width: 0;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(124, 140, 255, 0.18);
+    opacity: 0;
+    transition:
+      transform 0.35s var(--ease-out-expo),
+      width 0.35s var(--ease-out-expo),
+      opacity 0.25s;
+  }
+  .nav-ink.is-on {
+    opacity: 1;
+  }
+
+  /* Gradient underline pins the current page beneath the gliding ink. */
+  .nav-link[aria-current='page']::after {
     content: '';
     position: absolute;
     inset: auto 0.875rem 0.3rem 0.875rem;
     height: 2px;
     border-radius: 1px;
     background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s var(--ease-out-expo);
-  }
-  .nav-link:hover::after,
-  .nav-link[aria-current='page']::after {
-    transform: scaleX(1);
   }
 
-  /* Mobile menu: CSS grid-rows animation, degrades to instant. */
-  .menu-wrap {
+  /* ---- Hamburger morphs to ✕ ---- */
+  .burger {
     display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.4s var(--ease-out-expo);
+    gap: 4.5px;
+    justify-items: center;
   }
-  .menu-wrap > nav {
-    overflow: hidden;
+  .burger-bar {
+    width: 15px;
+    height: 1.8px;
+    border-radius: 1px;
+    background: currentColor;
+    transition: transform 0.3s var(--ease-out-expo);
+  }
+  .burger[aria-expanded='true'] .burger-bar:first-child {
+    transform: translateY(3.15px) rotate(45deg);
+  }
+  .burger[aria-expanded='true'] .burger-bar:last-child {
+    transform: translateY(-3.15px) rotate(-45deg);
+  }
+
+  /* ---- Sheet menu: blurred void, links cascade in ---- */
+  .menu-overlay {
     visibility: hidden;
-    transition: visibility 0.4s;
+    pointer-events: none;
+    transition: visibility 0s 0.5s;
   }
-  .menu-wrap.is-open {
-    grid-template-rows: 1fr;
-  }
-  .menu-wrap.is-open > nav {
+  .menu-overlay.is-open {
     visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+  .menu-backdrop {
+    background: color-mix(in srgb, var(--color-void) 86%, transparent);
+    backdrop-filter: blur(22px) saturate(130%);
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out-expo);
+  }
+  .menu-overlay.is-open .menu-backdrop {
+    opacity: 1;
+  }
+  .menu-link {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.4s var(--ease-out-expo),
+      transform 0.55s var(--ease-out-expo);
+    transition-delay: 0s;
+  }
+  .menu-overlay.is-open .menu-link {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(70ms + var(--i) * 65ms);
   }
 
   .logo-mark {
@@ -160,23 +270,71 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 </style>
 
 <script>
+  const root = document.querySelector<HTMLElement>('[data-site-header]');
+  const shell = document.querySelector<HTMLElement>('[data-header]');
+  const overlay = document.querySelector<HTMLElement>('[data-menu-overlay]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
-  toggle?.addEventListener('click', () => {
-    const open = menu?.classList.toggle('is-open') === true;
-    toggle.setAttribute('aria-expanded', String(open));
+
+  /* ---- Sheet menu (scroll-locked, Escape to close, backdrop to close) ---- */
+  const menuOpen = () => overlay?.classList.contains('is-open') ?? false;
+  function setMenu(open: boolean) {
+    overlay?.classList.toggle('is-open', open);
+    overlay?.setAttribute('aria-hidden', String(!open));
+    toggle?.setAttribute('aria-expanded', String(open));
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) root?.classList.remove('is-hidden');
+  }
+  toggle?.addEventListener('click', () => setMenu(!menuOpen()));
+  overlay?.querySelectorAll('[data-menu-close]').forEach((el) => {
+    el.addEventListener('click', () => setMenu(false));
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuOpen()) setMenu(false);
   });
 
-  const shell = document.querySelector<HTMLElement>('[data-header]');
+  /* ---- Scroll choreography: condense after 24px; duck on scroll-down,
+         resurface on scroll-up, at the top, on focus, or with the menu open. ---- */
+  let lastY = window.scrollY;
   let ticking = false;
   const onScroll = () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      shell?.classList.toggle('is-scrolled', window.scrollY > 24);
+      const y = window.scrollY;
+      shell?.classList.toggle('is-scrolled', y > 24);
+      if (!menuOpen() && !root?.matches(':focus-within')) {
+        if (y > lastY + 6 && y > 160) root?.classList.add('is-hidden');
+        else if (y < lastY - 6 || y <= 24) root?.classList.remove('is-hidden');
+      }
+      lastY = y;
       ticking = false;
     });
   };
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+  root?.addEventListener('focusin', () => root.classList.remove('is-hidden'));
+
+  /* ---- Magic ink: glides to the hovered link, rests on the current page ---- */
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const ink = document.querySelector<HTMLElement>('[data-nav-ink]');
+  if (nav && ink) {
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a'));
+    const current = links.find((l) => l.hasAttribute('aria-current')) ?? null;
+    const glideTo = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      const n = nav.getBoundingClientRect();
+      ink.style.width = `${r.width}px`;
+      ink.style.transform = `translateX(${r.left - n.left}px)`;
+      ink.classList.add('is-on');
+    };
+    const rest = () => {
+      if (current) glideTo(current);
+      else ink.classList.remove('is-on');
+    };
+    links.forEach((l) => l.addEventListener('pointerenter', () => glideTo(l)));
+    nav.addEventListener('pointerleave', rest);
+    window.addEventListener('resize', rest);
+    document.fonts?.ready.then(rest);
+    rest();
+  }
 </script>

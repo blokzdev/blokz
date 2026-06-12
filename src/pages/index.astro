@@ -79,18 +79,35 @@ const featuredArtifacts = [...artifacts].sort(
       </div>
     </div>
 
-    <div
-      class="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
-      aria-hidden="true"
+    <a
+      href="#explore"
+      class="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full bg-panel/30 p-3 backdrop-blur-sm border border-line/50 transition-all hover:bg-panel/50 hover:border-accent/40 active:scale-95 group z-10"
+      aria-label="Scroll down to explore"
       data-reveal="1"
     >
-      <span class="font-mono text-[10px] tracking-[0.3em] text-faint uppercase">scroll</span>
-      <span class="scroll-cue-line"></span>
-    </div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="2.5"
+        stroke="currentColor"
+        class="w-6 h-6 animate-bounce"
+        style="stroke: url(#brand-gradient);"
+      >
+        <defs>
+          <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="var(--color-accent)" />
+            <stop offset="50%" stop-color="var(--color-violet)" />
+            <stop offset="100%" stop-color="var(--color-cyan)" />
+          </linearGradient>
+        </defs>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+      </svg>
+    </a>
   </section>
 
   <!-- ============ TOPIC TICKER ============ -->
-  <div class="border-y border-line/60 bg-ink/40">
+  <div id="explore" class="border-y border-line/60 bg-ink/40 scroll-mt-16">
     <div class="marquee py-3">
       {
         [false, true].map((dup) => (

@@ -270,37 +270,6 @@
     background: linear-gradient(90deg, var(--color-accent), var(--color-violet) 55%, var(--color-cyan));
   }
 
-  /* Hero scroll cue: a thin line that pours downward. Opt-in motion only —
-     an infinite animation under the global 0.01ms rule would strobe. */
-  .scroll-cue-line {
-    width: 1px;
-    height: 2.25rem;
-    background: linear-gradient(180deg, var(--color-accent), transparent);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .scroll-cue-line {
-      animation: scroll-cue 2.4s var(--ease-out-expo) infinite;
-    }
-  }
-  @keyframes scroll-cue {
-    0% {
-      transform: scaleY(0);
-      transform-origin: top;
-    }
-    45% {
-      transform: scaleY(1);
-      transform-origin: top;
-    }
-    55% {
-      transform: scaleY(1);
-      transform-origin: bottom;
-    }
-    100% {
-      transform: scaleY(0);
-      transform-origin: bottom;
-    }
-  }
-
   /* Active TOC entry (toggled by data-toc-spy in motion.ts). */
   [data-toc-spy] a.is-active {
     border-color: var(--color-accent);

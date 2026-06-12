@@ -42,6 +42,8 @@ export default function mount(container: HTMLElement): () => void {
 - Prefer `AdditiveBlending` + `depthWrite: false` points/lines for the house glow aesthetic
   (see `block-mesh`), and the token palette from `docs/DESIGN-SYSTEM.md`.
 - 2D canvas artifacts handle their own DPR and `document.hidden` checks (see `neural-flow`).
+- The brand visual (neural cluster ⇄ block lattice bridge) is shared between the homepage
+  hero and `synapse-chain` via `src/lib/synapse-geometry.ts` — extend it there, not in copies.
 - Budget: an artifact should stay comfortably under 60fps frame budget on a mid-range phone;
   if an algorithm is O(n²) per frame (e.g. proximity links), keep n small or grid-hash it.
 

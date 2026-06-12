@@ -135,21 +135,37 @@ export default function mount(container: HTMLElement): () => void {
   const ro = new ResizeObserver(layout);
   ro.observe(container);
 
+  const nearestLine = (fy: number) => {
+    let best = 0;
+    let bd = Infinity;
+    for (let i = 0; i < LINE_COUNT; i++) {
+      const d = Math.abs(lineY(i) - fy);
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
+    }
+    return best;
+  };
+
+  // Hover affordance: warm the line a tap would bug (mouse only).
+  const onHover = (ev: PointerEvent) => {
+    if (ev.pointerType !== 'mouse') return;
+    const r = canvas.getBoundingClientRect();
+    const fx = (ev.clientX - r.left) / r.width;
+    if (fx < PANEL_X1 + 0.03) {
+      const i = nearestLine((ev.clientY - r.top) / r.height);
+      lines[i]!.heat = Math.max(lines[i]!.heat, 0.45);
+    }
+  };
+
   const onPointer = (ev: PointerEvent) => {
     const r = canvas.getBoundingClientRect();
     const fx = (ev.clientX - r.left) / r.width;
     const fy = (ev.clientY - r.top) / r.height;
     if (fx < PANEL_X1 + 0.03) {
       // Plant a real bug on the nearest code line; the swarm hunts it down.
-      let best = 0;
-      let bd = Infinity;
-      for (let i = 0; i < LINE_COUNT; i++) {
-        const d = Math.abs(lineY(i) - fy);
-        if (d < bd) {
-          bd = d;
-          best = i;
-        }
-      }
+      const best = nearestLine(fy);
       if (!lines[best]!.bug) {
         lines[best]!.bug = true;
         pending.push({ line: best, in: 0.45 });
@@ -161,6 +177,7 @@ export default function mount(container: HTMLElement): () => void {
     }
   };
   canvas.addEventListener('pointerdown', onPointer);
+  canvas.addEventListener('pointermove', onHover, { passive: true });
 
   // Open with one survivor so the full pipeline is visible immediately.
   spawn(Math.floor(Math.random() * LINE_COUNT), true);
@@ -218,7 +235,8 @@ export default function mount(container: HTMLElement): () => void {
           // Falsified: no compiling PoC, no finding.
           for (let k = 0; k < 14; k++) {
             const a = Math.random() * Math.PI * 2;
-            const v = 0.04 + Math.random() * 0.1;
+            // Unit-space units per second — fast enough to read as a burst.
+            const v = 0.18 + Math.random() * 0.3;
             shards.push({
               x: GATE_X,
               y: hyp.yGate,
@@ -403,6 +421,7 @@ export default function mount(container: HTMLElement): () => void {
   return () => {
     cancelAnimationFrame(rafId);
     canvas.removeEventListener('pointerdown', onPointer);
+    canvas.removeEventListener('pointermove', onHover);
     ro.disconnect();
     canvas.remove();
   };

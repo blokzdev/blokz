@@ -9,13 +9,20 @@ interface Props {
 const { id, label, hue = 225, href = true } = Astro.props;
 const style = `--chip-hue: ${hue}`;
 const cls =
-  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ' +
+  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all duration-300 ' +
   'border-[hsl(var(--chip-hue)_80%_70%/0.25)] bg-[hsl(var(--chip-hue)_80%_60%/0.10)] text-[hsl(var(--chip-hue)_85%_78%)]';
 ---
 
 {
   href ? (
-    <a href={`/topics/${id}`} style={style} class:list={[cls, 'hover:bg-[hsl(var(--chip-hue)_80%_60%/0.22)]']}>
+    <a
+      href={`/topics/${id}`}
+      style={style}
+      class:list={[
+        cls,
+        'hover:bg-[hsl(var(--chip-hue)_80%_60%/0.22)] hover:shadow-[0_0_14px_hsl(var(--chip-hue)_80%_60%/0.3)]',
+      ]}
+    >
       <span class="size-1.5 rounded-full bg-[hsl(var(--chip-hue)_85%_70%)]" aria-hidden="true" />
       {label}
     </a>

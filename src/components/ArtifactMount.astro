@@ -1,5 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
+import { constellation } from '@/lib/constellation';
 
 /**
  * Mounts an interactive artifact by slug. Lazy: the entry module in
@@ -19,6 +20,8 @@ if (!artifact) {
   throw new Error(`<ArtifactMount slug="${slug}"> — no manifest at content/artifacts/${slug}/manifest.json`);
 }
 const ratio = aspect ?? artifact.data.aspect;
+// The artifact's own seeded constellation stands in while the module loads.
+const { pts, lines } = constellation(slug);
 ---
 
 <figure class:list={['not-prose my-8', className]}>
@@ -32,7 +35,29 @@ const ratio = aspect ?? artifact.data.aspect;
       class="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
       style="background: radial-gradient(100% 100% at 50% 100%, rgba(91,140,255,0.12), transparent 65%);"
     >
-      <span class="font-mono text-xs tracking-widest text-faint uppercase">loading artifact…</span>
+      <svg
+        class="ph-pulse absolute inset-0 size-full"
+        viewBox="0 0 100 56"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        {
+          lines.map((l) => (
+            <line
+              x1={l.a.x}
+              y1={l.a.y}
+              x2={l.b.x}
+              y2={l.b.y}
+              stroke="rgba(124,140,255,0.14)"
+              stroke-width="0.2"
+            />
+          ))
+        }
+        {pts.map((p) => <circle cx={p.x} cy={p.y} r={p.r} fill={p.c} opacity="0.6" />)}
+      </svg>
+      <span class="relative font-mono text-xs tracking-widest text-faint uppercase">
+        ⬢ loading artifact…
+      </span>
     </div>
   </div>
   <figcaption class="mt-2.5 flex flex-wrap items-baseline justify-between gap-2 px-1 text-xs text-faint">
@@ -43,6 +68,24 @@ const ratio = aspect ?? artifact.data.aspect;
     <a href={`/artifacts/${slug}`} class="text-accent hover:underline">open artifact ↗</a>
   </figcaption>
 </figure>
+
+<style>
+  /* Constellation breathes while the module loads; opt-in motion only. */
+  @media (prefers-reduced-motion: no-preference) {
+    .ph-pulse {
+      animation: ph-pulse 2.6s ease-in-out infinite;
+    }
+  }
+  @keyframes ph-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+</style>
 
 <script>
   type Mounter = { default: (el: HTMLElement) => () => void };
@@ -77,8 +120,11 @@ const ratio = aspect ?? artifact.data.aspect;
       // Respect reduced motion: keep the static placeholder, offer opt-in.
       const ph = el.querySelector<HTMLElement>('[data-artifact-placeholder]');
       if (ph) {
-        ph.innerHTML =
-          '<button type="button" class="rounded-lg border border-line px-4 py-2 font-mono text-xs text-muted hover:text-white">▶ run animation</button>';
+        ph.querySelector('span')?.remove();
+        ph.insertAdjacentHTML(
+          'beforeend',
+          '<button type="button" class="glass relative rounded-xl px-5 py-2.5 font-mono text-xs tracking-widest text-muted uppercase transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm">▶ run animation</button>',
+        );
         ph.querySelector('button')?.addEventListener('click', () => io.observe(el), { once: true });
       }
       return;

@@ -1,6 +1,19 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getArticles, getArtifacts, getTopics } from '@/lib/content-helpers';
 import { SITE } from '@/lib/site';
+
+const [articles, artifacts, topics] = await Promise.all([
+  getArticles(),
+  getArtifacts(),
+  getTopics(),
+]);
+
+const stats = [
+  { n: articles.length, label: 'Articles' },
+  { n: artifacts.length, label: 'Artifacts' },
+  { n: topics.length, label: 'Topics' },
+];
 
 const links = [
   { label: 'GitHub', value: 'github.com/blokzdev', href: SITE.github },
@@ -12,18 +25,19 @@ const links = [
 
 <BaseLayout
   title="About — Blokz"
-  description={`About ${SITE.org}: the team behind blokz.dev, building at the intersection of AI and blockchain.`}
+  description={`About ${SITE.org}: the team behind blokz.dev — where the brain meets the chain, building at the intersection of AI and blockchain.`}
 >
   <article class="mx-auto max-w-3xl px-5 pt-10 sm:px-6">
     <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>About</p>
-    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+    <h1 class="mt-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
       Built by <span class="text-gradient">{SITE.org}</span>
     </h1>
 
     <div class="prose mt-10">
       <p>
-        <strong>blokz.dev</strong> is the engineering journal of {SITE.org} — a development agency
-        working at the intersection of artificial intelligence and blockchain. We design and ship
+        <strong>blokz.dev</strong> is the engineering journal of {SITE.org} — where the brain meets
+        the chain. We are a development agency working at the intersection of artificial intelligence
+        and blockchain: we design and ship
         agentic systems, smart-contract infrastructure, zero-knowledge applications, and the tooling
         that connects them.
       </p>
@@ -39,6 +53,20 @@ const links = [
         validated content architecture. Humans set direction and review; agents research, draft,
         build, and ship.
       </p>
+    </div>
+
+    <h2 class="mt-14 font-display text-xl font-bold text-white" data-reveal>The archive so far</h2>
+    <div class="glass mt-5 grid grid-cols-3 gap-4 rounded-2xl p-6 text-center" data-reveal>
+      {
+        stats.map(({ n, label }) => (
+          <div>
+            <p class="font-display text-3xl font-bold text-white tabular-nums sm:text-4xl">
+              <span data-counter={n}>{n}</span>
+            </p>
+            <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-faint uppercase">{label}</p>
+          </div>
+        ))
+      }
     </div>
 
     <h2 class="mt-14 font-display text-xl font-bold text-white" data-reveal>Find us</h2>

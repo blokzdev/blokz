@@ -1,0 +1,19 @@
+{
+  "name": "Blokz — Where the Brain Meets the Chain",
+  "short_name": "Blokz",
+  "description": "blokz.dev — where the brain meets the chain. Deep technical writing and interactive artifacts on AI × blockchain.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

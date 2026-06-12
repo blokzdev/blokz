@@ -19,6 +19,7 @@ const topicEntries = data.topics
 
 <article
   class="card-hover glass group relative flex h-full flex-col rounded-2xl p-5 sm:p-6"
+  style={`--card-hue: ${topicEntries[0]?.data.hue ?? 228}`}
   data-reveal-item
 >
   <div class="flex flex-wrap gap-1.5">
@@ -50,5 +51,11 @@ const topicEntries = data.topics
         </>
       )
     }
+    <span
+      class="ml-auto text-faint transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-accent"
+      aria-hidden="true"
+    >
+      →
+    </span>
   </div>
 </article>

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 3,
-    "artifacts": 2
+    "artifacts": 6
   },
   "topicCounts": {
     "agents": 1,
@@ -95,6 +95,66 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "attention-lens",
+      "path": "content/artifacts/attention-lens/manifest.json",
+      "module": "src/islands/artifacts/attention-lens.ts",
+      "url": "/artifacts/attention-lens",
+      "title": "Attention Lens",
+      "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "topics": [
+        "llm",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "gradient-descent",
+      "path": "content/artifacts/gradient-descent/manifest.json",
+      "module": "src/islands/artifacts/gradient-descent.ts",
+      "url": "/artifacts/gradient-descent",
+      "title": "Gradient Descent",
+      "description": "A glowing marker performs literal gradient descent over a 3D loss landscape — analytic gradients, momentum, and a fading trail. Drag to orbit the terrain; click anywhere on it to drop a new starting point.",
+      "pubDate": "2026-06-12",
+      "type": "three",
+      "topics": [
+        "machine-learning",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "merkle-cascade",
+      "path": "content/artifacts/merkle-cascade/manifest.json",
+      "module": "src/islands/artifacts/merkle-cascade.ts",
+      "url": "/artifacts/merkle-cascade",
+      "title": "Merkle Cascade",
+      "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "topics": [
+        "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "synapse-chain",
+      "path": "content/artifacts/synapse-chain/manifest.json",
+      "module": "src/islands/artifacts/synapse-chain.ts",
+      "url": "/artifacts/synapse-chain",
+      "title": "Synapse Chain",
+      "description": "The blokz brand visual, explorable: a shimmering neural cluster bridged by a particle stream to a minting block lattice. Drag to orbit the bridge; click to fire a thought across it and mint a block on arrival.",
+      "pubDate": "2026-06-12",
+      "type": "three",
+      "topics": [
+        "ai",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "block-mesh",
       "path": "content/artifacts/block-mesh/manifest.json",

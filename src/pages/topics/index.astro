@@ -16,7 +16,7 @@ const sorted = [...topics].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(
 >
   <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6">
     <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>Index</p>
-    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+    <h1 class="mt-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
       Topics
     </h1>
     <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
@@ -32,7 +32,7 @@ const sorted = [...topics].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(
           <a
             href={`/topics/${t.id}`}
             class="card-hover glass group rounded-2xl p-5"
-            style={`--chip-hue: ${t.data.hue}`}
+            style={`--chip-hue: ${t.data.hue}; --card-hue: ${t.data.hue}`}
             data-reveal-item
           >
             <div class="flex items-center justify-between">

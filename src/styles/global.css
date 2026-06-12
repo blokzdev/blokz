@@ -19,12 +19,24 @@
   --color-accent: #5b8cff; /* electric blue */
   --color-violet: #8b5cf6;
   --color-cyan: #22d3ee;
+  --color-line-bright: rgba(124, 140, 255, 0.28); /* hover hairlines */
+  --color-glow: rgba(91, 140, 255, 0.35);
 
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fluid type scale (templates use text-hero / text-page-title, no raw clamps). */
+  --text-hero: clamp(2.4rem, 7vw, 4.8rem);
+  --text-hero--line-height: 1.04;
+  --text-page-title: clamp(2.1rem, 5vw, 3.2rem);
+  --text-page-title--line-height: 1.15;
+
+  /* Brand glow shadows (shadow-glow-sm / shadow-glow-md utilities). */
+  --shadow-glow-sm: 0 0 0 1px rgba(124, 140, 255, 0.18), 0 4px 24px -8px rgba(91, 140, 255, 0.35);
+  --shadow-glow-md: 0 0 0 1px rgba(124, 140, 255, 0.18), 0 8px 40px -12px rgba(91, 140, 255, 0.35);
 }
 
 @layer base {
@@ -33,7 +45,26 @@
     color: var(--color-text);
     font-family: var(--font-sans);
     scrollbar-color: rgba(124, 140, 255, 0.3) transparent;
+    scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
+    /* App feel on touch: scroll pans only (no pinch/double-tap zoom), no
+       rubber-band overscroll or pull-to-refresh, no grey tap flash. */
+    touch-action: pan-x pan-y;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(91, 140, 255, 0.4), rgba(139, 92, 246, 0.4));
+    border-radius: 8px;
+    border: 2px solid var(--color-void);
   }
 
   body {
@@ -43,7 +74,7 @@
   }
 
   ::selection {
-    background: rgba(91, 140, 255, 0.35);
+    background: rgba(139, 92, 246, 0.4);
     color: #fff;
   }
 
@@ -87,10 +118,74 @@
   color: transparent;
 }
 
+/* Tagline gradients: "brain" cools accent→violet, "chain" warms violet→cyan,
+   encoding the left-to-right bridge the hero scene renders behind the headline. */
+@utility text-gradient-brain {
+  background: linear-gradient(100deg, var(--color-accent), var(--color-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility text-gradient-chain {
+  background: linear-gradient(100deg, var(--color-violet), var(--color-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @utility ring-glow {
   box-shadow:
     0 0 0 1px rgba(124, 140, 255, 0.18),
     0 8px 40px -12px rgba(91, 140, 255, 0.35);
+}
+
+/* Brand-gradient hairline border (featured surfaces: CTA card, series asides). */
+@utility gradient-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
+    linear-gradient(
+        120deg,
+        rgba(91, 140, 255, 0.45),
+        rgba(139, 92, 246, 0.45) 50%,
+        rgba(34, 211, 238, 0.45)
+      )
+      border-box;
+}
+
+/* Film-grain overlay for depth; fixed so it covers the viewport uniformly. */
+@utility noise {
+  position: relative;
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+}
+
+/* Animated underline that grows from the left on hover/focus. */
+@utility link-underline {
+  background-image: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition:
+    background-size 0.35s var(--ease-out-expo),
+    color 0.2s;
+  &:hover,
+  &:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+@utility text-glow {
+  text-shadow: 0 0 24px var(--color-glow);
 }
 
 @layer components {
@@ -103,16 +198,169 @@
     mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
   }
 
+  /* Lift + hue-aware glow + shine sweep. Cards may set --card-hue (taxonomy hue)
+     so the hover border/shadow tint per topic; default 228 = brand blue. */
   .card-hover {
+    position: relative;
+    overflow: hidden;
     transition:
       transform 0.45s var(--ease-out-expo),
       border-color 0.45s var(--ease-out-expo),
       box-shadow 0.45s var(--ease-out-expo);
   }
+  .card-hover::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    bottom: -60%;
+    left: -30%;
+    width: 36%;
+    transform: rotate(18deg) translateX(-340%);
+    background: linear-gradient(90deg, transparent, rgba(231, 234, 243, 0.055), transparent);
+    transition: transform 0.9s var(--ease-out-expo);
+    pointer-events: none;
+  }
   .card-hover:hover {
     transform: translateY(-4px);
-    border-color: rgba(124, 140, 255, 0.35);
-    box-shadow: 0 16px 48px -16px rgba(91, 140, 255, 0.25);
+    border-color: hsl(var(--card-hue, 228) 80% 70% / 0.35);
+    box-shadow: 0 16px 48px -16px hsl(var(--card-hue, 228) 80% 60% / 0.25);
+  }
+  .card-hover:hover::before {
+    transform: rotate(18deg) translateX(480%);
+  }
+
+  /* Infinite topic ticker: duplicate the track (second copy aria-hidden). */
+  .marquee {
+    display: flex;
+    gap: 2.5rem;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  }
+  .marquee > * {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2.5rem;
+    min-width: max-content;
+    animation: marquee-scroll 42s linear infinite;
+  }
+  @keyframes marquee-scroll {
+    to {
+      transform: translateX(calc(-100% - 2.5rem));
+    }
+  }
+  /* Explicit pause: the global 0.01ms rule would strobe an infinite animation. */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee > * {
+      animation-play-state: paused;
+    }
+  }
+
+  /* Reading-progress bar; driven by [data-scroll-progress] (motion.ts). */
+  .progress-bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 60;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    background: linear-gradient(90deg, var(--color-accent), var(--color-violet) 55%, var(--color-cyan));
+  }
+
+  /* Hero scroll cue: a thin line that pours downward. Opt-in motion only —
+     an infinite animation under the global 0.01ms rule would strobe. */
+  .scroll-cue-line {
+    width: 1px;
+    height: 2.25rem;
+    background: linear-gradient(180deg, var(--color-accent), transparent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-cue-line {
+      animation: scroll-cue 2.4s var(--ease-out-expo) infinite;
+    }
+  }
+  @keyframes scroll-cue {
+    0% {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    45% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    55% {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+  }
+
+  /* Active TOC entry (toggled by data-toc-spy in motion.ts). */
+  [data-toc-spy] a.is-active {
+    border-color: var(--color-accent);
+    color: #fff;
+  }
+
+  /* Copy-to-clipboard on code blocks (injected per-article; pre gets wrapped
+     in .code-frame so the button doesn't scroll with overflowing code). */
+  .code-frame {
+    position: relative;
+  }
+  .code-copy {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .code-frame:hover .code-copy,
+  .code-copy:focus-visible {
+    opacity: 1;
+  }
+  .code-copy:hover {
+    color: #fff;
+    border-color: var(--color-line-bright);
+  }
+  .code-copy.is-copied {
+    opacity: 1;
+    color: var(--color-cyan);
+    border-color: rgba(34, 211, 238, 0.4);
+  }
+
+  /* Hover anchor links on prose headings (injected per-article). */
+  .heading-anchor {
+    margin-left: 0.4em;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    color: var(--color-faint);
+    text-decoration: none;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      color 0.2s;
+  }
+  .prose h2:hover .heading-anchor,
+  .prose h3:hover .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+  .heading-anchor:hover {
+    color: var(--color-accent);
   }
 
   /* ---- Article prose (dark, hand-tuned) ---- */
@@ -136,6 +384,15 @@
   .prose h2 {
     font-size: 1.65rem;
     margin-top: 2.4em;
+  }
+  .prose h2::before {
+    content: '';
+    display: block;
+    width: 2rem;
+    height: 2px;
+    margin-bottom: 0.6em;
+    border-radius: 1px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
   }
   .prose h3 {
     font-size: 1.3rem;
@@ -200,6 +457,14 @@
     overflow-x: auto;
     font-size: 0.875rem;
     line-height: 1.65;
+    box-shadow: inset 0 1px 0 rgba(124, 140, 255, 0.12);
+  }
+  .prose figcaption {
+    margin-top: 0.6em;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-faint);
+    text-align: center;
   }
   .prose img {
     border-radius: 14px;
@@ -215,6 +480,7 @@
     width: 100%;
     font-size: 0.925rem;
     border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
   }
   .prose th {
     font-family: var(--font-display);

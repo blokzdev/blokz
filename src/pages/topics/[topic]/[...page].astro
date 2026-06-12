@@ -24,13 +24,20 @@ const topics = await getTopics();
   title={`${topic.data.label} — Blokz Topics`}
   description={`${topic.data.description} ${page.total} article${page.total === 1 ? '' : 's'} on ${topic.data.label} from the Blokz archive.`}
 >
-  <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6" style={`--chip-hue: ${topic.data.hue}`}>
-    <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
+  <header class="relative mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6" style={`--chip-hue: ${topic.data.hue}`}>
+    <div
+      class="pointer-events-none absolute inset-0"
+      style={`background: radial-gradient(50% 70% at 20% 30%, hsl(${topic.data.hue} 80% 60% / 0.08), transparent 70%)`}
+      aria-hidden="true"
+      data-parallax-glow
+    >
+    </div>
+    <nav class="relative font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
       <a href="/topics" class="hover:text-muted">topics</a>
       <span aria-hidden="true"> / </span>
       <span class="text-muted">{topic.id}</span>
     </nav>
-    <h1 class="mt-4 flex items-center gap-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+    <h1 class="mt-4 flex items-center gap-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
       <span class="size-3 rounded-full bg-[hsl(var(--chip-hue)_85%_70%)] shadow-[0_0_16px_hsl(var(--chip-hue)_85%_70%/0.8)]" aria-hidden="true"></span>
       {topic.data.label}
     </h1>

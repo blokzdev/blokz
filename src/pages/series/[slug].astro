@@ -19,18 +19,46 @@ const articles = (await getArticles())
 
 <BaseLayout title={`${series.data.title} — Blokz Series`} description={series.data.description}>
   <header class="mx-auto max-w-6xl px-5 pt-10 pb-12 sm:px-6">
-    <p class="font-mono text-xs tracking-[0.3em] text-violet uppercase" data-reveal>
+    <p class="flex items-center gap-2.5 font-mono text-xs tracking-[0.3em] text-violet uppercase" data-reveal>
+      <span class="h-px w-6 bg-gradient-to-r from-violet to-cyan" aria-hidden="true"></span>
       Series · {series.data.status}
     </p>
-    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl" data-split>
+    <h1 class="mt-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
       {series.data.title}
     </h1>
     <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">{series.data.description}</p>
   </header>
 
   <section class="mx-auto max-w-6xl px-5 sm:px-6">
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
-      {articles.map((article) => <ArticleCard {article} {topics} />)}
-    </div>
+    <ol class="series-grid grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {articles.map((article) => <li><ArticleCard {article} {topics} /></li>)}
+    </ol>
   </section>
 </BaseLayout>
+
+<style>
+  /* Each card wears its part number — reading order is the point of a series. */
+  .series-grid {
+    counter-reset: part;
+  }
+  .series-grid > li {
+    position: relative;
+    counter-increment: part;
+  }
+  .series-grid > li::before {
+    content: 'part ' counter(part, decimal-leading-zero);
+    position: absolute;
+    top: -0.65rem;
+    left: 1.25rem;
+    z-index: 10;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 9999px;
+    background: var(--color-ink);
+    padding: 0.15rem 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-violet);
+  }
+</style>

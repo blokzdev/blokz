@@ -40,6 +40,7 @@ const seriesArticles = data.series
 
 const minutes = readingTime(article.body);
 const toc = headings.filter((h) => h.depth === 2);
+const difficultyHue: Record<string, number> = { beginner: 160, intermediate: 225, advanced: 280 };
 const topicEntries = data.topics
   .map((t) => topics.find((x) => x.id === t))
   .filter((t): t is NonNullable<typeof t> => Boolean(t));
@@ -66,8 +67,12 @@ const jsonLd = {
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
+  <div class="progress-bar" data-scroll-progress aria-hidden="true"></div>
+
   <article class="mx-auto max-w-6xl px-5 pt-8 sm:px-6">
-    <header class="mx-auto max-w-3xl">
+    <header class="relative mx-auto max-w-3xl">
+      <div class="grid-veil absolute -inset-x-10 -top-8 bottom-0" aria-hidden="true"></div>
+      <div class="relative">
       <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
         <a href="/articles" class="hover:text-muted">articles</a>
         <span aria-hidden="true"> / </span>
@@ -93,7 +98,12 @@ const jsonLd = {
         <span aria-hidden="true">·</span>
         <span>{minutes} min read</span>
         <span aria-hidden="true">·</span>
-        <span class="capitalize">{data.difficulty}</span>
+        <span
+          class="rounded-full border border-[hsl(var(--chip-hue)_80%_70%/0.25)] bg-[hsl(var(--chip-hue)_80%_60%/0.10)] px-2.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-[hsl(var(--chip-hue)_85%_78%)] uppercase"
+          style={`--chip-hue: ${difficultyHue[data.difficulty] ?? 225}`}
+        >
+          {data.difficulty}
+        </span>
       </div>
 
       <div class="mt-4 flex flex-wrap gap-2" data-reveal="0.4">
@@ -102,7 +112,7 @@ const jsonLd = {
 
       {
         series && (
-          <aside class="glass mt-8 rounded-2xl p-5" data-reveal>
+          <aside class="gradient-border mt-8 rounded-2xl p-5" data-reveal>
             <p class="font-mono text-[11px] tracking-[0.2em] text-violet uppercase">
               Series · {series.data.title}
             </p>
@@ -122,6 +132,7 @@ const jsonLd = {
           </aside>
         )
       }
+      </div>
     </header>
 
     <div class="mx-auto mt-12 flex max-w-3xl gap-12 xl:max-w-none xl:justify-center">
@@ -131,7 +142,11 @@ const jsonLd = {
 
       {
         toc.length > 2 && (
-          <nav class="sticky top-24 hidden h-max w-56 shrink-0 self-start xl:block" aria-label="Table of contents">
+          <nav
+            class="sticky top-24 hidden h-max w-56 shrink-0 self-start xl:block"
+            aria-label="Table of contents"
+            data-toc-spy
+          >
             <p class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">On this page</p>
             <ul class="mt-3 space-y-2 border-l border-line text-sm">
               {toc.map((h) => (
@@ -184,6 +199,47 @@ const jsonLd = {
       </p>
     </div>
   </article>
+
+  <script>
+    // Copy-to-clipboard on every code block; the wrapper keeps the button
+    // pinned while long code scrolls horizontally.
+    document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
+      const frame = document.createElement('div');
+      frame.className = 'code-frame';
+      pre.parentNode?.insertBefore(frame, pre);
+      frame.appendChild(pre);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'code-copy';
+      btn.textContent = 'copy';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(pre.textContent ?? '');
+          btn.textContent = 'copied ✓';
+          btn.classList.add('is-copied');
+          setTimeout(() => {
+            btn.textContent = 'copy';
+            btn.classList.remove('is-copied');
+          }, 1600);
+        } catch {
+          btn.textContent = 'failed';
+        }
+      });
+      frame.appendChild(btn);
+    });
+
+    // Hover anchors on prose headings.
+    document.querySelectorAll<HTMLHeadingElement>('.prose h2[id], .prose h3[id]').forEach((h) => {
+      const a = document.createElement('a');
+      a.className = 'heading-anchor';
+      a.href = `#${h.id}`;
+      a.textContent = '#';
+      a.setAttribute('aria-label', `Link to “${h.textContent?.trim()}”`);
+      h.appendChild(a);
+    });
+  </script>
 
   {
     related.length > 0 && (

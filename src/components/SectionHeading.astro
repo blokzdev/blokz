@@ -11,13 +11,16 @@ const { eyebrow, title, href, hrefLabel = 'View all' } = Astro.props;
 
 <div class="mb-8 flex items-end justify-between gap-4" data-reveal>
   <div>
-    <p class="font-mono text-xs tracking-[0.2em] text-accent uppercase">{eyebrow}</p>
+    <p class="flex items-center gap-2.5 font-mono text-xs tracking-[0.2em] text-accent uppercase">
+      <span class="h-px w-6 bg-gradient-to-r from-accent to-cyan" aria-hidden="true"></span>
+      {eyebrow}
+    </p>
     <h2 class="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">{title}</h2>
   </div>
   {
     href && (
-      <a href={href} class="group hidden shrink-0 items-center gap-1 text-sm text-muted transition-colors hover:text-white sm:flex">
-        {hrefLabel}
+      <a href={href} class="group hidden shrink-0 items-center gap-1 text-sm text-muted hover:text-white sm:flex">
+        <span class="link-underline">{hrefLabel}</span>
         <span class="transition-transform group-hover:translate-x-0.5">→</span>
       </a>
     )

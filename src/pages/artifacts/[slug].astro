@@ -18,6 +18,13 @@ export const getStaticPaths = (async () => {
 const { artifact } = Astro.props;
 const { data } = artifact;
 const topics = await getTopics();
+
+const typeLabel: Record<typeof data.type, string> = {
+  three: 'WebGL · Three.js',
+  canvas: 'Canvas 2D',
+  svg: 'SVG',
+  dom: 'DOM',
+};
 const topicEntries = data.topics
   .map((t) => topics.find((x) => x.id === t))
   .filter((t): t is NonNullable<typeof t> => Boolean(t));
@@ -27,7 +34,11 @@ const articles = await getArticles();
 const linked = articles.filter((a) => a.data.artifacts.includes(data.slug));
 ---
 
-<BaseLayout title={`${data.title} — Blokz Artifacts`} description={data.description}>
+<BaseLayout
+  title={`${data.title} — Blokz Artifacts`}
+  description={data.description}
+  image={`/og/artifacts/${data.slug}.png`}
+>
   <article class="mx-auto max-w-5xl px-5 pt-8 sm:px-6">
     <header data-pagefind-body data-pagefind-meta={`title:${data.title}`}>
       <nav class="font-mono text-xs text-faint" aria-label="Breadcrumb" data-reveal>
@@ -40,6 +51,11 @@ const linked = articles.filter((a) => a.data.artifacts.includes(data.slug));
       </h1>
       <p class="mt-4 max-w-2xl leading-relaxed text-muted" data-reveal="0.2">{data.description}</p>
       <div class="mt-5 flex flex-wrap items-center gap-2" data-reveal="0.3">
+        <span
+          class="rounded-md border border-line bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-cyan uppercase"
+        >
+          {typeLabel[data.type]}
+        </span>
         {topicEntries.map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
         <span class="ml-1 font-mono text-xs text-faint">
           {formatDate(data.pubDate)}

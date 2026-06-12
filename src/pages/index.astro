@@ -19,7 +19,9 @@ const featuredArtifacts = [...artifacts].sort(
 
 <BaseLayout>
   <!-- ============ HERO ============ -->
-  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden">
+  <!-- select-none: long-press on the hero must never pop a selection/callout
+       over the scene; prose below stays fully selectable. -->
+  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden select-none">
     <canvas data-hero-canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
     <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
     <div
@@ -28,30 +30,40 @@ const featuredArtifacts = [...artifacts].sort(
     >
     </div>
 
-    <div class="relative mx-auto w-full max-w-6xl px-5 pt-28 pb-20 sm:px-6">
+    <!-- Bridge axis: the line the synapse stream travels, echoed in the UI. -->
+    <div
+      class="pointer-events-none absolute top-1/2 right-0 left-0 h-px bg-gradient-to-r from-accent/20 via-violet/10 to-cyan/20"
+      aria-hidden="true"
+    >
+    </div>
+
+    <div class="relative mx-auto w-full max-w-6xl px-5 pt-28 pb-20 sm:px-6" data-scroll-fade>
       <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>
         {SITE.org}
       </p>
       <h1
-        class="mt-5 max-w-3xl font-display text-[clamp(2.4rem,7vw,4.8rem)] leading-[1.04] font-bold tracking-tight text-white"
+        class="mt-5 max-w-3xl font-display text-hero font-bold tracking-tight text-white"
         data-split
       >
-        Where intelligence meets the <span class="text-gradient">chain</span>.
+        <!-- Canonical copy: SITE.tagline (src/lib/site.ts) — keep in sync. -->
+        Where the <span class="text-gradient-brain">brain</span> meets the <span class="text-gradient-chain">chain</span>.
       </h1>
       <p class="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg" data-reveal="0.35">
-        Deep technical writing and interactive artifacts on AI × blockchain — agents, zero-knowledge,
-        LLMs, smart contracts, and the infrastructure binding them together.
+        Deep technical writing and interactive artifacts on AI × blockchain — from neural nets to
+        consensus, agents to smart contracts, and the infrastructure binding them together.
       </p>
       <div class="mt-9 flex flex-wrap gap-3" data-reveal="0.5">
         <a
           href="/articles"
           class="rounded-xl bg-gradient-to-r from-accent to-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          data-magnetic
         >
           Read the articles
         </a>
         <a
           href="/artifacts"
           class="glass rounded-xl px-6 py-3 text-sm font-semibold text-text transition-colors hover:border-accent/40 hover:text-white"
+          data-magnetic
         >
           Explore artifacts ⬢
         </a>
@@ -61,7 +73,37 @@ const featuredArtifacts = [...artifacts].sort(
         {topics.slice(0, 8).map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
       </div>
     </div>
+
+    <div
+      class="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
+      aria-hidden="true"
+      data-reveal="1"
+    >
+      <span class="font-mono text-[10px] tracking-[0.3em] text-faint uppercase">scroll</span>
+      <span class="scroll-cue-line"></span>
+    </div>
   </section>
+
+  <!-- ============ TOPIC TICKER ============ -->
+  <div class="border-y border-line/60 bg-ink/40">
+    <div class="marquee py-3">
+      {
+        [false, true].map((dup) => (
+          <div aria-hidden={dup ? 'true' : undefined}>
+            {topics.map((t) => (
+              <a
+                href={`/topics/${t.id}`}
+                class="font-mono text-[11px] tracking-[0.2em] whitespace-nowrap text-faint uppercase transition-colors hover:text-cyan"
+                tabindex={dup ? -1 : undefined}
+              >
+                ⬢ {t.data.label}
+              </a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
 
   <!-- ============ LATEST ARTICLES ============ -->
   <section class="mx-auto max-w-6xl px-5 py-20 sm:px-6">
@@ -77,6 +119,7 @@ const featuredArtifacts = [...artifacts].sort(
       class="pointer-events-none absolute inset-0"
       style="background: radial-gradient(60% 50% at 50% 50%, rgba(139,92,246,0.07), transparent 70%);"
       aria-hidden="true"
+      data-parallax-glow
     >
     </div>
     <div class="relative mx-auto max-w-6xl px-5 sm:px-6">
@@ -94,7 +137,7 @@ const featuredArtifacts = [...artifacts].sort(
 
   <!-- ============ FOLLOW CTA ============ -->
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-6">
-    <div class="glass ring-glow relative overflow-hidden rounded-3xl p-8 text-center sm:p-14" data-reveal>
+    <div class="gradient-border ring-glow relative overflow-hidden rounded-3xl p-8 text-center sm:p-14" data-reveal>
       <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
       <div class="relative">
         <h2 class="font-display text-2xl font-bold text-white sm:text-3xl">
@@ -104,6 +147,22 @@ const featuredArtifacts = [...artifacts].sort(
           Every article and artifact in this blog lives in a public repo. Follow the work, fork the
           experiments, or get in touch.
         </p>
+        <div class="mx-auto mt-8 grid max-w-md grid-cols-3 gap-4">
+          {
+            [
+              { n: articles.length, label: 'Articles' },
+              { n: artifacts.length, label: 'Artifacts' },
+              { n: topics.length, label: 'Topics' },
+            ].map(({ n, label }) => (
+              <div>
+                <p class="font-display text-3xl font-bold text-white tabular-nums sm:text-4xl">
+                  <span data-counter={n}>{n}</span>
+                </p>
+                <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-faint uppercase">{label}</p>
+              </div>
+            ))
+          }
+        </div>
         <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm">
           <a href={SITE.repo} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">GitHub ↗</a>
           <a href={SITE.x} target="_blank" rel="noopener" class="glass rounded-xl px-5 py-2.5 transition-colors hover:border-accent/40 hover:text-white">{SITE.xHandle} on X ↗</a>
@@ -117,7 +176,18 @@ const featuredArtifacts = [...artifacts].sort(
     const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (canvas && !reduced) {
-      const start = () => import('@/islands/hero-scene').then(({ default: mountScene }) => mountScene(canvas));
+      // If WebGL is unavailable or mounting throws, drop the canvas silently —
+      // the gradient + grid-veil backdrop carries the hero on its own.
+      const start = () =>
+        import('@/islands/hero-scene')
+          .then(({ default: mountScene }) => {
+            try {
+              mountScene(canvas);
+            } catch {
+              canvas.remove();
+            }
+          })
+          .catch(() => canvas.remove());
       'requestIdleCallback' in window ? requestIdleCallback(start) : setTimeout(start, 200);
     }
   </script>

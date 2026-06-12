@@ -1,0 +1,19 @@
+{
+  "slug": "bme-equilibrium",
+  "title": "BME Equilibrium",
+  "description": "Render's Burn-Mint Equilibrium with the real protocol constants: drag the demand and price sliders to see monthly burns race the 492,132 RENDER emission schedule, toggle RNP-023's Salad flows on, and find the demand level where the network actually stops inflating.",
+  "pubDate": "2026-06-12",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "web3",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag the sliders to set monthly burn demand and RENDER price",
+    "toggle RNP-023 Salad flows (+88,240 RENDER/mo rewards, +$191k/mo burn demand)",
+    "sliders are native inputs — fully keyboard accessible"
+  ]
+}

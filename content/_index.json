@@ -1,21 +1,21 @@
 {
   "counts": {
-    "articles": 12,
-    "artifacts": 11
+    "articles": 13,
+    "artifacts": 12
   },
   "topicCounts": {
     "agents": 5,
-    "ai": 1,
+    "ai": 2,
     "blockchain": 7,
     "cryptography": 2,
     "defi": 2,
-    "infrastructure": 6,
+    "infrastructure": 7,
     "llm": 1,
     "machine-learning": 6,
     "research": 1,
     "security": 4,
     "smart-contracts": 2,
-    "web3": 1,
+    "web3": 2,
     "zero-knowledge": 1
   },
   "articles": [
@@ -41,6 +41,32 @@
       ],
       "artifacts": [
         "emission-engine"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "decentralized-gpu-markets-burn-mint-vs-auction",
+      "path": "content/articles/2026/06/decentralized-gpu-markets-burn-mint-vs-auction/index.mdx",
+      "url": "/articles/decentralized-gpu-markets-burn-mint-vs-auction",
+      "title": "Burn, Mint, or Bid: How Decentralized GPU Markets Price Compute",
+      "description": "Render just voted to route 60,000 Salad GPUs' payments through a token burn; Akash auctions its 234 GPUs per-block on-chain. Two opposed pricing mechanisms, live H100 quotes, and the burn-vs-emission math the equilibrium story skips.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "infrastructure",
+        "ai",
+        "web3"
+      ],
+      "tags": [
+        "depin",
+        "gpu-markets",
+        "render",
+        "akash",
+        "burn-mint-equilibrium",
+        "reverse-auction"
+      ],
+      "artifacts": [
+        "bme-equilibrium"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -364,6 +390,22 @@
       "archetype": "chart",
       "topics": [
         "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "bme-equilibrium",
+      "path": "content/artifacts/bme-equilibrium/manifest.json",
+      "module": "src/islands/artifacts/bme-equilibrium.ts",
+      "url": "/artifacts/bme-equilibrium",
+      "title": "BME Equilibrium",
+      "description": "Render's Burn-Mint Equilibrium with the real protocol constants: drag the demand and price sliders to see monthly burns race the 492,132 RENDER emission schedule, toggle RNP-023's Salad flows on, and find the demand level where the network actually stops inflating.",
+      "pubDate": "2026-06-12",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "web3",
         "infrastructure"
       ],
       "draft": false

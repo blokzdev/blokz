@@ -4,6 +4,7 @@
   "description": "The blokz brand visual, explorable: a shimmering neural cluster bridged by a particle stream to a minting block lattice. Drag to orbit the bridge; click to fire a thought across it and mint a block on arrival.",
   "pubDate": "2026-06-12",
   "type": "three",
+  "archetype": "scene",
   "topics": [
     "ai",
     "blockchain"

@@ -64,6 +64,12 @@ const artifacts = defineCollection({
     draft: z.boolean().default(false),
     /** Rendering technology — drives the mount container + gallery badge. */
     type: z.enum(['three', 'canvas', 'svg', 'dom']),
+    /** Editorial category — what kind of explorable this is (`type` is how it's drawn). */
+    archetype: z.enum(['chart', 'map', 'diagram', 'simulation', 'calculator', 'scene']).optional(),
+    /** Provenance for data-backed artifacts. Enforced by validate.mjs: required
+     *  when content/artifacts/<slug>/data.json exists. */
+    dataSource: z.object({ label: z.string(), url: z.string().url() }).optional(),
+    dataAsOf: z.coerce.date().optional(),
     topics: z.array(z.string()).min(1).max(5),
     /** Aspect ratio of the stage, e.g. "16/9". */
     aspect: z.string().default('16/9'),

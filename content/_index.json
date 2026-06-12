@@ -262,6 +262,7 @@
       "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
       "pubDate": "2026-06-12",
       "type": "canvas",
+      "archetype": "diagram",
       "topics": [
         "llm",
         "ai"
@@ -277,6 +278,7 @@
       "description": "A fraud-proof dispute game you can rig: tap any step of the computation trace to plant a fault, then watch the chain bisect proposer vs watcher commitments — six queries isolate the one divergent step, it gets re-executed on-chain, and the liar's bond is slashed.",
       "pubDate": "2026-06-12",
       "type": "canvas",
+      "archetype": "simulation",
       "topics": [
         "blockchain",
         "machine-learning"
@@ -292,6 +294,7 @@
       "description": "An agentic audit swarm's load-bearing stage: hypothesis particles leave the contract and hold at the falsifier gate while a proof-of-concept runs — hallucinated findings burst into debris, executable ones pass into the report. Tap a code line to plant a bug and watch the swarm catch it.",
       "pubDate": "2026-06-12",
       "type": "canvas",
+      "archetype": "simulation",
       "topics": [
         "agents",
         "security",
@@ -308,6 +311,7 @@
       "description": "A glowing marker performs literal gradient descent over a 3D loss landscape — analytic gradients, momentum, and a fading trail. Drag to orbit the terrain; click anywhere on it to drop a new starting point.",
       "pubDate": "2026-06-12",
       "type": "three",
+      "archetype": "simulation",
       "topics": [
         "machine-learning",
         "ai"
@@ -323,6 +327,7 @@
       "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
       "pubDate": "2026-06-12",
       "type": "svg",
+      "archetype": "diagram",
       "topics": [
         "cryptography",
         "blockchain"
@@ -338,6 +343,7 @@
       "description": "The blokz brand visual, explorable: a shimmering neural cluster bridged by a particle stream to a minting block lattice. Drag to orbit the bridge; click to fire a thought across it and mint a block on arrival.",
       "pubDate": "2026-06-12",
       "type": "three",
+      "archetype": "scene",
       "topics": [
         "ai",
         "blockchain"
@@ -353,6 +359,7 @@
       "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
       "pubDate": "2026-06-11",
       "type": "three",
+      "archetype": "simulation",
       "topics": [
         "blockchain",
         "infrastructure"
@@ -368,6 +375,7 @@
       "description": "Forward passes through a small feed-forward network, animated: signals ripple layer to layer, weights set the glow, and activations heat the neurons they reach.",
       "pubDate": "2026-06-11",
       "type": "canvas",
+      "archetype": "simulation",
       "topics": [
         "machine-learning",
         "ai"

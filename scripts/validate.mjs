@@ -11,6 +11,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   ROOT,
+  ARTIFACTS_DIR,
+  ARCHETYPES,
   ISLANDS_DIR,
   INDEX_FILE,
   SLUG_RE,
@@ -106,6 +108,26 @@ for (const { relPath, dir, manifest: m, error } of artifacts) {
     fail(relPath, `no entry module at src/islands/artifacts/${m.slug}.ts`);
   for (const t of m.topics ?? []) {
     if (!topics.has(t)) fail(relPath, `unknown topic "${t}"`);
+  }
+
+  if (m.archetype !== undefined && !ARCHETYPES.includes(m.archetype)) {
+    fail(relPath, `unknown archetype "${m.archetype}" — one of: ${ARCHETYPES.join(', ')}`);
+  } else if (m.archetype === undefined) {
+    warn.push(`${relPath}: no archetype set — pick one of: ${ARCHETYPES.join(', ')}`);
+  }
+
+  // Data-backed artifacts must carry provenance (no orphaned numbers).
+  const dataFile = path.join(ARTIFACTS_DIR, dir, 'data.json');
+  if (existsSync(dataFile)) {
+    try {
+      JSON.parse(readFileSync(dataFile, 'utf8'));
+    } catch (e) {
+      fail(relPath, `data.json is not valid JSON: ${e.message}`);
+    }
+    if (!m.dataAsOf || Number.isNaN(new Date(m.dataAsOf).valueOf()))
+      fail(relPath, 'data.json present but manifest lacks a valid dataAsOf date');
+    if (!m.dataSource?.label || !m.dataSource?.url)
+      fail(relPath, 'data.json present but manifest lacks dataSource { label, url }');
   }
 }
 

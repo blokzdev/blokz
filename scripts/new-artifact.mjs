@@ -5,19 +5,21 @@
  *
  * Usage:
  *   npm run new:artifact -- --title "My Artifact" --type three|canvas|svg|dom \
- *     --topics ai,blockchain [--description "…"] [--slug custom-slug]
+ *     --topics ai,blockchain [--archetype chart|map|diagram|simulation|calculator|scene] \
+ *     [--description "…"] [--slug custom-slug]
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { execFileSync } from 'node:child_process';
-import { ARTIFACTS_DIR, ISLANDS_DIR, ROOT, SLUG_RE, loadTaxonomy, slugify } from './lib.mjs';
+import { ARCHETYPES, ARTIFACTS_DIR, ISLANDS_DIR, ROOT, SLUG_RE, loadTaxonomy, slugify } from './lib.mjs';
 
 const { values: args } = parseArgs({
   options: {
     title: { type: 'string' },
     description: { type: 'string' },
     type: { type: 'string' },
+    archetype: { type: 'string' },
     topics: { type: 'string' },
     slug: { type: 'string' },
   },
@@ -26,6 +28,11 @@ const { values: args } = parseArgs({
 const TYPES = ['three', 'canvas', 'svg', 'dom'];
 if (!args.title || !args.type || !args.topics || !TYPES.includes(args.type)) {
   console.error('Usage: npm run new:artifact -- --title "…" --type three|canvas|svg|dom --topics ai,…');
+  process.exit(1);
+}
+const archetype = args.archetype ?? 'simulation';
+if (!ARCHETYPES.includes(archetype)) {
+  console.error(`✗ unknown archetype "${archetype}". One of: ${ARCHETYPES.join(', ')}`);
   process.exit(1);
 }
 
@@ -58,6 +65,7 @@ const manifest = {
     args.description ?? 'TODO: 20–300 char description of what this artifact shows and how to interact with it.',
   pubDate: new Date().toISOString().slice(0, 10),
   type: args.type,
+  archetype,
   topics,
   aspect: '16/9',
   featured: false,

@@ -8,7 +8,8 @@ topics: [blockchain, machine-learning, infrastructure]
 tags: [oracles, optimistic, dispute-games, inference, staking]
 series: proof-of-intelligence
 seriesOrder: 2
-artifacts: [block-mesh]
+artifacts: [block-mesh, dispute-bisection]
+updatedDate: 2026-06-12
 difficulty: intermediate
 sources:
   - label: "Arbitrum Nitro interactive fraud proofs"
@@ -34,6 +35,12 @@ An optimistic ML oracle has three roles, all staked:
    operation by operation — until the disagreement narrows to a single step
    small enough for the chain itself to re-execute. Whoever lied loses the
    bond.
+
+That third step is the clever part, and it's easier to watch than to read:
+plant a fault anywhere in the trace below and the bisection corners it in
+six hash comparisons — log₂(64), never 64 re-executions on-chain.
+
+<Artifact slug="dispute-bisection" />
 
 The network of proposers and watchers gossiping results and challenges looks
 a lot like any other p2p overlay:

@@ -1,0 +1,17 @@
+{
+  "slug": "dispute-bisection",
+  "title": "Dispute Bisection",
+  "description": "An interactive fraud-proof dispute game: tap anywhere on a 64-step computation trace to plant a fault, then watch challenger and proposer bisect their disagreement — six hash comparisons corner the one step the chain must re-execute.",
+  "pubDate": "2026-06-12",
+  "type": "canvas",
+  "topics": [
+    "blockchain",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "click / tap anywhere on the trace to plant the fault and restart the dispute",
+    "left alone, it replays with a random fault"
+  ]
+}

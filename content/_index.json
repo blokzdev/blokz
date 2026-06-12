@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 14,
-    "artifacts": 13
+    "articles": 15,
+    "artifacts": 14
   },
   "topicCounts": {
     "agents": 5,
     "ai": 2,
-    "blockchain": 7,
+    "blockchain": 8,
     "cryptography": 2,
     "data": 1,
     "defi": 2,
@@ -14,10 +14,10 @@
     "llm": 1,
     "machine-learning": 7,
     "research": 1,
-    "security": 5,
+    "security": 6,
     "smart-contracts": 2,
     "web3": 2,
-    "zero-knowledge": 1
+    "zero-knowledge": 2
   },
   "articles": [
     {
@@ -146,6 +146,34 @@
       ],
       "artifacts": [
         "protocol-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "proof-of-personhood-priority-blockspace",
+      "path": "content/articles/2026/06/proof-of-personhood-priority-blockspace/index.mdx",
+      "url": "/articles/proof-of-personhood-priority-blockspace",
+      "title": "Proof of Personhood vs. the Agent Flood: Inside World ID and Priority Blockspace for Humans",
+      "description": "World Chain reserved top-of-block space for verified humans while 382M smart-account ops poured in. We read the Semaphore tree on Ethereum — 17.59M identities, hourly batches at ~3,300 gas each — decode PBH's month-stamped nullifiers, and find the human-only lane sitting almost empty.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "zero-knowledge",
+        "blockchain",
+        "security"
+      ],
+      "tags": [
+        "world-id",
+        "semaphore",
+        "pbh",
+        "nullifiers",
+        "proof-of-personhood",
+        "world-chain",
+        "erc-4337"
+      ],
+      "artifacts": [
+        "merkle-cascade",
+        "nullifier-gate"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -514,6 +542,22 @@
       "archetype": "diagram",
       "topics": [
         "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "nullifier-gate",
+      "path": "content/artifacts/nullifier-gate/manifest.json",
+      "module": "src/islands/artifacts/nullifier-gate.ts",
+      "url": "/artifacts/nullifier-gate",
+      "title": "Nullifier Gate",
+      "description": "Semaphore's double-signal defense, explorable: send transactions to spend month-scoped nullifiers PBH-style, replay a spent proof to watch the gate revert with the real contract errors, and roll the month to see the external nullifier change reset the quota.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "zero-knowledge",
         "blockchain"
       ],
       "draft": false

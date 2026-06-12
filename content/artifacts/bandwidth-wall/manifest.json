@@ -1,0 +1,15 @@
+{
+  "slug": "bandwidth-wall",
+  "title": "The Bandwidth Wall",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-12",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

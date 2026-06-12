@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 12,
-    "artifacts": 10
+    "artifacts": 11
   },
   "topicCounts": {
     "agents": 5,
@@ -347,6 +347,22 @@
       "topics": [
         "llm",
         "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "bandwidth-wall",
+      "path": "content/artifacts/bandwidth-wall/manifest.json",
+      "module": "src/islands/artifacts/bandwidth-wall.ts",
+      "url": "/artifacts/bandwidth-wall",
+      "title": "The Bandwidth Wall",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

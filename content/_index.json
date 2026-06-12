@@ -1,21 +1,21 @@
 {
   "counts": {
-    "articles": 12,
+    "articles": 13,
     "artifacts": 11
   },
   "topicCounts": {
     "agents": 5,
-    "ai": 1,
+    "ai": 2,
     "blockchain": 7,
     "cryptography": 2,
     "defi": 2,
-    "infrastructure": 6,
+    "infrastructure": 7,
     "llm": 1,
     "machine-learning": 6,
     "research": 1,
     "security": 4,
     "smart-contracts": 2,
-    "web3": 1,
+    "web3": 2,
     "zero-knowledge": 1
   },
   "articles": [
@@ -42,6 +42,23 @@
       "artifacts": [
         "emission-engine"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "decentralized-gpu-markets-burn-mint-vs-auction",
+      "path": "content/articles/2026/06/decentralized-gpu-markets-burn-mint-vs-auction/index.mdx",
+      "url": "/articles/decentralized-gpu-markets-burn-mint-vs-auction",
+      "title": "Burn, Mint, or Bid: How Decentralized GPU Markets Price Compute",
+      "description": "Render just voted to route 60,000 Salad GPUs' payments through a token burn; Akash auctions its 234 GPUs per-block on-chain. Two opposed pricing mechanisms, live H100 quotes, and the burn-vs-emission math the equilibrium story skips.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "infrastructure",
+        "ai",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

@@ -1,5 +1,6 @@
 ---
 import { artifactUrl, formatDate, type Artifact } from '@/lib/content-helpers';
+import { constellation } from '@/lib/constellation';
 
 interface Props {
   artifact: Artifact;
@@ -15,27 +16,7 @@ const typeLabel: Record<typeof data.type, string> = {
   dom: 'DOM',
 };
 
-/* Deterministic generative constellation, seeded by the slug: every artifact
- * gets a unique preview at build time with zero runtime cost. */
-const seed = [...data.slug].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 9);
-let s = seed || 1;
-const rand = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
-const palette = ['#5b8cff', '#8b5cf6', '#22d3ee'];
-const pts = Array.from({ length: 14 }, () => ({
-  x: 6 + rand() * 88,
-  y: 8 + rand() * 40,
-  r: 0.6 + rand() * 0.9,
-  c: palette[Math.floor(rand() * palette.length)],
-}));
-const d2 = (a: (typeof pts)[number], b: (typeof pts)[number]) =>
-  (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
-const lines = pts.flatMap((p) =>
-  [...pts]
-    .filter((q) => q !== p)
-    .sort((q1, q2) => d2(p, q1) - d2(p, q2))
-    .slice(0, 2)
-    .map((q) => ({ a: p, b: q })),
-);
+const { pts, lines } = constellation(data.slug);
 ---
 
 <article class="card-hover glass group relative flex h-full flex-col overflow-hidden rounded-2xl" data-reveal-item>

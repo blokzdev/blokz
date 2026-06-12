@@ -6,6 +6,6 @@
   "type": "canvas",
   "topics": ["machine-learning", "ai"],
   "aspect": "16/9",
-  "featured": true,
+  "featured": false,
   "controls": ["click to fire a forward pass"]
 }

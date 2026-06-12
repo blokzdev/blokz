@@ -168,7 +168,9 @@
   background-size: 0% 1px;
   background-position: 0 100%;
   background-repeat: no-repeat;
-  transition: background-size 0.35s var(--ease-out-expo);
+  transition:
+    background-size 0.35s var(--ease-out-expo),
+    color 0.2s;
   &:hover,
   &:focus-visible {
     background-size: 100% 1px;

@@ -6,9 +6,12 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 ---
 
 <header class="fixed inset-x-0 top-0 z-50">
-  <div class="glass mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-6 md:mt-4">
+  <div
+    data-header
+    class="glass header-shell mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-6 md:mt-4"
+  >
     <a href="/" class="group flex items-center gap-2.5" aria-label={`${SITE.name} home`}>
-      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true" class="logo-mark">
         <defs>
           <linearGradient id="bz" x1="0" y1="0" x2="32" y2="32">
             <stop stop-color="#5b8cff"></stop>
@@ -35,10 +38,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
             href={href}
             aria-current={isActive(href) ? 'page' : undefined}
             class:list={[
-              'rounded-lg px-3.5 py-1.5 text-sm transition-colors',
-              isActive(href)
-                ? 'bg-accent/12 text-white'
-                : 'text-muted hover:bg-white/5 hover:text-white',
+              'nav-link relative rounded-lg px-3.5 py-1.5 text-sm transition-colors',
+              isActive(href) ? 'text-white' : 'text-muted hover:text-white',
             ]}
           >
             {label}
@@ -51,7 +52,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
       <button
         type="button"
         data-search-open
-        class="flex items-center gap-2 rounded-lg border border-line bg-white/3 px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent/40 hover:text-white"
+        class="flex items-center gap-2 rounded-lg border border-line bg-white/3 px-3 py-1.5 text-sm text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
         aria-label="Search articles"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
@@ -76,35 +77,106 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     </div>
   </div>
 
-  <nav
-    data-mobile-menu
-    class="glass mx-auto mt-2 hidden max-w-6xl flex-col gap-1 rounded-2xl p-3 md:!hidden"
-    aria-label="Mobile"
-  >
-    {
-      NAV.map(({ label, href }) => (
-        <a
-          href={href}
-          class:list={[
-            'rounded-lg px-4 py-2.5 text-sm',
-            isActive(href) ? 'bg-accent/12 text-white' : 'text-muted',
-          ]}
-        >
-          {label}
-        </a>
-      ))
-    }
-  </nav>
+  <div data-mobile-menu class="menu-wrap mx-auto max-w-6xl px-3 md:hidden">
+    <nav aria-label="Mobile">
+      <div class="glass mt-2 flex flex-col gap-1 rounded-2xl p-3">
+        {
+          NAV.map(({ label, href }) => (
+            <a
+              href={href}
+              class:list={[
+                'rounded-lg px-4 py-2.5 text-sm',
+                isActive(href) ? 'bg-accent/12 text-white' : 'text-muted',
+              ]}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+  </div>
 </header>
 
 <!-- Spacer so content clears the fixed header. -->
 <div class="h-20" aria-hidden="true"></div>
 
+<style>
+  .header-shell {
+    transition:
+      margin-top 0.35s var(--ease-out-expo),
+      border-color 0.35s var(--ease-out-expo),
+      box-shadow 0.35s var(--ease-out-expo),
+      background 0.35s var(--ease-out-expo);
+  }
+  .header-shell.is-scrolled {
+    margin-top: 0.375rem;
+    background: color-mix(in srgb, var(--color-ink) 88%, transparent);
+    border-color: var(--color-line-bright);
+    box-shadow: var(--shadow-glow-sm);
+  }
+
+  /* Gradient underline: grows on hover, pinned for the current page. */
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset: auto 0.875rem 0.3rem 0.875rem;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s var(--ease-out-expo);
+  }
+  .nav-link:hover::after,
+  .nav-link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* Mobile menu: CSS grid-rows animation, degrades to instant. */
+  .menu-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s var(--ease-out-expo);
+  }
+  .menu-wrap > nav {
+    overflow: hidden;
+    visibility: hidden;
+    transition: visibility 0.4s;
+  }
+  .menu-wrap.is-open {
+    grid-template-rows: 1fr;
+  }
+  .menu-wrap.is-open > nav {
+    visibility: visible;
+  }
+
+  .logo-mark {
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+  .group:hover .logo-mark {
+    transform: rotate(90deg);
+  }
+</style>
+
 <script>
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
   toggle?.addEventListener('click', () => {
-    const open = menu?.classList.toggle('hidden') === false;
+    const open = menu?.classList.toggle('is-open') === true;
     toggle.setAttribute('aria-expanded', String(open));
   });
+
+  const shell = document.querySelector<HTMLElement>('[data-header]');
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      shell?.classList.toggle('is-scrolled', window.scrollY > 24);
+      ticking = false;
+    });
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
 </script>

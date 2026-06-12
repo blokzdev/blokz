@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 15,
-    "artifacts": 14
+    "articles": 16,
+    "artifacts": 15
   },
   "topicCounts": {
-    "agents": 5,
+    "agents": 6,
     "ai": 2,
     "blockchain": 8,
     "cryptography": 2,
@@ -14,12 +14,38 @@
     "llm": 1,
     "machine-learning": 7,
     "research": 1,
-    "security": 6,
-    "smart-contracts": 2,
+    "security": 7,
+    "smart-contracts": 3,
     "web3": 2,
     "zero-knowledge": 2
   },
   "articles": [
+    {
+      "slug": "agent-key-custody-blast-radius",
+      "path": "content/articles/2026/06/agent-key-custody-blast-radius/index.mdx",
+      "url": "/articles/agent-key-custody-blast-radius",
+      "title": "Agent Keys and the Blast Radius Problem: Custody Engineering with EIP-7702 and Spend Permissions",
+      "description": "An agent holding your raw key is one prompt injection from total loss — and 97% of early EIP-7702 delegations went to drainer sweepers. We read the sweeper's source off the chain, dissect a real 35.97-USDC-a-day spend permission on Base, and do the blast-radius math.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-7702",
+        "spend-permissions",
+        "session-keys",
+        "agent-wallets",
+        "key-custody",
+        "account-abstraction"
+      ],
+      "artifacts": [
+        "blast-radius"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "bittensor-taoflow-emission-engine",
       "path": "content/articles/2026/06/bittensor-taoflow-emission-engine/index.mdx",
@@ -446,6 +472,22 @@
       "topics": [
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "blast-radius",
+      "path": "content/artifacts/blast-radius/manifest.json",
+      "module": "src/islands/artifacts/blast-radius.ts",
+      "url": "/artifacts/blast-radius",
+      "title": "Blast Radius",
+      "description": "What a hijacked agent key costs under three custody models: a raw EOA key loses the whole wallet instantly, an expiry-only session key does too, and a per-period spend permission caps the bleed. Drag the sliders — or load a real 35.97 USDC/day permission pulled off Base — and watch the staircase.",
+      "pubDate": "2026-06-12",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "security"
       ],
       "draft": false
     },

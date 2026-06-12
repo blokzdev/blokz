@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 4,
-    "artifacts": 6
+    "artifacts": 7
   },
   "topicCounts": {
     "agents": 2,
@@ -46,6 +46,7 @@
       "title": "Optimistic ML Oracles: Verifiable Inference Without the Proof Overhead",
       "description": "Zero-knowledge proofs aren't the only path to trustworthy on-chain AI. Optimistic schemes trade latency for a 1000x cost reduction — here's how dispute games over inference actually work.",
       "pubDate": "2026-06-11",
+      "updatedDate": "2026-06-12",
       "topics": [
         "blockchain",
         "machine-learning",
@@ -61,7 +62,8 @@
       "series": "proof-of-intelligence",
       "seriesOrder": 2,
       "artifacts": [
-        "block-mesh"
+        "block-mesh",
+        "dispute-bisection"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -131,6 +133,21 @@
       "topics": [
         "llm",
         "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "dispute-bisection",
+      "path": "content/artifacts/dispute-bisection/manifest.json",
+      "module": "src/islands/artifacts/dispute-bisection.ts",
+      "url": "/artifacts/dispute-bisection",
+      "title": "Dispute Bisection",
+      "description": "An optimistic dispute game in motion: a proposer's claimed trace diverges from honest re-execution at one hidden step, and bisection corners it in five probes — the only step the chain ever re-executes. Click anywhere on the trace to plant the fault and replay.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "topics": [
+        "blockchain",
+        "machine-learning"
       ],
       "draft": false
     },

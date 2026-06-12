@@ -1,0 +1,16 @@
+{
+  "slug": "dispute-bisection",
+  "title": "Dispute Bisection",
+  "description": "An optimistic dispute game in motion: a proposer's claimed trace diverges from honest re-execution at one hidden step, and bisection corners it in five probes — the only step the chain ever re-executes. Click anywhere on the trace to plant the fault and replay.",
+  "pubDate": "2026-06-12",
+  "type": "canvas",
+  "topics": [
+    "blockchain",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "click or tap a step to plant the fault there and replay the dispute"
+  ]
+}

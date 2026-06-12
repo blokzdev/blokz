@@ -31,6 +31,9 @@ export interface Synapse {
   /** A cohort of bridge particles respawns at the brain and surges across at
    *  3× speed; a lattice block mints with a flash when the cohort lands. */
   fireThought: () => void;
+  /** Release resources not reachable by SceneHandle.dispose() (sprite glow
+   *  material + canvas texture). Call from the artifact/hero cleanup. */
+  dispose: () => void;
 }
 
 const expoOut = (x: number) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
@@ -49,6 +52,7 @@ function makePointsMaterial(pixelRatio: number, jitter: number, size: number) {
     },
     vertexShader: /* glsl */ `
       attribute float aPhase;
+      attribute float aSize;
       attribute vec3 aColor;
       uniform float uTime;
       uniform float uJitter;
@@ -62,7 +66,7 @@ function makePointsMaterial(pixelRatio: number, jitter: number, size: number) {
           sin(uTime * 1.1 + aPhase * 2.3)
         );
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_PointSize = uSize * (90.0 / -mv.z);
+        gl_PointSize = uSize * aSize * (90.0 / -mv.z);
         gl_Position = projectionMatrix * mv;
       }
     `,
@@ -115,6 +119,10 @@ export function buildSynapse({
   brainGeo.setAttribute('position', new THREE.BufferAttribute(brainPos, 3));
   brainGeo.setAttribute('aColor', new THREE.BufferAttribute(brainCol, 3));
   brainGeo.setAttribute('aPhase', new THREE.BufferAttribute(brainPhase, 1));
+  brainGeo.setAttribute(
+    'aSize',
+    new THREE.BufferAttribute(new Float32Array(brainCount).map(() => 0.8 + Math.random() * 0.5), 1),
+  );
   const brainMat = makePointsMaterial(pixelRatio, 0.18, 1.5);
   group.add(new THREE.Points(brainGeo, brainMat));
 
@@ -183,6 +191,10 @@ export function buildSynapse({
   latticeGeo.setAttribute('position', new THREE.BufferAttribute(latticePos, 3));
   latticeGeo.setAttribute('aColor', new THREE.BufferAttribute(latticeCol, 3));
   latticeGeo.setAttribute('aPhase', new THREE.BufferAttribute(latticePhase, 1));
+  latticeGeo.setAttribute(
+    'aSize',
+    new THREE.BufferAttribute(new Float32Array(latticeSize ** 3).fill(1), 1),
+  );
   group.add(new THREE.Points(latticeGeo, makePointsMaterial(pixelRatio, 0.04, 1.2)));
 
   const cellEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(spacing, spacing, spacing));
@@ -229,12 +241,39 @@ export function buildSynapse({
   const bridgePos = new Float32Array(bridgeCount * 3);
   const bridgeCol = new Float32Array(bridgeCount * 3);
   const bridgePhase = new Float32Array(bridgeCount).map(() => Math.random() * Math.PI * 2);
+  const bridgeBase = new Float32Array(bridgeCount).map(() => 0.85 + Math.random() * 0.45);
+  const bridgeSize = new Float32Array(bridgeBase);
   const bridgeGeo = new THREE.BufferGeometry();
   bridgeGeo.setAttribute('position', new THREE.BufferAttribute(bridgePos, 3));
   bridgeGeo.setAttribute('aColor', new THREE.BufferAttribute(bridgeCol, 3));
   bridgeGeo.setAttribute('aPhase', new THREE.BufferAttribute(bridgePhase, 1));
+  bridgeGeo.setAttribute('aSize', new THREE.BufferAttribute(bridgeSize, 1));
   const bridgeMat = makePointsMaterial(pixelRatio, 0, 1.1);
   group.add(new THREE.Points(bridgeGeo, bridgeMat));
+
+  /* ---- Core glow: a soft additive bloom at mid-bridge for depth ---- */
+  const glowCanvas = document.createElement('canvas');
+  glowCanvas.width = glowCanvas.height = 64;
+  const gctx = glowCanvas.getContext('2d')!;
+  const grad = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.4, 'rgba(255,255,255,0.32)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  gctx.fillStyle = grad;
+  gctx.fillRect(0, 0, 64, 64);
+  const glowTexture = new THREE.CanvasTexture(glowCanvas);
+  const glowMat = new THREE.SpriteMaterial({
+    map: glowTexture,
+    color: ACCENT,
+    transparent: true,
+    opacity: 0.22,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.setScalar(30);
+  glow.position.set(0, -2, 0);
+  group.add(glow);
 
   /* ---- Animation state ---- */
   let lastMint = 0;
@@ -263,7 +302,9 @@ export function buildSynapse({
     brainMat.uniforms.uTime!.value = t;
     bridgeMat.uniforms.uTime!.value = t;
 
-    // Bridge particles advance; surging ones travel 3× and mint on landing.
+    // Bridge particles advance; surging ones travel 3×, run bigger and
+    // brighter, and mint a block on landing.
+    let surgingNow = 0;
     for (let i = 0; i < bridgeCount; i++) {
       progress[i]! += speed[i]! * dt * (surging[i] ? 3 : 1);
       if (progress[i]! >= 1) {
@@ -280,11 +321,19 @@ export function buildSynapse({
       bridgePos[i * 3 + 1] = point.y + offsets[i * 3 + 1]! * sag;
       bridgePos[i * 3 + 2] = point.z + offsets[i * 3 + 2]! * sag;
       tmpColor.lerpColors(ACCENT, CYAN, p);
-      if (surging[i]) tmpColor.lerp(CYAN, 0.5).multiplyScalar(1.4);
+      if (surging[i]) {
+        tmpColor.lerp(CYAN, 0.5).multiplyScalar(1.4);
+        surgingNow++;
+      }
       bridgeCol.set([tmpColor.r, tmpColor.g, tmpColor.b], i * 3);
+      bridgeSize[i] = surging[i] ? bridgeBase[i]! * 2 : bridgeBase[i]!;
     }
     (bridgeGeo.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
     (bridgeGeo.getAttribute('aColor') as THREE.BufferAttribute).needsUpdate = true;
+    (bridgeGeo.getAttribute('aSize') as THREE.BufferAttribute).needsUpdate = true;
+
+    // Core glow breathes; brightens while a thought is in flight.
+    glowMat.opacity = 0.2 + 0.05 * Math.sin(t * 0.7) + (surgingNow > 0 ? 0.12 : 0);
 
     // Lattice cells: scale-in with expo ease + decaying flash; ambient mint ~4s.
     if (t - lastMint > 4) mint(t);
@@ -296,5 +345,10 @@ export function buildSynapse({
     }
   }
 
-  return { group, update, fireThought };
+  function dispose() {
+    glowMat.dispose();
+    glowTexture.dispose();
+  }
+
+  return { group, update, fireThought, dispose };
 }

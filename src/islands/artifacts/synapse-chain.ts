@@ -70,6 +70,7 @@ export default function mount(container: HTMLElement): () => void {
     canvas.removeEventListener('pointerdown', down);
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
+    synapse.dispose();
     handle.dispose();
     canvas.remove();
   };

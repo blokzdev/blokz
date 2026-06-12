@@ -174,7 +174,18 @@ const featuredArtifacts = [...artifacts].sort(
     const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (canvas && !reduced) {
-      const start = () => import('@/islands/hero-scene').then(({ default: mountScene }) => mountScene(canvas));
+      // If WebGL is unavailable or mounting throws, drop the canvas silently —
+      // the gradient + grid-veil backdrop carries the hero on its own.
+      const start = () =>
+        import('@/islands/hero-scene')
+          .then(({ default: mountScene }) => {
+            try {
+              mountScene(canvas);
+            } catch {
+              canvas.remove();
+            }
+          })
+          .catch(() => canvas.remove());
       'requestIdleCallback' in window ? requestIdleCallback(start) : setTimeout(start, 200);
     }
   </script>

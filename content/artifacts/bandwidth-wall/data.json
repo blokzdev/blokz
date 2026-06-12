@@ -1,0 +1,37 @@
+{
+  "source": {
+    "label": "DeMo: Decoupled Momentum Optimization — Table 1 (arXiv:2411.19870)",
+    "url": "https://arxiv.org/abs/2411.19870"
+  },
+  "asOf": "2026-06-12",
+  "unit": "MB per optimizer step per GPU",
+  "models": [
+    {
+      "id": "olmo-300m",
+      "label": "OLMo-300M",
+      "rows": [
+        { "method": "AdamW-DDP", "k": null, "mbPerStep": 636.9 },
+        { "method": "DeMo", "k": 32, "mbPerStep": 29.9 },
+        { "method": "DeMo", "k": 16, "mbPerStep": 14.9 },
+        { "method": "DeMo", "k": 8, "mbPerStep": 7.49 },
+        { "method": "DeMo", "k": 4, "mbPerStep": 3.74 },
+        { "method": "DeMo", "k": 2, "mbPerStep": 1.87 },
+        { "method": "DeMo", "k": 1, "mbPerStep": 0.93 }
+      ]
+    },
+    {
+      "id": "olmo-1b",
+      "label": "OLMo-1B",
+      "rows": [
+        { "method": "AdamW-DDP", "k": null, "mbPerStep": 2416.6 },
+        { "method": "DeMo", "k": 32, "mbPerStep": 110.32 },
+        { "method": "DeMo", "k": 16, "mbPerStep": 55.16 },
+        { "method": "DeMo", "k": 8, "mbPerStep": 27.58 },
+        { "method": "DeMo", "k": 4, "mbPerStep": 13.79 },
+        { "method": "DeMo", "k": 2, "mbPerStep": 6.89 },
+        { "method": "DeMo", "k": 1, "mbPerStep": 3.44 }
+      ]
+    }
+  ],
+  "note": "DeMo k=8 matched or exceeded the AdamW-DDP baseline on HellaSwag (0.38 vs 0.35), ARC-Easy (0.47 vs 0.46) and PIQA (0.67 vs 0.65) after a 100B-token OLMo-300M pretrain; lower k is not free."
+}

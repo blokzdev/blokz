@@ -3,10 +3,11 @@ slug: what-the-blockchain-actually-does-in-decentralized-ai-training
 title: "What the Blockchain Actually Does in Decentralized AI Training"
 description: "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster."
 pubDate: 2026-06-12
+updatedDate: 2026-06-12
 author: blokz
 topics: [machine-learning, blockchain, research]
 tags: [decentralized-training, psyche, distro, toploc, solana, prime-intellect]
-artifacts: [block-mesh]
+artifacts: [block-mesh, bandwidth-wall]
 difficulty: intermediate
 sources:
   - label: "DeMo: Decoupled Momentum Optimization (arXiv:2411.19870)"
@@ -45,15 +46,10 @@ connection, you'd spend ~19 seconds per step just shipping gradients, before any
 Research with Diederik Kingma of Adam fame) attacks exactly this. Instead of synchronizing
 full gradients, each node accumulates momentum locally, runs a discrete cosine transform
 over it, and transmits only the top-k fastest-moving frequency components, with the residual
-fed back into local momentum so nothing is silently dropped. The measured numbers for
-OLMo-1B:
+fed back into local momentum so nothing is silently dropped. The paper's measured numbers,
+for both OLMo sizes — and what each bar costs in wall-clock seconds on a link you choose:
 
-| Method | MB/step per GPU | Reduction |
-| --- | --- | --- |
-| AdamW-DDP | 2,416.6 | 1× |
-| DeMo k=32 | 110.3 | 22× |
-| DeMo k=8 | 27.6 | 88× |
-| DeMo k=1 | 3.4 | ~700× |
+<Artifact slug="bandwidth-wall" />
 
 At k=8, DeMo matched or exceeded the AdamW-DDP baseline on HellaSwag, ARC-Easy, and PIQA
 after a 100B-token pretrain. DisTrO, the production optimizer family Psyche builds on, pushes

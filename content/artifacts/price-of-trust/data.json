@@ -1,0 +1,84 @@
+{
+  "asOf": "2026-06-12",
+  "metric": "Per-inference compute overhead vs. running the same model in plaintext (multiplier, log scale)",
+  "approaches": [
+    {
+      "id": "native",
+      "label": "Plain inference",
+      "overheadMin": 1,
+      "overheadMax": 1,
+      "rangeLabel": "1×",
+      "buys": "baseline",
+      "finality": "instant — and unverifiable",
+      "trust": "the API operator, entirely",
+      "privacy": "none",
+      "note": "The thing every other bar is paying to improve on.",
+      "source": { "label": "baseline", "url": "" }
+    },
+    {
+      "id": "tee",
+      "label": "TEE-attested",
+      "overheadMin": 1.02,
+      "overheadMax": 1.07,
+      "rangeLabel": "1.02–1.07×",
+      "buys": "integrity + privacy vs. host",
+      "finality": "seconds (one signature verify; quote amortized)",
+      "trust": "silicon vendor + whoever racks the server",
+      "privacy": "encrypted memory; broken by physical access (TEE.fail, Oct 2025)",
+      "note": "Under 7% throughput overhead for H100 confidential computing on Llama-class models; overhead shrinks as models grow.",
+      "source": { "label": "arXiv:2409.03992 (H100 CC benchmark)", "url": "https://arxiv.org/abs/2409.03992" }
+    },
+    {
+      "id": "optimistic",
+      "label": "Optimistic re-execution",
+      "overheadMin": 2,
+      "overheadMax": 4,
+      "rangeLabel": "2–4×",
+      "buys": "integrity, delayed",
+      "finality": "challenge window: minutes to hours",
+      "trust": "at least one honest, solvent watcher",
+      "privacy": "none — inputs must be public to replay",
+      "note": "Pay for 2–4 replicated executions plus a dispute game nobody runs on the happy path.",
+      "source": { "label": "Proof of Intelligence part 2", "url": "https://blokz.dev/articles/optimistic-ml-oracles" }
+    },
+    {
+      "id": "zkml",
+      "label": "zkML proof",
+      "overheadMin": 1000,
+      "overheadMax": 100000,
+      "rangeLabel": "10³–10⁵×",
+      "buys": "integrity, unconditional",
+      "finality": "proving time: seconds to minutes",
+      "trust": "the math (and the circuit compiler)",
+      "privacy": "possible (weights or inputs), at extra proving cost",
+      "note": "10³–10⁵× proving overhead caps practical zkML at tens of millions of parameters.",
+      "source": { "label": "Proof of Intelligence part 1", "url": "https://blokz.dev/articles/zkml-verifiable-inference-landscape" }
+    },
+    {
+      "id": "fhe",
+      "label": "FHE inference",
+      "overheadMin": 1000,
+      "overheadMax": 100000,
+      "rangeLabel": "10³–10⁵×",
+      "buys": "privacy only — no integrity",
+      "finality": "seconds–minutes per token (GPT-2: ~11 s/token on GPU)",
+      "trust": "threshold key committee (13-party MPC for on-chain FHE)",
+      "privacy": "cryptographic — server computes on data it cannot read",
+      "note": "GPT-2 at ~11 s/token (GPU) / ~300 s/token (CPU) in Concrete ML's hybrid scheme; literature puts full FHE inference up to 5 orders of magnitude over plaintext.",
+      "source": { "label": "Zama Concrete ML benchmarks; arXiv:2404.03216", "url": "https://docs.zama.org/concrete-ml/llms/inference" }
+    },
+    {
+      "id": "vfhe",
+      "label": "Verifiable FHE (research)",
+      "overheadMin": 27000,
+      "overheadMax": 3600000,
+      "rangeLabel": "2.7×10⁴ – 3.6×10⁶×",
+      "buys": "privacy + integrity",
+      "finality": "FHE latency + proving time",
+      "trust": "the math, end to end",
+      "privacy": "cryptographic, with a proof the ciphertext is honest",
+      "note": "ZHE (2025) proves HE evaluations at 27–36× the cost of the evaluation itself — stacked on FHE's 10³–10⁵×, the only trustless private inference costs 10⁴·⁴–10⁶·⁶×.",
+      "source": { "label": "ZHE, ePrint 2025/770", "url": "https://eprint.iacr.org/2025/770" }
+    }
+  ]
+}

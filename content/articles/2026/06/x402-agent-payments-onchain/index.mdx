@@ -1,0 +1,242 @@
+---
+slug: x402-agent-payments-onchain
+title: "Agents That Pay: How x402 Settles a Stablecoin Payment On-Chain"
+description: "An agent hits an API, gets HTTP 402, signs a stablecoin authorization, and a facilitator settles it on-chain for a fraction of a cent. We trace one real payment on Base down to the gas — and where the trust actually sits."
+pubDate: 2026-06-12
+author: blokz
+topics: [agents, web3, smart-contracts, infrastructure]
+tags: [x402, stablecoins, eip-3009, usdc, micropayments, facilitator]
+artifacts: [block-mesh]
+difficulty: intermediate
+sources:
+  - label: "x402 protocol specification (coinbase/x402)"
+    url: "https://github.com/coinbase/x402"
+  - label: "EIP-3009: Transfer With Authorization"
+    url: "https://eips.ethereum.org/EIPS/eip-3009"
+  - label: "Live transferWithAuthorization settlement on Base (Blockscout)"
+    url: "https://base.blockscout.com/tx/0x23fb595e2bd2cd70bbc7d24c65a736bba240b39298f63fdfd52411c9645296fe"
+  - label: "Zero-Trust Runtime Verification for Agentic Payment Protocols (AP2)"
+    url: "https://hf.co/papers/2602.06345"
+---
+
+`HTTP 402 Payment Required` has been a reserved status code since the early
+web, sitting unused for thirty years next to its famous neighbor, `404`. The
+agent era finally gave it a job. When an autonomous agent calls a metered API
+— an inference endpoint, a data feed, a search tool — there is no human to
+paste a credit card or rotate an API key. The agent needs to pay, in-band, at
+the moment of the request, and settle in something a machine can hold. **x402**
+is the open protocol Coinbase revived to make that happen: a 402 response
+carries payment terms, the client signs a stablecoin transfer, and a few
+hundred milliseconds later the call returns paid.
+
+This isn't a thought experiment. The settlement primitive x402 rides on is
+already moving real money on Base. Let's trace one payment from the HTTP
+handshake down to the gas it burned, then look hard at where the trust sits —
+because it is not where the marketing puts it.
+
+## The handshake: a 402 round trip
+
+The flow is an HTTP retry with a payment stapled to it. No new transport, no
+websocket, no wallet popup:
+
+1. The agent requests a resource. The server replies `402 Payment Required`
+   with a `PAYMENT-REQUIRED` header — a base64-encoded JSON object listing
+   accepted payment requirements: the asset (e.g. USDC), the amount, the
+   recipient, the network, and which *scheme* to use.
+2. The client picks a requirement, constructs a signed payment payload, and
+   re-sends the same request with a `PAYMENT-SIGNATURE` header.
+3. The server verifies the payload — locally or by POSTing it to a
+   facilitator's `/verify` endpoint — then settles it (directly, or via the
+   facilitator's `/settle`). On success it returns `200 OK` with a
+   `PAYMENT-RESPONSE` header carrying the settlement receipt.
+
+The load-bearing word is *scheme*. The default EVM scheme is called `exact`,
+and its entire job is to turn "pay 0.002844 USDC to this address" into a
+single signature the payer never has to follow up on.
+
+## What actually settles: EIP-3009, not `approve`
+
+The naïve way to pull a token payment is the ERC-20 two-step: `approve` a
+spender, then `transferFrom`. That's two transactions, two gas payments, and a
+standing allowance you have to remember to revoke. Useless for an agent making
+hundreds of sub-cent calls.
+
+x402's `exact` scheme uses [EIP-3009: Transfer With
+Authorization](https://eips.ethereum.org/EIPS/eip-3009) instead. The payer
+signs an **EIP-712 typed message** authorizing one specific transfer; anyone
+holding that signature can broadcast it. The signed struct is six fields:
+
+```solidity
+struct TransferWithAuthorization {
+    address from;        // payer
+    address to;          // recipient
+    uint256 value;       // amount, in token base units
+    uint256 validAfter;  // unix time the auth turns on
+    uint256 validBefore; // unix time it expires
+    bytes32 nonce;       // random, single-use
+}
+```
+
+The x402 payload is just that struct plus the signature:
+
+```json
+"payload": {
+  "signature": "0x2d6a7588d6acca505cbf0d9a4a227e0c52c6c34008c8e8986a1283259764173608a2ce6496642e377d6da8dbbf5836e9bd15092f9ecab05ded3d6293af148b571c",
+  "authorization": {
+    "from": "0x857b06519E91e3A54538791bDbb0E22373e36b66",
+    "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+    "value": "10000",
+    "validAfter": "1740672089",
+    "validBefore": "1740672154",
+    "nonce": "0xf3746613c2d920b5fdabc0856f2aeb2d4f88ee6037b8cc5d04a71a4462f13480"
+  }
+}
+```
+
+Two properties make this work for agents. First, it's **gasless for the
+payer**: the signature carries no gas, so the agent's wallet never needs the
+chain's native token — only the stablecoin it's spending. Second, the
+authorization is **fully bound**: `to`, `value`, and `nonce` are inside the
+signed message, so whoever relays it cannot redirect the funds or replay it.
+The `nonce` is consumed on-chain; the canonical USDC contract tracks it via
+`authorizationState(authorizer, nonce)` and emits `AuthorizationUsed`, so a
+second submission of the same payload reverts.
+
+## One real settlement, dissected
+
+Here is a live one. On Base at block 47,227,288 (2026-06-12 05:58:43 UTC),
+[transaction
+`0x23fb…5296`](https://base.blockscout.com/tx/0x23fb595e2bd2cd70bbc7d24c65a736bba240b39298f63fdfd52411c9645296fe)
+called `transferWithAuthorization` on Circle's USDC contract
+(`0x8335…2913`, a proxy to the `FiatTokenV2_2` implementation). The decoded
+input:
+
+```text
+method:       transferWithAuthorization
+from (payer): 0x2B4Ee3387008E5fF1A9996fc8B48D2fd61389037
+to:           0xe9030014F5DAe217d0A152f02A043567b16c1aBf
+value:        2844            # 0.002844 USDC — a sub-cent payment
+validAfter:   1781243321
+validBefore:  1781244221      # a 15-minute (900s) validity window
+nonce:        0xc1ca5f94…b788
+v, r, s:      28, 0xd98e…05b7, 0x0cbe…e573
+```
+
+Three things to notice. The **payment is a third of a cent** — exactly the
+micropayment regime that subscriptions and Stripe minimums can't serve. The
+**validity window is 15 minutes**, not open-ended: the authorization is a
+short-lived bearer instrument, not a standing allowance. And the address that
+*submitted* the transaction —
+`0x97AcCe27D5069544480BDe0F04D9F47d7422a016` — is **not the payer**. The payer
+`0x2B4Ee3…` signed; a separate relayer broadcast it and paid the gas. That
+relayer is the facilitator, made visible on-chain.
+
+(One implementation detail worth knowing: the spec's example carries a single
+65-byte `signature`, but the on-chain call used the `(v, r, s)` overload. The
+`FiatTokenV2_2` contract exposes both, and a facilitator can split the
+signature either way before broadcasting.)
+
+What did settlement cost? The transaction burned **86,262 gas at 0.01 gwei**,
+for a total fee of ~0.000000865 ETH — about **$0.0014** at the day's ETH price
+of ~$1,663. The settlement broadcast and propagated across Base's network like
+any other transaction:
+
+<Artifact slug="block-mesh" />
+
+That $0.0014 number cuts both ways, and it's the first honest caveat: gas was
+roughly **half the payment value** here. For a $0.0028 transfer, an L2 still in
+the single-digit-millicent range is fine; for a true $0.0001 metered call, the
+gas would dwarp the payment unless the facilitator sponsors or batches it.
+x402's economics are clean when the payment comfortably exceeds settlement
+cost, and get silly below that. The asset itself is liquid enough not to be the
+bottleneck — USDC on Base alone shows ~12.4M holders and multi-billion daily
+volume — but liquidity was never the hard part. Settlement overhead is.
+
+## The facilitator is the trust assumption
+
+The pitch is "trustless payments." The signature model delivers part of that:
+because `to`, `value`, and `nonce` are signed, the facilitator **cannot steal
+the funds, redirect them, inflate the amount, or replay the authorization.**
+Those are real, cryptographic guarantees.
+
+But "can't steal" is not "can't harm." The facilitator still chooses *whether*
+and *when* to broadcast. It can censor a payment, delay it past its
+`validBefore` so the authorization silently expires, or reorder settlements. In
+the round trip above, the resource server also typically waits on the
+facilitator's `/verify` before returning the resource — so a dishonest or
+simply down facilitator is a liveness dependency, not a safety one, but a
+dependency nonetheless. Run your own, or pick one you'd trust with uptime.
+
+And the settlement asset has its own governance. The USDC contract those
+payments ride on includes `blacklist`, `isBlacklisted`, and `pause` in its
+ABI: Circle can freeze an address or halt the token entirely. That's a feature
+for sanctions compliance and a centralization fact for an "autonomous" agent
+economy. Honest framing beats either cheerleading or doom here — it's a
+permissioned asset with deep liquidity, and you're choosing it with eyes open.
+
+## Wiring an agent to pay
+
+On the client, the current TypeScript SDK collapses the whole handshake into a
+`fetch` wrapper. The agent code never sees the 402:
+
+```typescript
+import { x402Client, wrapFetchWithPayment } from "@x402/fetch";
+import { registerExactEvmScheme } from "@x402/evm/exact/client";
+import { privateKeyToAccount } from "viem/accounts";
+
+const signer = privateKeyToAccount(
+  process.env.EVM_PRIVATE_KEY as `0x${string}`,
+);
+
+const client = new x402Client();
+registerExactEvmScheme(client, { signer });
+
+const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+
+// First call returns 402; the wrapper signs, retries, and resolves paid.
+const res = await fetchWithPayment("https://api.example.com/paid-endpoint");
+const body = await res.json();
+```
+
+The wrapper handles the retry: it reads `PAYMENT-REQUIRED`, builds the
+authorization, signs it with the viem account, and replays the request with
+`PAYMENT-SIGNATURE`. Give that signer a budget-capped key and a spend ceiling —
+not your treasury — because the next failure mode isn't the chain.
+
+## Where it actually breaks: the agent, not the crypto
+
+The cryptography is the strong part. The weak part is the thing deciding *to
+pay*. Recent security work on agentic payment protocols keeps landing on the
+same lesson: the signature binds the transfer, but nothing binds the agent's
+*intent* to the right context. The [zero-trust analysis of AP2 mandate
+flows](https://hf.co/papers/2602.06345) shows how retries and concurrent
+orchestration reopen replay and context-binding gaps at runtime even when the
+signed mandate is sound — the spec is correct and the deployment still leaks.
+And an LLM that decides what to buy is steerable: a poisoned API response or a
+malicious tool description can talk an agent into authorizing a payment it
+never should have. This is the same surface we found dissecting [agentic
+smart-contract auditing](/articles/agentic-smart-contract-auditing) — the model
+is the soft target, and a wallet behind it raises the stakes from a bad code
+review to a drained budget.
+
+So the defenses live at the operating layer, not the protocol layer: per-key
+spend ceilings, allowlisted recipients, short `validBefore` windows (that
+15-minute bound is a feature — keep it tight), idempotency on the nonce, and a
+human or policy gate above some threshold.
+
+## Takeaways
+
+| Concern | x402 / EIP-3009 reality |
+| --- | --- |
+| Settlement primitive | One EIP-712-signed `transferWithAuthorization`; no `approve` |
+| Payer gas | None — facilitator broadcasts and pays |
+| What the signature guards | `to`, `value`, `nonce` — no theft, redirect, or replay |
+| What it doesn't guard | Censorship, delay-to-expiry, ordering; asset-level freeze/pause |
+| Cost floor | L2 gas (~$0.001–0.002 on Base) sets the smallest sane payment |
+| Real weak point | The agent's pay/no-pay decision under adversarial input |
+
+402 finally has a use, and the mechanism underneath it is refreshingly boring:
+a signed transfer that's been in the USDC contract for years. The interesting
+engineering isn't the payment rail — it's everything you wrap around an
+autonomous spender so that "agents that pay" doesn't become "agents that get
+drained."

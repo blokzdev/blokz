@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 14,
+    "articles": 15,
     "artifacts": 13
   },
   "topicCounts": {
-    "agents": 5,
+    "agents": 6,
     "ai": 2,
     "blockchain": 7,
     "cryptography": 2,
     "data": 1,
-    "defi": 2,
+    "defi": 3,
     "infrastructure": 7,
-    "llm": 1,
+    "llm": 2,
     "machine-learning": 7,
     "research": 1,
     "security": 5,
@@ -147,6 +147,23 @@
       "artifacts": [
         "protocol-gap"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "llm-agents-onchain-prediction-markets",
+      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
+      "url": "/articles/llm-agents-onchain-prediction-markets",
+      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "agents",
+        "llm",
+        "defi"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

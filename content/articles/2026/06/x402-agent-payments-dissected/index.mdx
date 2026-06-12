@@ -1,0 +1,155 @@
+---
+slug: x402-agent-payments-dissected
+title: "Dissecting a 1.3-Cent Agent Payment: x402 on Base, by the Numbers"
+description: "We pulled a live x402 settlement off Base: a $0.013 USDC transfer relayed by a facilitator wallet with a nonce past 1.7 million, at an 11% gas-to-value ratio. What on-chain evidence and 100M transactions actually say about the agent economy."
+pubDate: 2026-06-12
+author: blokz
+topics: [agents, blockchain, infrastructure]
+tags: [x402, payments, stablecoins, base, facilitators, on-chain-data]
+artifacts: []
+difficulty: intermediate
+sources:
+  - label: "The dissected settlement transaction on Base (Blockscout)"
+    url: "https://base.blockscout.com/tx/0xb571fe7f2a2fa7839f804d9681a31ea4ab43f1ca2893d77868320d0317d52d14"
+  - label: "Chainalysis: Inside x402 — 100M agentic payments on Base"
+    url: "https://www.chainalysis.com/blog/x402-agentic-payments-adoption/"
+  - label: "x402 protocol specification v2 (coinbase/x402)"
+    url: "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md"
+  - label: "Cloudflare: Launching the x402 Foundation"
+    url: "https://blog.cloudflare.com/x402/"
+---
+
+At 05:57:57 UTC this morning, block 47,227,265 on Base included a USDC transfer worth
+$0.013104. The payer signed no transaction, paid no gas, and never touched an RPC endpoint —
+they signed an HTTP-borne authorization and a relayer did the rest. It was one of ten
+identically shaped calls landing within a four-second window, submitted by five recurring
+relayer addresses, one of which has an account nonce past **1.7 million**.
+
+This is x402 traffic. We covered the protocol's mechanics — the 402 handshake, the EIP-3009
+signature, the facilitator trust model, and how prompt injection breaks the layer above it —
+in [How AI Agents Pay for APIs](/articles/x402-agent-payments). This piece is the measurement
+companion: what the rail actually looks like on-chain when you go and find it, what it costs,
+who is operating it, and how seriously to take the adoption headline —
+[Chainalysis counts over 100 million cumulative x402 transactions on
+Base](https://www.chainalysis.com/blog/x402-agentic-payments-adoption/) through Q1 2026, up
+from near-zero in mid-2025. Specs tell you what a protocol promises. Blocks tell you what it
+does.
+
+## One settlement, decoded
+
+Here is this morning's transaction,
+[`0xb571fe…d52d14`](https://base.blockscout.com/tx/0xb571fe7f2a2fa7839f804d9681a31ea4ab43f1ca2893d77868320d0317d52d14).
+The relayer EOA `0x68A9…7863` calls `transferWithAuthorization` on Base's USDC contract with
+the payer's signed authorization:
+
+```text
+transferWithAuthorization(
+  from:        0x2B4Ee3387008E5fF1A9996fc8B48D2fd61389037   // the paying agent
+  to:          0xe9030014F5DAe217d0A152f02A043567b16c1aBf   // the resource server
+  value:       13104                                        // $0.013104 (USDC, 6 decimals)
+  validAfter:  1781243275                                   // signed moments earlier
+  validBefore: 1781244175                                   // a 900-second window
+  nonce:       0x3f2fab43…b29f40                            // 32 random bytes, consumed once
+  v, r, s:     signature over the EIP-712 digest
+)
+```
+
+Three numbers in the receipt are worth more than any architecture diagram.
+
+**Cost: $0.00144.** Execution burned 86,298 gas on the L2 (at a 0.01 gwei effective gas
+price) plus 3,748 gas of L1 data — 865,744,853,181 wei all-in, about a seventh of a cent at
+the block's ETH price. The L1 data component is under $0.000005; post-EIP-4844, settlement
+cost on Base is almost entirely L2 execution.
+
+**The validity window: 900 seconds.** The `validAfter`/`validBefore` pair brackets a 15-minute
+window, matching the `maxTimeoutSeconds` the server quoted in its 402 response. An
+authorization that misses its window is dead — there's no lingering approval to revoke, which
+is a quietly excellent property for agents that sign many authorizations and crash often.
+
+**The fee-to-value ratio: ~11%.** $0.00144 of gas moved $0.0131. That only pencils out
+because Base fees are low *and* because Coinbase's hosted facilitator currently settles USDC
+on Base without passing gas costs through — the relayer in this transaction ate the fee. The
+same call on Ethereum L1 would cost dollars, not tenths of cents. Sub-cent agent payments are
+economically real today, but they exist inside a subsidy and a single L2's fee market. If
+you're pricing an API around x402, price against the unsubsidized number.
+
+## The relayer fleet
+
+Sampling a four-second slice of the chain (blocks 47,227,263–47,227,265) turned up ten
+`transferWithAuthorization` settlements from five recurring EOAs. The one we dissected
+carried account nonce **1,735,229** — a single relayer key that has submitted 1.7 million
+transactions. Two operational facts fall out of that:
+
+- **Settlement is industrial but unbatched.** One authorization, one transaction. There's no
+  aggregation contract in the hot path — facilitators scale by running a pool of relayer
+  EOAs in parallel, sharding the sequential-nonce bottleneck across keys. The protocol-level
+  fix is the *deferred* settlement scheme [Cloudflare proposed alongside the x402
+  Foundation launch](https://blog.cloudflare.com/x402/), which decouples verification from
+  settlement so payments can batch or roll into subscriptions. As of this writing it's a
+  proposal, not what's on-chain.
+- **The censorship surface is small and legible.** A handful of relayer addresses mediate
+  the bulk of settlements. They can't redirect or skim a payment — the signed authorization
+  pins recipient and amount — but watching half a dozen EOAs gives you (or a regulator, or a
+  competitor) a real-time map of the paid agent economy. Payment privacy on x402 today is
+  roughly "everything is public, plus the facilitator knows your IP."
+
+## Reading the 100-million headline
+
+The Chainalysis data rewards a close read rather than a headline skim, and the close read is
+more interesting than the headline.
+
+The cumulative count is inflated by meme-coin theater: the Q4 2025 surge was driven
+substantially by tokens like PING, which made x402 calls a minting mechanic and drove
+**150,000+ transactions in its first month**. If you want a number to quote, don't quote
+100M; quote the composition shift. Transactions over $1 went from **49% to 95% of x402
+volume** between early 2025 and early 2026, while the 10¢–$1 band collapsed from 46% to 4%.
+Spray-and-pray micro-pings are giving way to fewer, larger, presumably purposeful payments —
+the signature of a system being used rather than farmed.
+
+The payer demographics point the same direction. x402-paying wallets average **197 days old**
+(vs. 423 for typical Base wallets), hold ~26 distinct tokens (vs. 4), and show roughly **12x
+the capital inflows**. That is not retail. It's programmatic, crypto-native operators —
+exactly who you'd expect on a payment rail whose client is a `fetch` wrapper. Tester-to-payer
+conversion improving 4x over six months suggests the funnel behind those wallets is starting
+to hold water.
+
+Meanwhile, the integration surface is broadening in ways that are harder to fake than
+transaction counts: Cloudflare shipped x402 support in its Agents SDK and MCP tooling, AWS
+put x402 micropayments into Bedrock AgentCore as a managed preview, and Travala wired it into
+an MCP-based hotel-booking flow last week. The recurring pattern is MCP server as resource
+server, agent runtime holding a spend-policied wallet — x402 is becoming the default answer
+to "how does an MCP tool charge money."
+
+## What the chain can't show you
+
+The on-chain record is clean: signed authorization in, USDC transfer out, sub-cent cost,
+seconds of latency. The gaps are everything around it.
+
+**There is no recourse primitive.** The canonical flow is verify → settle → serve, so a
+correct server never delivers against an unsettleable payment. The inverse — payer pays,
+server never delivers — is structurally unprotected: no escrow, no dispute path, no refund in
+the core protocol. At 1.3 cents the expected loss is noise; at the hotel-booking price point
+it isn't, and current research (verify-then-pay escrow designs, TEE-attested proof of task
+execution) is concentrating precisely there.
+
+**A payment is not an identity.** This morning's transaction proves address `0x2B4E…9037`
+paid address `0xe903…1aBf`. It says nothing about which agent that is, who delegated it, or
+whether it's the same counterparty as yesterday. ERC-8004-style agent registries and
+delegation-provenance schemes are circling the gap; today, reputation in the x402 economy is
+bootstrapped the old way — by paying and not getting burned.
+
+**The rail's guarantees stop at the signature.** Everything above it — whether the agent
+*should* have signed — is the soft target, and we covered why in [the companion
+piece](/articles/x402-agent-payments): spend caps and `payTo` allowlists belong in the
+account contract, not the prompt.
+
+## Takeaways
+
+The promising reading of today's evidence: a 1.3-cent payment settled for a seventh of a
+cent, seconds after an HTTP request, on infrastructure processing millions of these — and
+volume composition is shifting from farming toward purposeful use. The honest reading: the
+economics lean on one L2's fee market and a facilitator subsidy, settlement throughput is a
+fleet of EOAs brute-forcing one transfer per transaction, and the protocol has no answer yet
+for disputes or identity. Both readings are true. The blocks say the rail works; what gets
+built on top of it — escrow, identity, spend governance — will decide whether the next 100
+million transactions mean more than the first.

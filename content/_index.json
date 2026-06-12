@@ -1,20 +1,44 @@
 {
   "counts": {
-    "articles": 3,
+    "articles": 4,
     "artifacts": 6
   },
   "topicCounts": {
-    "agents": 1,
-    "blockchain": 1,
+    "agents": 2,
+    "blockchain": 2,
     "cryptography": 1,
-    "infrastructure": 1,
+    "infrastructure": 2,
     "llm": 1,
     "machine-learning": 2,
-    "security": 1,
+    "security": 2,
     "smart-contracts": 1,
     "zero-knowledge": 1
   },
   "articles": [
+    {
+      "slug": "x402-agent-payments",
+      "path": "content/articles/2026/06/x402-agent-payments/index.mdx",
+      "url": "/articles/x402-agent-payments",
+      "title": "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement",
+      "description": "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "agents",
+        "blockchain",
+        "infrastructure",
+        "security"
+      ],
+      "tags": [
+        "x402",
+        "stablecoins",
+        "eip-3009",
+        "payments",
+        "account-abstraction"
+      ],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "optimistic-ml-oracles",
       "path": "content/articles/2026/06/optimistic-ml-oracles/index.mdx",

@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 10,
+    "articles": 11,
     "artifacts": 8
   },
   "topicCounts": {
     "agents": 5,
     "ai": 1,
-    "blockchain": 5,
+    "blockchain": 6,
     "cryptography": 1,
-    "defi": 1,
+    "defi": 2,
     "infrastructure": 6,
     "llm": 1,
-    "machine-learning": 4,
+    "machine-learning": 5,
     "research": 1,
     "security": 4,
     "smart-contracts": 2,
@@ -19,6 +19,23 @@
     "zero-knowledge": 1
   },
   "articles": [
+    {
+      "slug": "bittensor-taoflow-emission-engine",
+      "path": "content/articles/2026/06/bittensor-taoflow-emission-engine/index.mdx",
+      "url": "/articles/bittensor-taoflow-emission-engine",
+      "title": "From Price to Flow: How Bittensor Re-Plumbed Its Emission Engine",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "machine-learning",
+        "blockchain",
+        "defi"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "erc-8004-agent-registries-onchain",
       "path": "content/articles/2026/06/erc-8004-agent-registries-onchain/index.mdx",

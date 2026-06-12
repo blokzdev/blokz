@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 15,
-    "artifacts": 13
+    "artifacts": 14
   },
   "topicCounts": {
     "agents": 5,
@@ -531,6 +531,22 @@
       "archetype": "diagram",
       "topics": [
         "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "nullifier-gate",
+      "path": "content/artifacts/nullifier-gate/manifest.json",
+      "module": "src/islands/artifacts/nullifier-gate.ts",
+      "url": "/artifacts/nullifier-gate",
+      "title": "Nullifier Gate",
+      "description": "Semaphore's double-signal defense, explorable: send transactions to spend month-scoped nullifiers PBH-style, replay a spent proof to watch the gate revert with the real contract errors, and roll the month to see the external nullifier change reset the quota.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "zero-knowledge",
         "blockchain"
       ],
       "draft": false

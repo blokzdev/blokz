@@ -1,8 +1,10 @@
 name: CI
 
+# push is main-only: pull_request already runs on every PR branch (drafts
+# included), so '**' made each PR push run the identical job twice.
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
 
 jobs:

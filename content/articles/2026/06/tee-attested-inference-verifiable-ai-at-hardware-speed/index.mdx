@@ -1,0 +1,198 @@
+---
+slug: tee-attested-inference-verifiable-ai-at-hardware-speed
+title: "TEE-Attested Inference: Verifiable AI at Hardware Speed"
+description: "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference."
+pubDate: 2026-06-12
+author: blokz
+topics: [security, infrastructure, ai]
+tags: [tee, attestation, confidential-computing, dcap, h100]
+series: proof-of-intelligence
+seriesOrder: 3
+artifacts: []
+difficulty: intermediate
+sources:
+  - label: "TEE.fail: Breaking Trusted Execution Environments via DDR5 Bus Interposition"
+    url: "https://tee.fail/"
+  - label: "Confidential Computing on NVIDIA H100 GPUs: A Performance Benchmark Study"
+    url: "https://arxiv.org/abs/2409.03992"
+  - label: "Automata on-chain DCAP attestation (contracts + gas benchmarks)"
+    url: "https://github.com/automata-network/automata-dcap-attestation"
+  - label: "Optimistic TEE-Rollups for Verifiable Generative AI Inference"
+    url: "https://arxiv.org/abs/2512.20176"
+  - label: "EigenAI: Deterministic Inference, Verifiable Results"
+    url: "https://hf.co/papers/2602.00182"
+---
+
+This series has covered two ways to trust an AI inference you didn't run.
+[zkML](/articles/zkml-verifiable-inference-landscape) proves the computation
+cryptographically and charges 10³–10⁵× the compute for the privilege.
+[Optimistic schemes](/articles/optimistic-ml-oracles) charge almost nothing
+but make you wait out a challenge window. The third approach — the one
+actually carrying most production "verifiable AI" traffic in 2026 — does
+neither. **It doesn't prove the computation at all. It proves the
+computer.**
+
+Run the model inside a trusted execution environment, have the hardware sign
+a statement about exactly what code ran, and verify that signature on-chain.
+Overhead: under 7%. Finality: seconds. The catch is the trust model, and the
+catch is real — researchers have forged the signatures with under $1,000 of
+hand-soldered equipment. Both halves of that sentence deserve numbers.
+
+## Proving the computer, not the computation
+
+A TEE (Intel TDX, AMD SEV-SNP, NVIDIA Confidential Computing on Hopper and
+Blackwell GPUs) gives you two primitives:
+
+1. **Isolation.** Code and data inside the enclave are encrypted in memory
+   and inaccessible to the host OS, the hypervisor, and the cloud operator.
+2. **Remote attestation.** The hardware measures what was loaded —
+   firmware, kernel, your inference server — and signs that measurement
+   with a key fused into the silicon, chained back to the manufacturer's
+   root CA. The signed statement is a *quote*.
+
+To attest an inference rather than just a machine, the standard pattern
+binds an application key into the quote:
+
+- The enclave generates an ephemeral signing key at boot and embeds its
+  public key in the quote's user-data field.
+- The quote (with its certificate chain) is verified once, on-chain, and the
+  application key is registered against the attested code measurement.
+- Every subsequent inference response is signed with the application key
+  over `(model_hash, input_hash, output_hash)` — cheap ECDSA, no new quote.
+
+For GPU inference the chain has two links: the CPU TEE attests the VM, and
+the H100 in confidential-computing mode produces its own attestation that
+the VM verifies before trusting the device. Compromise either link and the
+whole statement is void — keep that in mind for the attack section.
+
+## The performance numbers
+
+The reason TEEs dominate production deployments is that the overhead is
+close to a rounding error. The most-cited benchmark study of H100
+confidential computing (arXiv:2409.03992, run on Llama-class models) found
+**average throughput overhead under 7%, falling toward zero as model size
+and sequence length grow**. The GPU computes at full speed; the cost is
+almost entirely PCIe traffic, which must be encrypted between CPU and GPU.
+Big models amortize that I/O over more compute, so the workloads that are
+hopeless for zkML are precisely the ones where TEE overhead vanishes.
+
+| Dimension | zkML | Optimistic | TEE-attested |
+| --- | --- | --- | --- |
+| Per-inference overhead | 10³–10⁵× | 2–4× | ~1.02–1.07× |
+| Finality | proving time (s–min) | challenge window (min–h) | seconds |
+| Model size ceiling | ~tens of M params | whatever re-executes | whatever fits the GPU |
+| Input/weight privacy | possible | none | yes (encrypted memory) |
+| Trust assumption | cryptographic | ≥1 honest watcher | silicon vendor + physical security |
+
+That last row is the entire debate, and we'll get to it. First: what does
+the on-chain half actually cost?
+
+## What verification costs on-chain
+
+Verifying an Intel DCAP quote in the EVM means parsing the quote, walking a
+certificate chain to Intel's root, checking revocation state, and verifying
+several P-256 ECDSA signatures — none of which the EVM was designed for.
+Automata's open-source DCAP verifier is the reference implementation, and
+its published benchmarks make the costs concrete:
+
+- **Full on-chain verification: ~5M gas** (~4M on chains with the RIP-7212
+  P-256 precompile; EIP-7951 drops each ECDSA check from ~330k to ~6k gas).
+- **zk-compressed verification: ~493k gas** — run the same verification
+  logic inside a zkVM (Succinct SP1 or RISC Zero) and verify a Groth16
+  proof of it on-chain instead.
+
+At Ethereum mainnet's average gas price the day this was written
+(0.31 gwei, ETH at ~$1,665), that's roughly **$2.60 for the full on-chain
+path versus $0.26 zk-compressed** — and effectively sub-cent on L2s, where
+the verifier is live today. The same `AutomataDcapAttestationFee` entrypoint
+is deployed deterministically at
+`0xaDdeC7e85c2182202b66E331f2a4A0bBB2cEEa1F` across Base, Arbitrum One,
+OP Mainnet, Polygon, BNB Chain, and others, so integration is one interface:
+
+```solidity
+interface IAttestation {
+    // Full verification: parse quote, walk cert chain, check signatures
+    function verifyAndAttestOnChain(bytes calldata rawQuote)
+        external payable returns (bool success, bytes memory output);
+
+    // Cheap path: verify a zkVM proof that the same checks passed
+    function verifyAndAttestWithZKProof(
+        bytes calldata output,
+        uint8 zkCoprocessor,        // RiscZero or SP1
+        bytes calldata proofBytes
+    ) external payable returns (bool success, bytes memory output);
+}
+```
+
+Note the irony in that second function: the cheapest way to verify a
+hardware attestation is a SNARK. The stack folds back into zero-knowledge
+at the settlement layer even when the inference layer avoided it — proof
+systems and enclaves are converging into complements, not competitors.
+
+Remember also that the quote is verified *once per enclave*, then amortized
+over every inference that enclave signs. A $0.26 registration in front of a
+million signed inferences rounds to zero. Neither zkML nor optimistic
+schemes have any equivalent amortization.
+
+## The trust model, priced honestly
+
+Here is what you are actually trusting when a contract accepts a
+TEE-attested inference:
+
+1. **The vendor's silicon and microcode** — Intel, AMD, NVIDIA — including
+   their key-provisioning infrastructure.
+2. **The vendor's revocation pipeline**, to invalidate compromised keys
+   before attackers use them.
+3. **Whoever has physical access to the machine.**
+
+That third item stopped being theoretical in October 2025. **TEE.fail**, a
+DDR5 memory-bus interposition attack built from under $1,000 of commodity
+parts, extracted ECDSA attestation keys from Intel's Provisioning
+Certification Enclave by observing a single signing operation — then used
+them to forge TDX quotes that **passed Intel's official DCAP Quote
+Verification Library**. The same access defeats AMD SEV-SNP despite
+ciphertext hiding, and because NVIDIA's GPU confidential computing anchors
+to the CPU TEE, a forged CPU attestation lets an attacker claim
+TEE-protected GPU inference while running none at all.
+
+Read that against the binding pattern from earlier: a forged quote means an
+attacker registers *their* key against *your* code measurement, then signs
+whatever outputs they like — substituted models, fabricated results — and
+the chain happily verifies every signature. The cryptography all checks
+out; the premise underneath it was false.
+
+The sober conclusions, not the hyped ones:
+
+- The attack needs **physical access** — interposer hardware on the memory
+  bus of the target machine. Your threat model is the data-center operator
+  and supply chain, not remote attackers.
+- Revocation is the weak joint. Extracted keys are valid until Intel's TCB
+  recovery rotates them, and rotation is slow, coarse, and disruptive.
+- **A TEE quote is evidence, not proof.** It upgrades "trust this API" to
+  "trust this vendor and this rack," which is a genuine upgrade — and
+  genuinely not the trust model the word "verifiable" implies on a pitch
+  deck.
+
+## Where this leaves the stack
+
+The field's answer to a cheap-but-forgeable leg and two
+expensive-but-sound legs is to stop choosing. Recent designs compose them:
+EigenAI (January 2026) runs deterministic inference in TEEs but backstops it
+with optimistic re-execution and slashing, so forging an attestation also
+requires winning a dispute game. Optimistic TEE-rollups (December 2025)
+batch H100-attested inference and add randomized zk spot-checks, so an
+attacker must compromise hardware *and* dodge sampled proofs. The TEE makes
+the happy path fast; the crypto-economics make the unhappy path expensive.
+
+The pattern matches where parts 1 and 2 of this series landed: zk bounds
+the worst case, optimism prices honesty, and hardware buys back the
+latency. Part 4 will build that hybrid end-to-end — enclave inference,
+signed results, and a dispute path that settles on-chain.
+
+If you ship today, the decision rule is short: **TEE-attested inference is
+the right default when your adversary is remote, your margins can't absorb
+zk proving, and your users can't absorb a challenge window.** When the
+threat model includes whoever racks the servers — or the value at stake
+makes a $1,000 interposer a good investment — attestation alone is a
+signature from hardware you've never seen, and it needs a second leg to
+stand on.

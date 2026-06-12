@@ -1,21 +1,47 @@
 {
   "counts": {
-    "articles": 5,
+    "articles": 6,
     "artifacts": 6
   },
   "topicCounts": {
     "agents": 3,
+    "ai": 1,
     "blockchain": 2,
     "cryptography": 1,
-    "infrastructure": 3,
+    "infrastructure": 4,
     "llm": 1,
     "machine-learning": 2,
-    "security": 2,
+    "security": 3,
     "smart-contracts": 2,
     "web3": 1,
     "zero-knowledge": 1
   },
   "articles": [
+    {
+      "slug": "tee-attested-inference-verifiable-ai-at-hardware-speed",
+      "path": "content/articles/2026/06/tee-attested-inference-verifiable-ai-at-hardware-speed/index.mdx",
+      "url": "/articles/tee-attested-inference-verifiable-ai-at-hardware-speed",
+      "title": "TEE-Attested Inference: Verifiable AI at Hardware Speed",
+      "description": "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "security",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "tee",
+        "attestation",
+        "confidential-computing",
+        "dcap",
+        "h100"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 3,
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "x402-agent-payments",
       "path": "content/articles/2026/06/x402-agent-payments/index.mdx",

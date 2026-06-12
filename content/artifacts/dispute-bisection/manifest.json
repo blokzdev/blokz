@@ -1,0 +1,18 @@
+{
+  "slug": "dispute-bisection",
+  "title": "Dispute Bisection",
+  "description": "An optimistic fraud proof you can play: a 64-step inference trace hides one corrupted op. Tap any step inside the glowing window to compare claimed vs honest state, and watch the disagreement funnel halve down to the single operation the chain re-executes.",
+  "pubDate": "2026-06-12",
+  "type": "canvas",
+  "topics": [
+    "blockchain",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": true,
+  "controls": [
+    "tap a step inside the highlighted window to probe it",
+    "left alone, the challenger bisects optimally",
+    "after the slash, tap anywhere to start a new dispute"
+  ]
+}

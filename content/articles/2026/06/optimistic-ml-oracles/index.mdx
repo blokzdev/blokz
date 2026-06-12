@@ -3,12 +3,13 @@ slug: optimistic-ml-oracles
 title: "Optimistic ML Oracles: Verifiable Inference Without the Proof Overhead"
 description: "Zero-knowledge proofs aren't the only path to trustworthy on-chain AI. Optimistic schemes trade latency for a 1000x cost reduction — here's how dispute games over inference actually work."
 pubDate: 2026-06-11
+updatedDate: 2026-06-12
 author: blokz
 topics: [blockchain, machine-learning, infrastructure]
 tags: [oracles, optimistic, dispute-games, inference, staking]
 series: proof-of-intelligence
 seriesOrder: 2
-artifacts: [block-mesh]
+artifacts: [block-mesh, dispute-bisection]
 difficulty: intermediate
 sources:
   - label: "Arbitrum Nitro interactive fraud proofs"
@@ -34,6 +35,15 @@ An optimistic ML oracle has three roles, all staked:
    operation by operation — until the disagreement narrows to a single step
    small enough for the chain itself to re-execute. Whoever lied loses the
    bond.
+
+The bisection is the part that sounds abstract until you run one. Below, a
+proposer has posted a 64-step trace with one corrupted operation hidden in
+it. Each probe compares a claimed intermediate state against an honest
+re-execution — six comparisons pin down the lie, and the chain only ever
+re-executes a single op. Drive it yourself, or watch the challenger play
+optimally:
+
+<Artifact slug="dispute-bisection" />
 
 The network of proposers and watchers gossiping results and challenges looks
 a lot like any other p2p overlay:

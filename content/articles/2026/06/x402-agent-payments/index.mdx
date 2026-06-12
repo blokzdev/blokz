@@ -1,0 +1,215 @@
+---
+slug: x402-agent-payments
+title: "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement"
+description: "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it."
+pubDate: 2026-06-12
+author: blokz
+topics: [agents, blockchain, infrastructure, security]
+tags: [x402, stablecoins, eip-3009, payments, account-abstraction]
+artifacts: []
+difficulty: intermediate
+sources:
+  - label: "x402 'exact' scheme spec (EVM)"
+    url: "https://github.com/coinbase/x402/blob/main/specs/schemes/exact/scheme_exact_evm.md"
+  - label: "Coinbase CDP — x402 overview"
+    url: "https://docs.cdp.coinbase.com/x402/welcome"
+  - label: "EIP-3009: Transfer With Authorization"
+    url: "https://eips.ethereum.org/EIPS/eip-3009"
+  - label: "Whispers of Wealth: Red-Teaming an Agent Payments Protocol via Prompt Injection"
+    url: "https://hf.co/papers/2601.22569"
+  - label: "Zero-Trust Runtime Verification for Agentic Payment Protocols (AP2)"
+    url: "https://hf.co/papers/2602.06345"
+---
+
+An autonomous agent that wants live weather data, a vector search, or a frame of generated
+video hits the same wall a human does: the resource costs money. But the agent has no email to
+verify, no credit card to enter, and no patience for a monthly subscription it will use eleven
+times. The plumbing of the paid web — accounts, API keys, Stripe checkouts — assumes a human
+in the loop. Strip the human out and you need a payment rail a program can drive in a few
+hundred milliseconds, for fractions of a cent, with no pre-registration.
+
+That is the gap **x402** fills. Coinbase published the protocol, contributed it to the Linux
+Foundation in April 2026 for neutral governance, and it has since become the de facto way
+machines pay machines on-chain. The name is the joke and the spec: it resurrects HTTP status
+code **402 Payment Required**, reserved-but-unused since 1997, and wires it to gasless
+stablecoin settlement. This piece walks the actual handshake, the on-chain mechanism that makes
+it gasless, the trust you extend to the facilitator, and the attack surface that should keep
+you from wiring an LLM straight to your treasury.
+
+## The 402 handshake
+
+The flow is a single retried request. No webhooks, no redirect dance, no session.
+
+1. The agent's client `GET`s a protected resource.
+2. The server replies `402 Payment Required` with a JSON body describing what it will accept —
+   a `PaymentRequirements` object: the `scheme` (`exact`), the `network` in CAIP-2 form
+   (`eip155:8453` for Base), the `asset` (a token contract), the `payTo` address, the price,
+   and a `maxTimeoutSeconds` validity window.
+3. The client constructs and signs a payment payload, base64-encodes it, and retries the same
+   request with an `X-PAYMENT` header attached.
+4. The server hands that payload to a **facilitator** to verify and settle, then returns the
+   resource plus an `X-PAYMENT-RESPONSE` header carrying the settlement receipt (the on-chain
+   transaction hash).
+
+The whole exchange is `x402Version: 2` and rides ordinary HTTP. The server stays stateless
+about the buyer; the buyer needs no account. Crucially, the *price discovery* is in-band — the
+402 response tells the client exactly what to sign, so a generic client can pay any compliant
+endpoint it has never seen before.
+
+## Why EIP-3009, and why it's gasless
+
+The interesting engineering is in step 3. A naive on-chain payment needs the payer to hold the
+chain's gas token, send an `approve`, then a `transfer` — two transactions, native-gas balance
+required, latency measured in blocks. None of that survives contact with an agent making a
+thousand sub-cent calls.
+
+x402's default EVM scheme sidesteps it with **[EIP-3009](https://eips.ethereum.org/EIPS/eip-3009),
+`transferWithAuthorization`**. The payer signs an EIP-712 typed message authorizing a transfer;
+*someone else* submits it on-chain and pays the gas. The signed authorization is exactly:
+
+```solidity
+// EIP-3009 — the fields the buyer signs (no on-chain tx yet)
+struct Authorization {
+    address from;        // payer
+    address to;          // payTo from the 402 response
+    uint256 value;       // price, in token base units
+    uint256 validAfter;  // unix ts — not valid before
+    uint256 validBefore; // unix ts — expiry
+    bytes32 nonce;       // random; consumed once, on-chain
+}
+```
+
+The signature is a standard 65-byte ECDSA signature over the EIP-712 hash, domain-separated by
+the token. For Circle's USDC the domain is `{ name: "USD Coin", version: "2", chainId,
+verifyingContract }`, so a signature minted for USDC on Base can't be replayed against USDC on
+another chain or another token — the domain wouldn't match.
+
+This isn't a hypothetical capability bolted onto a wrapper. USDC on Base lives at
+`0x8335…2913` as an EIP-1967 proxy whose implementation is Circle's `FiatTokenV2_2`
+(`0x2Ce6…D779`, verified, Solidity 0.6.12). That implementation links an external
+`SignatureChecker` library — which means `transferWithAuthorization` validates **both** plain
+EOA signatures **and** ERC-1271 smart-contract-wallet signatures. For agents that fact matters:
+production agents usually run on smart accounts (account abstraction) for policy guards and key
+rotation, and EIP-3009 settles for them natively, no EOA in the hot path. The token is no toy
+contract either — about **12.4 million holders** and **$12.97B** of 24-hour transfer volume on
+Base alone at the time of writing.
+
+> Solana, the protocol's other high-volume network, has no EIP-3009 — it implements the
+> `exact` scheme with its own SPL-token-2022 transfer mechanics. "x402 settles in USDC" is true
+> on both, but the cryptography underneath is chain-specific. Read the per-network scheme spec,
+> not the marketing.
+
+## The facilitator: convenience you should price
+
+Someone has to broadcast the transaction and front the gas, and that someone is the
+**facilitator**. It exposes two endpoints — `verify` and `settle`. `verify` recovers the
+signature, confirms it resolves to `authorization.from`, checks the buyer's balance, and
+simulates the call. `settle` actually invokes `transferWithAuthorization(...)` on the token with
+the buyer's signature and authorization fields.
+
+The trust boundary is narrow and worth stating precisely: **the facilitator cannot alter the
+amount or the destination.** Those are inside the signed message; change a byte and signature
+recovery fails. The facilitator is a broadcaster and a gas sponsor, not a custodian — it never
+holds the funds. What it *can* do is censor (refuse to relay), stall, or learn your payment
+graph. Coinbase's CDP facilitator covers Base, Polygon, Arbitrum, World, and Solana, with a
+free tier of 1,000 transactions a month and **$0.001 per transaction** after — but the spec is
+open and `https://x402.org/facilitator` runs the testnet flow with no auth, so you can self-host
+and trust no one but the chain.
+
+## What the integration actually looks like
+
+Server side, the seller declares a price per route and a facilitator client; the middleware does
+the 402 dance:
+
+```typescript
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+
+const facilitator = new HTTPFacilitatorClient({ url: "https://x402.org/facilitator" });
+
+app.use(
+  paymentMiddleware(
+    {
+      "GET /weather": {
+        accepts: [
+          { scheme: "exact", price: "$0.001", network: "eip155:8453", payTo: "0xYourAddr" },
+        ],
+        description: "Current weather for any location",
+        mimeType: "application/json",
+      },
+    },
+    new x402ResourceServer(facilitator),
+  ),
+);
+```
+
+Buyer side, the agent wraps `fetch`. The client transparently catches the 402, signs the
+authorization with its registered signer, and retries — the calling code never sees the
+handshake:
+
+```typescript
+import { x402Client, wrapFetchWithPayment } from "@x402/fetch";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+
+const client = new x402Client();
+client.register("eip155:*", new ExactEvmScheme(evmSigner, rpcOptions));
+
+const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+const res = await fetchWithPayment("https://api.example.com/weather", { method: "GET" });
+```
+
+That `evmSigner` is the entire security perimeter. Whatever can reach it can spend.
+
+## The economics: why stablecoins, and how stable
+
+Sub-cent, machine-speed payments only work if the unit of account doesn't move between the 402
+and the retry. Settle in ETH and every API call carries FX risk; settle in a volatile token and
+your $0.001 quote is fiction by the next block. Stablecoins exist for exactly this. And empirically
+they hold: across the three weeks to 2026-06-12, USDT traded on Crypto.com between **0.99734 and
+0.99998** against USD — a worst-case deviation of about **27 basis points**, on a single jittery
+day, and typically inside 10 bps. For a payment that clears in seconds, peg drift is noise.
+
+The deeper shift is that x402 makes *metered, per-call* pricing economical for the first time.
+Card rails have a floor near 30 cents plus percentage; you cannot charge a third of a cent for a
+single inference and net anything. On-chain stablecoin settlement has no such floor, which is why
+the natural x402 price points — `$0.001`, `$0.0005` — are below what legacy payments can even
+represent. That is the actual unlock: not "crypto for APIs," but a price granularity the old rails
+structurally cannot reach.
+
+## Where this breaks: authorization is not intent
+
+Here is the part the launch threads skip. A signed EIP-3009 authorization proves a key approved a
+transfer. It proves **nothing** about whether the agent *should* have. The moment an LLM decides
+what to pay for, the payment rail inherits every weakness of the model driving it.
+
+The research is already blunt about this. *Whispers of Wealth* red-teamed an agent payments
+protocol and showed **prompt injection** can manipulate transaction behavior and exfiltrate user
+data — a malicious web page or tool result talks the agent into signing. Follow-up work on
+runtime verification for agentic payments documents **replay and context-binding failures**: an
+authorization captured in one context being valid in another the user never intended. EIP-3009's
+`nonce` and `validBefore` close the crudest on-chain replay — a nonce is consumed once, an expiry
+bounds the window — but they say nothing about whether *this* payment matches *this* user
+request. That binding lives one layer up, in the agent, and that layer is the soft target.
+
+The defensive posture is the same one we reached for [agentic smart-contract
+auditing](/articles/agentic-smart-contract-auditing): treat the model as untrusted and put the
+guarantees in code around it. Concretely — hard per-transaction and per-window spend caps enforced
+by the smart account, not the prompt; an allowlist of `payTo` addresses; human-in-the-loop above a
+threshold; and a signer scoped so a jailbreak drains a float wallet, not the treasury. The signed
+authorization is the *last* checkpoint, and by design it can't tell a legitimate request from an
+injected one.
+
+## Takeaways
+
+- **x402 is a thin, honest protocol.** A 402 response that says what to sign, an EIP-3009
+  signature, a facilitator that broadcasts it. The cryptography is sound and chain-specific —
+  read the per-network scheme, because "settles in USDC" hides real mechanism differences.
+- **Gasless is the whole point.** `transferWithAuthorization` lets the buyer sign and the
+  facilitator pay gas, and Circle's `FiatTokenV2_2` validates smart-account (ERC-1271) signatures
+  — so account-abstracted agents settle natively. The facilitator can censor but cannot redirect
+  or skim.
+- **Stablecoin settlement unlocks a price granularity card rails can't represent**, and the peg
+  is stable enough (sub-30-bps) that sub-cent metering is real, not aspirational.
+- **The rail is safe; the driver isn't.** Prompt injection turns a sound signature into a sound
+  signature over the wrong payment. Put the spend limits, allowlists, and approval thresholds in
+  the account contract, and scope the signer so the worst case is bounded.

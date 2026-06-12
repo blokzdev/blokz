@@ -85,11 +85,22 @@ export default function mount(container: HTMLElement): () => void {
     padX = Math.max(16, W * 0.045);
     cellW = (W - padX * 2) / N;
     gap = Math.max(1, cellW * 0.18);
-    cellH = Math.max(14, Math.min(52, H * 0.22));
-    const rowGap = Math.max(24, H * 0.22);
-    yP = H * 0.5 - rowGap / 2 - cellH;
-    yW = H * 0.5 + rowGap / 2;
-    yM = H * 0.5;
+    // Vertical bands reserved top-down so no text ever shares a band:
+    // caption(20) · probe spawn · proposer label · row · midline · row ·
+    // watcher label · status(H-14). Short stages shrink rows, never labels.
+    const topBand = 28;
+    const labelH = 14;
+    const bottomBand = H - 30;
+    const avail = bottomBand - topBand - labelH * 2;
+    cellH = Math.min(52, Math.max(10, avail * 0.36));
+    let rowGap = avail - 2 * cellH;
+    if (rowGap < 14) {
+      cellH = Math.max(8, (avail - 14) / 2);
+      rowGap = 14;
+    }
+    yP = topBand + labelH;
+    yW = yP + cellH + rowGap;
+    yM = yP + cellH + rowGap / 2;
   }
   layout();
   const ro = new ResizeObserver(layout);
@@ -103,13 +114,18 @@ export default function mount(container: HTMLElement): () => void {
     return col >= 0 && col < N ? col : -1;
   };
   const onMove = (e: PointerEvent) => {
-    hoverCol = colAt(e);
+    // Hover preview is a mouse affordance; on touch it would stick forever.
+    hoverCol = e.pointerType === 'mouse' ? colAt(e) : -1;
+  };
+  const onLeave = () => {
+    hoverCol = -1;
   };
   const onDown = (e: PointerEvent) => {
     const col = colAt(e);
     if (col >= 0) restart(col, performance.now());
   };
   canvas.addEventListener('pointermove', onMove, { passive: true });
+  canvas.addEventListener('pointerleave', onLeave);
   canvas.addEventListener('pointerdown', onDown);
 
   /* ---- Phase machine ---- */
@@ -147,6 +163,9 @@ export default function mount(container: HTMLElement): () => void {
   const draw = (now: number) => {
     rafId = requestAnimationFrame(draw);
     if (document.hidden) return;
+    // Returning from a hidden tab: shift the phase clock by the pause so the
+    // protocol resumes where it left off instead of fast-forwarding.
+    if (now - lastT > 400) phaseAt += now - lastT;
     const dt = Math.min((now - lastT) / 1000, 0.05);
     lastT = now;
     update(now);
@@ -239,22 +258,21 @@ export default function mount(container: HTMLElement): () => void {
         }
       }
 
-      // Match/mismatch verdict between the rows.
+      // Match/mismatch verdict between the rows — dots, not glyphs: at 64
+      // columns adjacent text characters collide. The active probe gets the
+      // full = / ≠ glyph inside its verdict ring instead.
       if (isRevealed) {
-        ctx.font = mono(Math.max(9, fs));
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = match ? `rgba(34,211,238,${0.9 * alpha})` : `rgba(255,99,99,${0.95 * alpha})`;
-        ctx.fillText(match ? '=' : '≠', x + w / 2, yM);
+        ctx.fillStyle = match ? `rgba(34,211,238,${0.85 * alpha})` : `rgba(255,99,99,${0.9 * alpha})`;
+        ctx.beginPath();
+        ctx.arc(x + w / 2, yM, 1.7, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    // Where the viewer planted the fault.
-    ctx.fillStyle = 'rgba(139,92,246,0.6)';
-    ctx.font = mono(9);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('▲', colCX(fault), yW + cellH + 4);
+    // Where the viewer planted the fault: an underline bar under the watcher
+    // row (a glyph here collided with the row label and the status line).
+    ctx.fillStyle = 'rgba(139,92,246,0.7)';
+    ctx.fillRect(colX(fault), yW + cellH + 3, Math.max(cellW - gap, 2), 2);
 
     // Probe pulse: the chain's query descending onto the midpoint commitment.
     if (phase === 'probe') {
@@ -276,17 +294,22 @@ export default function mount(container: HTMLElement): () => void {
       ctx.fill();
     }
 
-    // Verdict flash: an expanding ring colored by the comparison.
+    // Verdict flash: an expanding ring colored by the comparison, with the
+    // = / ≠ glyph for the probed commitment at its center.
     if (phase === 'verdict') {
       const t = Math.min((now - phaseAt) / VERDICT_MS, 1);
       const r = 6 + t * 22;
-      ctx.strokeStyle = verdictMatch
-        ? `rgba(34,211,238,${0.8 * (1 - t)})`
-        : `rgba(255,99,99,${0.8 * (1 - t)})`;
+      const col = verdictMatch ? '34,211,238' : '255,99,99';
+      ctx.strokeStyle = `rgba(${col},${0.8 * (1 - t)})`;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(colCX(mid), yM, r, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.font = mono(Math.max(11, fs + 2));
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = `rgba(${col},0.95)`;
+      ctx.fillText(verdictMatch ? '=' : '≠', colCX(mid), yM);
     }
 
     /* ---- Captions ---- */
@@ -300,12 +323,12 @@ export default function mount(container: HTMLElement): () => void {
       ctx.fillText('tap a step to plant the fault', W - padX, 20);
     }
 
-    // Row labels.
+    // Row labels (each in its own reserved band — see layout()).
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(139,92,246,0.75)';
-    ctx.fillText('proposer claim', padX, yP - 10);
+    ctx.fillText('proposer claim', padX, yP - 5);
     ctx.fillStyle = 'rgba(139,165,255,0.75)';
-    ctx.fillText('watcher re-execution', padX, yW + cellH + 16);
+    ctx.fillText('watcher re-execution', padX, yW + cellH + 14);
 
     // Status line narrating the protocol.
     let status: string;
@@ -334,6 +357,7 @@ export default function mount(container: HTMLElement): () => void {
     cancelAnimationFrame(rafId);
     ro.disconnect();
     canvas.removeEventListener('pointermove', onMove);
+    canvas.removeEventListener('pointerleave', onLeave);
     canvas.removeEventListener('pointerdown', onDown);
     canvas.remove();
   };

@@ -20,12 +20,33 @@ playbooks. Each playbook assumes: clean checkout, `npm ci` done, work on the ses
 ## Playbook: new artifact (+ optional companion article)
 
 1. Survey `content/_index.json` artifacts to avoid overlap and to copy proven patterns —
-   `block-mesh` (Three.js) and `neural-flow` (canvas 2D) are the references.
-2. `npm run new:artifact -- --title "…" --type <t> --topics <ids>`
-3. Implement per `docs/ARTIFACTS.md` (mount/cleanup contract, `createScene()` for Three).
+   `synapse-chain` (Three.js scene), `neural-flow` (canvas simulation), and
+   `merkle-cascade` (SVG diagram) are the references. Check the `archetype` of recent
+   artifacts and prefer an underrepresented one (palette: `docs/ARTIFACTS.md` → Archetypes).
+2. `npm run new:artifact -- --title "…" --type <t> --archetype <a> --topics <ids>`
+3. Implement per `docs/ARTIFACTS.md` (mount/cleanup contract, `createScene()` for Three,
+   `attachOrbit()` for drag/flick/tap, `data.json` + provenance for data-backed pieces).
 4. **Verify it runs**: `npm run build` must pass; if a browser is available, load
    `/artifacts/<slug>` and confirm rendering + interaction + no console errors.
 5. Fill in `controls`, set `featured` judiciously. Validate, commit (`artifact: add <slug>`).
+
+## Coordination between parallel routines
+
+Routines race — assume another session may be working right now.
+
+- **Claims**: an open PR titled `content: add article <slug>` / `artifact: add <slug>` claims
+  its slug *and its concept*. Open issues labeled `commission-artifact` claim their concept
+  for the commissioned-artifact routine. Survey open PRs + issues before choosing a subject,
+  and again before marking your PR ready.
+- **Claim early**: open your PR as a draft right after scaffolding; flip to ready when gates
+  pass.
+- **Losing a race is fine**: if your concept merges or gets claimed mid-session, rescope to a
+  distinct angle or close your draft with a one-line comment. A closed duplicate beats a
+  competing PR.
+- **Commission flow**: article routines that need a missing visualization open ONE issue
+  labeled `commission-artifact` (concept, suggested archetype, data + primary-source URLs,
+  target article slug + section, suggested controls). The commissioned-artifact routine
+  builds it and embeds it; it never opens commission issues itself.
 
 ## Playbook: refresh / iterate on existing content
 

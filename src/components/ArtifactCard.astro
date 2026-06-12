@@ -16,6 +16,15 @@ const typeLabel: Record<typeof data.type, string> = {
   dom: 'DOM',
 };
 
+const archetypeLabel: Record<string, string> = {
+  chart: 'chart',
+  map: 'map',
+  diagram: 'diagram',
+  simulation: 'simulation',
+  calculator: 'calculator',
+  scene: '3d scene',
+};
+
 const { pts, lines } = constellation(data.slug);
 ---
 
@@ -47,10 +56,17 @@ const { pts, lines } = constellation(data.slug);
       }
       {pts.map((p) => <circle cx={p.x} cy={p.y} r={p.r} fill={p.c} opacity="0.85" />)}
     </svg>
-    <span
-      class="absolute top-3 left-3 rounded-md border border-line bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-cyan uppercase backdrop-blur"
-    >
-      {typeLabel[data.type]}
+    <span class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+      {
+        data.archetype && (
+          <span class="rounded-md border border-violet/30 bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-violet uppercase backdrop-blur">
+            {archetypeLabel[data.archetype]}
+          </span>
+        )
+      }
+      <span class="rounded-md border border-line bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-cyan uppercase backdrop-blur">
+        {typeLabel[data.type]}
+      </span>
     </span>
     <span
       class="absolute right-4 bottom-3 font-display text-4xl font-bold text-white/8 transition-all duration-500 select-none group-hover:rotate-30 group-hover:text-white/20"

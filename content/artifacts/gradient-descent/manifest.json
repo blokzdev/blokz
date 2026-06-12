@@ -4,6 +4,7 @@
   "description": "A glowing marker performs literal gradient descent over a 3D loss landscape — analytic gradients, momentum, and a fading trail. Drag to orbit the terrain; click anywhere on it to drop a new starting point.",
   "pubDate": "2026-06-12",
   "type": "three",
+  "archetype": "simulation",
   "topics": [
     "machine-learning",
     "ai"

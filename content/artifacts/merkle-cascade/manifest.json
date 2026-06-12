@@ -4,6 +4,7 @@
   "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
   "pubDate": "2026-06-12",
   "type": "svg",
+  "archetype": "diagram",
   "topics": [
     "cryptography",
     "blockchain"

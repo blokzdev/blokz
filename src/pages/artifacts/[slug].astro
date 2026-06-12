@@ -51,6 +51,13 @@ const linked = articles.filter((a) => a.data.artifacts.includes(data.slug));
       </h1>
       <p class="mt-4 max-w-2xl leading-relaxed text-muted" data-reveal="0.2">{data.description}</p>
       <div class="mt-5 flex flex-wrap items-center gap-2" data-reveal="0.3">
+        {
+          data.archetype && (
+            <span class="rounded-md border border-violet/30 bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-violet uppercase">
+              {data.archetype === 'scene' ? '3d scene' : data.archetype}
+            </span>
+          )
+        }
         <span
           class="rounded-md border border-line bg-void/70 px-2 py-0.5 font-mono text-[10px] tracking-wide text-cyan uppercase"
         >

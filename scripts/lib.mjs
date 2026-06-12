@@ -11,6 +11,9 @@ export const INDEX_FILE = path.join(ROOT, 'content/_index.json');
 
 export const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Editorial categories for artifacts (manifest `archetype`; `type` is rendering tech). */
+export const ARCHETYPES = ['chart', 'map', 'diagram', 'simulation', 'calculator', 'scene'];
+
 export function slugify(text) {
   return text
     .toLowerCase()
@@ -110,6 +113,7 @@ export function buildIndex() {
       description: m.description,
       pubDate: isoDate(m.pubDate),
       type: m.type,
+      archetype: m.archetype ?? null,
       topics: m.topics ?? [],
       draft: Boolean(m.draft),
     }))

@@ -1,6 +1,7 @@
 ---
 import { getEntry } from 'astro:content';
 import { constellation } from '@/lib/constellation';
+import { formatDate } from '@/lib/content-helpers';
 
 /**
  * Mounts an interactive artifact by slug. Lazy: the entry module in
@@ -64,6 +65,25 @@ const { pts, lines } = constellation(slug);
     <span>
       <span class="font-medium text-muted">{artifact.data.title}</span>
       {artifact.data.controls.length > 0 && <span> — {artifact.data.controls.join(' · ')}</span>}
+      {
+        artifact.data.dataAsOf && artifact.data.dataSource && (
+          <span>
+            {' · data as of '}
+            <time datetime={artifact.data.dataAsOf.toISOString()}>
+              {formatDate(artifact.data.dataAsOf)}
+            </time>
+            {' · '}
+            <a
+              href={artifact.data.dataSource.url}
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-line underline-offset-2 hover:text-muted"
+            >
+              {artifact.data.dataSource.label} ↗
+            </a>
+          </span>
+        )
+      }
     </span>
     <a href={`/artifacts/${slug}`} class="text-accent hover:underline">open artifact ↗</a>
   </figcaption>

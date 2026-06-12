@@ -4,8 +4,14 @@
   "description": "Forward passes through a small feed-forward network, animated: signals ripple layer to layer, weights set the glow, and activations heat the neurons they reach.",
   "pubDate": "2026-06-11",
   "type": "canvas",
-  "topics": ["machine-learning", "ai"],
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "ai"
+  ],
   "aspect": "16/9",
   "featured": false,
-  "controls": ["click to fire a forward pass"]
+  "controls": [
+    "click to fire a forward pass"
+  ]
 }

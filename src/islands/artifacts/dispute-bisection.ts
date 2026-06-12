@@ -317,7 +317,13 @@ export default function mount(container: HTMLElement): () => void {
     ctx.font = mono(10);
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(91,99,120,0.9)';
-    ctx.fillText(`bisection fraud proof · ${N} state commitments · ≤${ROUNDS} rounds`, padX, 20);
+    ctx.fillText(
+      small
+        ? `${N} commitments · ≤${ROUNDS} rounds`
+        : `bisection fraud proof · ${N} state commitments · ≤${ROUNDS} rounds`,
+      padX,
+      20,
+    );
     if (!small) {
       ctx.textAlign = 'right';
       ctx.fillText('tap a step to plant the fault', W - padX, 20);

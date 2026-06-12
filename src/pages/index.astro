@@ -20,8 +20,13 @@ const featuredArtifacts = [...artifacts].sort(
 <BaseLayout>
   <!-- ============ HERO ============ -->
   <!-- select-none: long-press on the hero must never pop a selection/callout
-       over the scene; prose below stays fully selectable. -->
-  <section class="relative -mt-20 flex min-h-[92dvh] items-center overflow-hidden select-none">
+       over the scene; prose below stays fully selectable.
+       svh (not dvh): the collapsing URL bar must not resize the canvas
+       mid-scroll. touch-pan-y: vertical swipes scroll, horizontal swipes
+       reach the scene as flick-to-spin gestures. -->
+  <section
+    class="relative -mt-20 flex min-h-[92svh] touch-pan-y items-center overflow-hidden select-none"
+  >
     <canvas data-hero-canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
     <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
     <div

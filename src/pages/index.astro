@@ -40,7 +40,7 @@ const featuredArtifacts = [...artifacts].sort(
         {SITE.org}
       </p>
       <h1
-        class="mt-5 max-w-3xl font-display text-[clamp(2.4rem,7vw,4.8rem)] leading-[1.04] font-bold tracking-tight text-white"
+        class="mt-5 max-w-3xl font-display text-hero font-bold tracking-tight text-white"
         data-split
       >
         <!-- Canonical copy: SITE.tagline (src/lib/site.ts) — keep in sync. -->
@@ -70,6 +70,15 @@ const featuredArtifacts = [...artifacts].sort(
       <div class="mt-16 flex flex-wrap gap-2" data-reveal="0.65">
         {topics.slice(0, 8).map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}
       </div>
+    </div>
+
+    <div
+      class="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
+      aria-hidden="true"
+      data-reveal="1"
+    >
+      <span class="font-mono text-[10px] tracking-[0.3em] text-faint uppercase">scroll</span>
+      <span class="scroll-cue-line"></span>
     </div>
   </section>
 

@@ -40,7 +40,17 @@ const {
     <SearchModal />
     <script>
       import { initMotion } from '@/lib/motion';
+      import { SITE } from '@/lib/site';
       initMotion();
+      // One wink for the curious.
+      console.log(
+        `%c⬢ blokz.dev — ${SITE.tagline.toLowerCase()}`,
+        'color:#5b8cff;font-family:monospace;font-size:12px',
+      );
+      console.log(
+        `%c  built in the open · ${SITE.repo}`,
+        'color:#5b6378;font-family:monospace;font-size:11px',
+      );
     </script>
   </body>
 </html>

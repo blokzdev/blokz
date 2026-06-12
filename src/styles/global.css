@@ -30,7 +30,9 @@
 
   /* Fluid type scale (templates use text-hero / text-page-title, no raw clamps). */
   --text-hero: clamp(2.4rem, 7vw, 4.8rem);
+  --text-hero--line-height: 1.04;
   --text-page-title: clamp(2.1rem, 5vw, 3.2rem);
+  --text-page-title--line-height: 1.15;
 
   /* Brand glow shadows (shadow-glow-sm / shadow-glow-md utilities). */
   --shadow-glow-sm: 0 0 0 1px rgba(124, 140, 255, 0.18), 0 4px 24px -8px rgba(91, 140, 255, 0.35);
@@ -257,6 +259,37 @@
     transform-origin: 0 50%;
     transform: scaleX(0);
     background: linear-gradient(90deg, var(--color-accent), var(--color-violet) 55%, var(--color-cyan));
+  }
+
+  /* Hero scroll cue: a thin line that pours downward. Opt-in motion only —
+     an infinite animation under the global 0.01ms rule would strobe. */
+  .scroll-cue-line {
+    width: 1px;
+    height: 2.25rem;
+    background: linear-gradient(180deg, var(--color-accent), transparent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-cue-line {
+      animation: scroll-cue 2.4s var(--ease-out-expo) infinite;
+    }
+  }
+  @keyframes scroll-cue {
+    0% {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    45% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    55% {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
   }
 
   /* Active TOC entry (toggled by data-toc-spy in motion.ts). */

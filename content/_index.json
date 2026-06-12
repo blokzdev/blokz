@@ -1,6 +1,6 @@
 {
   "counts": {
-    "articles": 6,
+    "articles": 7,
     "artifacts": 8
   },
   "topicCounts": {
@@ -8,9 +8,10 @@
     "ai": 1,
     "blockchain": 2,
     "cryptography": 1,
-    "infrastructure": 4,
+    "defi": 1,
+    "infrastructure": 5,
     "llm": 1,
-    "machine-learning": 2,
+    "machine-learning": 3,
     "security": 3,
     "smart-contracts": 2,
     "web3": 1,
@@ -39,6 +40,32 @@
       "series": "proof-of-intelligence",
       "seriesOrder": 3,
       "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-solver-optimization-market",
+      "path": "content/articles/2026/06/the-solver-optimization-market/index.mdx",
+      "url": "/articles/the-solver-optimization-market",
+      "title": "The Solver Optimization Market: How Intent-Based DEXes Auction Your Trade",
+      "description": "Intent-based DEXes don't route your trade — they auction it. Solvers compete as autonomous optimizers to settle a batch at one clearing price. Inside CoW Protocol's contract, the optimization problem, and the metaheuristic solvers now winning it.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "intents",
+        "solvers",
+        "batch-auctions",
+        "cow-protocol",
+        "optimization",
+        "mev"
+      ],
+      "artifacts": [
+        "gradient-descent"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },

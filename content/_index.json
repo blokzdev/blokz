@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 11,
-    "artifacts": 9
+    "articles": 12,
+    "artifacts": 10
   },
   "topicCounts": {
     "agents": 5,
     "ai": 1,
-    "blockchain": 6,
-    "cryptography": 1,
+    "blockchain": 7,
+    "cryptography": 2,
     "defi": 2,
     "infrastructure": 6,
     "llm": 1,
-    "machine-learning": 5,
+    "machine-learning": 6,
     "research": 1,
     "security": 4,
     "smart-contracts": 2,
@@ -66,6 +66,34 @@
         "erc-4337"
       ],
       "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "fhe-mainnet-private-compute-costs",
+      "path": "content/articles/2026/06/fhe-mainnet-private-compute-costs/index.mdx",
+      "url": "/articles/fhe-mainnet-private-compute-costs",
+      "title": "FHE Hits Mainnet: What Private On-Chain Compute Actually Costs",
+      "description": "FHE left the lab: confidential ERC-7984 tokens settle on Ethereum for ~$0.09 in gas, with 48,000 transfers since December. We dissect a live encrypted transaction, the 13-node MPC committee underneath, and why encrypted inference is still 11 seconds per token.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "blockchain"
+      ],
+      "tags": [
+        "fhe",
+        "fhevm",
+        "erc-7984",
+        "confidential-computing",
+        "tfhe",
+        "zama"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 4,
+      "artifacts": [
+        "price-of-trust"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -398,6 +426,23 @@
       "type": "svg",
       "archetype": "diagram",
       "topics": [
+        "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "price-of-trust",
+      "path": "content/artifacts/price-of-trust/manifest.json",
+      "module": "src/islands/artifacts/price-of-trust.ts",
+      "url": "/artifacts/price-of-trust",
+      "title": "The Price of Trust",
+      "description": "Every route to trustworthy AI inference, priced on one log axis: TEE attestation at 1.07×, optimistic re-execution at 2–4×, zkML and FHE at 10³–10⁵×, verifiable FHE beyond. Hover, tap, or arrow through the bars to see what each overhead actually buys — and whom you still trust.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
         "cryptography",
         "blockchain"
       ],

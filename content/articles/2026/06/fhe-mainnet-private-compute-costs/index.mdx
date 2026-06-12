@@ -1,0 +1,254 @@
+---
+slug: fhe-mainnet-private-compute-costs
+title: "FHE Hits Mainnet: What Private On-Chain Compute Actually Costs"
+description: "FHE left the lab: confidential ERC-7984 tokens settle on Ethereum for ~$0.09 in gas, with 48,000 transfers since December. We dissect a live encrypted transaction, the 13-node MPC committee underneath, and why encrypted inference is still 11 seconds per token."
+pubDate: 2026-06-12
+author: blokz
+topics: [cryptography, machine-learning, blockchain]
+tags: [fhe, fhevm, erc-7984, confidential-computing, tfhe, zama]
+series: proof-of-intelligence
+seriesOrder: 4
+artifacts: [price-of-trust]
+difficulty: intermediate
+sources:
+  - label: "Zama Confidential Blockchain Protocol Litepaper"
+    url: "https://docs.zama.org/protocol/zama-protocol-litepaper"
+  - label: "Concrete ML: encrypted LLM inference benchmarks"
+    url: "https://docs.zama.org/concrete-ml/llms/inference"
+  - label: "ZHE: Efficient Zero-Knowledge Proofs for HE Evaluations"
+    url: "https://eprint.iacr.org/2025/770"
+  - label: "ERC-7984: The Confidential Token Standard Explained"
+    url: "https://www.zama.org/post/erc-7984-the-confidential-token-standard-explained"
+  - label: "SmartPAF: Accurate Low-Degree Polynomial Approximation for Fast Private Inference (arXiv:2404.03216)"
+    url: "https://arxiv.org/abs/2404.03216"
+---
+
+[Part 3](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) of
+this series closed by promising a hybrid build. Before that, the comparison
+table we've been carrying since [part 1](/articles/zkml-verifiable-inference-landscape)
+deserves its missing column. zkML, optimistic schemes, and TEEs all answer
+*"did the model run correctly?"* None of them answer the question that
+regulated money actually asks: *"can you compute on my data without seeing
+it?"* Fully homomorphic encryption answers exactly that — and as of
+December 30, 2025, it is no longer a lab demo. It settles real value on
+Ethereum mainnet, and the chain itself can't read the amounts.
+
+This piece does what we did for [x402](/articles/x402-agent-payments-onchain)
+and ERC-8004: pull the live contracts off the chain, price a real
+transaction, and weigh the trust model without the pitch-deck gloss. The
+short version: **FHE's privacy leg now costs about nine cents per encrypted
+operation batch on mainnet — but its integrity leg doesn't exist yet, and
+the keys sit with a 13-node committee running inside the same hardware
+enclaves part 3 taught you to distrust.**
+
+## What actually shipped
+
+Zama's confidential blockchain protocol deployed its host contracts to
+Ethereum mainnet on November 19, 2025 (the
+[`ACL` proxy](https://eth.blockscout.com/address/0xcA2E8f1F656CD25C01F05d0b243Ab1ecd4a8ffb6)
+at block 23,832,647, the
+[`FHEVMExecutor`](https://eth.blockscout.com/address/0xD82385dADa1ae3E969447f20A3164F6213100e75)
+two blocks later) and went live on December 30 with the first confidential
+stablecoin transfer. The flagship asset is
+[Confidential USDT](https://eth.blockscout.com/token/0xAe0207C757Aa2B4019Ad96edD0092ddc63EF0c50)
+— cUSDT, an ERC-7984 token that wraps vanilla USDT 1:1 and keeps every
+balance and transfer amount encrypted under TFHE.
+
+Five and a half months in, the on-chain numbers are modest but real
+(snapshot 2026-06-12, Blockscout):
+
+- **8,167 holders** of cUSDT
+- **48,033 confidential transfers** — roughly 290 per day since launch
+- **~$22.5M USDT wrapped** (total supply is one of the few numbers the
+  contract publishes in plaintext; it's the size of the vault, not anyone's
+  balance)
+
+For perspective, that's about what Base settles in
+[x402 micropayments](/articles/x402-agent-payments-dissected) before lunch.
+But x402 had no cryptographic novelty to amortize — this is the first time
+arbitrary encrypted state transitions have held real value on Ethereum at
+all.
+
+## The trick: the EVM never runs FHE
+
+The part that makes this viable on a chain where storage costs what it
+costs: **no FHE computation happens in the EVM.** An encrypted value on
+chain is a 32-byte *handle* — an opaque pointer into a ciphertext store
+maintained off-chain. When a contract "adds" two encrypted balances, the
+`FHEVMExecutor` does symbolic execution: it derives the handle of the
+result, emits an event, and moves on. A network of coprocessors (three
+operators at genesis, results accepted by majority) picks up the event,
+performs the actual TFHE computation on ciphertexts that never touch the
+chain, and commits the result. Anyone can recompute and check them —
+the ciphertexts are public, only the keys are not.
+
+You can watch the machinery in single transactions. A Zama smoke-test
+contract runs `add42ToInput64(inputHandle, inputProof)` —
+add the constant 42 to an encrypted integer —
+[every few minutes on mainnet](https://eth.blockscout.com/tx/0x2ad984003a25cd509faeb7330ea97056d46550a5c24d03e9a81c097e42fcfede):
+244,711 gas for two FHE operations' worth of symbolic execution, handle
+derivation, and ACL bookkeeping. The actual lattice cryptography it
+triggers happens elsewhere, later, off the gas meter.
+
+The interesting dissection is a real exit from the encrypted world. Here is
+a cUSDT unwrap from the morning of this writing,
+[`0xf2dc…cba9`](https://eth.blockscout.com/tx/0xf2dc915ba32cc3ee83a99cf5a7a7168da5d4780c183d11566143b2620b33cba9):
+
+```text
+unwrap(from, to, encryptedAmount, inputProof)
+  encryptedAmount: 0xf307cdb1bd70836f8e93646c57d11a4c2a734a70ac…010500   ← 32-byte handle
+  inputProof:      0x0101f307…1b00                                       ← 99 bytes
+  gas used:        483,591   (6 FHE operations, fee ≈ 0.000055 ETH ≈ $0.09)
+  burn event:      cUSDT value: [null]   ← Blockscout cannot display the amount
+```
+
+That `value: null` in the burn log is the whole product in one field. The
+block explorer — the same software that happily itemizes every other
+transfer on Ethereum — *does not know how much was burned*. Twenty-four
+seconds later a second transaction,
+[`finalizeUnwrap`](https://eth.blockscout.com/tx/0x49ce4101972290518ca43d4403fcf72843abb817cb357674b2ece440525352e7)
+(~$0.07), delivers the decrypted amount: it verifies threshold signatures
+from the key-management committee on-chain via the `KMSVerifier` contract,
+then releases plain USDT from the vault. Inside the encrypted world,
+transfers are one transaction; crossing the boundary in either direction is
+two, with a committee round-trip in between.
+
+Zama's litepaper prices the full confidential-transfer flow at **$0.008 to
+$0.80** depending on congestion (input-proof verification dominates), and
+the protocol meters FHE throughput at about **20 TPS per chain on CPU
+coprocessors** today, with a GPU migration targeted at 500–1,000 TPS. Those
+are stablecoin-transfer numbers — a handful of homomorphic additions and
+comparisons per transaction. Keep that workload size in mind for what comes
+next.
+
+## Now do inference
+
+This is a series about verifiable AI, and the gap between "encrypted token
+arithmetic" and "encrypted model inference" is the gap between a few
+TFHE gates and a few billion of them.
+
+The current state of the art for production FHE inference is Zama's own
+Concrete ML, which is honest about its numbers in a way the marketing
+around "private AI" rarely is. Running GPT-2 — a 124M-parameter model from
+2019 — under its hybrid scheme costs **~300 seconds per token on CPU, ~11
+seconds per token on GPU**. And "hybrid" is doing heavy lifting in that
+sentence: only the linear layers run under FHE on the server; the client
+decrypts intermediate values and computes every attention softmax and
+activation *itself*, shipping ciphertexts back and forth — about **18MB of
+traffic per token** for a Llama-3.2-1B, since TFHE ciphertexts run ~4× the
+size of the plaintext they hide. The academic literature
+([SmartPAF](https://arxiv.org/abs/2404.03216), among others) puts fully
+encrypted inference at **up to five orders of magnitude slower** than
+plaintext, with the non-polynomial operators — ReLU, max-pooling, softmax,
+everything a neural network does that isn't a matrix multiply — eating most
+of it.
+
+Put against the rest of the series, the comparison table now reads:
+
+| Dimension | zkML | Optimistic | TEE | FHE |
+| --- | --- | --- | --- | --- |
+| Compute overhead | 10³–10⁵× | 2–4× | 1.02–1.07× | 10³–10⁵× |
+| What it buys | integrity | integrity, delayed | integrity-ish + privacy | **privacy only** |
+| Input privacy | possible (costly) | none | yes, vs. host | yes, cryptographic |
+| Who you trust | math | ≥1 honest watcher | silicon vendor | key committee |
+| Production AI workloads | tiny models | mid | frontier-scale | sub-GPT-2 |
+
+Two things jump out. FHE pays zkML-class overhead but buys a *different
+good* — confidentiality instead of integrity. And its trust column says
+"key committee," which deserves a section, because it's the part the word
+"homomorphic" papers over.
+
+<Artifact slug="price-of-trust" />
+
+## The committee under the cryptography
+
+FHE keeps data encrypted *during computation*. Someone still holds the
+decryption key, and whoever does can read everything. Zama's protocol
+answer is the standard one: nobody holds it. The global FHE key is secret-
+shared across a **13-party key management service** running threshold MPC —
+decryption requires a two-thirds quorum, the protocol tolerates up to a
+third of the parties being malicious, and the operator set (Fireblocks,
+Figment, OpenZeppelin, Ledger and others) is the kind of list designed to
+make collusion reputationally expensive.
+
+And then the footnote that connects this article to
+[part 3](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed):
+**each MPC node runs inside an AWS Nitro enclave.** The litepaper's own
+framing is that compromising a key share requires breaching AWS *and*
+multiple operators. That's defense in depth, and it's also an admission
+with a price tag: the purest cryptography in this series ships wrapped in
+the exact hardware trust model whose attestation keys were extracted with
+$1,000 of interposer equipment last October. The lattice math has no known
+attacker; the system around it has the same attackers as everything else.
+
+So the honest trust accounting for "FHE on mainnet," 2026 edition:
+
+1. **Confidentiality**: cryptographic against everyone *except* a 2/3
+   quorum of 13 known operators (plus their cloud substrate).
+2. **Correctness**: a majority of 3 coprocessor operators, backstopped by
+   public recomputability — closer to the
+   [optimistic model](/articles/optimistic-ml-oracles) than to a proof.
+3. **Liveness**: a gateway chain and a decryption oracle that sit on the
+   exit path of every plaintext you'll ever see again.
+
+That's not a dunk — it's three committees doing three jobs cryptography
+can't do alone yet. But "trustless privacy" it is not.
+
+## The missing leg: nothing proves the ciphertext
+
+Here is the asymmetry that keeps FHE out of this series' core question.
+With zkML, a verifier *knows* the output came from the claimed model. With
+FHE, the client can't even check the cheap way — the result is encrypted,
+so you can't eyeball it, and the server that computed it could have
+returned `Enc(garbage)` at a tiny fraction of the cost of honest
+evaluation. FHE schemes ship **no integrity guarantee whatsoever**; the
+malleability that makes homomorphic computation possible is precisely what
+makes the ciphertext forgeable.
+
+The fix is verifiable FHE — prove in zero knowledge that the homomorphic
+evaluation was performed correctly — and its cost curve is where zkML's was
+around 2023. Classic approaches ran **four-plus orders of magnitude**
+slower than the underlying HE operations (proving lattice arithmetic inside
+a SNARK field is a nightmare of non-native arithmetic). The current state
+of the art, [ZHE](https://eprint.iacr.org/2025/770) (2025), gets the prover
+down to **27–36× the cost of the HE evaluation itself** for CKKS and BGV —
+a two-to-three-order-of-magnitude improvement, achieved by designing the
+proof system natively around HE's ring structure instead of forcing it
+through a general-purpose circuit.
+
+Compose the stacks and you see why nobody ships private *and* verifiable
+inference today: take a model that's 10⁴× slower under FHE, multiply by
+~30× for the integrity proof, and you're at 10⁵–10⁶× before networking.
+Zama's protocol sidesteps the question with the coprocessor committee;
+research hasn't closed it. **Privacy and integrity are still sold
+separately, and buying both costs more than either market will pay.**
+
+## What to build with this (and what not to)
+
+The decision rule, in the spirit of this series' earlier ones:
+
+- **Confidential state with token-arithmetic workloads — ship it.**
+  Encrypted balances, sealed bids, private order sizes, payroll. The
+  on-chain evidence says this works today at single-digit cents while the
+  subsidized fee schedule lasts, and ERC-7984 plus OpenZeppelin's audited
+  implementations make it a weekend integration, with selective-disclosure
+  hooks for auditors built in.
+- **Private inference as a product — only off-chain, only small models,
+  only latency-tolerant.** At 11 s/token for GPT-2-class models, FHE
+  inference is for scoring loan applications overnight, not chatbots. If
+  your privacy requirement is "the cloud shouldn't see prompts," part 3's
+  TEEs give you that at 7% overhead with a weaker adversary model — and
+  carry frontier-scale models, which FHE cannot at any price.
+- **Anything that needs the answer *and* a proof of the answer — wait, or
+  compose.** vFHE at ZHE's 30× is a research milestone, not a product. The
+  pragmatic 2026 stack remains FHE-for-privacy wrapped in
+  attestation-or-optimism-for-integrity — committees and enclaves patching
+  the hole until the math gets cheap enough.
+
+Four parts in, the pattern of this series has fully inverted from where
+verifiable-AI discourse started: the question was never "which cryptography
+wins," it's how many different kinds of trust you can afford to stack. zk
+bounds the worst case, optimism prices honesty, hardware buys back latency
+— and FHE, the first leg that protects the *data* instead of the
+*computation*, just proved it can hold $22M on mainnet while everyone
+watches and nobody sees. The hybrid build is up next.

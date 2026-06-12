@@ -1,17 +1,18 @@
 {
   "counts": {
-    "articles": 9,
+    "articles": 10,
     "artifacts": 8
   },
   "topicCounts": {
     "agents": 5,
     "ai": 1,
-    "blockchain": 4,
+    "blockchain": 5,
     "cryptography": 1,
     "defi": 1,
     "infrastructure": 6,
     "llm": 1,
-    "machine-learning": 3,
+    "machine-learning": 4,
+    "research": 1,
     "security": 4,
     "smart-contracts": 2,
     "web3": 1,
@@ -90,6 +91,23 @@
       "artifacts": [
         "gradient-descent"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "what-the-blockchain-actually-does-in-decentralized-ai-training",
+      "path": "content/articles/2026/06/what-the-blockchain-actually-does-in-decentralized-ai-training/index.mdx",
+      "url": "/articles/what-the-blockchain-actually-does-in-decentralized-ai-training",
+      "title": "What the Blockchain Actually Does in Decentralized AI Training",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "machine-learning",
+        "blockchain",
+        "research"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

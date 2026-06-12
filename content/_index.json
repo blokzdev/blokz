@@ -25,15 +25,24 @@
       "path": "content/articles/2026/06/agent-key-custody-blast-radius/index.mdx",
       "url": "/articles/agent-key-custody-blast-radius",
       "title": "Agent Keys and the Blast Radius Problem: Custody Engineering with EIP-7702 and Spend Permissions",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "An agent holding your raw key is one prompt injection from total loss — and 97% of early EIP-7702 delegations went to drainer sweepers. We read the sweeper's source off the chain, dissect a real 35.97-USDC-a-day spend permission on Base, and do the blast-radius math.",
       "pubDate": "2026-06-12",
       "topics": [
         "agents",
         "security",
         "smart-contracts"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "eip-7702",
+        "spend-permissions",
+        "session-keys",
+        "agent-wallets",
+        "key-custody",
+        "account-abstraction"
+      ],
+      "artifacts": [
+        "blast-radius"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -472,7 +481,7 @@
       "module": "src/islands/artifacts/blast-radius.ts",
       "url": "/artifacts/blast-radius",
       "title": "Blast Radius",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "What a hijacked agent key costs under three custody models: a raw EOA key loses the whole wallet instantly, an expiry-only session key does too, and a per-period spend permission caps the bleed. Drag the sliders — or load a real 35.97 USDC/day permission pulled off Base — and watch the staircase.",
       "pubDate": "2026-06-12",
       "type": "dom",
       "archetype": "calculator",

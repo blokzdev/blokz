@@ -1,0 +1,35 @@
+{
+  "note": "Snapshot of a real spend permission settled on Base, read via Blockscout on 2026-06-12. The permission struct is decoded calldata from the spend() transaction; enforcement semantics verified against the SpendPermissionManager source on-chain.",
+  "permission": {
+    "chain": "base",
+    "chainId": 8453,
+    "txHash": "0xa695af07333e7d2e3aa90c039af32f4ee3cfb8b856a57acd7adff797e4611055",
+    "block": 47251865,
+    "timestamp": "2026-06-12T19:37:57Z",
+    "manager": "0xf85210B21cC50302F477BA56686d2019dC9b67Ad",
+    "account": "0x6c44A1330bAE4Ca7B89e58beE8040668089446b8",
+    "spender": "0x5A9586f3794c60aB22d80A5eD3115CE13EA50a97",
+    "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "tokenSymbol": "USDC",
+    "tokenDecimals": 6,
+    "allowanceRaw": "35970000",
+    "allowance": 35.97,
+    "periodSeconds": 86400,
+    "start": 1781292466,
+    "end": 1781297866,
+    "validitySeconds": 5400,
+    "spentRaw": "35970000",
+    "spent": 35.97,
+    "gasUsed": 119335,
+    "feeWei": "2986372769375"
+  },
+  "sweeper": {
+    "chain": "ethereum",
+    "chainId": 1,
+    "name": "CrimeEnjoyor",
+    "address": "0x89383882Fc2D0Cd4d7952a3267A3b6dAE967E704",
+    "firstSeen": "2025-05-23T16:51:35Z",
+    "delegationsReported": 52000,
+    "reportedBy": "Wintermute Research (Dune dashboard wintermute_research/eip7702)"
+  }
+}

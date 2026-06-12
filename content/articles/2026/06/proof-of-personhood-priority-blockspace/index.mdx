@@ -1,22 +1,130 @@
 ---
 slug: proof-of-personhood-priority-blockspace
 title: "Proof of Personhood vs. the Agent Flood: Inside World ID and Priority Blockspace for Humans"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "World Chain reserved top-of-block space for verified humans while 382M smart-account ops poured in. We read the Semaphore tree on Ethereum — 17.59M identities, hourly batches at ~3,300 gas each — decode PBH's month-stamped nullifiers, and find the human-only lane sitting almost empty."
 pubDate: 2026-06-12
 author: blokz
 topics: [zero-knowledge, blockchain, security]
-tags: []
-artifacts: []
+tags: [world-id, semaphore, pbh, nullifiers, proof-of-personhood, world-chain, erc-4337]
+artifacts: [merkle-cascade, nullifier-gate]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Introducing PBH: Priority Blockspace for Humans (World engineering blog)"
+    url: "https://world.org/blog/engineering/introducing-pbh-priority-blockspace-for-humans"
+  - label: "World Chain Specs — PBH transaction validation"
+    url: "https://worldcoin.github.io/world-chain/pbh/validation.html"
+  - label: "PBHEntryPointImplV1, verified source on World Chain mainnet"
+    url: "https://worldchain-mainnet.explorer.alchemy.com/address/0x0000000000A21818Ee9F93BB4f2AAad305b5397C"
+  - label: "WorldIDIdentityManager on Ethereum (Blockscout)"
+    url: "https://eth.blockscout.com/address/0xf7134CE138832c1456F2a91D64621eE90c2bddEa"
+  - label: "Vitalik Buterin — What do I think about biometric proof of personhood?"
+    url: "https://vitalik.eth.limo/general/2023/07/24/biometric.html"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+The agent economy has a registration desk now — [ERC-8004 registries](/articles/erc-8004-agent-registries-onchain) for the agents, [x402 rails](/articles/x402-agent-payments-onchain) for their payments. This article is about the mirror-image problem: as transaction volume becomes overwhelmingly automated, how does a chain prove that a sender is a *human* — and is that proof worth anything at the protocol level?
 
-## Section heading
+World ID is the largest live experiment in answering that question, and it has two halves you can actually audit: a Semaphore identity set maintained on Ethereum mainnet, and **Priority Blockspace for Humans (PBH)** on World Chain — an OP Stack L2 that reserves top-of-block inclusion for transactions carrying a valid proof-of-humanness. One half is running at industrial scale. The other, the on-chain record says, is a beautifully engineered lane that almost nobody drives in. Both halves teach you something about building identity infrastructure for the agent era.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## A registry of humans, updated hourly
+
+Strip away the orbs and the discourse, and the core artifact is one contract: [`WorldIDIdentityManager`](https://eth.blockscout.com/address/0xf7134CE138832c1456F2a91D64621eE90c2bddEa) at `0xf7134CE1…90c2bddEa` on Ethereum, live since July 2023. It maintains a depth-30 incremental Merkle tree — capacity 2³⁰, about 1.07 billion leaves — where each leaf is an *identity commitment*: a Poseidon hash of secrets that never leave the holder's phone.
+
+A signup-sequencer EOA (`0xE2DA0463…`) inserts new commitments in batches, on the hour, every hour. The batch that landed at 18:57 UTC today (block 25,303,322, [`0x559b9145…`](https://eth.blockscout.com/tx/0x559b91453bb2ba575b4e9b82d0f1047a3c825a666a6ce18ea228ad0240960383)) is representative:
+
+- `startIndex = 17,592,830` — the tree held 17.59M identities before this batch. World's April announcement said ["nearly 18 million people"](https://world.org/blog/announcements/world-id-full-stack-proof-of-human) have verified at an Orb; the chain agrees.
+- 180 real commitments in a 1,200-slot batch, zero-padded.
+- One `uint256[8]` Groth16 proof covers the *entire* insertion: the circuit proves the tree transition `preRoot → postRoot` was computed correctly off-chain, so the EVM never hashes a single Poseidon node. Total cost: **590,880 gas — about 3,300 gas per registered human**, $0.23 at today's gas. Across today's five most recent batches, fees ranged $0.23–$1.16.
+- The submitting EOA's nonce: 90,556 batches and counting.
+
+Diffing `startIndex` against the same hourly batch a week ago (17,575,915 on June 5) gives the current enrollment rate: **+16,915 humans in seven days, ~2,400/day**. For contrast, the deletion path (`deleteIdentities`, for users who revoke) exists in the same contract. This is the part of World ID that behaves like boring, healthy infrastructure: an append-mostly accumulator with succinct update proofs, consumed by state bridges that relay `latestRoot` to other chains every few minutes.
+
+## Proving membership without saying which leaf
+
+Everything downstream hangs off one ZK statement, inherited from the [Semaphore protocol](https://docs.semaphore.pse.dev/): *I know secrets whose commitment is a leaf under this Merkle root*. The identity is two private field elements — in Semaphore terms a *trapdoor* and a *nullifier* — and the commitment is the Poseidon hash of their combined secret. The proof reveals the root and nothing about the path: not the leaf index, not the commitment, not which of 17.59 million humans you are. The anonymity set is the whole tree.
+
+The Merkle-path half of that statement is the same mechanism you've seen everywhere else in this blog's beat — sibling hashes up to the root:
+
+<Artifact slug="merkle-cascade" />
+
+In World ID's tree the path is 30 hops instead of 4, and the verifier never sees it — the circuit checks it privately and exposes only the root, which must match a recent one from the identity manager (PBH accepts roots **up to 7 days old**, so proofs survive bridge latency).
+
+Membership alone is useless for sybil resistance, though. An anonymous member could vote, claim, or transact a thousand times — anonymously. The load-bearing trick is the **nullifier**.
+
+## One signal per scope: the nullifier
+
+Alongside the root, every Semaphore proof outputs a deterministic `nullifierHash = H(externalNullifier, identityNullifier)` — a hash of your private identity secret with a public *scope* value. Same human + same scope → same nullifier hash, every time, even though nobody can connect it to your leaf. A verifier keeps a set of spent nullifiers per scope, and uniqueness falls out: first signal accepted, replay rejected, but *which* human signaled stays hidden.
+
+PBH builds its rate limit directly into the scope. From the [verified `PBHExternalNullifier` library](https://worldchain-mainnet.explorer.alchemy.com/address/0x0000000000A21818Ee9F93BB4f2AAad305b5397C?tab=contract) on World Chain mainnet:
+
+```solidity
+function encode(uint8 version, uint16 pbhNonce, uint8 month, uint16 year)
+    internal pure returns (uint256)
+{
+    require(month > 0 && month < 13, InvalidExternalNullifierMonth());
+    return (uint256(year) << 32) | (uint256(month) << 24)
+         | (uint256(pbhNonce) << 8) | uint256(version);
+}
+```
+
+The scope *is* the calendar: year, month, and a bounded nonce, packed into 48 bits. Want 30 transactions per month per human? Accept nonces `0..29`. Each (month, year, nonce) triple yields exactly one valid nullifier hash per identity, so the quota is enforced by ZK arithmetic rather than by an account database. Next month, the scope changes, every nullifier is fresh, and the quota resets itself. (A detail for code readers: the NatSpec header in that file still documents the *old* bit layout — nonce in bits 8–15, month in 16–31 — while the code shipped a `uint16` nonce in bits 8–23 and month in 24–31. The chain runs the code, not the comment.)
+
+Walk the whole loop — prove, spend, replay, roll the month — here:
+
+<Artifact slug="nullifier-gate" />
+
+One more binding matters. A PBH proof commits to a `signalHash` — for 4337 user operations, `hashToField(abi.encodePacked(sender, userOp.nonce, userOp.callData))`. The proof is welded to one exact operation from one exact sender; a builder can't peel a human's proof off their transaction and staple it onto a bot's.
+
+## The HOV lane: how PBH is built
+
+World Chain's pitch, from the [engineering announcement](https://world.org/blog/engineering/introducing-pbh-priority-blockspace-for-humans): blockchains are getting faster and cheaper, but "less human" — bots win priority by outbidding people. PBH's answer is an express lane enforced at the block-building layer:
+
+1. **A custom builder** (open-source, Reth-based) receives transactions tagged as PBH and validates their World ID proofs. Blocks reserve a share of gas for verified-human transactions, ordered top-of-block; overflow carries to the next block. Non-PBH traffic keeps the rest — bots aren't banned, just de-prioritized.
+2. **rollup-boost** (built with Flashbots) plugs that external builder into the OP Stack sequencer, with fallback to vanilla ordering if the builder fails.
+3. **ERC-4337 integration**: World App accounts are smart accounts, so Alchemy's Rundler bundler was extended to detect PBH-eligible user ops, aggregate their proofs via a `PBHSignatureAggregator`, and submit PBH-only bundles through `PBHEntryPoint.handleAggregatedOps`, which re-derives each op's `signalHash`, checks each nullifier, then forwards the batch to the canonical EntryPoint.
+
+This matters because World Chain is arguably the densest smart-account environment anywhere: Alchemy reported **35M+ user operations per month — roughly two-thirds of all ERC-4337 activity across every chain** — and the canonical EntryPoint at `0x00000000…da032` shows **382,063,727 transactions** as of today, streaming in several `handleOps` calls per second. PBH launched on mainnet June 26, 2025, [announced for 13 million verified humans](https://world.org/blog/announcements/priority-blockspace-launches-for-13-million-humans-on-world-chain-mainnet).
+
+## What the chain actually says
+
+Here's where reading contracts beats reading announcements. The canonical `PBHEntryPoint` proxy (`0x0000000000A21818…5397C`) has, per the explorer, **five transactions in its entire history**: two `handleAggregatedOps` test bundles on June 3, 2025 (pre-launch), one implementation upgrade that July, and two `addBuilder` calls that August. The `PBHSignatureAggregator` has zero. `spendNullifierHashes` — the function an authorized builder calls to mark nullifiers consumed — has never been invoked on mainnet. Meanwhile the plain, proof-less `handleOps` firehose runs a few hundred million ops deep.
+
+The live configuration is just as telling. Three `eth_call`s against the proxy today return:
+
+| Parameter | Spec / docs | Live value (2026-06-12) |
+| --- | --- | --- |
+| `numPbhPerMonth` | docs' running example: 30/month | **65,535** (effectively uncapped) |
+| `pbhGasLimit` | bounded per PBH multicall | 15,000,000 |
+| `worldId` | bridged World ID verifier | **`address(0)`** |
+
+That last row is the trust model in one storage slot. From the verified implementation:
+
+```solidity
+// If worldId address is set, proceed with on chain verification,
+// otherwise assume verification has been done off chain by the builder.
+if (address(worldId) != address(0)) {
+    worldId.verifyProof(
+        pbhPayload.root, signalHash, pbhPayload.nullifierHash,
+        pbhPayload.pbhExternalNullifier, pbhPayload.proof
+    );
+}
+```
+
+With `worldId` unset, the contract checks nullifier reuse and the calendar encoding — and **trusts the builder to have verified the Groth16 proof off-chain**. That's a defensible engineering call (the builder already validates proofs to order the block, and on-chain Groth16 verification costs real gas), but it means mainnet PBH, as deployed, is not a trustless human-lane; it's a sequencer-adjacent policy with ZK-shaped inputs. The L2 operator who runs the builder is the verifier of record.
+
+So the honest reading, on the evidence: **the identity layer runs at scale; the priority lane idles.** Why? The chain doesn't say, but the shape of the data suggests answers. World App's wallet routes its user ops through ordinary bundler flows — generating a Semaphore proof on-device per transaction adds latency and battery for a benefit users can't feel, because World Chain's median inclusion is already sub-3-seconds at sub-cent fees. Priority is worth paying for only when blockspace is contested; today, it isn't. PBH is counter-cyclical infrastructure — built for the congestion regime the agent flood implies, not the one the chain is in. (Worldcoin even ran a [PBH capture-the-flag](https://github.com/worldcoin/pbh-ctf) before launch to stress the validation rules; the machinery is real and adversarially tested. It's demand that hasn't arrived.)
+
+The lesson generalizes: in [agent registries](/articles/erc-8004-agent-registries-onchain) we found ~90,000 registrations and a reputation system already being farmed; here we find 17.6M registered humans and a priority mechanism nobody exercises. Identity infrastructure adoption is *bimodal* — registration is cheap and legible, but per-transaction cryptographic ceremony only happens when the alternative is worse.
+
+## What a circuit can't prove
+
+The ZK math guarantees that one *enrolled identity* signals once per scope. It cannot guarantee that one identity equals one live, consenting human. Vitalik Buterin's [2023 taxonomy of biometric proof-of-personhood risks](https://vitalik.eth.limo/general/2023/07/24/biometric.html) still maps the gap precisely: verified accounts can be sold or rented to bot operators (a black market that one-per-scope nullifiers can't detect, since the *credential* is unique even when its operator isn't); phones holding identity secrets get hacked; orb hardware and the enrollment pipeline are trust anchors no SNARK reaches; and the same uniqueness that defeats sybils threatens pseudonymity — one ID per person means one *linkable* axis per person, which is why he argues for pluralistic identity instead.
+
+World's own protocol work concedes the sharpest of these points. Classic Semaphore nullifiers are deterministic — same human, same app scope, same hash forever — which makes them a long-lived correlation handle for any verifier that colludes across scopes. The [World ID 4.0 redesign announced in April](https://world.org/blog/announcements/world-id-full-stack-proof-of-human) replaces them with **one-time-use nullifiers** generated through an OPRF network (built with TACEO), moves credential issuance on-device, and reframes the product as proof-of-human *backing* for AI agents — "a unique, verified human stands behind each agent" — rather than a bot ban. Which is the right frame: the agent flood isn't going to be stopped at the blockspace border. The realistic goal is attribution — knowing which automated actors have a human principal — and rate-limiting whatever needs to stay human-paced.
 
 ## Takeaways
 
-TODO.
+- **Anonymous-set + nullifier is the design pattern to steal.** A depth-30 Poseidon tree, batch insertions proven by one Groth16 proof (~3,300 gas per member), and scope-derived nullifiers give you sybil-resistant rate limiting with no accounts and no linkage. It's reusable far beyond personhood — any "one action per member per epoch" policy fits.
+- **Encode policy into the scope, not into storage.** PBH's calendar-packed external nullifier makes quotas self-resetting and stateless per epoch. The only persistent state is the spent-nullifier set.
+- **Read the deployed config, not the whitepaper.** `worldId = address(0)` quietly converts an on-chain verification story into builder-trusted off-chain verification. One `eth_call` told us more about the trust model than every launch post combined.
+- **Priority mechanisms need scarcity to matter.** An express lane on an empty highway collects no tolls. Judge human-priority designs by what they'd do under congestion — and check whether anyone is actually using them today.
+- **The circuit boundary is the threat model.** Everything inside the SNARK (membership, uniqueness-per-scope, signal binding) is solid; everything outside it (enrollment integrity, credential rental, device custody, builder honesty) is where proof-of-personhood will actually be attacked.

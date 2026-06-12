@@ -1,0 +1,24 @@
+{
+  "slug": "protocol-gap",
+  "title": "The Protocol Gap",
+  "description": "Seven years of the Elliptic AML benchmark in four switchable charts: the 2019 table everyone forgot, the 2026 leakage-free re-ranking, one GraphSAGE trained on four different graphs, and the F1 cliff at time step 43. Hover, tap, or tab across the bars for exact precision and recall.",
+  "pubDate": "2026-06-12",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "data",
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "switch between the four result sets",
+    "hover, tap, or tab to a bar for exact precision/recall"
+  ],
+  "dataSource": {
+    "label": "Weber et al. 2019 (arXiv:1908.02591) + Maganti 2026 (arXiv:2604.19514)",
+    "url": "https://arxiv.org/abs/2604.19514"
+  },
+  "dataAsOf": "2026-06-12"
+}

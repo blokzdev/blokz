@@ -1,19 +1,20 @@
 {
   "counts": {
-    "articles": 13,
-    "artifacts": 12
+    "articles": 14,
+    "artifacts": 13
   },
   "topicCounts": {
     "agents": 5,
     "ai": 2,
     "blockchain": 7,
     "cryptography": 2,
+    "data": 1,
     "defi": 2,
     "infrastructure": 7,
     "llm": 1,
-    "machine-learning": 6,
+    "machine-learning": 7,
     "research": 1,
-    "security": 4,
+    "security": 5,
     "smart-contracts": 2,
     "web3": 2,
     "zero-knowledge": 1
@@ -119,6 +120,32 @@
       "seriesOrder": 4,
       "artifacts": [
         "price-of-trust"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "gnn-vs-trees-onchain-fraud-detection",
+      "path": "content/articles/2026/06/gnn-vs-trees-onchain-fraud-detection/index.mdx",
+      "url": "/articles/gnn-vs-trees-onchain-fraud-detection",
+      "title": "When the Graph Misleads: GNNs vs. Gradient-Boosted Trees in On-Chain Fraud Detection",
+      "description": "The Elliptic benchmark made GNNs the default for on-chain AML. A 2026 leakage-free re-evaluation flips the script: random forests win by 13 F1 points, randomly rewired edges beat the real graph, and every model falls off a cliff at time step 43.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
+      ],
+      "tags": [
+        "aml",
+        "gnn",
+        "elliptic",
+        "fraud-detection",
+        "random-forest",
+        "benchmarks"
+      ],
+      "artifacts": [
+        "protocol-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -505,6 +532,23 @@
         "machine-learning",
         "cryptography",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "protocol-gap",
+      "path": "content/artifacts/protocol-gap/manifest.json",
+      "module": "src/islands/artifacts/protocol-gap.ts",
+      "url": "/artifacts/protocol-gap",
+      "title": "The Protocol Gap",
+      "description": "Seven years of the Elliptic AML benchmark in four switchable charts: the 2019 table everyone forgot, the 2026 leakage-free re-ranking, one GraphSAGE trained on four different graphs, and the F1 cliff at time step 43. Hover, tap, or tab across the bars for exact precision and recall.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
       ],
       "draft": false
     },

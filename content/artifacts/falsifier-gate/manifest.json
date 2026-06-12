@@ -1,0 +1,18 @@
+{
+  "slug": "falsifier-gate",
+  "title": "Falsifier Gate",
+  "description": "An agentic audit swarm's load-bearing stage: hypothesis particles leave the contract and hold at the falsifier gate while a proof-of-concept runs — hallucinated findings burst into debris, executable ones pass into the report. Tap a code line to plant a bug and watch the swarm catch it.",
+  "pubDate": "2026-06-12",
+  "type": "canvas",
+  "topics": [
+    "agents",
+    "security",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a code line to plant a bug",
+    "tap mid-stage to provoke a hypothesis burst"
+  ]
+}

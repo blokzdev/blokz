@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 6,
-    "artifacts": 7
+    "artifacts": 8
   },
   "topicCounts": {
     "agents": 3,
@@ -129,6 +129,7 @@
       "title": "Agentic Smart-Contract Auditing: What LLM Swarms Catch (and Miss)",
       "description": "We ran multi-agent LLM pipelines against historical exploit corpora and live audit engagements. The results reshape where AI fits in a security review — and where it absolutely doesn't.",
       "pubDate": "2026-06-04",
+      "updatedDate": "2026-06-12",
       "topics": [
         "agents",
         "llm",
@@ -142,7 +143,9 @@
         "fuzzing",
         "slither"
       ],
-      "artifacts": [],
+      "artifacts": [
+        "falsifier-gate"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -202,6 +205,22 @@
       "topics": [
         "blockchain",
         "machine-learning"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "falsifier-gate",
+      "path": "content/artifacts/falsifier-gate/manifest.json",
+      "module": "src/islands/artifacts/falsifier-gate.ts",
+      "url": "/artifacts/falsifier-gate",
+      "title": "Falsifier Gate",
+      "description": "An agentic audit swarm's load-bearing stage: hypothesis particles leave the contract and hold at the falsifier gate while a proof-of-concept runs — hallucinated findings burst into debris, executable ones pass into the report. Tap a code line to plant a bug and watch the swarm catch it.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
       ],
       "draft": false
     },

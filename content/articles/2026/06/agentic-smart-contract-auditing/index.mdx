@@ -3,9 +3,11 @@ slug: agentic-smart-contract-auditing
 title: "Agentic Smart-Contract Auditing: What LLM Swarms Catch (and Miss)"
 description: "We ran multi-agent LLM pipelines against historical exploit corpora and live audit engagements. The results reshape where AI fits in a security review — and where it absolutely doesn't."
 pubDate: 2026-06-04
+updatedDate: 2026-06-12
 author: blokz
 topics: [agents, llm, smart-contracts, security]
 tags: [auditing, solidity, multi-agent, fuzzing, slither]
+artifacts: [falsifier-gate]
 difficulty: intermediate
 featured: true
 sources:
@@ -46,6 +48,11 @@ contracts ──▶ Mapper ──▶ Hypothesizer ──▶ Falsifier ──▶ 
 The Falsifier is the load-bearing wall. Requiring an *executable* proof of
 concept converts hallucinated findings — the failure mode that poisons naive
 LLM audits — into a compile error that never reaches a human.
+
+The dynamic this creates is easier to watch than to describe: most
+hypotheses die at the gate, and that's the system working as designed.
+
+<Artifact slug="falsifier-gate" />
 
 ## What the swarm reliably catches
 

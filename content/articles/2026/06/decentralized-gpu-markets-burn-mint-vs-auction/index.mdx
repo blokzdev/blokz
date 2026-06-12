@@ -5,18 +5,188 @@ description: "Render just voted to route 60,000 Salad GPUs' payments through a t
 pubDate: 2026-06-12
 author: blokz
 topics: [infrastructure, ai, web3]
-tags: []
-artifacts: []
+tags: [depin, gpu-markets, render, akash, burn-mint-equilibrium, reverse-auction]
+artifacts: [bme-equilibrium]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "RNP-023: Salad Network Integration (Render Network proposals repo)"
+    url: "https://github.com/rendernetwork/RNPs/blob/main/RNP-023.md"
+  - label: "Burn-Mint Equilibrium — Render Network Knowledge Base"
+    url: "https://know.rendernetwork.com/basics/burn-mint-equilibrium"
+  - label: "Bids and Leases — Akash Network docs"
+    url: "https://akash.network/docs/getting-started/intro-to-akash/bids-and-leases/"
+  - label: "State of Akash Q1 2026 — Messari"
+    url: "https://messari.io/report/state-of-akash-q1-2026-final"
+  - label: "Civitai powers 10 million AI images per day on Salad"
+    url: "https://blog.salad.com/civitai-salad/"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+On June 10 the Render Network community finished what RNP-023 started in March: a 98.86%
+governance vote to make Salad — a distributed network of roughly **60,000 daily heartbeating
+consumer GPUs** in gamers' bedrooms across 180+ countries — an exclusive Render subnet, with
+its customer payments and node rewards migrated onto the RENDER token over the next year.
+Meanwhile, the other flagship "decentralized cloud," Akash, listed a grand total of **234
+GPUs** on its console API the morning this article was written.
 
-## Section heading
+Those two numbers belong to two fundamentally different answers to the same engineering
+question: *how do you price a GPU-hour without a cloud provider's rate card?* Akash answers
+with a per-deployment reverse auction settled on-chain. Render answers with administered
+USD pricing and a burn-mint token loop. Both networks now chase the same demand — AI
+inference — and both publish enough on-chain and governance data to audit how the mechanisms
+actually behave. The numbers are more interesting than the narratives.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Mechanism one: Akash's reverse auction
+
+Akash is a Cosmos-SDK chain whose state machine *is* the marketplace. The lifecycle, per the
+[protocol docs](https://akash.network/docs/getting-started/intro-to-akash/bids-and-leases/):
+
+1. A tenant writes an SDL (Stack Definition Language) manifest — container image, CPU/GPU/
+   memory/storage requirements, placement constraints — and submits it as a deployment
+   transaction. This emits an **order** on the marketplace module.
+2. Providers whose capacity matches the order respond with **bids**. Bidding isn't free:
+   every bid posts a deposit (returned when the bid closes), which is the spam control.
+3. The tenant accepts a bid — lowest price wins by default — and a **lease** forms.
+4. Leases are priced **per block**. A payment from tenant to provider falls due every ~6
+   seconds, so naive token transfers would melt the chain; instead an escrow account is
+   funded up front and drained continuously, with either side able to close the lease and
+   settle the remainder.
+
+The clearing prices are public. Pulled from Akash's console API on 2026-06-12:
+
+| GPU | Units listed | Available | Hourly price (min–max) |
+| --- | --- | --- | --- |
+| H100 SXM5 80GB | 62 | 17 | $2.04 – $2.56 |
+| H100 PCIe 80GB | 1 | 1 | $2.09 |
+| A100 SXM4 80GB | 32 | 0 | $1.20 – $1.24 |
+| RTX 4090 | 7 | 0 | $0.11 – $0.39 |
+
+For reference, Lambda's on-demand rate card the same day: H100 SXM at $3.99/GPU-hr, H100
+PCIe at $3.29, A100 80GB at $2.79. So the auction does discover a real discount — roughly
+35–45% under a mid-tier centralized cloud for H100s — and the fully-allocated A100 and 4090
+rows show the low end clears completely. But look at the denominators. Sixty-two H100s and
+thirty-two A100s is not a cloud; it's a rack and a half. CoreWeave-scale operators have
+six-figure GPU counts. The auction mechanism works as designed and produces honest prices —
+for a market the size of a rounding error.
+
+The demand side confirms it. Messari's
+[State of Akash Q1 2026](https://messari.io/report/state-of-akash-q1-2026-final) reports new
+leases up 27.1% quarter-over-quarter to 43,540 — and quarterly lease revenue down 45% to
+**$253,250**, with average daily GPU usage of 84 cards against 334 available. A quarter
+million dollars of compute revenue is what a single mid-size AI startup spends on one
+training run. Whatever AKT's market price says (about $0.63 on 2026-06-12), the auction
+floor is clearing pennies, not the AI capex wave.
+
+## Mechanism two: Render's burn-mint equilibrium
+
+Render takes the opposite position on every design axis. Work is priced **administratively
+in USD** — a render job or inference call costs what the rate card says, not what an auction
+discovers. The token enters through settlement, via the
+[Burn-Mint Equilibrium](https://know.rendernetwork.com/basics/burn-mint-equilibrium) (BME):
+
+- When a customer pays for work (in fiat or RENDER), the payment is converted to RENDER and
+  **burned** — destroyed, not paid to the GPU operator.
+- GPU operators are paid from a **fixed, declining emission schedule** voted in by
+  governance: 9,126,804 RENDER in year one (RNP-006), 5,905,580 in year two (RNP-018),
+  distributed epoch by epoch according to work done and node availability.
+
+The "equilibrium" pitch: if demand grows, burns outpace emissions and supply deflates;
+token price rises; the same emission schedule pays operators more dollars; supply expands.
+Burn and mint are supposed to meet where network revenue equals the dollar value of
+emissions. It decouples what customers pay (stable USD) from what operators earn (volatile
+token), with the token absorbing the variance.
+
+The equation has three variables, and only one is set by governance. Emissions are currently
+**492,132 RENDER per month** (per RNP-023's own figures). At RENDER's spot price of $1.66
+(Crypto.com Exchange, 2026-06-12), the network must route **~$817,000 of customer payments
+into the burn every month** — call it $9.8M a year — just for burns to *match* emissions.
+The actual number: in December 2025, the Render Foundation's monthly report celebrated the
+network's **one-millionth RENDER burned** — a cumulative, all-time milestone equal to about
+two months of current emissions. Render today is not a burn-mint equilibrium; it is an
+emission-funded subsidy program with a burn-shaped suggestion box. That isn't necessarily
+damning — every young network subsidizes supply; Bitcoin still does — but "equilibrium" is
+a destination, and the protocol's own dashboard says it is nowhere close.
+
+Play with the actual constants below: the calculator runs the BME supply equation with the
+real emission schedule and lets you find the demand level where the network stops inflating.
+
+<Artifact slug="bme-equilibrium" />
+
+## RNP-023: buying demand, on the record
+
+That context is what makes RNP-023 the most candid document in DePIN. Render's problem is
+demand for burns; Salad has demand — its 60k consumer GPUs already serve production AI
+inference, most famously [Civitai's 10 million images per day on 600+ Salad
+GPUs](https://blog.salad.com/civitai-salad/), plus Whisper-based transcription priced around
+$0.10/hr. The proposal routes that existing business through the token, and it puts precise
+splits on the table:
+
+- **Salad Container Engine** (the managed AI-inference container service): 35% of customer
+  revenue to Salad, 5% to the Render Foundation, **60% burned** via BME.
+- **Salad Gateway Service** (residential proxy bandwidth): 60% to Salad, 5% to the
+  Foundation, **35% burned**.
+- Salad's node operators ("Chefs") get paid from a new emissions line: monthly emissions
+  rise from 492,132 to **580,372 RENDER** (+88,240 for Chef rewards, advanced from existing
+  Network Operations allocations rather than net-new inflation).
+- Projected year-one revenue routed through the system: **~$4.3M**, 73% SCE / 27% SGS —
+  labeled illustrative in the proposal itself.
+
+Run the marginal math at the proposal's own $2.00 reference price: ~95,000 RENDER burned
+per month against ~88,000 newly emitted for Chef rewards — an 8.1% structural surplus,
+because the burn percentages (60/35) were chosen to sit just above the reward percentages
+(~56% of SCE revenue, ~31% of SGS). The integration is designed to be *marginally*
+deflationary on its own flows. Network-wide, $4.3M a year at $1.66 burns ~216,000 RENDER a
+month blended — which still leaves total burns under half of the new 580,372 monthly
+emission line. Salad narrows the gap; it does not close it.
+
+The price of that demand is also itemized, and it's worth reading because nobody usually
+writes it down: 1,000,000 RENDER in milestone-vested warrants priced at a 30-day TWAP, plus
+a **US$1M SAFE** investment into Salad at a $90M cap with a 20% discount, paid out as
+$166.67k of RENDER per month. Render is paying Salad to bring its order flow on-chain. The
+engineering migration happens in three milestones over 365 days — Chefs receiving rewards
+as withdrawable RENDER (90 days), customers depositing RENDER (180 days), full BME routing
+with per-product burn wallets, daily reward epochs, and pricing via a 24-hour TWAP from
+Jupiter (365 days). Until the last milestone lands, "60,000 GPUs on Render" means Salad's
+ordinary Web2 business with a token accounting layer being bolted on underneath — and Chef
+reward wallets stay custodial with Salad, withdrawal optionality notwithstanding.
+
+## What neither mechanism prices: verification
+
+Both markets settle payments trustlessly and verify the work socially. An Akash provider's
+GPU model is a self-declared attribute; the protocol's answer is *audited attributes* —
+known auditors sign a provider's claims on-chain, and tenants can require `signedBy` in
+their SDL. That's a reputation system, not a proof. Salad verifies its fleet through
+heartbeats and Salad's own orchestration — trust in the operator, same as any cloud. Render
+historically spot-checked rendering output; for AI inference there is no equivalent of
+eyeballing a frame.
+
+This is the gap the verifiable-inference stack exists to fill, and the price points are the
+punchline of [our TEE attestation piece](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed):
+hardware attestation adds under 7% overhead, optimistic schemes add a challenge window, and
+zkML adds 1000x. A GPU-hour that clears at $2.39 on an auction is only fungible with a
+$3.99 cloud GPU-hour if you believe both executed your workload — and today, on every
+decentralized compute market, that belief rests on auditors, heartbeats, and brand. The
+training-side equivalent — auditing untrusted GPUs statistically, the way
+[Psyche and TOPLOC do](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training)
+— has no inference-market deployment yet.
 
 ## Takeaways
 
-TODO.
+- **Auctions discover prices; BME administers them.** Akash's reverse auction produces
+  honest, public clearing prices ($2.04–2.56/hr for H100 SXM5 on 2026-06-12, vs $3.99 at
+  Lambda) — over an inventory of 234 GPUs and $253k of quarterly revenue.
+- **Burn-mint is a subsidy until proven otherwise.** Render needs ~$817k/month routed into
+  burns at current prices to offset emissions; cumulative all-time burns crossed 1M RENDER
+  in December 2025 — two months of emissions.
+- **RNP-023 is demand acquisition, transparently priced**: 60% of SCE revenue burned vs
+  ~56% re-emitted to operators, plus warrants and a $1M SAFE to make Salad show up. Watch
+  the per-product burn wallets it mandates — for once, a DePIN integration will be
+  falsifiable on-chain.
+- **Neither mechanism verifies the compute.** Pricing is solved two different ways;
+  attestation is solved zero ways. The first market to bolt cheap verification onto its
+  settlement layer gets to charge for trust — the one thing hyperscalers currently bundle
+  for free.
+
+Like [Bittensor's TaoFlow rebuild](/articles/bittensor-taoflow-emission-engine), this is
+mechanism design in production with real money keeping score. The difference is that GPU
+markets can't hide behind token metrics forever: a GPU-hour either gets sold or it doesn't,
+and both networks now publish enough data to check.

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 13,
-    "artifacts": 11
+    "artifacts": 12
   },
   "topicCounts": {
     "agents": 5,
@@ -57,8 +57,17 @@
         "ai",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "depin",
+        "gpu-markets",
+        "render",
+        "akash",
+        "burn-mint-equilibrium",
+        "reverse-auction"
+      ],
+      "artifacts": [
+        "bme-equilibrium"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -381,6 +390,22 @@
       "archetype": "chart",
       "topics": [
         "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "bme-equilibrium",
+      "path": "content/artifacts/bme-equilibrium/manifest.json",
+      "module": "src/islands/artifacts/bme-equilibrium.ts",
+      "url": "/artifacts/bme-equilibrium",
+      "title": "BME Equilibrium",
+      "description": "Render's Burn-Mint Equilibrium with the real protocol constants: drag the demand and price sliders to see monthly burns race the 492,132 RENDER emission schedule, toggle RNP-023's Salad flows on, and find the demand level where the network actually stops inflating.",
+      "pubDate": "2026-06-12",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "web3",
         "infrastructure"
       ],
       "draft": false

@@ -95,14 +95,24 @@ reduced-motion pause — the global 0.01ms override would strobe them.
 - Mobile: reduce counts ~50% via `isSmallScreen()`.
 - Prefer shader-side animation (per-vertex jitter via `uTime`) and precomputed static link
   topology over per-frame CPU buffer rebuilds — see `src/lib/synapse-geometry.ts`.
-- Orbitable canvases set `touch-action: pan-y` so they never trap mobile scroll.
+- All flick/tap/orbit gestures go through `attachOrbit()` (`src/lib/orbit.ts`): velocity
+  blending, `exp(-dt·k)` momentum decay (refresh-rate independent), tap detection with
+  link/button exclusion, pointercancel handling, and `touch-action: pan-y` so canvases
+  never trap mobile scroll. Parallax inputs (mouse/tilt) write *targets*; frame loops
+  apply critically-damped smoothing — raw input never touches a rotation.
 
 ## Layout
 
 - Content column `max-w-6xl` (cards) / `max-w-3xl` (prose); gutters `px-5 sm:px-6`.
-- Fixed glass header (h-20 spacer) that condenses + glows after 24px of scroll; footer
-  carries the lowercase tagline brand moment and brand links — GitHub, X, LinkedIn — from
-  `src/lib/site.ts`.
+- Fixed glass header dock (h-20 spacer): condenses + glows after 24px of scroll, ducks away
+  on scroll-down and resurfaces on scroll-up / at top / on focus / with the menu open.
+  Desktop nav hover uses the magic-ink pill (JS-measured, glides between links); the current
+  page keeps a pinned gradient underline. Mobile menu is a full-screen blurred sheet with
+  cascading display-type links, scroll-locked, Escape/backdrop to close.
+- **Z-index scale** (never improvise): `40` mobile sheet · `50` header dock · `60` progress
+  bar · `70` grain overlay · `100` skip link · native top layer: search dialog.
+- Footer carries the lowercase tagline brand moment and brand links — GitHub, X, LinkedIn —
+  from `src/lib/site.ts`.
 - Breakpoints: cards 1-col → `sm:` 2 → `lg:` 3. TOC appears `xl:` on article pages.
 - Touch targets ≥40px; `viewport-fit=cover` with safe-area awareness for notched devices.
 

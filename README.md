@@ -2,7 +2,7 @@
 
 # ⬢ blokz.dev
 
-**The AI × Blockchain dev blog of [Blokz Development Co.](https://blokz.dev)**
+**Where the brain meets the chain — the dev blog of [Blokz Development Co.](https://blokz.dev)**
 
 Deep technical articles + interactive WebGL artifacts — agents, LLMs, zero-knowledge,
 smart contracts, and the infrastructure binding them. Written and iterated in the open by

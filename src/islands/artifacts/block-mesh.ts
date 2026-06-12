@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createScene, isSmallScreen } from '@/lib/three-utils';
+import { attachOrbit } from '@/lib/orbit';
 
 /**
  * Artifact: block-mesh — a 3D blockchain network with transaction pulses
@@ -68,11 +69,12 @@ export default function mount(container: HTMLElement): () => void {
   );
 
   // Transaction pulses: bright points lerping along random edges.
+  // Speeds are per-second so 120Hz displays don't run the network 2× hot.
   const PULSES = isSmallScreen() ? 10 : 18;
   const pulses = Array.from({ length: PULSES }, () => ({
     edge: Math.floor(Math.random() * edges.length),
     t: Math.random(),
-    speed: 0.004 + Math.random() * 0.01,
+    speed: 0.24 + Math.random() * 0.6,
   }));
   const pulseGeo = new THREE.BufferGeometry();
   pulseGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PULSES * 3), 3));
@@ -91,30 +93,18 @@ export default function mount(container: HTMLElement): () => void {
   const group = new THREE.Group();
   group.add(nodes, links, pulsePoints);
 
-  // Pointer drag → orbit.
-  let dragVel = 0;
-  let dragging = false;
-  let lastX = 0;
-  const down = (e: PointerEvent) => {
-    dragging = true;
-    lastX = e.clientX;
-  };
-  const move = (e: PointerEvent) => {
-    if (!dragging) return;
-    dragVel = (e.clientX - lastX) * 0.004;
-    lastX = e.clientX;
-  };
-  const up = () => (dragging = false);
-  canvas.addEventListener('pointerdown', down);
-  window.addEventListener('pointermove', move, { passive: true });
-  window.addEventListener('pointerup', up);
+  // Pointer flick → orbit with momentum (shared model: src/lib/orbit.ts).
+  const orbit = attachOrbit(canvas, { ambient: 0.1 });
 
+  let last = 0;
   const handle = createScene(
     canvas,
-    () => {
+    (t) => {
+      const dt = Math.min(t - last, 0.05);
+      last = t;
       const attr = pulseGeo.getAttribute('position') as THREE.BufferAttribute;
       pulses.forEach((p, i) => {
-        p.t += p.speed;
+        p.t += p.speed * dt;
         if (p.t >= 1) {
           // Hop: continue from the node we arrived at.
           const arrivedAt = edges[p.edge]![1];
@@ -132,8 +122,7 @@ export default function mount(container: HTMLElement): () => void {
       });
       attr.needsUpdate = true;
 
-      group.rotation.y += 0.0016 + dragVel;
-      dragVel *= 0.94;
+      group.rotation.y += orbit.step(dt);
     },
     { z: 42 },
   );
@@ -142,9 +131,7 @@ export default function mount(container: HTMLElement): () => void {
   handle.scene.fog = new THREE.Fog(0x05070d, 35, 95);
 
   return () => {
-    canvas.removeEventListener('pointerdown', down);
-    window.removeEventListener('pointermove', move);
-    window.removeEventListener('pointerup', up);
+    orbit.dispose();
     handle.dispose();
     canvas.remove();
   };

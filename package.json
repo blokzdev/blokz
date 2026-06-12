@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Blokz — the AI × Blockchain dev blog by Blokz Development Co.",
+  "description": "blokz.dev — where the brain meets the chain. The AI × blockchain dev blog of Blokz Development Co.",
   "homepage": "https://blokz.dev",
   "repository": {
     "type": "git",

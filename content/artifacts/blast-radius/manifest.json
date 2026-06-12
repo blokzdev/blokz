@@ -1,0 +1,15 @@
+{
+  "slug": "blast-radius",
+  "title": "Blast Radius",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-12",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

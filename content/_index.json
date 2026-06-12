@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 3,
-    "artifacts": 5
+    "artifacts": 6
   },
   "topicCounts": {
     "agents": 1,
@@ -95,6 +95,21 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "attention-lens",
+      "path": "content/artifacts/attention-lens/manifest.json",
+      "module": "src/islands/artifacts/attention-lens.ts",
+      "url": "/artifacts/attention-lens",
+      "title": "Attention Lens",
+      "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "topics": [
+        "llm",
+        "ai"
+      ],
+      "draft": false
+    },
     {
       "slug": "gradient-descent",
       "path": "content/artifacts/gradient-descent/manifest.json",

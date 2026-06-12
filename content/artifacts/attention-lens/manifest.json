@@ -1,0 +1,16 @@
+{
+  "slug": "attention-lens",
+  "title": "Attention Lens",
+  "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
+  "pubDate": "2026-06-12",
+  "type": "canvas",
+  "topics": [
+    "llm",
+    "ai"
+  ],
+  "aspect": "21/9",
+  "featured": false,
+  "controls": [
+    "hover or tap a token to focus its attention"
+  ]
+}

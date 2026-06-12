@@ -1,22 +1,99 @@
 ---
 slug: gnn-vs-trees-onchain-fraud-detection
 title: "When the Graph Misleads: GNNs vs. Gradient-Boosted Trees in On-Chain Fraud Detection"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "The Elliptic benchmark made GNNs the default for on-chain AML. A 2026 leakage-free re-evaluation flips the script: random forests win by 13 F1 points, randomly rewired edges beat the real graph, and every model falls off a cliff at time step 43."
 pubDate: 2026-06-12
 author: blokz
 topics: [data, machine-learning, security]
-tags: []
-artifacts: []
+tags: [aml, gnn, elliptic, fraud-detection, random-forest, benchmarks]
+artifacts: [protocol-gap]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Weber et al. — Anti-Money Laundering in Bitcoin: Experimenting with GCNs (arXiv:1908.02591)"
+    url: "https://arxiv.org/abs/1908.02591"
+  - label: "Maganti — When Graph Structure Becomes a Liability (arXiv:2604.19514)"
+    url: "https://arxiv.org/abs/2604.19514"
+  - label: "Bellei et al. — The Shape of Money Laundering: Elliptic2 (arXiv:2404.19109)"
+    url: "https://arxiv.org/abs/2404.19109"
+  - label: "Egressy et al. — Provably Powerful GNNs for Directed Multigraphs (arXiv:2306.11586)"
+    url: "https://arxiv.org/abs/2306.11586"
+  - label: "Ye et al. — BlazingAML: High-Throughput AML via Multi-Stage Graph Mining (arXiv:2604.12241)"
+    url: "https://arxiv.org/abs/2604.12241"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Illicit addresses received at least [$154 billion in crypto in 2025](https://www.chainalysis.com/blog/2026-crypto-crime-report-introduction/), per Chainalysis — up 162% year over year, with stablecoins carrying 84% of it. Every exchange, every stablecoin issuer, and every analytics vendor runs machine learning against the transaction graph to find it. And on paper this is the perfect graph neural network problem: the data *is* a graph, laundering *is* a topological act, and money flows *are* edges. So it's worth sitting with an uncomfortable result: on the field's canonical benchmark, the best published GNN loses to a random forest by 13 F1 points — and a new re-evaluation argues the GNN numbers everyone cites were inflated by the evaluation protocol itself.
 
-## Section heading
+This is the rare AI × blockchain story where the chain is the *dataset* rather than the settlement layer — the same direction as [LLM swarms auditing contracts](/articles/agentic-smart-contract-auditing), but for the forensics stack. The arc runs through one dataset, seven years, and a lesson that generalizes far beyond AML: **your evaluation protocol is part of your model, and on adversarial, non-stationary data it's the bigger part.**
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The benchmark that built a subfield
 
-## Takeaways
+In 2019, Elliptic (with MIT and IBM researchers) released the [Elliptic Data Set](https://arxiv.org/abs/1908.02591): 203,769 Bitcoin transactions as nodes, 234,355 directed payment flows as edges, sliced into 49 biweekly time steps. About 2% of nodes (4,545) are labeled illicit — scams, ransomware, dark markets — and 21% (42,019) licit; the rest are unlabeled. Each node carries 166 features: the time step, ~94 local properties (fees, inputs/outputs, amounts), and 72 *aggregated* features summarizing each transaction's one-hop neighborhood.
 
-TODO.
+It became the ImageNet of crypto forensics, and the original paper is remembered as the GNN starting gun. What's less remembered is its own results table:
+
+| Model (AF features) | Precision | Recall | Illicit F1 |
+| --- | --- | --- | --- |
+| Random Forest | 0.956 | 0.670 | **0.788** |
+| EvolveGCN | 0.850 | 0.624 | 0.720 |
+| Skip-GCN | 0.812 | 0.623 | 0.705 |
+| MLP | 0.694 | 0.617 | 0.653 |
+| GCN | 0.812 | 0.512 | 0.628 |
+| Logistic Regression | 0.404 | 0.593 | 0.481 |
+
+The tree won in the original paper, by 16 points over vanilla GCN, with precision no GNN approached. Hundreds of follow-ups then reported GNN variants beating these baselines — and that consensus is what just got stress-tested.
+
+## Change the protocol, flip the conclusion
+
+An April 2026 re-evaluation ([arXiv:2604.19514](https://arxiv.org/abs/2604.19514)) re-ran the standard lineup — GCN, GraphSAGE, GAT, plus feature-only baselines — under a **strict inductive, temporally split protocol**: train on time steps 1–34, test on 35–49, and *never let the model see test-period graph structure during training*. That last clause is the crux. Elliptic's nodes are timestamped, so most prior work split labels by time — but message-passing models were still trained transductively, over the full 49-step adjacency. Every aggregation step leaked post-split topology into the learned representations.
+
+Under the leakage-free protocol, the ranking is unambiguous:
+
+| Model (strict inductive) | Illicit F1 |
+| --- | --- |
+| Random Forest (165 raw features) | **0.821 ± 0.003** |
+| XGBoost | 0.775 |
+| GraphSAGE | 0.688 ± 0.016 |
+| GAT | 0.610 ± 0.018 |
+| MLP | 0.549 ± 0.015 |
+| Logistic Regression | 0.530 |
+| GCN | 0.503 ± 0.017 |
+
+Every GNN trails both tree ensembles; the best of them, GraphSAGE, sits 13.3 points below the forest. And the protocol effect is enormous when isolated: in a paired, seed-matched experiment, the *same* GraphSAGE scores **0.294 F1 trained transductively versus 0.689 trained strictly inductively** — a 39.5-point swing attributable to training-time exposure to test-period adjacency (paired t-test p ≈ 2.6×10⁻¹², Cohen's d = 15.8). Full-graph training doesn't just inflate benchmark numbers; under temporal shift it actively poisons the representation, because the model calibrates its neighborhood statistics on a future that looks nothing like its training labels.
+
+<Artifact slug="protocol-gap" />
+
+Two more ablations from the paper sharpen the diagnosis. Feeding GraphSAGE the same full graph with **randomly shuffled edges beats the real transaction topology by 9 F1 points** (0.380 vs 0.290); deleting the edges entirely also beats it (0.316). And the obvious hybrid — concatenating GNN embeddings onto the raw features and handing both to a random forest — *underperforms* the raw features alone, 0.699 vs 0.823. The graph isn't merely failing to help. On this dataset, under this shift, it's a liability.
+
+## Why trees keep winning here
+
+Three reasons, and none of them is "GNNs are bad."
+
+**The features already contain a hop of graph.** Elliptic's 72 aggregated features are one-hop neighborhood statistics computed at labeling time. A random forest over them is not a "graph-free" baseline — it's a hand-engineered, leakage-proof message pass, frozen so it can't drift. Much of what a GCN learns to aggregate, the trees get for free, with none of the transductive plumbing.
+
+**Homophily is an era, not a law.** Message passing helps when a node's label correlates with its neighbors' labels *in a stable way*. In adversarial finance the correlation structure is what the adversary controls. Wallet clusters, mixer patterns, and peeling behaviors mutate; topology learned from time steps 1–34 encodes *who transacted with whom in that era*, and the next era rewires it. Features like fee structure and input/output fan-out mutate too — but more slowly than the graph around them.
+
+**The benchmark contains a regime change, and it's the realistic part.** At time step 43, coordinated dark-market shutdowns hit the Bitcoin economy. The labeled illicit rate collapses from 11.1% at step 42 to 0.3% by step 46 — a 39× drop in base rate. Per-step GraphSAGE F1 goes 0.784 (step 35) → 0.346 (42) → **0.016 (43)** → 0.027 (49). It never recovers. Weber et al. saw the same cliff in 2019 — even a random forest retrained after every test step struggled past it. No architecture survives a base-rate collapse plus a behavioral regime change; the engineering answer is drift detection and re-labeling cadence, not a deeper encoder.
+
+If this rhymes with mechanism-design stories — models optimizing a signal until the signal's meaning changes underneath them — it should. It's the inference-time cousin of the [reputation-farming we found in the ERC-8004 registries](/articles/erc-8004-agent-registries-onchain): adversaries shape the very graph you're learning from.
+
+## Where graph learning actually earns its keep
+
+The honest conclusion is narrower than "use XGBoost." Three results bound where topology pays.
+
+**Reframe the unit of detection: subgraphs, not nodes.** Elliptic followed up in 2024 with [Elliptic2](https://arxiv.org/abs/2404.19109): 121,810 labeled *subgraphs* (2,763 suspicious) inside a background graph of 49.3M wallet clusters and 196M transactions. The task stops being "is this transaction dirty?" and becomes "is this *shape* — this peeling chain, this fan-in funnel — a laundering pattern?" There, structure is the signal by definition, and subgraph GNNs deliver: GLASS reaches 0.208 PR-AUC against a ~2% base rate where embedding baselines manage ~0.02, and in a validation with a real exchange, at least 26.9% of model-flagged accounts were confirmed to have laundering associations versus a ~0.1% prevalence baseline — roughly a 250× precision lift, surfacing peeling chains and nested-service hops investigators hadn't labeled. The absolute numbers stay modest; the operational lift is real. (So is the bill: training ran for days on a 160-core, 1.2TB-RAM server — no GPU fits the graph.)
+
+**Fix the expressivity, not just the eval.** Standard message passing provably cannot detect some directed multigraph patterns at all — cycles being the embarrassing one, and laundering loops are cycles. [Egressy et al. (AAAI 2024)](https://arxiv.org/abs/2306.11586) add ego IDs, port numbering, and reverse message passing, which makes any directed subgraph pattern detectable in principle and lifts minority-class F1 by up to 30 points on AML benchmarks and ~15% on Ethereum phishing detection. When the pattern genuinely is structural, the right GNN finds it — the failures above are protocol failures and shift failures, not a theorem about graphs.
+
+**And if you already know the shape, don't learn it — compile it.** [BlazingAML (April 2026)](https://arxiv.org/abs/2604.12241) treats laundering patterns (with their structural and temporal fuzziness) as a query language: a domain-specific compiler lowers multi-stage pattern descriptions to CPU/GPU kernels and matches state-of-the-art F1 at **210× (CPU) to 333× (GPU)** the throughput of prior systems. Detection of known typologies is a systems problem wearing an ML costume.
+
+## The checklist
+
+If you're building or buying an on-chain fraud pipeline, the seven-year Elliptic arc compresses to this:
+
+1. **Evaluate temporally and inductively, always.** Train on the past, test on the future, and ensure no component — embeddings, aggregations, normalizations — ever touched test-period edges. If a vendor quotes Elliptic numbers, ask which protocol; the same model can sit anywhere in a 39-point range.
+2. **Trees over engineered graph features are the baseline to beat,** and as of 2026 they remain unbeaten for node-level detection on real Bitcoin data. One-hop aggregates are cheap, leakage-proof, and capture most of the exploitable locality.
+3. **Instrument for drift before you tune architecture.** The step-43 cliff is what production looks like: enforcement actions, mixer shutdowns, and new typologies move the base rate 39× in weeks. Per-period precision/recall tracking and a re-labeling pipeline buy more F1 than any encoder swap.
+4. **Spend your GNN budget at the subgraph level,** where shape is the label — and budget for the infrastructure that implies.
+5. **Compile the known patterns; learn only the unknown ones.** A pattern-mining pass at 300× throughput in front of a learned detector is a better division of labor than asking one model to do both.
+
+The transaction graph is public, immutable, and complete — the best-instrumented financial crime scene ever created. That's exactly why it's worth being honest about what reads it well. Sometimes the most sophisticated thing you can do with a graph is to summarize it into 72 features and grow some trees.

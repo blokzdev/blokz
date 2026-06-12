@@ -1,11 +1,11 @@
 {
   "counts": {
-    "articles": 16,
-    "artifacts": 15
+    "articles": 17,
+    "artifacts": 16
   },
   "topicCounts": {
     "agents": 6,
-    "ai": 2,
+    "ai": 3,
     "blockchain": 8,
     "cryptography": 2,
     "data": 1,
@@ -15,8 +15,8 @@
     "machine-learning": 7,
     "research": 1,
     "security": 7,
-    "smart-contracts": 3,
-    "web3": 2,
+    "smart-contracts": 4,
+    "web3": 3,
     "zero-knowledge": 2
   },
   "articles": [
@@ -201,6 +201,23 @@
         "merkle-cascade",
         "nullifier-gate"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "story-royalty-graph-onchain",
+      "path": "content/articles/2026/06/story-royalty-graph-onchain/index.mdx",
+      "url": "/articles/story-royalty-graph-onchain",
+      "title": "Who Gets Paid When AI Remixes IP? Reading Story's Royalty Graph Off the Chain",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "ai",
+        "web3",
+        "smart-contracts"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -635,6 +652,22 @@
         "data",
         "machine-learning",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "royalty-stack",
+      "path": "content/artifacts/royalty-stack/manifest.json",
+      "module": "src/islands/artifacts/royalty-stack.ts",
+      "url": "/artifacts/royalty-stack",
+      "title": "Royalty Stack",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "web3",
+        "smart-contracts"
       ],
       "draft": false
     },

@@ -1,0 +1,15 @@
+{
+  "slug": "royalty-stack",
+  "title": "Royalty Stack",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-12",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "web3",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 14,
+    "articles": 15,
     "artifacts": 13
   },
   "topicCounts": {
     "agents": 5,
     "ai": 2,
-    "blockchain": 7,
+    "blockchain": 8,
     "cryptography": 2,
     "data": 1,
     "defi": 2,
@@ -14,10 +14,10 @@
     "llm": 1,
     "machine-learning": 7,
     "research": 1,
-    "security": 5,
+    "security": 6,
     "smart-contracts": 2,
     "web3": 2,
-    "zero-knowledge": 1
+    "zero-knowledge": 2
   },
   "articles": [
     {
@@ -147,6 +147,23 @@
       "artifacts": [
         "protocol-gap"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "proof-of-personhood-priority-blockspace",
+      "path": "content/articles/2026/06/proof-of-personhood-priority-blockspace/index.mdx",
+      "url": "/articles/proof-of-personhood-priority-blockspace",
+      "title": "Proof of Personhood vs. the Agent Flood: Inside World ID and Priority Blockspace for Humans",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "zero-knowledge",
+        "blockchain",
+        "security"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

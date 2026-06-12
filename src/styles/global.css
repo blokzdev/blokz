@@ -265,6 +265,66 @@
     color: #fff;
   }
 
+  /* Copy-to-clipboard on code blocks (injected per-article; pre gets wrapped
+     in .code-frame so the button doesn't scroll with overflowing code). */
+  .code-frame {
+    position: relative;
+  }
+  .code-copy {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .code-frame:hover .code-copy,
+  .code-copy:focus-visible {
+    opacity: 1;
+  }
+  .code-copy:hover {
+    color: #fff;
+    border-color: var(--color-line-bright);
+  }
+  .code-copy.is-copied {
+    opacity: 1;
+    color: var(--color-cyan);
+    border-color: rgba(34, 211, 238, 0.4);
+  }
+
+  /* Hover anchor links on prose headings (injected per-article). */
+  .heading-anchor {
+    margin-left: 0.4em;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    color: var(--color-faint);
+    text-decoration: none;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      color 0.2s;
+  }
+  .prose h2:hover .heading-anchor,
+  .prose h3:hover .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+  .heading-anchor:hover {
+    color: var(--color-accent);
+  }
+
   /* ---- Article prose (dark, hand-tuned) ---- */
   .prose {
     font-size: 1.0625rem;

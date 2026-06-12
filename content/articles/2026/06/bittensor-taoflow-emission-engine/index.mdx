@@ -1,0 +1,171 @@
+---
+slug: bittensor-taoflow-emission-engine
+title: "From Price to Flow: How Bittensor Re-Plumbed Its Emission Engine"
+description: "Bittensor let AMM prices decide which AI subnets earn 3,600 TAO a day — until a memecoin subnet gamed the formula. Inside the TaoFlow upgrade: the constant-product math that got exploited, the EMA flow accounting that replaced it, and why refundable manipulation is the design smell to hunt for."
+pubDate: 2026-06-12
+author: blokz
+topics: [machine-learning, blockchain, defi]
+tags: [bittensor, dtao, taoflow, emissions, mechanism-design, amm]
+artifacts: [emission-engine]
+difficulty: intermediate
+sources:
+  - label: "Dynamic TAO whitepaper (Opentensor Foundation)"
+    url: "https://bittensor.com/dtao-whitepaper"
+  - label: "Bittensor docs: Emission"
+    url: "https://docs.learnbittensor.org/learn/emissions"
+  - label: "Bittensor docs: Coinbase implementation (run_coinbase)"
+    url: "https://docs.learnbittensor.org/navigating-subtensor/emissions-coinbase"
+  - label: "opentensor/subtensor — TaoFlow implementation"
+    url: "https://github.com/opentensor/subtensor"
+  - label: "Opentensor Foundation: flow-based emissions announcement"
+    url: "https://x.com/opentensor/status/1999071691243429968"
+---
+
+Bittensor mints 3,600 TAO per day — roughly $770k at today's ~$214 — and splits it across
+128 "subnets," each one a competitive market for some AI task: serverless inference
+(Chutes), GPU rental (Targon), even decentralized pretraining (τemplar, the largest subnet
+token by market cap and a cousin of the systems we covered in
+[our decentralized-training teardown](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training)).
+The question of *which subnet deserves what share* of that block reward is the protocol's
+central resource-allocation problem, and in the last sixteen months Bittensor has answered
+it three different ways: validator voting, then AMM prices, and — since November 2025 —
+exponentially smoothed net staking flows.
+
+That second pivot is the interesting one. It's a rare, well-documented case of a live
+protocol discovering that the market signal it wired into its consensus was cheaply
+manipulable, and replacing it under fire with a signal that costs real, locked capital to
+fake. If you build incentive systems — token emissions, validator rewards, or for that
+matter any ML reward function — the failure mode and the fix both generalize.
+
+## Regime one: validators vote (and why that died)
+
+Until February 2025, root-network validators decided emission splits by weighted vote.
+The Dynamic TAO (dTAO) whitepaper is blunt about why that couldn't scale: validators can't
+meaningfully evaluate dozens of heterogeneous subnets (apathy), they over-weight subnets
+they themselves validate (self-dealing), and a subnet owner who controls or bribes a few
+large validators controls his own budget (capture). The fix, in classic crypto fashion, was
+to fire the committee and hire a market.
+
+## Regime two: the AMM price oracle
+
+dTAO gave every subnet its own token — *alpha* — and a constant-product AMM pool pairing
+that alpha against TAO. Staking into subnet *i* swaps TAO into the pool and alpha out;
+unstaking swaps back. The pool quotes a price
+
+```text
+p_i = τ_i / α_i        # TAO reserves over alpha reserves
+```
+
+and the protocol read that price as a valuation. Each block, freshly minted TAO was
+injected into pools *proportionally to price*:
+
+```text
+Δτ_i = ( p_i / Σ_j p_j ) · Δτ̄        # subnet i's slice of the block reward
+```
+
+with a matching alpha injection capped by each subnet's own halving schedule, so injections
+were price-neutral. Emission share *was* relative alpha price. The whitepaper anticipated
+shenanigans and smoothed the signal with a moving average of prices, arguing that broad
+market participation makes valuations "resistant to manipulation."
+
+It wasn't resistant enough, because of a property every DeFi engineer knows in their bones:
+**in a constant-product pool, price moves quadratically with a one-sided buy, and the move
+is refundable.** Push `X` TAO into a pool holding `τ` TAO of reserves and the quoted price
+multiplies by `(1 + X/τ)²` — buy into a thin pool with 10% of its reserves and you've moved
+its price 21%. Hold, collect the inflated emission share, then sell back and recover your
+principal minus slippage and fees. The manipulation isn't just cheap; it's a *loan*.
+
+The ecosystem ran the experiment within weeks. The best-documented case is subnet 281,
+which rebranded as the "TAO Accumulation Corporation" (the community called it the LOL
+subnet): miners ran no model and did no work — validators scored miners by how much of the
+subnet's own alpha they held. Buying alpha raised the price; the price raised the subnet's
+TAO emissions; the emissions paid the holders, which attracted more buying. A textbook
+reflexive loop, fully compliant with the emission formula, contributing nothing to the
+"decentralized intelligence" the formula was supposed to fund. Speculative subnets
+multiplied behind it, and the foundation found itself doing exactly what dTAO was built to
+avoid: manually intervening in emission dynamics.
+
+## Regime three: TaoFlow, or emissions as flow accounting
+
+The November 2025 fix changed *what the protocol measures*. Emission share no longer reads
+the AMM price at all. It reads **net TAO flow**: TAO staked into a subnet minus TAO
+unstaked out of it, tallied per block at the source — the staking extrinsics themselves
+(`record_tao_inflow` / `record_tao_outflow` in subtensor's stake operations) — and smoothed
+with a per-block exponential moving average:
+
+```text
+S_i ← (1 − a) · S_i + a · net_flow_i      # a ≈ 0.000003209 per 12s block
+z_i = max(S_i − L, 0)                     # clip: sustained outflows → zero
+share_i = z_i / Σ_j z_j                   # linear normalization (power p = 1)
+```
+
+That smoothing constant is the load-bearing number: it gives the EMA a **30-day
+half-life** (an effective window of ~87 days). A one-shot deposit, however large, enters
+the score scaled by `a ≈ 3×10⁻⁶` and then decays — moving the EMA halfway to any new level
+takes a month of *sustained* flow. Three details do real security work:
+
+- **Protocol flows don't count.** The accounting deducts TAO the protocol itself moves —
+  per-block pool injections, automated chain buys, root-staker claims — and ignores miner
+  registration burns. Only discretionary user staking registers.
+- **Swaps don't count.** The old attack surface — trading against the pool — no longer
+  touches the emission signal. You must *stake*, which means principal parked in the
+  subnet, not a round trip through its order book.
+- **Exit erases you.** Unstaking records an equal-and-opposite outflow. The capital that
+  built your score tears it back down on the way out, and subnets with sustained negative
+  net flow clip to **zero** emissions.
+
+The rest of the pipeline is unchanged and worth knowing. Each block, `run_coinbase`
+distributes 0.5 TAO (halved from 1.0 on December 14, 2025) across subnets per the flow
+shares, injecting TAO and alpha into pools price-neutrally — with a subsidy branch that
+down-scales both sides when an alpha price sits below its emission proportion. Per-subnet
+rewards accumulate in `PendingEmission`, then drain on a staggered schedule —
+`(block + netuid + 1) % (tempo + 1) == 0`, one tempo ≈ 360 blocks ≈ 72 minutes — through
+Yuma Consensus, which splits alpha 41% to miners by validator-scored performance, 41% to
+validators and their stakers, and 18% to the subnet owner. TaoFlow only changed the first
+stage: *which subnet* gets funded. *Who inside the subnet* earns it is still Yuma's
+problem.
+
+## What manipulation costs now
+
+Compare the attacks side by side. Under the price regime, capturing emission share required
+a refundable swap whose price impact registered quadratically and (modulo the price EMA)
+near-instantly. Under TaoFlow, the equivalent move — wash-staking — requires you to lock
+principal for weeks against a 30-day half-life, forfeit the score on exit, and compete
+against every honest staker's flow in the denominator. The manipulation budget went from
+*briefly borrow X* to *park X for a month and hope emissions outrun your opportunity cost*.
+That's the design lesson in one line: *prefer signals that cost sunk, time-integrated
+capital over signals that cost a refundable balance-sheet entry.*
+
+The calculator below runs both regimes with the real protocol constants — push on the
+attack size, pool depth, and network flow and watch where the asymmetry comes from.
+
+<Artifact slug="emission-engine" />
+
+## The honest caveats
+
+TaoFlow is a better proxy, not ground truth — Goodhart's law doesn't repeal that easily.
+
+- **Flow measures capital sentiment, not AI quality.** A subnet shipping great models with
+  flat staking earns less than a well-marketed one attracting fresh TAO. The signal is
+  "where do stakers move money," which correlates with value but *is not* value — the same
+  gap that [solver auctions](/articles/the-solver-optimization-market) close with explicit
+  objective functions, and Bittensor deliberately doesn't.
+- **Whales still steer.** A fund that stakes eight figures of TAO moves the EMA honestly
+  and durably. TaoFlow prices out *cheap* manipulation; expensive, patient manipulation is
+  indistinguishable from conviction — arguably by design.
+- **The zero-clip cuts both ways.** Mature subnets with stable stake and slow churn can
+  drift to near-zero net flow and lose emissions despite doing real work — the community's
+  "dead weight" debate is genuinely unresolved, and emissions-zeroed subnets now need a
+  comeback story denominated in fresh inflows.
+- **A 30-day half-life is a 30-day lag.** The same smoothing that blunts attacks also slows
+  the network's response to genuinely new, genuinely good subnets. Responsiveness and
+  manipulation resistance trade off through a single constant, and `a` is a governance
+  knob, not a law of nature.
+
+The meta-lesson travels well beyond Bittensor. The protocol's allocation history —
+committee → spot price → smoothed flows — is a compressed tour of mechanism-design failure
+modes: the committee got captured, the price got pumped, and the flow metric now gets
+Goodharted slowly instead of instantly. Each iteration didn't find an ungameable signal; it
+raised the price and the latency of gaming. For systems that pay out real money against a
+proxy metric — token emissions, oracle rewards, even RLHF reward models — that may be the
+only kind of progress on offer.

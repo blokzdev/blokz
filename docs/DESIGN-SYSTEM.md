@@ -84,8 +84,12 @@ Declarative via data attributes, implemented in `src/lib/motion.ts`:
 Rules: ease `expo.out`/`power3.out`, durations ≤1.1s, animations fire `once` (no scroll-
 scrubbed re-triggering except the two scrubbed decoratives above), and **everything except
 toc-spy is skipped under `prefers-reduced-motion`** — content must be fully legible with
-zero JS/motion. Infinite CSS animations (`.marquee`, the 404 glitch) need their own explicit
-reduced-motion pause — the global 0.01ms override would strobe them.
+zero JS/motion. Infinite CSS animations (the explore-bar chevron dip, the 404 glitch) need
+their own explicit reduced-motion handling — the global 0.01ms override would strobe them.
+The homepage explore rail drifts via JS-driven native scroll (swipe/wheel/drag all work,
+drift pauses on interaction, disabled under reduced motion) — never a CSS marquee, which
+can't be scrubbed. Nothing ever floats loose over the hero scene; affordances fuse into
+the explore bar.
 
 ## 3D / WebGL aesthetic
 

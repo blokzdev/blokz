@@ -15,6 +15,11 @@ const latest = articles.slice(0, 6);
 const featuredArtifacts = [...artifacts].sort(
   (a, b) => Number(b.data.featured) - Number(a.data.featured),
 ).slice(0, 3);
+
+// Per-topic article counts for the explore rail.
+const counts = new Map<string, number>();
+for (const a of articles) for (const t of a.data.topics) counts.set(t, (counts.get(t) ?? 0) + 1);
+const railTopics = [...topics].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
 ---
 
 <BaseLayout>
@@ -31,13 +36,6 @@ const featuredArtifacts = [...artifacts].sort(
     <div class="grid-veil absolute inset-0" aria-hidden="true"></div>
     <div
       class="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-void"
-      aria-hidden="true"
-    >
-    </div>
-
-    <!-- Bridge axis: the line the synapse stream travels, echoed in the UI. -->
-    <div
-      class="pointer-events-none absolute top-1/2 right-0 left-0 h-px bg-gradient-to-r from-accent/20 via-violet/10 to-cyan/20"
       aria-hidden="true"
     >
     </div>
@@ -79,46 +77,44 @@ const featuredArtifacts = [...artifacts].sort(
       </div>
     </div>
 
-    <a
-      href="#explore"
-      class="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full bg-panel/30 p-3 backdrop-blur-sm border border-line/50 transition-all hover:bg-panel/50 hover:border-accent/40 active:scale-95 group z-10"
-      aria-label="Scroll down to explore"
-      data-reveal="1"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2.5"
-        stroke="currentColor"
-        class="w-6 h-6 animate-bounce"
-        style="stroke: url(#brand-gradient);"
-      >
-        <defs>
-          <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="var(--color-accent)" />
-            <stop offset="50%" stop-color="var(--color-violet)" />
-            <stop offset="100%" stop-color="var(--color-cyan)" />
-          </linearGradient>
-        </defs>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-      </svg>
-    </a>
   </section>
 
-  <!-- ============ TOPIC TICKER ============ -->
-  <div id="explore" class="border-y border-line/60 bg-ink/40 scroll-mt-16">
-    <div class="marquee py-3">
+  <!-- ============ EXPLORE BAR ============ -->
+  <!-- The hero's bottom boundary: chevron cap fused into the strip (nothing
+       floats over the scene) + a swipeable, auto-drifting topic rail with
+       live article counts. -->
+  <div id="explore" class="explore-bar border-y border-line/60 bg-ink/40 scroll-mt-16">
+    <a href="#latest" class="explore-cap" aria-label="Skip to latest articles">
+      <span>explore</span>
+      <svg
+        class="explore-chev"
+        width="11"
+        height="11"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m5 9 7 7 7-7"></path>
+      </svg>
+    </a>
+    <div class="explore-rail" data-explore-rail>
       {
         [false, true].map((dup) => (
-          <div aria-hidden={dup ? 'true' : undefined}>
-            {topics.map((t) => (
+          <div class="explore-track" aria-hidden={dup ? 'true' : undefined}>
+            {railTopics.map((t) => (
               <a
                 href={`/topics/${t.id}`}
-                class="font-mono text-[11px] tracking-[0.2em] whitespace-nowrap text-faint uppercase transition-colors hover:text-cyan"
+                class="explore-chip"
+                style={`--chip-hue: ${t.data.hue}`}
                 tabindex={dup ? -1 : undefined}
               >
-                ⬢ {t.data.label}
+                <i aria-hidden="true" />
+                {t.data.label}
+                <b>{counts.get(t.id) ?? 0}</b>
               </a>
             ))}
           </div>
@@ -128,7 +124,7 @@ const featuredArtifacts = [...artifacts].sort(
   </div>
 
   <!-- ============ LATEST ARTICLES ============ -->
-  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-6">
+  <section id="latest" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-6">
     <SectionHeading eyebrow="Journal" title="Latest articles" href="/articles" />
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
       {latest.map((article) => <ArticleCard {article} {topics} />)}
@@ -211,6 +207,41 @@ const featuredArtifacts = [...artifacts].sort(
           })
           .catch(() => canvas.remove());
       'requestIdleCallback' in window ? requestIdleCallback(start) : setTimeout(start, 200);
+    }
+  </script>
+
+  <script>
+    // Explore rail: auto-drift via native scroll (so touch swipe, wheel, and
+    // drag all just work), wrapping seamlessly over the duplicated track.
+    // User interaction pauses the drift for a few seconds; reduced motion
+    // disables drift entirely (the rail stays scrollable).
+    const rail = document.querySelector<HTMLElement>('[data-explore-rail]');
+    if (rail && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const track = rail.querySelector<HTMLElement>('.explore-track');
+      let pos = 0;
+      let idleUntil = 0;
+      let last = performance.now();
+      const defer = () => {
+        idleUntil = performance.now() + 5000;
+      };
+      rail.addEventListener('pointerdown', defer, { passive: true });
+      rail.addEventListener('wheel', defer, { passive: true });
+      rail.addEventListener('touchstart', defer, { passive: true });
+      rail.addEventListener('pointerenter', defer, { passive: true });
+      const tick = (now: number) => {
+        requestAnimationFrame(tick);
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        if (document.hidden || now < idleUntil || !track) return;
+        const period = track.offsetWidth;
+        if (period === 0) return;
+        // Resync after manual scrolling, then advance with float precision.
+        if (Math.abs(rail.scrollLeft - pos) > 1) pos = rail.scrollLeft;
+        pos += 22 * dt;
+        if (pos >= period) pos -= period;
+        rail.scrollLeft = pos;
+      };
+      requestAnimationFrame(tick);
     }
   </script>
 </BaseLayout>

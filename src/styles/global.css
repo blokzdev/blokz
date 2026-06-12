@@ -248,6 +248,10 @@
       transform: translateX(calc(-100% - 2.5rem));
     }
   }
+  /* Pause under a hover so the topic links can actually be read and clicked. */
+  .marquee:hover > * {
+    animation-play-state: paused;
+  }
   /* Explicit pause: the global 0.01ms rule would strobe an infinite animation. */
   @media (prefers-reduced-motion: reduce) {
     .marquee > * {

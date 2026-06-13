@@ -1,0 +1,24 @@
+{
+  "slug": "fpmm-bet-machine",
+  "title": "The Bet Machine",
+  "description": "A real Omen prediction market on Gnosis, replayed bet by bet: eight AI-agent trades walked P(YES) from 50% to 42% in 13 hours. Tap any bet to rewind the pools, then step in as the ninth bettor — set your estimate, bankroll, and stake, and compare it to the Kelly bet an agent would place.",
+  "pubDate": "2026-06-12",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "defi"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a dot on the timeline to rewind the market to that bet",
+    "drag the sliders — your P(YES) estimate, bankroll, and stake",
+    "tap “size like an agent” for the Kelly-optimal stake"
+  ],
+  "dataSource": {
+    "label": "Omen FPMM 0x6798…6F65 on Gnosis via Blockscout",
+    "url": "https://gnosis.blockscout.com/address/0x6798Ae92a8C3A197B7f3546C80228f192Bf86F65"
+  },
+  "dataAsOf": "2026-06-12"
+}

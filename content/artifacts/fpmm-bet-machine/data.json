@@ -1,0 +1,93 @@
+{
+  "note": "Complete lifecycle of one live AI-agent prediction market on Gnosis Chain, read from the chain via Blockscout on 2026-06-12. Every FPMMBuy event was replayed against the constant-product formula and reproduces the on-chain outcomeTokensBought to the wei.",
+  "market": {
+    "question": "Will the number of signatures on the Nashville Zoo petition against the data center reach or exceed 400,000 on June 16, 2026, according to the Nashville Zoo online petition platform?",
+    "outcomes": ["Yes", "No"],
+    "category": "sustainability",
+    "chain": "Gnosis (chain id 100)",
+    "fpmm": "0x6798Ae92a8C3A197B7f3546C80228f192Bf86F65",
+    "collateral": "wxDAI (0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d)",
+    "conditionalTokens": "0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce",
+    "realityQuestionId": "0x415d7b28d369b17baddca57f351af50964875869628412d9056bc2ade1eda619",
+    "creator": "0x89c5cc945dd550BcFfb72Fe42BfF002429F46Fec",
+    "creationTx": "0x81f40177cc9fa0f465afe6af6806f7d8dc86f0bfd160eaceffbdbd011a6083c2",
+    "createdAt": "2026-06-12T01:25:35Z",
+    "opensAt": "2026-06-16T00:00:00Z",
+    "feePct": 1,
+    "seedLiquidity": 7.0
+  },
+  "trades": [
+    {
+      "time": "2026-06-12T05:32:20Z",
+      "block": 46653735,
+      "tx": "0x67cf857b7c3f523dbc5a6d058ed9c6123e058ec10615630a619904b8b23f0600",
+      "buyer": "0xE4CEDcDC20a85211d18d9d03b1a0c079E97E74fc",
+      "outcome": 1,
+      "investment": 0.025,
+      "shares": 0.049412799387878572
+    },
+    {
+      "time": "2026-06-12T06:13:30Z",
+      "block": 46654214,
+      "tx": "0xe61669bbd155b614fbc4410a2f2cd65c084877e0deb792c1c043004495cda134",
+      "buyer": "0x2bcB020f8D5e988850Fe3D6EBf0c02113C115f01",
+      "outcome": 1,
+      "investment": 0.025,
+      "shares": 0.049239622769721257
+    },
+    {
+      "time": "2026-06-12T06:31:30Z",
+      "block": 46654424,
+      "tx": "0x72604d07bc68a2088e57d4947c44e8cc814919c20ccd010fa433a5f49b0b116f",
+      "buyer": "0x3418665c7217247dF075d105adA66f0E58Fb53f0",
+      "outcome": 1,
+      "investment": 0.025,
+      "shares": 0.049068263780838873
+    },
+    {
+      "time": "2026-06-12T10:17:20Z",
+      "block": 46657071,
+      "tx": "0xe9269de53bef108cc6e895ea27dc33f7e0b992819b150db271fb3030ab8a82dc",
+      "buyer": "0x0917cA217a8c679845BC97DfADE9FD33F323A2f9",
+      "outcome": 1,
+      "investment": 0.350551102204408832,
+      "shares": 0.670954190577944914
+    },
+    {
+      "time": "2026-06-12T10:26:50Z",
+      "block": 46657183,
+      "tx": "0xbf3f4eeaa1fd212a2b1fb7c9d7ced911e43135a7b57244116c6cd9e4a365f3c7",
+      "buyer": "0x609F8590aec15136a17B865F35871AAcEA63F3CE",
+      "outcome": 1,
+      "investment": 0.273446893787575136,
+      "shares": 0.503084967923584819
+    },
+    {
+      "time": "2026-06-12T10:50:35Z",
+      "block": 46657466,
+      "tx": "0x01db87a84b1735f0f0d9ed5bf96d76eafaca696fb69c6c55bc3907e17a3ae08f",
+      "buyer": "0x7fA73785EB8Ed85E65C7200399395CBaCE165dDC",
+      "outcome": 1,
+      "investment": 0.702054108216432896,
+      "shares": 1.222935601043189878
+    },
+    {
+      "time": "2026-06-12T11:02:05Z",
+      "block": 46657602,
+      "tx": "0xbb6cc515d7b9988f3761195af96082b77e3e03d84c1f7ae9d4a14fdc8e278ead",
+      "buyer": "0xAE35CE2D400bF9c36D082b5e2450Ed22A67bc7Cd",
+      "outcome": 0,
+      "investment": 0.381012024048096192,
+      "shares": 0.885857521768832469
+    },
+    {
+      "time": "2026-06-12T14:10:20Z",
+      "block": 46659811,
+      "tx": "0xc4536a146f29cb28367abee0957344a7abefe5e1c393c418cd203a58bade6994",
+      "buyer": "0x8dd0f0f64e575a356545d9ED096122a1887E64BF",
+      "outcome": 1,
+      "investment": 0.346743486973947904,
+      "shares": 0.602958570439368754
+    }
+  ]
+}

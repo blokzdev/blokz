@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 17,
-    "artifacts": 16
+    "articles": 18,
+    "artifacts": 17
   },
   "topicCounts": {
-    "agents": 6,
+    "agents": 7,
     "ai": 3,
     "blockchain": 8,
     "cryptography": 2,
     "data": 1,
-    "defi": 2,
+    "defi": 3,
     "infrastructure": 7,
-    "llm": 1,
+    "llm": 2,
     "machine-learning": 7,
     "research": 1,
     "security": 7,
@@ -20,6 +20,32 @@
     "zero-knowledge": 2
   },
   "articles": [
+    {
+      "slug": "llm-agents-onchain-prediction-markets",
+      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
+      "url": "/articles/llm-agents-onchain-prediction-markets",
+      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
+      "description": "Yesterday an AI agent deployed a prediction market on Gnosis; other agents will price it, bet on it, and resolve it. The calibration data behind LLM forecasters, the FPMM math they trade against, and what breaks when the marginal bettor is a model.",
+      "pubDate": "2026-06-13",
+      "topics": [
+        "agents",
+        "llm",
+        "defi"
+      ],
+      "tags": [
+        "prediction-markets",
+        "fpmm",
+        "omen",
+        "olas",
+        "gnosis",
+        "forecasting"
+      ],
+      "artifacts": [
+        "fpmm-bet-machine"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "agent-key-custody-blast-radius",
       "path": "content/articles/2026/06/agent-key-custody-blast-radius/index.mdx",
@@ -579,6 +605,22 @@
         "agents",
         "security",
         "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "fpmm-bet-machine",
+      "path": "content/artifacts/fpmm-bet-machine/manifest.json",
+      "module": "src/islands/artifacts/fpmm-bet-machine.ts",
+      "url": "/artifacts/fpmm-bet-machine",
+      "title": "The Bet Machine",
+      "description": "A real Omen prediction market on Gnosis, replayed bet by bet: eight AI-agent trades walked P(YES) from 50% to 42% in 13 hours. Tap any bet to rewind the pools, then step in as the ninth bettor — set your estimate, bankroll, and stake, and compare it to the Kelly bet an agent would place.",
+      "pubDate": "2026-06-12",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "defi"
       ],
       "draft": false
     },

@@ -1,0 +1,179 @@
+---
+slug: llm-agents-onchain-prediction-markets
+title: "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets"
+description: "Yesterday an AI agent deployed a prediction market on Gnosis; other agents will price it, bet on it, and resolve it. The calibration data behind LLM forecasters, the FPMM math they trade against, and what breaks when the marginal bettor is a model."
+pubDate: 2026-06-13
+author: blokz
+topics: [agents, llm, defi]
+tags: [prediction-markets, fpmm, omen, olas, gnosis, forecasting]
+artifacts: [fpmm-bet-machine]
+difficulty: intermediate
+sources:
+  - label: "ForecastBench: A Dynamic Benchmark of AI Forecasting Capabilities (arXiv:2409.19839)"
+    url: "https://arxiv.org/abs/2409.19839"
+  - label: "AIA Forecaster: Technical Report (arXiv:2511.07678)"
+    url: "https://arxiv.org/abs/2511.07678"
+  - label: "Gnosis: The Rise of AI Agents in Prediction Markets"
+    url: "https://www.gnosis.io/blog/the-rise-of-ai-agents-in-prediction-markets-how-gnosis-infrastructure-is-powering-the-future-of-information-finance"
+  - label: "FixedProductMarketMaker.sol (gnosis/conditional-tokens-market-makers)"
+    url: "https://github.com/gnosis/conditional-tokens-market-makers/blob/master/contracts/FixedProductMarketMaker.sol"
+  - label: "An agent-created market's deployment tx on Gnosis (Blockscout)"
+    url: "https://gnosis.blockscout.com/tx/0x81f40177cc9fa0f465afe6af6806f7d8dc86f0bfd160eaceffbdbd011a6083c2"
+---
+
+Yesterday morning, at 01:25 UTC, a new contract appeared on Gnosis Chain: a
+`FixedProductMarketMaker` at `0x6798…F65`, deployed as an EIP-1167 minimal proxy through
+Omen's `FPMMDeterministicFactory` and seeded with WXDAI collateral in the same transaction.
+No human clicked anything. The deployer is an autonomous market-creator agent; the traders
+who will price the market over the coming days are autonomous too; so is the service that
+will eventually close it. The factory it came from has been quietly doing this since
+September 2020 — but the clientele has changed species.
+
+This is the strangest corner of the agent economy right now: on-chain prediction markets
+where LLM forecasters are not a novelty participant but the *dominant* one. It's worth
+understanding precisely — both the math the agents trade against and the calibration
+evidence for whether they should be trading at all.
+
+## Why prediction markets are the natural habitat
+
+A prediction market is the one venue where a forecasting model's quality converts directly
+into money, with no benchmark committee in the loop. If your model says 62% and the market
+says 48%, you buy YES; if you're systematically better calibrated than the price-setter,
+you accumulate collateral, and if you're worse, you donate it. Markets are
+incentive-compatible eval — the score settles in WXDAI, not Brier points.
+
+That's also why they make an honest stress test for the agent stack as a whole. A trading
+agent has to do everything the demos hand-wave: hold keys, pay gas, fetch and weigh
+evidence, size a position against slippage, and live with irreversible settlement. The
+custody half of that problem has [its own blast radius](/articles/agent-key-custody-blast-radius),
+and the identity half is what [ERC-8004's agent registries](/articles/erc-8004-agent-registries-onchain)
+are circling.
+
+## How good are the forecasters, actually?
+
+The honest answer comes from the benchmark with the fewest outs.
+[ForecastBench](https://arxiv.org/abs/2409.19839) maintains a rolling set of ~1,000
+questions about genuinely unresolved future events — no leakage, no retrodiction — and
+scores submissions only after reality arrives. Its standing result has been sobering:
+human superforecasters beat every foundation model tested, and the Brier-score gap between
+superforecasters and the best model was *larger* than the gap between that model and the
+previous generation. Scale alone was not closing it.
+
+What does move the needle is agentic scaffolding. The
+[AIA Forecaster](https://arxiv.org/abs/2511.07678) (November 2025) reports parity with
+human superforecasters on ForecastBench using exactly the recipe an on-chain trading agent
+would run: agentic search over high-quality news sources, a supervisor agent that
+reconciles disparate forecasts for the same event, and explicit statistical calibration to
+counter the models' behavioral biases. Whether benchmark parity survives contact with a
+market that charges fees and slippage is the open question — but "LLM forecaster" stopped
+being an oxymoron sometime in the last year.
+
+## The economy that already runs
+
+On Gnosis, the [Olas Predict](https://www.gnosis.io/blog/the-rise-of-ai-agents-in-prediction-markets-how-gnosis-infrastructure-is-powering-the-future-of-information-finance)
+stack splits the loop into agent roles: market-creator agents open daily questions on
+Omen, trader agents buy outcome tokens guided by probabilities purchased from intelligence
+services on the Mech marketplace, and closer agents resolve markets when reality lands.
+Gnosis reports over **361 daily active agents** executing **8.2 million+ transactions**,
+with agents accounting for the majority of Safe transactions on the chain on many days.
+At Gnosis gas prices, yesterday's market creation cost its deployer well under a cent —
+economics that work at position sizes no human would bother with.
+
+The on-chain trail is fully public. The market born yesterday traces end to end in
+[one transaction](https://gnosis.blockscout.com/tx/0x81f40177cc9fa0f465afe6af6806f7d8dc86f0bfd160eaceffbdbd011a6083c2):
+the creator's Safe calls the factory, WXDAI moves in, conditional outcome tokens are
+minted against the collateral, and the freshly cloned FPMM proxy is funded — ready to
+quote odds to the next agent that shows up.
+
+## The math the agents trade against
+
+Omen markets are fixed-product market makers over outcome tokens — Uniswap's invariant,
+repurposed. A binary market holds pools of YES and NO tokens, `b_y` and `b_n`, and keeps
+`b_y · b_n` constant across trades. The implied probability of YES is the share of the
+*opposite* pool:
+
+```text
+p(YES) = b_n / (b_y + b_n)
+```
+
+Buying YES with collateral `a` (after the fee, `a′ = a · (1 − f)` — human-era Omen markets
+charged 2%, but the agent-created markets, including yesterday's per its on-chain creation
+event, set f = 1%) mints `a′` of both outcome tokens into the pools, then returns enough
+YES to restore the product — `calcBuyAmount` in
+[FixedProductMarketMaker.sol](https://github.com/gnosis/conditional-tokens-market-makers/blob/master/contracts/FixedProductMarketMaker.sol):
+
+```text
+yes_received = b_y + a′ − (b_y · b_n) / (b_n + a′)
+```
+
+Concretely: a fresh market seeded 100/100 quotes p(YES) = 0.50. An agent that believes 62%
+bets 10 WXDAI. After the 1% fee, a′ = 9.9, so it receives 100 + 9.9 − 10,000/109.9 ≈
+**18.91 YES tokens** — an average price of 0.529 per token that redeems at 1.00 each if
+YES resolves. The pools move to 90.99 / 109.9, repricing YES at **0.547**. That
+4.7-point move on a $10 bet is the real constraint on agent trading: in thin pools your
+own conviction is expensive, and the edge that benchmark-grade calibration buys is easily
+eaten by fee plus slippage unless position sizing respects the invariant. The trader
+agents' whole job is this arithmetic — buy until price equals belief minus costs, and not
+a token further.
+
+## Day one, on the books
+
+It didn't take days. We pulled the market's full event log at the end of its first
+day: eight bets from eight different agent Safes between 05:32 and 14:10 UTC, each
+between 0.025 and 0.70 WXDAI, walked the implied probability from the seeded 50.0%
+down to 42.0%. Seven bought NO; the lone YES buyer at 10:50 was bet back within
+minutes. (The question, machine-drafted from a news feed: whether a Nashville Zoo
+petition against a data center reaches 400,000 signatures by June 16.)
+
+Two details from the log deserve the close-up. First, the loop is visible in the
+receipts: at 14:08:45 UTC the day's last bettor — a Safe already at transaction
+nonce 57,500 — paid 0.01 xDAI to the `MechMarketplace` for a probability estimate,
+and [95 seconds later](https://gnosis.blockscout.com/tx/0xc4536a146f29cb28367abee0957344a7abefe5e1c393c418cd203a58bade6994)
+put 0.3467 WXDAI on NO. Intelligence, not settlement, is the dominant line item: the
+Mech fee runs ~3% of a typical stake, while the gas for both transactions rounds to
+half a tenth of a cent. Second, the math above is exactly what executed — replaying
+all eight bets through `calcBuyAmount` reproduces every on-chain
+`outcomeTokensBought` to the wei, all 18 decimals.
+
+Sizing is the part the trader stack treats as a first-class problem. The Olas
+trader's default strategy is **execution-aware Kelly**: choose the stake that
+maximizes expected log wealth with the payout walking the FPMM curve — fee and
+slippage included — and skip the market entirely when the edge is below threshold.
+The artifact below replays the real market and hands you the ninth seat: rewind to
+any bet, set your own estimate, bankroll, and stake, and compare your sizing to the
+Kelly bet an agent would place.
+
+<Artifact slug="fpmm-bet-machine" />
+
+## Reflexivity: when the marginal bettor is a model
+
+Prediction markets earn their epistemic reputation from diverse, independent bettors. An
+agent-dominated market quietly breaks that assumption three ways.
+
+First, **correlated priors**: trader agents buy probabilities from a small set of
+intelligence services running a small set of foundation models over the same news feeds. A
+shared blind spot doesn't get arbitraged away — it gets priced in, confidently, by
+everyone at once. Second, **price-as-input loops**: an agent that conditions on the
+current market price (a sensible Bayesian move against human crowds) is, here,
+conditioning on yesterday's model consensus — a Keynesian beauty contest where every judge
+is a fork of the same brain. Third, **federated resolution**: when creator, traders, and
+closer share one stack, the market's checks and balances are more cooperative than
+adversarial.
+
+None of this makes the system fake — the WXDAI is real, settlement is real, and a
+better-calibrated outside agent profits from exactly these distortions, which is the
+self-correction working as designed. But it does mean "the market says 71%" carries
+different information when the market is mostly machines. Read it as a *model ensemble
+with skin in the game*, not as the wisdom of crowds.
+
+## Takeaways
+
+- LLM forecasters reached superforecaster parity on ForecastBench only with agentic
+  scaffolding — search, reconciliation, and calibration. Raw models still lag, and
+  markets charge for the difference.
+- Olas Predict on Gnosis is the production case: hundreds of daily active agents, millions
+  of transactions, and every step from market creation to resolution verifiable on-chain.
+- FPMM math is the binding constraint. A 2% fee plus constant-product slippage means thin
+  pools punish conviction; sizing, not forecasting, is where trader agents win or lose.
+- Agent-dominated markets price model consensus, not crowd wisdom — still useful, but a
+  different instrument, with correlated failure modes worth pricing in.

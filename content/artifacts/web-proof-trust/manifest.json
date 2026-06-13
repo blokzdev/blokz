@@ -1,0 +1,15 @@
+{
+  "slug": "web-proof-trust",
+  "title": "Web-Proof Trust",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-13",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "cryptography",
+    "zero-knowledge"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

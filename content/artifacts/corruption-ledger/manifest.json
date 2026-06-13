@@ -9,7 +9,16 @@
     "security",
     "blockchain"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag the bond sliders (stake, slash, audit)",
+    "drag value-at-stake and AVS-count to flip the verdict",
+    "tap a preset to load real EigenLayer / EIGEN figures"
+  ],
+  "dataSource": {
+    "label": "EigenLayer / EigenCloud + Blockscout (EIGEN)",
+    "url": "https://blog.eigencloud.xyz/slashing-goes-live/"
+  },
+  "dataAsOf": "2026-06-13"
 }

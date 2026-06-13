@@ -21,6 +21,30 @@
   },
   "articles": [
     {
+      "slug": "llm-agents-onchain-prediction-markets",
+      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
+      "url": "/articles/llm-agents-onchain-prediction-markets",
+      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
+      "description": "Yesterday an AI agent deployed a prediction market on Gnosis; other agents will price it, bet on it, and resolve it. The calibration data behind LLM forecasters, the FPMM math they trade against, and what breaks when the marginal bettor is a model.",
+      "pubDate": "2026-06-13",
+      "topics": [
+        "agents",
+        "llm",
+        "defi"
+      ],
+      "tags": [
+        "prediction-markets",
+        "fpmm",
+        "omen",
+        "olas",
+        "gnosis",
+        "forecasting"
+      ],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "agent-key-custody-blast-radius",
       "path": "content/articles/2026/06/agent-key-custody-blast-radius/index.mdx",
       "url": "/articles/agent-key-custody-blast-radius",
@@ -173,23 +197,6 @@
       "artifacts": [
         "protocol-gap"
       ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "llm-agents-onchain-prediction-markets",
-      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
-      "url": "/articles/llm-agents-onchain-prediction-markets",
-      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "agents",
-        "llm",
-        "defi"
-      ],
-      "tags": [],
-      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

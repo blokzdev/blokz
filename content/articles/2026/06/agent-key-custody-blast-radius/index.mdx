@@ -1,0 +1,148 @@
+---
+slug: agent-key-custody-blast-radius
+title: "Agent Keys and the Blast Radius Problem: Custody Engineering with EIP-7702 and Spend Permissions"
+description: "An agent holding your raw key is one prompt injection from total loss — and 97% of early EIP-7702 delegations went to drainer sweepers. We read the sweeper's source off the chain, dissect a real 35.97-USDC-a-day spend permission on Base, and do the blast-radius math."
+pubDate: 2026-06-12
+author: blokz
+topics: [agents, security, smart-contracts]
+tags: [eip-7702, spend-permissions, session-keys, agent-wallets, key-custody, account-abstraction]
+artifacts: [blast-radius]
+difficulty: intermediate
+sources:
+  - label: "EIP-7702: Set Code for EOAs"
+    url: "https://eips.ethereum.org/EIPS/eip-7702"
+  - label: "ERC-7715: Request Execution Permissions"
+    url: "https://eips.ethereum.org/EIPS/eip-7715"
+  - label: "coinbase/spend-permissions (SpendPermissionManager)"
+    url: "https://github.com/coinbase/spend-permissions"
+  - label: "Wintermute Research: EIP-7702 Dune dashboard"
+    url: "https://dune.com/wintermute_research/eip7702"
+  - label: "EIP-7702 Phishing Attack (arXiv:2512.12174)"
+    url: "https://arxiv.org/abs/2512.12174"
+---
+
+We've spent three articles on this blog watching autonomous agents move money. They [pay for APIs over x402](/articles/x402-agent-payments-onchain) in fraction-of-a-cent USDC settlements, and they [register identities in ERC-8004 registries](/articles/erc-8004-agent-registries-onchain) by the tens of thousands. Every one of those flows ends the same way: something signs a transaction. The question those articles deferred is the one that actually decides whether agent payments are a product or an incident report: **what key does the agent hold, and what happens when it leaks?**
+
+"When", not "if". An agent's signing authority sits behind an LLM that ingests untrusted text all day. Prompt injection against a tool-using agent isn't a hypothetical — we treat it as a [top finding category in agentic audit pipelines](/articles/agentic-smart-contract-auditing) — and a hijacked agent doesn't need to exfiltrate your key to spend your money. It *is* your spender. Key-custody engineering for agents is therefore less about keeping secrets and more about bounding what any single signature can do. Ethereum shipped the primitive for that in May 2025, attackers adopted it faster than wallets did, and the scoped-permission layer on top of it is now processing real agent payments. This article reads all three off the chain.
+
+## What EIP-7702 actually does
+
+[EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), live since the Pectra hardfork, added transaction type `0x04`. Alongside the usual fields, a type-4 transaction carries an `authorization_list` of signed tuples:
+
+```text
+authorization = [chain_id, address, nonce, y_parity, r, s]
+signed over    keccak256(0x05 || rlp([chain_id, address, nonce]))
+```
+
+When the transaction lands, each valid tuple rewrites the signer's account code to a 23-byte **delegation designator**:
+
+```text
+0xef0100 || address     # ef = banned opcode, so this can never be real code
+```
+
+From that block on, the EOA executes the delegate contract's code in its own storage context — it behaves like a smart account while keeping its address and its original private key. Delegation costs `PER_AUTH_BASE_COST = 12,500` gas per tuple (`25,000` if the authority account is fresh), and it's sticky: it survives until replaced. Revocation is just another authorization, pointing at the zero address, which resets the account to empty code.
+
+Three properties matter for agent custody:
+
+1. **One signature, total authority.** The tuple grants the delegate contract everything the EOA can do — there is no scoping in the protocol itself. The spec is blunt: a poorly implemented delegate "can allow a malicious actor to take near complete control over a signer's EOA."
+2. **`chain_id = 0` is a wildcard.** A tuple signed with chain id zero is valid on every EIP-7702 chain, so one signature can re-delegate the same address everywhere at once.
+3. **The root key never goes away.** Unlike a contract wallet migration, the original key can always sign a new tuple. That's the recovery path — and the phishing surface.
+
+## The control group: 97% malicious
+
+Before EIP-7702 became agent infrastructure, it became drainer infrastructure, and the numbers are worth staring at because they're the experiment's control group: this is what *unscoped* delegation produces at scale.
+
+Within four weeks of Pectra, [Wintermute's research team measured](https://dune.com/wintermute_research/eip7702) that **over 97% of mainnet EIP-7702 delegations pointed at copy-pasted sweeper contracts** — code whose only job is to forward any ETH arriving at a compromised EOA to the attacker before the victim can react. They decompiled the most-reused variant, named it *CrimeEnjoyor*, and re-published it as verified Solidity. You can still read it at [`0x8938…E704`](https://eth.blockscout.com/address/0x89383882Fc2D0Cd4d7952a3267A3b6dAE967E704?tab=contract), warning included — this is the verified source on mainnet:
+
+```solidity
+contract CrimeEnjoyor {
+    /*  This contract is used by bad guys to automatically sweep all incoming
+        ETH from compromised addresses. Recreated and exposed by Wintermute.
+        IF YOU FOUND THIS CONTRACT IN ANY AUTHORIZATION LIST,
+        THE EOA DELEGATED TO IT WAS COMPROMISED!!!  */
+    address public destination;
+
+    function initialize(address _thief) public {
+        require(_thief != address(0), 'Invalid destination');
+        destination = _thief;
+    }
+
+    receive() external payable {
+        require(destination != address(0), 'Not initialized');
+        payable(destination).transfer(msg.value);
+    }
+}
+```
+
+That single address absorbed roughly 52,000 delegations; across the sweeper family, attackers spent about 2.88 ETH authorizing ~79,000 already-compromised addresses. Note what the contract *isn't*: it isn't an exploit of EIP-7702. The keys were already stolen; 7702 just let thieves industrialize the sweep. A December 2025 measurement study ([arXiv:2512.12174](https://arxiv.org/abs/2512.12174)) followed up across 150,000+ authorization and execution events involving 26,000 addresses and found delegations still "dominated by a small number of contract families linked to criminal activity," plus two compounding vectors: ERC-4337 flows re-triggering a malicious delegation without further victim involvement, and the `chain_id = 0` wildcard replaying one phished tuple across every chain. Individual incidents reached seven figures — one batch-signature phish in August 2025 cost a single user $1.54M.
+
+The lesson for agent builders is not "avoid 7702." It's that **delegation without scope is just key theft with better UX**. If your agent's wallet design is "the agent holds the EOA key" or "the agent is a delegate with full authority," you've built CrimeEnjoyor with extra steps and a system prompt.
+
+## Scope, not trust: a real spend permission on Base
+
+The constructive version inverts the trust direction. The user's account stays under user control; the agent gets a separate key whose *on-chain meaning* is constrained by contract code. The shipping example is Coinbase's [Spend Permissions](https://github.com/coinbase/spend-permissions): a singleton `SpendPermissionManager` at [`0xf852…67Ad`](https://base.blockscout.com/address/0xf85210B21cC50302F477BA56686d2019dC9b67Ad?tab=contract) on Base (deployed December 2024, audited by Spearbit/Cantina across three engagements) that meters how much a designated `spender` can pull from a smart wallet. The permission is an EIP-712 struct the user signs once:
+
+```solidity
+struct SpendPermission {
+    address account;    // the user's smart wallet
+    address spender;    // the agent's key
+    address token;      // ERC-7528 native or ERC-20 — ERC-721s are refused
+    uint160 allowance;  // max value per period
+    uint48  period;     // allowance reset interval, seconds
+    uint48  start;      // valid from (inclusive)
+    uint48  end;        // valid until (exclusive)
+    uint256 salt;
+    bytes   extraData;
+}
+```
+
+This isn't a testnet demo; permissions like this settle continuously. Here's one we pulled off Base from the day this article was written — [tx `0xa695…1055`](https://base.blockscout.com/tx/0xa695af07333e7d2e3aa90c039af32f4ee3cfb8b856a57acd7adff797e4611055), block 47,251,865:
+
+| Field | Value | Meaning |
+| --- | --- | --- |
+| `account` | `0x6c44…46b8` | user's Coinbase Smart Wallet |
+| `spender` | `0x5A95…0a97` | the agent/app key doing the spending |
+| `token` | `0x8335…2913` | USDC |
+| `allowance` | `35,970,000` (= $35.97) | per-period cap |
+| `period` | `86,400 s` | resets daily |
+| `start` → `end` | `1781292466` → `1781297866` | **valid for exactly 90 minutes** |
+
+The spender called `spend(permission, 35970000)` twelve seconds after the signature-based approval landed, moved exactly $35.97 of USDC, and paid ~119k gas — about half a cent at current Base fees. Look at the shape of that authority: a daily cap *and* a 90-minute validity window, sized to one checkout. Even if the spender key had leaked the moment it was approved, the maximum extractable value was $35.97, once, for an hour and a half. That is custody engineering: the blast radius was decided before the agent signed anything.
+
+The enforcement is mechanical and worth reading in the verified source. `getCurrentPeriod()` computes fixed windows at `start + n·period`; `_useSpendPermission()` adds the attempted value to the window's cumulative spend and reverts with `ExceededSpendPermission(value, allowance)` past the cap; the transfer itself approves the manager for the exact value and `transferFrom`s it — no standing ERC-20 allowance is left behind. Revocation is symmetric and immediate: `revoke()` by the account, or `revokeAsSpender()` when an agent operator wants to kill its own authority — a detail that matters when *you* are the one whose model might be hijacked.
+
+## The standards layer
+
+What Coinbase ships as a product, [ERC-7715](https://eips.ethereum.org/EIPS/eip-7715) is trying to make a wallet-neutral interface: `wallet_requestExecutionPermissions` (renamed from the earlier `wallet_grantPermissions` — update your integrations), through which a dapp or agent asks a wallet for a typed permission like an `erc20-token-allowance` with rules such as expiry attached. MetaMask's smart-accounts stack implements the same idea via ERC-7710 delegations with composable caveat enforcers, riding on exactly the 7702 mechanics above — its `EIP7702StatelessDeleGator` has been live on mainnet since May 2025 at [`0x63c0…E32B`](https://eth.blockscout.com/address/0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B).
+
+Be honest about maturity, though: ERC-7715 is still a **Draft**, its permission vocabulary is explicitly non-exhaustive, and it depends on ERC-7710, which is also in flux. Today, scoped agent authority in production means committing to one stack's semantics — Coinbase's manager contract, MetaMask's enforcers, or a session-key module on an ERC-4337 account. The struct fields are converging (token, cap, period, expiry, target); the wire format is not.
+
+## The blast-radius math
+
+Strip the architectures down to one question: the agent's signing authority is compromised at t = 0 and the attacker extracts as fast as the rails allow — what's gone by the time you notice?
+
+- **Raw EOA key**: everything, in the next block. Detection time is irrelevant; revocation doesn't exist, because the key *is* the account.
+- **Session key with expiry but no allowance**: identical. Expiry bounds *duration*, not *rate*, and a drain needs one block. A time box alone is security theater.
+- **Spend permission**: the attacker gets at most `allowance` per period window, the staircase freezes at `revoke()` or `end`, and total loss is `allowance × periods elapsed` — a number you chose in advance.
+
+The calculator below runs all three side by side. The defaults are deliberately unflattering to the defender — $10k in the wallet, a generous $50/day permission, three days to notice — and the scoped model still loses about 67× less. Press **⬢ real base permission** to load the actual on-chain permission dissected above and see what a 90-minute, $35.97 scope does to the picture.
+
+<Artifact slug="blast-radius" />
+
+The asymmetry is the whole argument. Every other mitigation — better prompts, output filters, anomaly detection — reduces the *probability* of compromise. On-chain scoping is the only lever that caps the *cost* of compromise, and it's enforced by consensus rather than by the model behaving.
+
+## What spend permissions don't solve
+
+Scoped authority bounds loss; it doesn't make agents safe. Four gaps to engineer around:
+
+**In-scope misbehavior.** A permission can't tell a legitimate $35 purchase from a hijacked one. If the attacker's goal fits inside your allowance — buying worthless API credits from themselves, say — the contract will happily meter the theft. Caps shrink fraud to allowance-sized; they don't eliminate it. Per-merchant scoping (allowlisted `spender`s, `extraData` policies) tightens this but reintroduces integration friction.
+
+**Allowance inflation.** The same approval-fatigue dynamic that made `approve(MAX_UINT)` the DeFi default will push users to grant $1,000/month permissions to skip re-prompts. The 90-minute checkout-sized permission above is the healthy pattern precisely because it was machine-generated per purchase, not granted once by a human optimizing for fewer popups.
+
+**The spender key still needs custody.** The agent's own key should live in a TEE or signer service with off-chain policy checks — the on-chain cap is the backstop, not the only wall. (Our [TEE attestation article](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) covers what that hardware trust actually buys.)
+
+**7702's foot-guns apply to the rescue path too.** If your recovery story is "re-delegate the EOA," remember the control group: tuple-signing is exactly what drainers industrialized, `chain_id = 0` signatures replay everywhere, and a malicious delegation can be re-activated through ERC-4337 flows without the victim signing again. Wallet UX for authorization signing is the weakest link in the whole stack.
+
+## Where this lands
+
+The custody pattern that survives contact with a hijackable signer looks like this: user funds in a smart account the agent never controls; the agent holding a low-value key whose authority exists only as a contract-enforced permission — token, cap, period, expiry, all chosen to fit the job; revocation paths on both sides; and permissions minted per task by software rather than granted broadly by tired humans. The $35.97 permission on Base is a small transaction, but it's the first pattern we've pulled off-chain where every number in the authorization was sized to the task at hand. After watching 97% of the unscoped alternative resolve to a contract literally named CrimeEnjoyor, "give the agent exactly what the next 90 minutes require" looks less like paranoia and more like the only adult option.

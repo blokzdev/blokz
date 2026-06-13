@@ -1,0 +1,24 @@
+{
+  "slug": "blast-radius",
+  "title": "Blast Radius",
+  "description": "What a hijacked agent key costs under three custody models: a raw EOA key loses the whole wallet instantly, an expiry-only session key does too, and a per-period spend permission caps the bleed. Drag the sliders — or load a real 35.97 USDC/day permission pulled off Base — and watch the staircase.",
+  "pubDate": "2026-06-12",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag sliders to shape the permission and detection time",
+    "press ⬢ real base permission to load the on-chain example",
+    "all inputs are keyboard accessible"
+  ],
+  "dataSource": {
+    "label": "Base via Blockscout (tx 0xa695af07…1055)",
+    "url": "https://base.blockscout.com/tx/0xa695af07333e7d2e3aa90c039af32f4ee3cfb8b856a57acd7adff797e4611055"
+  },
+  "dataAsOf": "2026-06-12"
+}

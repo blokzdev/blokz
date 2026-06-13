@@ -1,0 +1,207 @@
+---
+slug: story-royalty-graph-onchain
+title: "Who Gets Paid When AI Remixes IP? Reading Story's Royalty Graph Off the Chain"
+description: "Story raised $140M to make IP programmable for the AI era. We read its chain: 6.46M registered IP assets, 230,300 licenses ever minted, one week of royalties totaling $10 — plus the LAP/LRP royalty math and the precompile at 0x0101 that computes the graph."
+pubDate: 2026-06-12
+author: blokz
+topics: [ai, web3, smart-contracts]
+tags: [story-protocol, ip-licensing, royalties, training-data, erc-6551, provenance]
+artifacts: [royalty-stack]
+difficulty: intermediate
+sources:
+  - label: "Story docs — Royalty Module"
+    url: "https://docs.story.foundation/concepts/royalty-module/overview"
+  - label: "Story docs — PIL terms"
+    url: "https://docs.story.foundation/concepts/programmable-ip-license/pil-terms"
+  - label: "RoyaltyPolicyLAP verified source (StoryScan)"
+    url: "https://www.storyscan.io/address/0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E?tab=contract"
+  - label: "Story Protocol × OpenLedger announcement (Jan 29, 2026)"
+    url: "https://www.prnewswire.com/news-releases/story-protocol-and-openledger-launch-new-standard-for-rights-cleared-ai-training-and-automatic-creator-payments-302673803.html"
+  - label: "CoinDesk — PIP Labs $80M Series B led by a16z"
+    url: "https://www.coindesk.com/business/2024/08/21/story-protocol-developer-raises-80m-series-b-led-by-a16z-for-intellectual-property-chain"
+---
+
+On January 29, 2026, Story Protocol and OpenLedger announced a joint standard to make
+intellectual property "AI-ready by default" — machine-readable licenses, cryptographic proof
+of training-data usage, automatic creator payments. It is the most concrete version yet of a
+pitch that raised PIP Labs $140 million (the $80M Series B, led by a16z crypto, valued the
+company at $2.25 billion): when AI trains on your work, a blockchain makes sure you get paid.
+
+The pitch is checkable. Story is a live L1 (chain id 1514) and every registration, license
+mint, and royalty payment lands in public state. So we read it — registry counters, royalty
+events, the verified policy contracts — and the numbers split cleanly in two: **the registry
+is industrial-scale and growing ~3,100 IP assets a day, while the payment rail it exists to
+feed moved about $10 in a week.** Chain-wide. This article walks the architecture (which is
+genuinely interesting, including a graph precompile baked into the execution client), the
+royalty math you'd actually be signing up for, and the gap between the two.
+
+## The machinery: an IP asset is an NFT with a bank account
+
+Story's core registry pattern will look familiar if you read our
+[ERC-8004 audit](/articles/erc-8004-agent-registries-onchain): an on-chain registry that
+turns an off-chain claim ("this is my work", "this is my agent") into an addressable record.
+Here the record is heavier. Registering IP wraps an ERC-721 in an **IPAccount** — an
+ERC-6551-style contract account deployed per asset — so "the IP" is an address that can own
+tokens, receive payments, and be a parent or child in a derivative graph. The
+`IPAssetRegistry` proxy at `0x77319B…244b` has been live since February 2025.
+
+Attached to each IP asset are **license terms** under the Programmable IP License (PIL), a
+single Solidity struct mirrored by an off-chain legal text. The fields that matter
+economically are on-chain and enforced by the licensing and royalty modules:
+
+- `commercialUse`, `derivativesAllowed`, `derivativesReciprocal` — what a licensee may do;
+- `defaultMintingFee` — what minting a license token costs, paid up front;
+- `commercialRevShare` — the percentage of a derivative's revenue owed back to the licensor,
+  encoded with `100_000_000 = 100%` (so `10_000_000` is 10%);
+- `royaltyPolicy` — which royalty-distribution algorithm governs the edge (more below).
+
+To remix something, you mint a **license token** (ERC-721) from the parent under those terms,
+then burn it to register your derivative as a child IP asset. The link is permanent: parents
+of an IP asset can never change, and every link writes an edge into an on-chain graph.
+
+The graph is the part protocol engineers should steal. Computing "what does this derivative
+owe all its ancestors" is a transitive traversal — brutal in the EVM, where every hop is a
+cold `SLOAD`. Story's answer was to modify the execution client: ancestry and royalty-stack
+queries live in a **precompile at `address(0x0101)`**, and the verified
+`RoyaltyPolicyLAP` source calls it directly:
+
+```solidity
+// RoyaltyPolicyLAP.sol (verified at 0xBe54FB…390E, impl 0x0Dbe3a…068e)
+address public constant IP_GRAPH = address(0x0101);
+
+function _getRoyaltyStackLAP(address ipId) internal returns (uint32) {
+    (bool success, bytes memory returnData) = IP_GRAPH.call(
+        abi.encodeWithSignature("getRoyaltyStack(address,uint256)", ipId, uint256(0))
+    );
+    if (!success) revert Errors.RoyaltyPolicyLAP__CallFailed();
+    return uint32(abi.decode(returnData, (uint256)));
+}
+```
+
+Native-code graph traversal behind a precompile is the same move Ethereum made for pairing
+checks: when a data structure is load-bearing for your whole protocol, you don't interpret
+it at 200 gas per opcode — you compile it into the node.
+
+## The royalty math: LAP vs. LRP
+
+Every IP asset gets an **IP Royalty Vault** that collects its revenue; holding a vault's
+royalty tokens entitles you to a pro-rata share. The interesting design decision is how
+revenue propagates *up the ancestry graph*, and Story ships two incompatible answers.
+
+**LAP (Liquid Absolute Percentage):** every ancestor's `commercialRevShare` applies to the
+*gross* revenue of every descendant, however deep. A child's **royalty stack** is the sum of
+all ancestor percentages above it, and the `RoyaltyModule` (at `0xD2f60c…0086`,
+`maxPercent() = 100_000_000`) refuses to mint a license once the stack would cross 100%:
+
+```solidity
+function onLicenseMinting(address ipId, uint32 licensePercent, bytes calldata)
+    external nonReentrant onlyRoyaltyModule
+{
+    if (royaltyModule.globalRoyaltyStack(ipId) + licensePercent > royaltyModule.maxPercent())
+        revert Errors.RoyaltyPolicyLAP__AboveMaxPercent();
+}
+```
+
+At a uniform 10% rev-share, generation 1 keeps 90% of its gross, generation 5 keeps 50%, and
+generation 10 keeps nothing — the next mint reverts. Absolute percentages make ancestors
+strong and deep remix chains economically impossible, by construction.
+
+**LRP (Liquid Relative Percentage):** each percentage applies only to the *direct* parent,
+and revenue flows recursively. Pay 100 WIP to a generation-5 derivative under uniform 10%
+edges and its parent is owed 10, the grandparent 1, the great-grandparent 0.1, the root
+0.01 — each hop multiplies. Deep chains never saturate, but an original creator's claim on
+generation *n* decays as 0.1ⁿ: effectively zero protection three hops out.
+
+That tension — additive-but-capped versus compounding-but-diluting — is the actual economic
+contract a creator picks when they "register their IP for AI". The simulator below runs both
+policies over the same derivative chain; pay any node and watch where the money lands, then
+find the depth where LAP stops minting licenses at all.
+
+<Artifact slug="royalty-stack" />
+
+Neither policy is wrong. LAP is the right shape for "a studio licenses characters one hop to
+merchandisers"; LRP is the right shape for "infinite remix culture". But a protocol can't
+tell you which economy you're in — and as we'll see, the chain says: neither yet.
+
+## What the chain actually says
+
+All reads below are from Story mainnet via Blockscout (chain 1514), June 12, 2026, current
+block ≈ 18,573,600. You can reproduce every number with two `eth_call`s and an event scan.
+
+| Layer of the funnel | Lifetime | Recent rate |
+| --- | --- | --- |
+| IP assets registered (`IPAssetRegistry.totalSupply()`) | **6,458,509** | +21,385 in 7 days (~3,100/day); +368,445 in 30 days |
+| License tokens ever minted (`LicenseToken.totalMintedTokens()`) | **230,300** | **+7 in 7 days; +26 in 30 days** |
+| `RoyaltyPaid` events, Jun 6–12 | — | **55 events, 34.75 WIP ≈ $9.97** |
+| `LicenseMintingFeePaid` events, Jun 6–12 | — | 3 events, 2.85 WIP ≈ $0.82 |
+
+Read the funnel top to bottom. Registration is genuinely industrial: millions of assets,
+thousands per day, and the chain shows 107M total transactions from 17.5M addresses. But
+**licensing — the step where someone actually agrees to terms — has happened 230,300 times
+ever, against 6.46 million assets**: a 3.6% conversion over sixteen months, now running at
+*one license token per day* chain-wide. And royalties, the step the whole machine exists for,
+moved 37.6 WIP in the week we measured. At the $0.287 WIP traded at on June 12 (Crypto.com
+Exchange), that is **$10.79 of programmable-IP cash flow, chain-wide, in seven days** — on a
+network whose developer was valued at $2.25 billion and whose token's market cap sits around
+$102M.
+
+It gets one notch more deflating when you decode the biggest payment of the week. Transaction
+`0x415743…08e3` (June 8) routed 8.199 WIP through `payRoyaltyOnBehalf` — but the calling
+method is `claimRewards` on a contract whose reward token is **vIP, Verio's staked-IP
+receipt**. Of the 55 `RoyaltyPaid` events that week, 49 name the same payer IPAccount
+(`0x6E2cd2…9a17`) and trace back to Verio, an IP-staking platform recycling staking yield
+through the royalty rail. The "royalty graph" carrying real third-party licensing revenue —
+an AI lab paying a creator to train on their work — is, as of this week, nearly empty. For
+what it's worth, the rail itself is cheap and worked flawlessly: the 884,371-gas claim cost
+about $0.0013 at the chain's 5-gwei gas price.
+
+## The part the contracts can't enforce
+
+Here is the detail that should anchor any engineering evaluation: in the PIL term sheet, the
+field that governs AI training — `aiLearningModels`, "whether or not the IP can be used to
+develop AI learning models" — is an **off-chain term**. It lives in the license's `uri`
+metadata, next to `territory` and `governingLaw`, not in the Solidity struct. The contracts
+enforce minting fees, rev-share percentages, and derivative linking. Whether a GPU cluster in
+another jurisdiction respects the training clause is enforced by exactly what enforced it
+before Story existed: copyright law.
+
+Story's answer to violations is the **Dispute Module**: anyone can tag an IP asset
+(`IMPROPER_REGISTRATION`, `IMPROPER_USAGE`, `IMPROPER_PAYMENT`…) by posting a bond and
+evidence, judged through an UMA-style optimistic arbitration. A tagged asset can no longer
+mint licenses, link parents, or claim royalties — a real deterrent *inside* the graph, and
+automatic propagation to derivatives is a nice touch. But its blast radius ends at the chain
+boundary. Against the actual threat model — a scraper that never registered anything — the
+registry is a notice board, not a wall. Meanwhile 6.46M assets registered at ~12,000/day
+(much of it incentive-driven app mints) means the registry itself needs the dispute module as
+spam control: when registration is free-ish and rewarded, registration stops being evidence
+of anything.
+
+The OpenLedger standard is the right kind of answer on paper — attribution proofs during
+training and inference, licenses checked at runtime, payments routed automatically. That
+moves enforcement from courts into the serving stack, which is where it could actually bind.
+But it inherits the adoption problem rather than solving it: rights-cleared training only
+pays creators if AI companies opt into rights-cleared infrastructure, and the week's royalty
+flow is a measure of how many have. The announcement shipped no on-chain volume we could
+find; the standard is five months old, so the honest status is "watch the events, not the
+press release."
+
+## Takeaways
+
+- **Registries fill long before economies form.** Same pattern we measured with
+  [ERC-8004's 90k agent registrations](/articles/erc-8004-agent-registries-onchain) and the
+  [x402 payment rail](/articles/x402-agent-payments-onchain): the cheap, incentivized layer
+  (registration) runs at 10³–10⁴/day while the expensive, voluntary layer (paying for usage)
+  runs at 10⁰. Evaluate IP-for-AI protocols on `RoyaltyPaid` events, license-token mint
+  rates, and unique *third-party* payers — never on registration counts.
+- **The engineering is ahead of the economy.** An IP-graph precompile in the execution
+  client, per-asset ERC-6551 vault accounting, and a license mint that reverts when a
+  royalty stack would exceed `maxPercent` are real, verifiable mechanism design — we
+  reproduced the constants (`maxPercent = 100_000_000`, max 15 accumulated royalty policies)
+  straight off the contracts.
+- **Know your policy before you register.** LAP gives ancestors an absolute claim on every
+  descendant's gross revenue but hard-caps chain depth; LRP supports unbounded remixing but
+  dilutes an original creator's claim exponentially with distance. The simulator above is
+  the difference in thirty seconds.
+- **AI-training permission is a metadata field.** Until attribution-at-runtime systems carry
+  real volume, "rights-cleared AI training" settles in court, not on chain — the chain is
+  currently the receipt printer, and this week it printed $10.79.

@@ -1,0 +1,228 @@
+---
+slug: restaking-verifiable-ai-cost-of-corruption
+title: "Bond It, Don't Prove It: Restaking and the Cost of Corrupting an AI Oracle"
+description: "zkML, optimistic, TEE, FHE all prove the computation. Restaking takes the other road: bond it and slash liars. We do the cost-of-corruption math behind EigenLayer's $18B AI-AVS security, the overloading attack that breaks it, and the probabilistic-audit tax."
+pubDate: 2026-06-13
+author: blokz
+topics: [security, infrastructure, machine-learning, blockchain]
+tags: [restaking, eigenlayer, slashing, cost-of-corruption, avs, crypto-economic-security]
+series: proof-of-intelligence
+seriesOrder: 5
+artifacts: [corruption-ledger]
+difficulty: intermediate
+sources:
+  - label: "EigenLayer: The Restaking Collective (whitepaper — pooled security, CoC/PfC)"
+    url: "https://docs.eigenlayer.xyz/assets/files/EigenLayer_WhitePaper-88c47923ca0319870c611decd6e562ad.pdf"
+  - label: "Slashing Goes Live on Mainnet (EigenCloud, 2025-04-17)"
+    url: "https://blog.eigencloud.xyz/slashing-goes-live/"
+  - label: "Inference Labs: Verifiable, Decentralized AI on EigenLayer (Sertn AVS)"
+    url: "https://blog.eigencloud.xyz/ai-beyond-the-black-box-inference-labs-is-making-verifiable-decentralized-ai-a-reality-with-eigenlayer/"
+  - label: "EigenLayer crosses $18B restaked — vertical AVS specialization (BlockEden, 2026-03-20)"
+    url: "https://blockeden.xyz/blog/2026/03/20/eigenlayer-18b-tvl-vertical-avs-specialization-restaking-evolution/"
+  - label: "EIGEN token contract on Ethereum (Blockscout)"
+    url: "https://eth.blockscout.com/token/0xec53bF9167f50cDEB3Ae105f56099aaaB9061F83"
+---
+
+This series has spent four parts on one question: how do you trust an AI
+inference you didn't run? Every answer so far has been *cryptographic*.
+[zkML](/articles/zkml-verifiable-inference-landscape) proves the computation
+with a SNARK and pays 10³–10⁵× the compute.
+[Optimistic schemes](/articles/optimistic-ml-oracles) assume honesty and
+re-execute only under dispute. [TEEs](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed)
+prove the *computer* with a hardware signature. [FHE](/articles/fhe-mainnet-private-compute-costs)
+hides the data and computes on the ciphertext. Different proofs, same instinct:
+make cheating *impossible*.
+
+Restaking takes the other road. It doesn't make cheating impossible — it makes
+it **unprofitable**. The operator running your model posts a bond of restaked
+ETH, commits to answering honestly, and gets that bond burned if it's caught
+lying. There is no proof of the forward pass anywhere. The security is an
+inequality on a spreadsheet, and it is worth learning to read, because by 2026
+this is the cheapest verifiable-AI option on the menu and the one carrying real
+mainnet stake.
+
+## The one inequality that matters
+
+The framework comes straight from the EigenLayer whitepaper, and it is brutally
+simple. A service is secure as long as the **cost of corruption** exceeds the
+**profit from corruption**:
+
+```
+CoC  ≥  PfC
+```
+
+For a restaking-secured oracle, the cost of corruption is the stake the attacker
+loses when caught:
+
+```
+CoC = P(detected) · slashFraction · bondedStake
+```
+
+and the profit from corruption is whatever a wrong answer is worth — the
+mispriced liquidation, the rigged prediction-market resolution, the laundered
+model output:
+
+```
+PfC = valueAtStake
+```
+
+That's it. No cryptography, no proving key. You're not verifying the inference;
+you're pricing dishonesty above its payoff. The entire engineering discipline of
+"crypto-economic security" is keeping the left side bigger than the right, and
+most of the interesting failures are the ways the two sides drift apart when you
+aren't looking.
+
+## How an AI oracle actually bonds itself
+
+The mechanism EigenLayer added in April 2025 — slashing went live on mainnet on
+the 17th — turns this inequality from theory into burned ETH. The moving parts:
+
+- **Restakers** delegate ETH (or liquid-staking tokens, or EIGEN) to operators.
+- An **operator** opts into an AVS — an *Actively Validated Service* — and
+  allocates a slice of its delegated stake as slashable for that service.
+- The **AVS** defines its own *operator sets* and slashing conditions: do the
+  job correctly or lose the allocated stake.
+
+For an AI-inference AVS, "the job" is running a model and returning an answer the
+AVS can later check. Inference Labs' Sertn AVS is the cleanest production
+example: operators stake proportional to the value of the task they're assigned,
+and instead of proving every call — which would just be zkML with extra steps —
+the network issues **probabilistic, on-demand proofs**. Most responses ship
+unverified; a random subset (and any response a user pays to challenge) must be
+backed by a zero-knowledge proof of correct execution. Fail to produce one and
+the bond is slashed. Their stated design goal is the inequality above:
+"slashing always outweighs corrupt gains."
+
+This is the part worth internalizing. Restaking didn't *replace* the
+cryptography — Sertn still uses ZK proofs (its Omron subnet cut median proving
+time from ~15s to ~5s). Restaking changed *how often you pay for it*. You prove
+1% of calls and bond the other 99%. Which immediately raises the question every
+engineer should ask: if you only audit sometimes, how big does the bond have to
+be?
+
+## The probabilistic-audit tax
+
+Say you audit a fraction `p` of inferences. A dishonest operator is caught with
+probability `p` per corrupt answer and keeps the loot with probability `1 − p`.
+Their expected cost is `p · slashFraction · bondedStake`; their expected profit
+is the full `valueAtStake`. Security now requires:
+
+```
+p · slashFraction · bondedStake  ≥  valueAtStake
+```
+
+Rearranged, the bond must be oversized by `1/p`. Audit 10% of calls and you need
+**ten times** the slashable stake you'd need under full verification — for the
+same value-at-stake. Audit 1% and it's 100×. That `1/p` factor is the real price
+of the "cheap" verifiable-AI option: you trade proving compute for bonded
+capital, and the cheaper you make the verification, the more capital you have to
+lock to stay honest.
+
+The [Corruption Ledger](/artifacts/corruption-ledger) below makes the inequality
+draggable. Start at the defaults — a $500M bond, 50% slash, 10% audit rate
+against a $20M value-at-stake — and watch the safety factor. Then drop the audit
+probability and watch the cyan bar collapse while the profit bar holds: that's
+the `1/p` tax in motion.
+
+<Artifact slug="corruption-ledger" />
+
+## The attack that breaks the spreadsheet: overloading
+
+Here is where restaking earns its risk premium. The whole pitch of *pooled
+security* is that one pile of restaked ETH can secure many services at once —
+the whitepaper's headline example takes an AVS whose isolated cost-of-corruption
+would be $1B and, by sharing Ethereum's restaked capital, lifts it to $13B. More
+services, more reuse, more efficient capital. Wonderful, until you read the
+inequality from the attacker's side.
+
+The cost of corrupting an operator set is fixed: it's the stake that set can
+lose, and that number doesn't change no matter how many services they run. But
+the *profit* is summed across every service they can corrupt with that one act
+of collusion. The whitepaper's own worst case: an operator set with **$8B** of
+restaked ETH securing a service that holds **$2B** in value looks comfortably
+safe — until the same set is also validating ten other services, each holding
+$2B. One coordinated betrayal now nets **$20B+** against an $8B bond. The math
+that said "secure" for any single service says "exploitable" for the portfolio.
+
+Pull the **AVS-count** slider in the artifact and you can watch this happen: the
+orange profit bar climbs with every service added while the cyan cost bar sits
+still, and the verdict flips from `secure` to `exploitable` somewhere around the
+fifth service. The "whitepaper overloading" preset loads the exact $8B / $2B ×
+11 figures so you can see the original break.
+
+EigenLayer's answer is **unique stake allocation**, the other half of the April
+2025 slashing release. Stake earmarked for one operator set can only be slashed
+by that service — no double-counting, no leverage. As the protocol puts it, an
+AVS gets "unique attributability of stake," so it can *see* exactly how much
+slashable bond actually backs it rather than trusting a shared pool it shares
+with eleven strangers. It doesn't conjure more capital; it makes the per-service
+budget honest, so an undercollateralized service can refuse to launch instead of
+discovering its real CoC during the exploit.
+
+## The on-chain reality check
+
+Numbers, because this blog runs on them. As of early 2026 EigenLayer holds
+roughly **$18B** in restaked ETH across about **1,900 operators** and ~93% of
+the restaking market — genuinely Ethereum-scale economic security available for
+rent. That's the `bondedStake` ceiling, and it's why a well-collateralized AVS
+can claim a cost-of-corruption no standalone token could match.
+
+But read the token, not the headline. Pull EIGEN off Ethereum mainnet via
+Blockscout and the contract — now labelled *EigenCloud* — reports **223,357**
+holders, ~1.83B supply, and a circulating market cap around **$131M** at
+$0.177/token. Hold those two figures next to each other: **$18B** of borrowed
+ETH security versus a **$131M** native-token cap. The security of a restaking
+AVS comes from the restaked ETH, not from the project's own token — which is
+exactly the point of restaking, and also exactly the dependency to keep an eye
+on. EIGEN's role is the *intersubjective* backstop: the token of last resort for
+slashing faults that can't be proven on-chain but that "everyone can see." Its
+market cap is the budget for that backstop, and it is two orders of magnitude
+smaller than the ETH it sits behind.
+
+## Where this sits on the trust spectrum
+
+Set it against the rest of the series. The [Price of Trust](/artifacts/price-of-trust)
+chart laid the cryptographic options on one axis by compute overhead: TEE at
+~1.07×, optimistic at 2–4×, zkML and FHE at 10³–10⁵×. Crypto-economic security
+slots in below all of them — its *compute* overhead is essentially zero, because
+it doesn't recompute or prove anything in the common path. What it spends
+instead is **capital** (the bond) and **trust in detection** (that faults are
+catchable at all).
+
+That second cost is the honest catch. A SNARK is sound whether or not anyone is
+watching; a bond is only as good as `P(detected)`. If a corrupt inference can't
+be distinguished from an honest one after the fact — and for open-ended
+generative outputs, "was this the right answer?" is often genuinely undecidable
+— then `P(detected)` collapses, the cost-of-corruption term goes with it, and no
+amount of bonded ETH helps. Restaking is superb at securing claims that are
+*objectively checkable but expensive to check* (did this matrix multiply
+produce this hash? did this validator sign this header?) and weak exactly where
+AI is fuzziest. It's a verification *layer*, not a verification *method*: it
+makes occasional cryptographic checking economically viable, but it can't
+manufacture checkability that isn't there.
+
+There's a second tail risk worth naming: **correlated slashing**. The whole
+edifice assumes a fault slashes the guilty operator and life goes on. But
+restaked ETH is increasingly the shared collateral under DA layers, bridges,
+oracles, and now AI services simultaneously. A bug or a coordinated attack that
+triggers mass slashing doesn't just punish one service — it can cascade through
+every service leaning on the same stake, the financial-contagion version of the
+overloading problem. Unique stake bounds the blast radius per service; it does
+not eliminate the systemic version.
+
+## Takeaways
+
+- **Restaking secures AI by pricing dishonesty, not by proving honesty.** The
+  whole model is one inequality: `P(detected) · slash · bond ≥ value-at-stake`.
+  Learn to read it from the attacker's side.
+- **Probabilistic verification has a `1/p` capital tax.** Auditing 1% of calls
+  instead of 100% cuts your proving bill 100× but demands ~100× the bond for the
+  same security. Cheap verification, expensive collateral.
+- **Overloading is the load-bearing failure mode.** Profit-from-corruption sums
+  across every service an operator set secures; cost stays flat. Unique stake
+  allocation (live since April 2025) makes per-service budgets honest, but
+  shared collateral keeps correlated slashing on the table.
+- **The security is the ETH, not the token.** ~$18B restaked versus EIGEN's
+  ~$131M cap is the whole pitch — and the dependency. Crypto-economic security
+  is real, cheap on compute, and only ever as strong as your ability to *detect*
+  the fault you're bonding against.

@@ -1,0 +1,62 @@
+{
+  "_comment": "Snapshots backing The Corruption Ledger. Figures are from primary/secondary EigenLayer sources and an on-chain read of the EIGEN token via Blockscout. No runtime fetches.",
+  "ecosystem": {
+    "restakedUsd": 18000000000,
+    "operators": 1900,
+    "restakerAddresses": 80000,
+    "avsTotal": 190,
+    "avsMainnet": 40,
+    "restakingMarketShare": 0.939,
+    "slashingLiveDate": "2025-04-17",
+    "source": "EigenCloud (slashing-goes-live, 2025-04-17) + BlockEden ($18B TVL / 1,900 operators / 93.9% share, 2026-03-20)"
+  },
+  "eigenToken": {
+    "symbol": "EIGEN",
+    "holders": 223357,
+    "totalSupply": 1829680687,
+    "priceUsd": 0.177485,
+    "circulatingMarketCapUsd": 131515054,
+    "block": 25308079,
+    "source": "Blockscout, Ethereum mainnet, 0xec53bF9167f50cDEB3Ae105f56099aaaB9061F83 (2026-06-13)"
+  },
+  "presets": [
+    {
+      "id": "ecosystem",
+      "label": "eigenlayer pooled max",
+      "stakeUsd": 18000000000,
+      "slashFraction": 1.0,
+      "auditProb": 1.0,
+      "valueUsd": 2000000000,
+      "avsCount": 1,
+      "note": "$18B restaked ETH as the theoretical pooled cost-of-corruption ceiling for a single AVS."
+    },
+    {
+      "id": "overloading",
+      "label": "whitepaper overloading",
+      "stakeUsd": 8000000000,
+      "slashFraction": 1.0,
+      "auditProb": 1.0,
+      "valueUsd": 2000000000,
+      "avsCount": 11,
+      "note": "EigenLayer whitepaper: one operator set, $8B slashable, securing 11 AVSs that each hold $2B — profit-from-corruption $22B beats the $8B bond."
+    },
+    {
+      "id": "eigen-only",
+      "label": "eigen-token bond",
+      "stakeUsd": 131515054,
+      "slashFraction": 1.0,
+      "auditProb": 0.1,
+      "valueUsd": 20000000,
+      "avsCount": 1,
+      "note": "If an AVS leaned on EIGEN's circulating market cap ($131.5M) instead of restaked ETH, with 10% random audits the slashable expectation is thin."
+    }
+  ],
+  "inferenceLabs": {
+    "avs": "Sertn",
+    "model": "probabilistic ZK verification + slashing",
+    "omronProvingReductionPct": 0.76,
+    "omronMedianBeforeSec": 15,
+    "omronMedianAfterSec": 5,
+    "source": "EigenCloud blog — Inference Labs / Sertn AVS (2026)"
+  }
+}

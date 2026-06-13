@@ -1,0 +1,24 @@
+{
+  "slug": "corruption-ledger",
+  "title": "The Corruption Ledger",
+  "description": "Push the cost-of-corruption inequality for a restaking-secured AI oracle: set bonded stake, slash rate, audit probability, and value-at-stake, then add AVSs to watch the overloading attack flip the verdict from secure to exploitable.",
+  "pubDate": "2026-06-13",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "security",
+    "blockchain"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": [
+    "drag the bond sliders (stake, slash, audit)",
+    "drag value-at-stake and AVS-count to flip the verdict",
+    "tap a preset to load real EigenLayer / EIGEN figures"
+  ],
+  "dataSource": {
+    "label": "EigenLayer / EigenCloud + Blockscout (EIGEN)",
+    "url": "https://blog.eigencloud.xyz/slashing-goes-live/"
+  },
+  "dataAsOf": "2026-06-13"
+}

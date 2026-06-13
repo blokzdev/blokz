@@ -1,7 +1,7 @@
 {
   "slug": "web-proof-trust",
   "title": "Web-Proof Trust",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "The zkTLS trust boundary, explorable: switch between Plain TLS, MPC-TLS, Proxy-TLS and TEE-TLS to see where the session key lives and whom you must trust, then hit \"forge the value\" — plain TLS accepts the lie, the other three catch it at different costs.",
   "pubDate": "2026-06-13",
   "type": "svg",
   "archetype": "diagram",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a tab (or ←/→) to switch channel design",
+    "tap \"forge the value\" to attempt a forgery"
+  ],
+  "dataSource": {
+    "label": "TLSNotary benchmarks + Reclaim on Base via Blockscout",
+    "url": "https://tlsnotary.org/blog/2026/05/10/blog-proxy-mode/"
+  },
+  "dataAsOf": "2026-06-13"
 }

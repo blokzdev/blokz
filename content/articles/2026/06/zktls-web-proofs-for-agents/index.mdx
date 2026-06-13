@@ -5,18 +5,97 @@ description: "An AI agent that acts on your bank balance has to prove it saw tha
 pubDate: 2026-06-13
 author: blokz
 topics: [cryptography, zero-knowledge, agents]
-tags: []
-artifacts: []
+tags: [zktls, tls, web-proofs, reclaim, tlsnotary, mpc, oracles]
+artifacts: [web-proof-trust]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "TLSNotary — performance benchmarks (Aug 2025)"
+    url: "https://tlsnotary.org/blog/2025/08/31/benchmarks/"
+  - label: "TLSNotary — proxy mode benchmarks (May 2026)"
+    url: "https://tlsnotary.org/blog/2026/05/10/blog-proxy-mode/"
+  - label: "DECO: Liberating Web Data Using Decentralized Oracles for TLS (Zhang et al.)"
+    url: "https://arxiv.org/abs/1909.00938"
+  - label: "Reclaim verifier on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0x8CDc031d5B7F148ab0435028B16c682c469CEfC3"
+  - label: "zkTLS: Verifiable Data Composability (Shoal Research)"
+    url: "https://www.shoal.gg/p/zktls-verifiable-data-composability"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+An autonomous agent does something a human never has to: it acts on data it can't prove it saw. It reads your bank balance to decide a loan is safe, scrapes a flight price to rebook you, or checks that an account it controls really posted a tweet — and then it has to convince a smart contract, a counterparty, or another agent that the number it's acting on is real. The web2 answer is "trust my API key." The web3 answer, increasingly, is **zkTLS**: turn the HTTPS session itself into a portable, verifiable proof that *this* domain served *these* bytes, without a trusted oracle in the middle.
 
-## Section heading
+The pitch is intoxicating and the engineering is subtle. This piece is about the subtlety: why a raw TLS transcript is worthless as evidence, the three architectures that fix it, what they actually cost in seconds and megabytes, and what you find when you read a production verifier off the chain.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Why your TLS transcript proves nothing
+
+TLS 1.3 gives the two endpoints of a connection three things: confidentiality, integrity, and authentication of the *server*. It deliberately gives them a fourth property's opposite — **deniability**. The session is protected by a symmetric key (AES-GCM, say) derived by both client and server. Message authentication uses that same symmetric key. So everything the server sends, the client could equally have produced: once the handshake is done, the client holds a key that can MAC any plaintext it likes.
+
+That's a feature for privacy — neither party can later prove to a third party what the other said — and a wall for provenance. If your agent saves the full transcript of its session with `api.bank.com` and shows it to a contract, the contract has no way to distinguish a genuine `balance = $40.00` from a `balance = $40,000.00` the agent re-encrypted after the fact. As the Shoal Research survey puts it, the data "is unusable in any other context." A signed TLS record would solve this, but TLS doesn't sign application data with the server's long-term key; it MACs it with the ephemeral symmetric key. zkTLS is the set of tricks that reintroduce non-repudiation *around* an unmodified TLS server — no cooperation from the website required.
+
+The whole design space comes down to one question: **where does the session key live, and who therefore could have forged the plaintext?** Three answers, three trust models.
+
+<Artifact slug="web-proof-trust" />
+
+## Three ways to make a session provable
+
+**MPC-TLS (a.k.a. 3P-TLS).** Insert a *notary* into the handshake and derive the session keys inside two-party computation, so neither the prover nor the notary ever holds the full key. The prover talks to the real server; the notary co-computes the MACs blindly, never seeing plaintext. Because the prover alone cannot produce a valid MAC, it cannot forge the response after the fact — and because the notary never sees cleartext, your balance stays private. The prover then proves statements about the data in zero knowledge ("this field ≥ $30"). This is the lineage of **TLSNotary**, Chainlink's **DECO**, and **zkPass** (which uses a VOLE-in-the-head variant for local proving). It's the most decentralizable design — spread the notary role across many parties — and the most expensive.
+
+**Proxy-TLS.** Route the session through a proxy that witnesses the encrypted traffic and attests to its direction and byte counts *in flight*, before anyone reveals keys. After the session, the prover hands the proxy (or proves in ZK against) the keys, and the proxy can confirm the ciphertext it already committed to decrypts to the claimed plaintext. The prover can't swap in a forged response because the ciphertext was pinned before the key was known. This is **Reclaim** and **Opacity**. It's dramatically cheaper — no heavyweight MPC during the handshake — at the cost of trusting a single proxy/witness not to collude with the prover.
+
+**TEE-TLS.** Run the TLS client inside a trusted execution environment. The enclave holds the key, observes the response, and signs an attestation over the result. Forgery is impossible if the hardware is sound — but "if the hardware is sound" now means trusting Intel or AMD and assuming no side-channel break. This is **Clique**, **Teleport**, and the spiritual heir of 2016's **Town Crier**. Overhead is near zero; the trust root is silicon. (We weighed exactly this hardware-vs-cryptography trade for *inference* in [TEE-Attested Inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) — the same fault line runs through data provenance.)
+
+The artifact above makes the key-location argument concrete: flip between the four channels, watch where the 🔑 sits, and hit **forge the value**. Under plain TLS the lie sails through; the other three reject it, each buying that rejection with a different currency.
+
+## What it costs, in seconds and megabytes
+
+zkTLS spent years as a whiteboard idea precisely because MPC-over-TLS was brutal. The good news of 2025–26 is that the numbers are finally public and finally tolerable. TLSNotary's August 2025 benchmarks (AWS c5.4xlarge, 16 vCPU) put a full MPC notarization of a ~10 KB response at roughly **5 seconds native** and **~10 seconds in-browser** at 200 Mbps / 10 ms RTT. The catch is the preprocessing: MPC mode ships about **30 MB of correlated randomness before the handshake even starts**, so on a 5 Mbps link that upload alone costs ~52 seconds. And the protocol runs ~**40 communication round-trips**, making it acutely latency-sensitive. (The newer VOLE-IZK "QuickSilver" backend that replaced garbled circuits cut online time by up to 96% and slashed bandwidth — the trajectory is steep.)
+
+Proxy mode, added in 2026, is the pragmatist's escape hatch. TLSNotary's own head-to-head:
+
+| Scenario (1 KB req / 2 KB resp) | MPC-TLS | Proxy-TLS | Speedup |
+| --- | --- | --- | --- |
+| Cable, native | 14.5 s | 1.6 s | 9× |
+| Mobile 5G, native | 10.4 s | 1.6 s | 6.5× |
+| Fiber, native | 3.6 s | 1.0 s | 3.6× |
+| Cable, browser (WASM) | 15.5 s | 2.0 s | 7.75× |
+
+The proxy advantage is largest exactly where users live — constrained bandwidth and latency. It shrinks from **12.5× at 5 Mbps to 1.8× at 1 Gbps**, and from **4.2× at 10 ms RTT to 2.1× at 200 ms**, because the win is mostly about *not* shipping 30 MB and *not* doing 40 round-trips. The lesson for anyone building agent tooling: MPC buys you a weaker trust assumption, and you pay for it in the tail of the latency distribution — the slow, far-away, mobile clients. Proxy mode buys speed by reintroducing a party you have to trust.
+
+## Reading a verifier off the chain
+
+Architecture diagrams are cheap; deployed trust is not. Reclaim's on-chain verifier is live on ~18 mainnets, so I pulled the Base deployment — `0x8CDc031d5B7F148ab0435028B16c682c469CEfC3` — apart with Blockscout. It's an `ERC1967Proxy` (upgradeable), deployed September 2024, with `owner()` an externally-owned account, not a multisig. On-chain verification is a `view` function, so it leaves no transaction trail of its own — what you *can* read is the trust configuration, and that's the interesting part.
+
+The contract keeps witnesses (attestors) in epochs. Reading the live state:
+
+```text
+currentEpoch()                → 1
+fetchEpoch(1).witnesses       → [ 0x244897572368Eadf65bfBc5aec98D8e5443a9072
+                                  @ reclaim-node.questbook.app ]
+fetchEpoch(1).minimumWitnesses → 1
+```
+
+One witness. Minimum one. The epoch never rotated past 1. So a "decentralized oracle" proof verified by this contract on Base reduces, cryptoeconomically, to a **single attestor's ECDSA signature** — plus an EOA that can upgrade the proxy at will. On Ethereum mainnet the same contract reads `currentEpoch() = 0`: no witnesses configured at all, a deployed placeholder. None of this means Reclaim is broken — the off-chain attestor network and the proxy protocol are the real product, and on-chain verification is the optional settlement layer. But it is a clean reminder that **the trust you get is the trust the verifier is configured with, not the trust the whitepaper describes.** Read the witness set before you build on it.
+
+The verification logic itself is unglamorous and correct: a proof bundles the claim (`provider`, `parameters`, `context`), a `CompleteClaimData` struct, and the witness `signatures`; the contract recovers the signers, checks they're the epoch's witnesses, and requires the count to clear `minimumWitnesses`. Solid — and exactly as strong as that list of addresses.
+
+## Where the abstraction leaks
+
+zkTLS proves a narrow thing precisely: *these bytes came from a TLS session with the certificate for this domain.* Four leaks worth internalizing before you trust an agent's web proof:
+
+- **Garbage in, proven garbage out.** A proof that `api.bank.com` returned `balance = $40` says nothing about whether the bank's database is right, whether the endpoint is the one you think, or whether the agent was phished onto a look-alike host. Provenance is not truth.
+- **Selective disclosure is a redaction problem.** Revealing one field while hiding the rest of a response means proving a substring/JSON-path relationship in ZK. Get the parsing wrong and you either leak the whole response or let a prover claim a value the server never framed that way.
+- **Collusion and the trusted party.** Proxy mode trusts the proxy; TEE mode trusts the vendor; MPC mode trusts that not enough notaries collude. A single-witness deployment (see above) collapses all of these to "trust one key."
+- **Freshness and replay.** A proof is a snapshot. Without a nonce or timestamp bound into the claim and checked on-chain, an agent can replay a stale "I had $40,000 last week" indefinitely — the same double-spend shape we traced for identity in [Proof of Personhood vs. the Agent Flood](/articles/proof-of-personhood-priority-blockspace).
+- **The server can fight back.** Notaries and proxies are detectable from timing and traffic patterns; a hostile site can rate-limit or block them, and TLS-side mitigations against this cat-and-mouse are an active front.
+
+## Why agents make this urgent now
+
+Humans authenticate with sessions and cookies; an agent that holds your raw credentials is a [blast-radius problem](/articles/agent-key-custody-blast-radius) waiting to happen. Web proofs flip the model: the agent proves a *fact derived from* a logged-in session — "this account is mine," "this balance clears the threshold," "this API returned this price" — and hands a counterparty the proof instead of the credential. That's the data analog of what [x402](/articles/x402-agent-payments) did for payments: a machine-native way to settle a claim without a human in the loop.
+
+The convergence is already on-chain. Reclaim ships an **ERC-8004 validator** that uses web proofs to attest *who operates an AI agent* in the trustless-agent registries we audited in [ERC-8004 in the Wild](/articles/erc-8004-agent-registries-onchain) — identity, reputation, and now externally-verifiable credentials, composed. Expect the agent economy's trust layer to be built out of exactly these primitives: a payment rail, an identity registry, and a web-proof oracle, each cheap, each composable, and each only as strong as the party you didn't notice you were trusting.
 
 ## Takeaways
 
-TODO.
+- A raw TLS transcript is **not** a proof — TLS authenticates plaintext with a symmetric key the client also holds, so the client can forge any response. zkTLS reintroduces non-repudiation around an unmodified server.
+- The three designs trade the same axis: **MPC-TLS** distributes trust cryptographically but pays ~30 MB preprocessing and ~40 round-trips; **proxy-TLS** is 2–12× faster but trusts a single witness; **TEE-TLS** is hardware-speed but trusts the chip vendor.
+- Don't trust the whitepaper's decentralization — **read the verifier's witness set.** Reclaim's Base deployment runs on one attestor with `minimumWitnesses = 1` behind an EOA-upgradeable proxy.
+- A web proof proves provenance, not truth, and a snapshot, not a live fact. Bind freshness, scope the disclosure, and know exactly whose signature you're ultimately relying on.

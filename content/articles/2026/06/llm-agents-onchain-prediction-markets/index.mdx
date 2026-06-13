@@ -6,7 +6,7 @@ pubDate: 2026-06-13
 author: blokz
 topics: [agents, llm, defi]
 tags: [prediction-markets, fpmm, omen, olas, gnosis, forecasting]
-artifacts: []
+artifacts: [fpmm-bet-machine]
 difficulty: intermediate
 sources:
   - label: "ForecastBench: A Dynamic Benchmark of AI Forecasting Capabilities (arXiv:2409.19839)"
@@ -96,9 +96,10 @@ repurposed. A binary market holds pools of YES and NO tokens, `b_y` and `b_n`, a
 p(YES) = b_n / (b_y + b_n)
 ```
 
-Buying YES with collateral `a` (after the fee, `a′ = a · (1 − f)`, with f = 2% the Omen
-default) mints `a′` of both outcome tokens into the pools, then returns enough YES to
-restore the product — `calcBuyAmount` in
+Buying YES with collateral `a` (after the fee, `a′ = a · (1 − f)` — human-era Omen markets
+charged 2%, but the agent-created markets, including yesterday's per its on-chain creation
+event, set f = 1%) mints `a′` of both outcome tokens into the pools, then returns enough
+YES to restore the product — `calcBuyAmount` in
 [FixedProductMarketMaker.sol](https://github.com/gnosis/conditional-tokens-market-makers/blob/master/contracts/FixedProductMarketMaker.sol):
 
 ```text
@@ -106,14 +107,43 @@ yes_received = b_y + a′ − (b_y · b_n) / (b_n + a′)
 ```
 
 Concretely: a fresh market seeded 100/100 quotes p(YES) = 0.50. An agent that believes 62%
-bets 10 WXDAI. After the 2% fee, a′ = 9.8, so it receives 100 + 9.8 − 10,000/109.8 ≈
-**18.73 YES tokens** — an average price of 0.534 per token that redeems at 1.00 each if
-YES resolves. The pools move to 91.07 / 109.8, repricing YES at **0.547**. That
+bets 10 WXDAI. After the 1% fee, a′ = 9.9, so it receives 100 + 9.9 − 10,000/109.9 ≈
+**18.91 YES tokens** — an average price of 0.529 per token that redeems at 1.00 each if
+YES resolves. The pools move to 90.99 / 109.9, repricing YES at **0.547**. That
 4.7-point move on a $10 bet is the real constraint on agent trading: in thin pools your
 own conviction is expensive, and the edge that benchmark-grade calibration buys is easily
 eaten by fee plus slippage unless position sizing respects the invariant. The trader
 agents' whole job is this arithmetic — buy until price equals belief minus costs, and not
 a token further.
+
+## Day one, on the books
+
+It didn't take days. We pulled the market's full event log at the end of its first
+day: eight bets from eight different agent Safes between 05:32 and 14:10 UTC, each
+between 0.025 and 0.70 WXDAI, walked the implied probability from the seeded 50.0%
+down to 42.0%. Seven bought NO; the lone YES buyer at 10:50 was bet back within
+minutes. (The question, machine-drafted from a news feed: whether a Nashville Zoo
+petition against a data center reaches 400,000 signatures by June 16.)
+
+Two details from the log deserve the close-up. First, the loop is visible in the
+receipts: at 14:08:45 UTC the day's last bettor — a Safe already at transaction
+nonce 57,500 — paid 0.01 xDAI to the `MechMarketplace` for a probability estimate,
+and [95 seconds later](https://gnosis.blockscout.com/tx/0xc4536a146f29cb28367abee0957344a7abefe5e1c393c418cd203a58bade6994)
+put 0.3467 WXDAI on NO. Intelligence, not settlement, is the dominant line item: the
+Mech fee runs ~3% of a typical stake, while the gas for both transactions rounds to
+half a tenth of a cent. Second, the math above is exactly what executed — replaying
+all eight bets through `calcBuyAmount` reproduces every on-chain
+`outcomeTokensBought` to the wei, all 18 decimals.
+
+Sizing is the part the trader stack treats as a first-class problem. The Olas
+trader's default strategy is **execution-aware Kelly**: choose the stake that
+maximizes expected log wealth with the payout walking the FPMM curve — fee and
+slippage included — and skip the market entirely when the edge is below threshold.
+The artifact below replays the real market and hands you the ninth seat: rewind to
+any bet, set your own estimate, bankroll, and stake, and compare your sizing to the
+Kelly bet an agent would place.
+
+<Artifact slug="fpmm-bet-machine" />
 
 ## Reflexivity: when the marginal bettor is a model
 

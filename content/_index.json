@@ -1,13 +1,13 @@
 {
   "counts": {
-    "articles": 19,
-    "artifacts": 18
+    "articles": 20,
+    "artifacts": 19
   },
   "topicCounts": {
-    "agents": 7,
+    "agents": 8,
     "ai": 3,
     "blockchain": 9,
-    "cryptography": 2,
+    "cryptography": 3,
     "data": 1,
     "defi": 3,
     "infrastructure": 8,
@@ -17,7 +17,7 @@
     "security": 8,
     "smart-contracts": 4,
     "web3": 3,
-    "zero-knowledge": 2
+    "zero-knowledge": 3
   },
   "articles": [
     {
@@ -71,6 +71,33 @@
       "seriesOrder": 5,
       "artifacts": [
         "corruption-ledger"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "zktls-web-proofs-for-agents",
+      "path": "content/articles/2026/06/zktls-web-proofs-for-agents/index.mdx",
+      "url": "/articles/zktls-web-proofs-for-agents",
+      "title": "What the Agent Saw: zkTLS and the Web-Proof Trust Stack",
+      "description": "An AI agent that acts on your bank balance has to prove it saw that balance — without a trusted API. zkTLS turns any HTTPS session into a portable proof. We dissect MPC-TLS vs proxy vs TEE, the real TLSNotary benchmarks, and read Reclaim's on-chain verifier on Base down to its single attestor.",
+      "pubDate": "2026-06-13",
+      "topics": [
+        "cryptography",
+        "zero-knowledge",
+        "agents"
+      ],
+      "tags": [
+        "zktls",
+        "tls",
+        "web-proofs",
+        "reclaim",
+        "tlsnotary",
+        "mpc",
+        "oracles"
+      ],
+      "artifacts": [
+        "web-proof-trust"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -537,6 +564,22 @@
       "topics": [
         "security",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "web-proof-trust",
+      "path": "content/artifacts/web-proof-trust/manifest.json",
+      "module": "src/islands/artifacts/web-proof-trust.ts",
+      "url": "/artifacts/web-proof-trust",
+      "title": "Web-Proof Trust",
+      "description": "The zkTLS trust boundary, explorable: switch between Plain TLS, MPC-TLS, Proxy-TLS and TEE-TLS to see where the session key lives and whom you must trust, then hit \"forge the value\" — plain TLS accepts the lie, the other three catch it at different costs.",
+      "pubDate": "2026-06-13",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "cryptography",
+        "zero-knowledge"
       ],
       "draft": false
     },

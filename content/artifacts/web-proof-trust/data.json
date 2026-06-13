@@ -1,0 +1,57 @@
+{
+  "claim": { "field": "balance", "real": "$40.00", "forged": "$40,000.00" },
+  "modes": [
+    {
+      "id": "plain",
+      "label": "Plain TLS",
+      "thirdParty": null,
+      "keyHolder": "prover holds the whole session key",
+      "forgeryCaught": false,
+      "trust": "no one — a raw TLS transcript is unusable as proof",
+      "reason": "TLS authenticates plaintext with a symmetric key the prover also holds — so it can rewrite the response and re-MAC it.",
+      "cost": "0 overhead (but worthless as evidence)"
+    },
+    {
+      "id": "mpc",
+      "label": "MPC-TLS",
+      "thirdParty": "Notary (2PC)",
+      "keyHolder": "key split: prover ⊕ notary",
+      "forgeryCaught": true,
+      "trust": "the notary did not collude with the prover",
+      "reason": "Keys are derived in 2PC; neither side holds the full key, so the prover can't re-MAC a forgery alone.",
+      "cost": "~30 MB preprocessing · ~5 s native / ~10 s browser · ~40 round trips",
+      "examples": "TLSNotary, zkPass (3P-TLS), DECO"
+    },
+    {
+      "id": "proxy",
+      "label": "Proxy-TLS",
+      "thirdParty": "Proxy / witness",
+      "keyHolder": "prover holds the key; proxy sees only ciphertext",
+      "forgeryCaught": true,
+      "trust": "a single proxy/witness did not collude with the prover",
+      "reason": "The proxy pins the ciphertext in flight; keys are revealed afterward, so a forged response won't match.",
+      "cost": "no preprocessing · ~1.6 s native / ~2.0 s browser",
+      "examples": "Reclaim, Opacity"
+    },
+    {
+      "id": "tee",
+      "label": "TEE-TLS",
+      "thirdParty": "Enclave + chip vendor",
+      "keyHolder": "key lives inside the enclave",
+      "forgeryCaught": true,
+      "trust": "the TEE manufacturer (Intel/AMD) and no side-channel break",
+      "reason": "The TLS client runs in an attested enclave that signs what it saw; the prover never holds the key.",
+      "cost": "minimal overhead · ~1 s, hardware-speed",
+      "examples": "Clique, Teleport, Town Crier"
+    }
+  ],
+  "onchain": {
+    "chain": "Base",
+    "verifier": "0x8CDc031d5B7F148ab0435028B16c682c469CEfC3",
+    "proxyType": "ERC1967 (owner-upgradeable EOA)",
+    "currentEpoch": 1,
+    "witnesses": 1,
+    "minWitnesses": 1,
+    "witness": "0x244897572368Eadf65bfBc5aec98D8e5443a9072 (reclaim-node.questbook.app)"
+  }
+}

@@ -1,20 +1,20 @@
 {
   "counts": {
-    "articles": 18,
-    "artifacts": 17
+    "articles": 19,
+    "artifacts": 18
   },
   "topicCounts": {
     "agents": 7,
     "ai": 3,
-    "blockchain": 8,
+    "blockchain": 9,
     "cryptography": 2,
     "data": 1,
     "defi": 3,
-    "infrastructure": 7,
+    "infrastructure": 8,
     "llm": 2,
-    "machine-learning": 7,
+    "machine-learning": 8,
     "research": 1,
-    "security": 7,
+    "security": 8,
     "smart-contracts": 4,
     "web3": 3,
     "zero-knowledge": 2
@@ -43,6 +43,26 @@
       "artifacts": [
         "fpmm-bet-machine"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "restaking-verifiable-ai-cost-of-corruption",
+      "path": "content/articles/2026/06/restaking-verifiable-ai-cost-of-corruption/index.mdx",
+      "url": "/articles/restaking-verifiable-ai-cost-of-corruption",
+      "title": "Bond It, Don't Prove It: Restaking and the Cost of Corrupting an AI Oracle",
+      "description": "zkML, optimistic, TEE, FHE all prove the computation. Restaking takes the other road: bond it and slash liars. We do the cost-of-corruption math behind EigenLayer's $15B+ AI-AVS security, the overloading attack that breaks it, and the probabilistic-audit tax.",
+      "pubDate": "2026-06-13",
+      "topics": [
+        "security",
+        "infrastructure",
+        "machine-learning",
+        "blockchain"
+      ],
+      "tags": [],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 5,
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -495,6 +515,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "corruption-ledger",
+      "path": "content/artifacts/corruption-ledger/manifest.json",
+      "module": "src/islands/artifacts/corruption-ledger.ts",
+      "url": "/artifacts/corruption-ledger",
+      "title": "The Corruption Ledger",
+      "description": "Push the cost-of-corruption inequality for a restaking-secured AI oracle: set bonded stake, slash rate, audit probability, and value-at-stake, then add AVSs to watch the overloading attack flip the verdict from secure to exploitable.",
+      "pubDate": "2026-06-13",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "security",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "attention-lens",
       "path": "content/artifacts/attention-lens/manifest.json",

@@ -17,4 +17,210 @@ sources:
     url: "https://blog.monad.xyz/blog/fortytwo-agi"
 ---
 
-DRAFT — body in progress.
+Ask thirty-five different language models a hard graduate-level question and tally
+their answers. The plurality is wrong more often than you'd like — and when it is,
+the *correct* answer is usually sitting right there in the pile, produced by three
+or four nodes the vote just outnumbered. Majority voting throws those nodes away.
+That is the whole problem with using consensus-by-counting as the aggregation
+primitive for a swarm of models: it rewards the answer that is *most common*, not
+the one that is *best*.
+
+[Fortytwo](https://arxiv.org/abs/2510.24801), a decentralized inference protocol
+built on Monad, takes the other road. Instead of counting votes it runs a
+tournament: every node compares its peers' answers pairwise, those comparisons feed
+a Bradley–Terry quality model, and reputation earned on-chain weights whose
+judgement counts. On GPQA Diamond the difference is stark — **85.90% for peer-ranked
+swarm inference versus 68.69% for majority voting over the identical model set**, a
+17.21-point swing. This piece is about why that gap exists, the math that produces
+it, and where the approach quietly breaks.
+
+This is a different bet from the one most of this blog's
+[verifiable-inference](/articles/zkml-verifiable-inference-landscape) coverage
+examines. zkML, [optimistic oracles](/articles/optimistic-ml-oracles),
+[TEEs](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) and
+[restaking](/articles/restaking-verifiable-ai-cost-of-corruption) all answer *"did
+this one model run honestly?"* Swarm inference answers a different question
+entirely: *"given many fallible models, which answer should we trust?"* You can
+stack the two, but the mechanism here is statistical, not cryptographic.
+
+## Why majority voting is the wrong primitive
+
+Self-consistency — sample a model many times, keep the modal answer — works
+beautifully when answers live in a small discrete space and errors are independent.
+Multiple-choice questions with a numeric or single-token answer are the friendly
+case. Free-form reasoning is the hostile one, for two reasons.
+
+First, **wrong answers are diverse but right answers are concentrated.** A correct
+derivation tends to converge on one expression; incorrect ones scatter across a long
+tail of near-misses. Counting strings then splinters the wrong mass into many small
+buckets *and* the correct mass into one — which sounds like it should help, until a
+single plausible distractor catches a coordinated plurality of weak models and beats
+the smaller correct bucket.
+
+Second, **majority voting assumes the median node is competent.** When the marginal
+model is wrong, adding more marginal models makes the vote *more* confidently wrong,
+not less. This is just Condorcet's jury theorem run in reverse: below 50% individual
+accuracy, scaling the crowd drives consensus accuracy toward zero. Frontier-hard
+benchmarks like GPQA Diamond sit exactly in that regime for most open models.
+
+The deeper issue is that voting only uses one bit from each node — *which answer did
+you pick* — and discards everything the node knows about the *other* answers. A model
+that generated a wrong answer can still often tell you, correctly, that someone
+else's answer is better than its own. Voting can't hear that. Ranking can.
+
+## Don't count, compare
+
+Swarm inference replaces the tally with a pairwise tournament. Each node receives the
+set of distinct candidate answers and, for each pair, judges which is better —
+crucially, **emitting a short reasoning chain (50–100 tokens) rather than a bare
+scalar score.** Fortytwo reports that forcing the justification rather than a
+single-token preference improves accuracy by 5.3 percentage points; the act of
+arguing the comparison is itself a small chain-of-thought that catches errors a raw
+score misses.
+
+The bet underneath is that **evaluation is easier than generation.** It is harder to
+solve a hard physics problem than to look at two worked solutions and see which one
+has the sign error. If that asymmetry holds, a swarm where only a minority can
+*produce* the right answer can still have a strong majority that can *recognize* it —
+and ranking surfaces what generation buried. The Swarm Consensus artifact below is
+built entirely around that asymmetry; the "evaluation edge" slider is the variable
+that makes peer ranking pull ahead of voting. Turn it down and the advantage
+evaporates — a tournament judged by coin-flips is *worse* than just counting votes,
+because bad rankers actively mislead the Bradley–Terry fit. The swarm's edge is
+entirely contingent on its judges being better than chance.
+
+<Artifact slug="swarm-consensus" />
+
+The artifact is an illustrative model, not a re-run of the benchmark — but the
+dynamic it shows is the real one: run enough rounds and peer ranking settles a clear
+distance above the vote, the way Fortytwo's measured numbers do.
+
+## Bradley–Terry: from win counts to a quality score
+
+Pairwise wins need to become a single ranking, and the classical tool is the
+[Bradley–Terry model](https://arxiv.org/abs/2510.24801). Each candidate answer *i*
+gets a latent quality score `πᵢ > 0`, and the probability that *i* is judged better
+than *j* is
+
+```
+P(i ≻ j) = πᵢ / (πᵢ + πⱼ)
+```
+
+Given the matrix of pairwise outcomes you recover the scores by maximum likelihood.
+The standard fit is the minorization–maximization (Zermelo) iteration: with `Wᵢ` the
+total wins of candidate *i* and `Nᵢⱼ` the number of comparisons between *i* and *j*,
+repeat to convergence
+
+```python
+# Bradley–Terry scores from a weighted pairwise-win matrix.
+# wins[i]   = total (reputation-weighted) wins for answer i
+# pairs[i][j] = comparisons held between i and j (symmetric)
+import numpy as np
+
+def bradley_terry(wins, pairs, iters=30):
+    n = len(wins)
+    pi = np.ones(n)
+    for _ in range(iters):
+        nxt = np.zeros(n)
+        for i in range(n):
+            denom = sum(pairs[i][j] / (pi[i] + pi[j])
+                        for j in range(n) if j != i)
+            nxt[i] = wins[i] / denom if denom > 0 else pi[i]
+        pi = nxt / nxt.sum()          # normalize for stability
+    return pi                          # argmax pi == consensus answer
+```
+
+The consensus answer is simply `argmax(pi)`. The reason this beats voting is that
+`π` is informed by *every* comparison, including the ones cast by nodes that
+themselves produced a loser. A correct answer held by four nodes but ranked first by
+twenty-five of thirty-five evaluators wins decisively in `π` while losing the vote
+six-to-ten to a distractor. That is the entire trick, and it is why the artifact's
+scoreboard converges toward the measured ~17-point gap as you run rounds.
+
+## Reputation, weighted — and put on-chain
+
+Not every evaluator deserves an equal say, and a tournament that trusts a confident
+fool is back to square one. Fortytwo makes each node's influence a function of its
+demonstrated accuracy via an on-chain reputation score updated as an exponential
+moving average:
+
+```
+R(t+1) = α · R(t) + (1 − α) · accuracyₜ
+```
+
+That reputation becomes the weight a node's comparisons carry in the win matrix —
+`wins[i]` and `pairs[i][j]` above accumulate `r` per vote rather than 1. Nodes that
+consistently rank with the eventual consensus drift up and gain influence; nodes that
+don't decay and fade, so a node must keep participating accurately to keep its
+standing. It is a meritocracy with a forgetting factor, and putting `R` on-chain is
+what makes it portable and auditable rather than a private leaderboard the operator
+can rewrite. (This is a softer cousin of the
+[bond-and-slash crypto-economics](/articles/restaking-verifiable-ai-cost-of-corruption)
+we've covered: reputation here is earned influence, not posted collateral, but both
+make misbehavior costly over time.)
+
+## Sybil resistance: proof-of-capability
+
+A reputation-weighted open network invites the obvious attack: spin up a thousand
+identities, have them vouch for each other, capture the consensus. Fortytwo's defense
+is **proof-of-capability.** Before a node can enter ranking rounds it must pass
+dynamically generated, domain-diverse calibration tests — mathematical reasoning,
+code, scientific analysis, language — clearing a minimum accuracy in *each* claimed
+domain. The cost is the GPU compute to actually answer those tests competently, which
+doesn't fall when you clone an identity: ten Sybils cost ten times the honest compute
+and still earn reputation only by being right. The Monad write-up frames the staking
+side as a "ticket" a node posts before submitting, slashed on bad answers, where a
+deposit as small as 1% of the reward pool is enough to flip a Sybil campaign to
+negative expected value. The barrier is competence priced in FLOPs, not a CAPTCHA.
+
+The payoff shows up under adversarial prompting. Fortytwo reports accuracy degrading
+by just **0.12% under noisy, prompt-injection-style free-form prompts, versus 6.20%
+for a single monolithic model** — a ~50× robustness gap. A poisoned or hijacked node
+is one ranker among many, and the reputation weighting routes around it; there is no
+single context window for an attacker to capture. It's a structurally different
+posture from the single-agent [key-custody](/articles/agent-key-custody-blast-radius)
+and [prompt-injection](/articles/x402-agent-payments) blast radii we've dissected.
+
+## The honest scorecard
+
+The headline result is real and repeatable: across six benchmarks (GPQA Diamond,
+LiveCodeBench, MATH-500, AIME 2024/2025, and HLE) peer-ranked swarm inference beats
+majority voting over the same models, decisively on GPQA Diamond (+17.21 points) and
+consistently elsewhere. On GPQA the swarm of mid-tier models also pulls *level with
+the best single frontier model* in the set (Grok 4, ~85.98%) — horizontal scaling
+buying what you'd otherwise pay for vertically.
+
+But the limits matter, and this blog's product is being precise about them:
+
+- **It is not free.** Every query is generation by *N* nodes plus an `O(k²)` wave of
+  pairwise comparisons over the *k* distinct candidate answers, each with its own
+  50–100 token justification. The dominant cost is many model calls and added latency — you are
+  trading FLOPs and round-trips for accuracy, which is sensible for hard, high-value
+  questions and wasteful for easy ones.
+- **The swarm doesn't always beat the single best model.** On the hardest
+  competition-math and HLE sets, a top frontier model can still edge the swarm of
+  weaker ones; ranking recovers the *crowd's* best answer, and it can't manufacture
+  reasoning no node in the swarm possessed.
+- **"Evaluation is easier than generation" is an assumption, not a law.** On problems
+  where verifying is as hard as solving — or where every node shares the same blind
+  spot — the asymmetry collapses and ranking reduces to noisy voting. Correlated
+  errors are the real enemy; swarm diversity is load-bearing.
+- **Reputation is a surface to game.** EMA reputation with on-chain weight invites
+  collusion rings and reward-farming of the kind we found in
+  [agent registries](/articles/erc-8004-agent-registries-onchain); proof-of-capability
+  raises the price of entry but doesn't make the influence market unmanipulable.
+
+## Takeaways
+
+- For a swarm of fallible models, **aggregate by ranking, not by counting.** Voting
+  uses one bit per node and assumes the median is competent; pairwise ranking uses
+  every node's judgement of every answer and only assumes evaluation beats generation.
+- **Bradley–Terry turns pairwise wins into a quality score** in a few cheap
+  iterations; the consensus is its argmax, and reputation-weighting the wins makes the
+  consensus meritocratic.
+- **The blockchain's job here is reputation and Sybil resistance**, not proving the
+  math — on-chain EMA reputation makes influence portable and auditable, and
+  proof-of-capability prices identity in compute.
+- **Budget for it.** N-way generation plus a comparison tournament is real cost and
+  latency; spend it on hard questions where the +17 points pays, and lean on a single
+  strong model where it doesn't.

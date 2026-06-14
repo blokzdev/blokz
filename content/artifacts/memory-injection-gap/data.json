@@ -1,0 +1,126 @@
+{
+  "note": "Context-manipulation attacks on Web3 AI agents, from CrAIBench (Patlan, Sheng, Hebbar, Mittal, Viswanath — 'Real AI Agents with Fake Memories: Fatal Context Manipulation Attacks on Web3 Agents', arXiv:2503.16248v3). Attack-surface counts from the Table I task/injection breakdown; the Claude Sonnet 3.7 prompt-vs-memory figures and the Qwen-2.5-14B fine-tuning numbers are quoted from the paper's evaluation. Snapshot taken 2026-06-14.",
+  "modes": [
+    {
+      "id": "surface",
+      "label": "ATTACK SURFACE",
+      "title": "CrAIBench: 685 context injections across 166 blockchain tasks, by domain",
+      "axis": "context injections",
+      "unit": "count",
+      "yMax": 500,
+      "insight": "69% of the injected attacks target trading flows — the actions that move the most value. Tap a bar for the task and injection counts.",
+      "legend": [{ "kind": "attack", "label": "injected attack cases" }],
+      "bars": [
+        {
+          "label": "Trading",
+          "sub": "swaps · DEX · perps",
+          "value": 470,
+          "kind": "attack",
+          "detail": "94 tasks (78 multi-step + 16 single-step) · 390 + 80 injections"
+        },
+        {
+          "label": "DAO / NFT",
+          "sub": "governance · mints",
+          "value": 151,
+          "kind": "attack",
+          "detail": "40 tasks (32 + 8) · 124 + 27 injections"
+        },
+        {
+          "label": "Chain",
+          "sub": "transfers · bridges",
+          "value": 64,
+          "kind": "attack",
+          "detail": "32 tasks (25 + 7) · 50 + 14 injections"
+        }
+      ]
+    },
+    {
+      "id": "paradox",
+      "label": "PROMPT vs MEMORY",
+      "title": "Same payload, two surfaces — Claude Sonnet 3.7, the strongest model CrAIBench tested",
+      "axis": "attack success rate",
+      "unit": "%",
+      "yMax": 100,
+      "insight": "Capability kills prompt injection but not memory injection. The frontier reasoning model refuses the in-request instruction yet executes its own poisoned recollection more than half the time.",
+      "legend": [
+        { "kind": "prompt", "label": "prompt injection" },
+        { "kind": "memory", "label": "memory injection" }
+      ],
+      "bars": [
+        {
+          "label": "Prompt injection",
+          "sub": "in the live request",
+          "value": 1.0,
+          "displayValue": "≈0%",
+          "kind": "prompt",
+          "detail": "near-zero ASR — the model recognizes and refuses the in-context instruction"
+        },
+        {
+          "label": "Memory injection",
+          "sub": "planted in stored context",
+          "value": 55.1,
+          "kind": "memory",
+          "detail": "55.1% ASR — the model trusts a 'fact' recalled from its own memory store and acts on it"
+        }
+      ]
+    },
+    {
+      "id": "defense",
+      "label": "WHAT DEFENDS",
+      "title": "Injection-aware fine-tuning vs the undefended baseline — Qwen-2.5-14B-Instruct",
+      "axis": "rate",
+      "unit": "%",
+      "yMax": 100,
+      "grouped": true,
+      "insight": "Fine-tuning on memory-injection variants crushes ASR 85.1% → 1.7% and restores utility-under-attack 44.6% → 85.1%, with benign utility untouched. Prompt hardening removed only ~30% of attacks; the best detector missed ~half.",
+      "legend": [
+        { "kind": "before", "label": "undefended" },
+        { "kind": "after", "label": "fine-tuned" }
+      ],
+      "bars": [
+        {
+          "label": "Benign utility",
+          "value": 87.1,
+          "kind": "before",
+          "group": 0,
+          "detail": "task success with no attack present"
+        },
+        {
+          "label": "Benign utility",
+          "value": 87.1,
+          "kind": "after",
+          "group": 0,
+          "detail": "preserved — fine-tuning costs no clean-task accuracy"
+        },
+        {
+          "label": "Utility under attack",
+          "value": 44.6,
+          "kind": "before",
+          "group": 1,
+          "detail": "the injection derails the task: fewer than half complete correctly"
+        },
+        {
+          "label": "Utility under attack",
+          "value": 85.1,
+          "kind": "after",
+          "group": 1,
+          "detail": "the agent shrugs off the injection and finishes the real task"
+        },
+        {
+          "label": "Attack success",
+          "value": 85.1,
+          "kind": "before",
+          "group": 2,
+          "detail": "85.1% of injections steer the agent to the attacker's action"
+        },
+        {
+          "label": "Attack success",
+          "value": 1.7,
+          "kind": "after",
+          "group": 2,
+          "detail": "1.7% — a 50× reduction in attack success rate"
+        }
+      ]
+    }
+  ]
+}

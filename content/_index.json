@@ -1,25 +1,51 @@
 {
   "counts": {
-    "articles": 22,
-    "artifacts": 21
+    "articles": 23,
+    "artifacts": 22
   },
   "topicCounts": {
-    "agents": 8,
+    "agents": 9,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 1,
-    "defi": 3,
+    "defi": 4,
     "infrastructure": 9,
     "llm": 3,
     "machine-learning": 10,
     "research": 1,
-    "security": 8,
+    "security": 9,
     "smart-contracts": 5,
     "web3": 3,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "agent-memory-injection-web3",
+      "path": "content/articles/2026/06/agent-memory-injection-web3/index.mdx",
+      "url": "/articles/agent-memory-injection-web3",
+      "title": "Fake Memories, Real Transfers: Context-Injection Attacks on On-Chain AI Agents",
+      "description": "An agent doesn't need its key stolen to drain a wallet — it can be talked into signing. CrAIBench shows memory injection beating prompt injection 55% to ~0% on the strongest model, and only fine-tuning closes the gap.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "agents",
+        "security",
+        "defi"
+      ],
+      "tags": [
+        "prompt-injection",
+        "memory-injection",
+        "agent-security",
+        "elizaos",
+        "craibench",
+        "defi-agents"
+      ],
+      "artifacts": [
+        "memory-injection-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "evm-native-ml-gas-wall",
       "path": "content/articles/2026/06/evm-native-ml-gas-wall/index.mdx",
@@ -616,6 +642,22 @@
       "topics": [
         "machine-learning",
         "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "memory-injection-gap",
+      "path": "content/artifacts/memory-injection-gap/manifest.json",
+      "module": "src/islands/artifacts/memory-injection-gap.ts",
+      "url": "/artifacts/memory-injection-gap",
+      "title": "The Memory-Injection Gap",
+      "description": "Why memory injection beats prompt injection against on-chain AI agents, in three switchable charts over CrAIBench: 685 attacks skewed to trading, a 55.1%-vs-0% gap on the strongest model, and the fine-tuning defense that drops attack success 85.1% to 1.7%. Tap or arrow the bars for numbers.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "security"
       ],
       "draft": false
     },

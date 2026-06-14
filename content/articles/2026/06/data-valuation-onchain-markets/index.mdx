@@ -1,0 +1,126 @@
+---
+slug: data-valuation-onchain-markets
+title: "What's Your Data Worth? Valuing Contributions in On-Chain Data Markets"
+description: "DataDAOs promise to pay you for your data — but 'pay you fairly' hides a cooperative-game problem that's O(2ⁿ). Inside Data Shapley, the KNN trick that makes it tractable, why rankings flip under SGD noise, and what Vana's Proof of Contribution actually computes instead."
+pubDate: 2026-06-14
+author: blokz
+topics: [data, machine-learning, tokenomics]
+tags: [data-valuation, shapley-value, datadao, vana, proof-of-contribution, mechanism-design]
+artifacts: [shapley-split]
+difficulty: intermediate
+sources:
+  - label: "Ghorbani & Zou — Data Shapley: Equitable Valuation of Data for ML (ICML 2019)"
+    url: "https://proceedings.mlr.press/v97/ghorbani19c/ghorbani19c.pdf"
+  - label: "Jia et al. — Efficient Task-Specific Data Valuation for Nearest Neighbor Algorithms (KNN-Shapley)"
+    url: "https://arxiv.org/abs/1908.08619"
+  - label: "Wang & Jia — Data Banzhaf: A Robust Data Valuation Framework for ML (AISTATS 2023)"
+    url: "https://arxiv.org/abs/2205.15466"
+  - label: "Wang et al. — Threshold KNN-Shapley: A Linear-Time and Privacy-Friendly Approach"
+    url: "https://arxiv.org/abs/2308.15709"
+  - label: "Han et al. — Replication-Robust Payoff-Allocation for Machine Learning Data Markets"
+    url: "https://arxiv.org/abs/2006.14583"
+  - label: "Vana — Proof of Contribution (docs)"
+    url: "https://docs.vana.org/docs/proof-of-contribution"
+---
+
+A wave of "data unions" and DataDAOs now make the same pitch: contribute your health data, your Reddit history, your driving telemetry, and get paid your share of what the pooled dataset earns from AI buyers. Vana's mainnet launched in December 2024 around exactly this premise — Data Liquidity Pools (DLPs) that hold user-contributed datasets and pay contributors from a token reward pool. The pitch is genuinely appealing. The catch is in four words: *get paid your share*.
+
+Splitting a reward pool across data contributors is not an accounting problem. It is a cooperative-game-theory problem, and the principled answer to it is provably exponential to compute. Every on-chain data market either solves a cheaper approximation or quietly substitutes a heuristic and hopes nobody notices the difference. This piece is about that gap — what "fair" actually means here, what it costs, and what production systems compute instead.
+
+## Why the obvious rules break
+
+Start with the two splits anyone reaches for first.
+
+**Pay per row.** Reward each contributor in proportion to how much data they submitted. This is an open invitation to flood the pool with synthetic, duplicated, or low-quality rows. Volume is the one thing a contributor fully controls and the one thing least correlated with value.
+
+**Equal split.** Give every contributor `pool / n`. Now the incentive flips to *registrations*: split your one dataset across ten wallets and collect ten shares. Equal split is maximally Sybil-friendly.
+
+Both fail for the same underlying reason: they price data without reference to what the data *does* for the buyer's model. A contributor's value isn't a property of their bytes in isolation — it depends on what everyone else already contributed. The 500,000th near-duplicate face photo is worth roughly nothing; the first clean example of a rare class can be worth more than a thousand common ones. Value is **marginal and contextual**, which is precisely the setting cooperative game theory was built for.
+
+## Shapley value: the fair split, defined
+
+Model the round as a cooperative game. Let `N` be the contributors and let `V(S)` be the utility of the model trained on the data from coalition `S` — say, its accuracy on a held-out set. The **Shapley value** assigns contributor `i` the average of their marginal contribution `V(S ∪ {i}) − V(S)`, taken over every possible ordering in which contributors could join:
+
+```python
+from itertools import permutations
+
+def shapley(N, V):
+    phi = {i: 0.0 for i in N}
+    for order in permutations(N):          # every arrival order
+        S = set()
+        base = V(frozenset(S))
+        for i in order:
+            S.add(i)
+            nxt = V(frozenset(S))
+            phi[i] += nxt - base           # i's marginal contribution here
+            base = nxt
+    n_fact = sum(1 for _ in permutations(N))
+    return {i: phi[i] / n_fact for i in N}
+```
+
+The reason to care about this specific formula, rather than any other averaging scheme, is a uniqueness theorem. The Shapley value is the *only* allocation satisfying four properties you'd want from any fair data split (Ghorbani & Zou apply exactly this framing in their 2019 *Data Shapley* paper):
+
+- **Efficiency** — the payouts sum to the full value `V(N)`; nothing is created or lost.
+- **Symmetry** — two contributors who add the same marginal value to every coalition get paid the same.
+- **Null player** — data that never changes any model's performance is paid zero.
+- **Additivity** — value over two tasks is the sum of the per-task values, so you can compose valuations.
+
+The null-player and symmetry axioms do real work here. Duplicate data is, at the margin, close to a null player: once your twin is in the coalition, your *individual* marginal contribution collapses, so Shapley pays each copy far less than the original earned alone. That is a genuine improvement over pay-per-row, which would reward each copy in full. But — and this is the trap that catches most "Shapley = fair rewards" pitches — it does **not** follow that cloning is unprofitable. Hold that thought; the artifact is about to break it.
+
+The artifact below makes this concrete. Five contributors feed a stylized wearables DataDAO; each covers some health signals at some quality, and the buyer's utility is the worth-weighted best-quality coverage of each signal. Switch between equal split, leave-one-out, and exact Shapley, drag the quality sliders, and — the punchline — flip on the **Sybil attack**, which clones the top contributor across three wallets.
+
+<Artifact slug="shapley-split" />
+
+First, the good news Shapley delivers. A redundant low-quality contributor — Cleo, whose steps and workouts Ava already covers at higher quality — earns about **8%** under Shapley versus a flat **20%** under equal split, while Ben's genuinely unique glucose feed earns roughly **35%**. The valuation tracks marginal value, exactly as advertised. Drop Ben and watch the whole pool's `V(N)` collapse: nobody else covers glucose.
+
+## The replication trap
+
+Now flip on the **Sybil attack** and watch the number that should worry you. Cloning Ava across three wallets does collapse each clone's *individual* Shapley value — from 38.8% solo to about **16.7%** each. But three times 16.7% is **50%**: the attacker's *total* share goes **up**, and it now exceeds even equal split's 42.9%. Splitting your dataset across wallets is profitable under Shapley.
+
+This is not a bug in our toy game — it is a known property. **The Shapley value is not robust to replication**: as a 2020 analysis of ML data markets puts it, duplicating a signal increases the total share captured by the replicating player. The culprit is the very axiom that felt fairest. Symmetry forces the three identical Avas to be treated as three distinct, equally-deserving contributors, and across all arrival orderings, an Ava lands early often enough that the family collectively crowds out everyone else. Fairness-to-each-copy is precisely what the Sybil farmer exploits.
+
+What *does* resist replication is leave-one-out — it pays every clone zero, because removing any one changes nothing while its twins remain. But look at the cost: leave-one-out also pays Cleo, Dev, and Eli zero, because each is individually redundant too. A rule robust to Sybils by zeroing anything another row covers is unusable for paying honest-but-overlapping contributors. So **robustness-to-replication is treated as a separate axiom** the standard Shapley value simply doesn't have — and dedicated constructions (robust Shapley, and the Banzhaf value below) are needed to recover it. The practical consequence for any on-chain data market: the valuation rule alone won't stop dataset-splitting. You need a separate uniqueness defense, which is exactly where production systems put their effort.
+
+## The cost: exponential, and worse
+
+The code above has a fatal flaw the moment you read it: `permutations(N)` is `n!`. The smarter subset form is `O(2ⁿ)` — still hopeless. For 1,000 contributors that's `2¹⁰⁰⁰` coalitions, more than there are atoms in the universe, and that's only the *counting*. Each evaluation of `V(S)` means **training a model on the subset `S`**. Exact Data Shapley is exponentially many model retrainings.
+
+So nobody computes it exactly. Ghorbani & Zou propose two Monte Carlo estimators: **TMC-Shapley** (truncated Monte Carlo), which samples random orderings and — exploiting the fact that adding one more point to an already-large training set barely moves accuracy — truncates each ordering early once marginal gains fall inside the noise floor; and a gradient-based **G-Shapley** that approximates the retrain with a few SGD steps. Both turn an impossible computation into a merely expensive one: you still train hundreds to thousands of models per valuation round. That's fine for a research lab pricing a dataset offline. It is a non-starter for a smart contract that has to settle a reward round cheaply and verifiably.
+
+## The trick that makes it tractable: KNN-Shapley
+
+The breakthrough that moved data valuation from "interesting paper" to "deployable" was noticing that for a **k-nearest-neighbor** model the Shapley value has closed form. Because a test point's prediction depends only on its `k` closest training points, most contributors have *zero* marginal contribution to any given test query, and the non-zero ones fall out of a simple recurrence over the sorted distances. Jia et al. show the Shapley values of all `N` points can be computed **exactly in `O(N log N)`** — dominated by the sort — and report their exact algorithm running *up to three orders of magnitude faster* than the baseline Monte Carlo approximation, on datasets up to **10 million points**.
+
+KNN-Shapley is used as a *surrogate*: you embed your data, value it under a cheap KNN proxy model, and use those values to rank or reward contributions even if the production model is a transformer. Follow-up work tightens it further — **Threshold KNN-Shapley** (Wang & Jia, 2023) drops the cost to linear time and, critically for data markets, makes the computation differential-privacy-friendly, so you can value data without a validator having to see it in the clear.
+
+## The crack nobody mentions: it isn't even stable
+
+Here is the result that should make any "Shapley-based fair rewards" pitch nervous. Wang & Jia's **Data Banzhaf** paper points out that `V(S)` — the model's measured performance — is itself a *random variable*. Train the same subset twice and SGD's stochasticity, data shuffling, and nondeterministic kernels hand you two different accuracies. (We've documented how deep [bit-level nondeterminism runs in modern inference](/articles/deterministic-inference-onchain-verification) — the same gremlin haunts training.) That noise propagates into the valuation: the authors show the *ranking* of contributors produced by the Shapley value and by leave-one-out can flip from run to run.
+
+They formalize robustness as a **safety margin** — how much performance noise a value notion can absorb before two contributors swap order — and prove that among all semivalues (the Shapley value, leave-one-out, and Banzhaf are all members of this family, differing only in how they weight coalition sizes), the **Banzhaf value** achieves the largest safety margin. Banzhaf weights every coalition equally instead of weighting by size, and that flat weighting turns out to be more forgiving of noisy utilities — and, conveniently, the Banzhaf value is also one of the constructions that *is* robust to the replication attack from the last section. The uncomfortable takeaway: the "principled fair" valuation isn't a single number, it's a noisy estimate, and which semivalue you pick is a tradeoff across robustness, replication-resistance, and axioms rather than a clean theoretical win.
+
+## What on-chain systems actually compute
+
+So what runs in production? Mostly, not this. Vana's **Proof of Contribution** doesn't compute a Shapley value over a downstream model. It runs a per-DLP validator — executing inside a TEE so the raw data stays private — that scores each submission along practical axes: **authenticity** (is the data real and unaltered?), **ownership** (does it belong to the contributor?), **quality** (is it well-formed and useful?), and **uniqueness** (is it a duplicate of something already in the pool?). Those scores gate inclusion and weight rewards.
+
+Read against the theory, this is a deliberately cheap **proxy for the Shapley axioms**. The uniqueness check is a stand-in for the null-player and symmetry properties — it's trying to zero out the duplicate data that real Shapley would zero out, without paying the exponential price to prove it. The quality score approximates the marginal-value intuition. It's a heuristic, and it's the *right* heuristic for an on-chain setting where you cannot retrain a model per reward round, cannot reveal the data to compute distances in the open, and have to settle in a transaction. The same shape recurs across the space: value the easy, gameable signals directly (duplication, malformed data, provable ownership) and approximate the hard one (true marginal contribution to a model) as coarsely as the budget allows.
+
+It's worth being honest that this proxy has the same job, and some of the same blind spots, as the [royalty graphs that decide who gets paid when AI remixes on-chain IP](/articles/story-royalty-graph-onchain): attributing downstream value to upstream contributors is genuinely hard, and every system that claims to do it is making an approximation somewhere.
+
+## Where it still leaks
+
+Even a good proxy leaves attack surface:
+
+- **The verifiability gap.** You're trusting a validator's score. A TEE makes the computation private and attestable, but it shifts trust to the enclave and the code it runs — it doesn't make the *valuation* objectively correct. A contributor can't independently check that their score reflects their true marginal value, because computing that value is the very thing nobody can afford to do.
+- **Sybil via dataset splitting.** Uniqueness checks catch exact duplicates. They are far weaker against a contributor who *partitions* one dataset into near-disjoint shards across many wallets, each individually passing the uniqueness filter while collectively farming a volume-weighted pool.
+- **Collusion and poisoning.** Shapley's axioms assume an honest utility function. If contributors can influence the held-out evaluation set, or coordinate to make each other look marginally valuable, the math launders the manipulation into "fair" payouts.
+
+None of this means data markets are hopeless — it means the valuation layer is doing real, contested mechanism-design work, and "we pay you fairly for your data" is a claim about an approximation, not a theorem. The honest version of the pitch is narrower: *we pay you according to a cheap, privacy-preserving proxy for your marginal contribution, hardened against the dumbest attacks and exposed to the cleverest ones.*
+
+## Takeaways
+
+- Fairly splitting a data reward pool is a cooperative game; the **Shapley value** is the unique split satisfying efficiency, symmetry, null-player, and additivity, and it correctly penalizes redundant data at the margin.
+- But Shapley is **not robust to replication** — splitting one dataset across wallets *raises* the attacker's total share. Robustness-to-replication is a separate property (recovered by robust-Shapley or Banzhaf), which is why the valuation rule can't be the only Sybil defense.
+- Exact Data Shapley is **`O(2ⁿ)` model retrainings**. It is never computed directly; TMC/G-Shapley approximate it offline, and **KNN-Shapley** makes a surrogate version exact in **`O(N log N)`**, up to 1000× faster, scaling to 10M points.
+- Valuations are **noisy**, not exact — SGD randomness can flip contributor rankings, and the **Banzhaf value** trades an axiom for a larger safety margin.
+- On-chain systems like Vana's **Proof of Contribution** don't run Shapley; they run a TEE-validated heuristic over quality, ownership, and uniqueness — a deliberate, cheap proxy whose strengths and blind spots are worth naming before you trust the payout.

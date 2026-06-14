@@ -501,7 +501,7 @@
       "title": "What the Blockchain Actually Does in Decentralized AI Training",
       "description": "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster.",
       "pubDate": "2026-06-12",
-      "updatedDate": "2026-06-12",
+      "updatedDate": "2026-06-14",
       "topics": [
         "machine-learning",
         "blockchain",
@@ -517,7 +517,8 @@
       ],
       "artifacts": [
         "block-mesh",
-        "bandwidth-wall"
+        "bandwidth-wall",
+        "all-reduce-atlas"
       ],
       "difficulty": "intermediate",
       "draft": false

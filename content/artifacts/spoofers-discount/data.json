@@ -1,0 +1,43 @@
+{
+  "_comment": "Verified anchors for the spoofers-discount artifact. The trajectory strip and per-step reproduction errors are an illustrative-but-faithful model of Proof-of-Learning's top-Q verification; the headline cost/threshold figures below are taken from the primary sources and surfaced verbatim in the UI.",
+  "pol": {
+    "paper": "Jia et al., Proof-of-Learning: Definitions and Practice (IEEE S&P 2021)",
+    "url": "https://arxiv.org/abs/2103.05633",
+    "model": "ResNet-20 / ResNet-50",
+    "dataset": "CIFAR-10 / CIFAR-100",
+    "epochs": 200,
+    "stepsPerEpoch": 390,
+    "totalSteps": 78000,
+    "batchSize": 128,
+    "auditRule": "re-execute the top-Q largest weight-update intervals per epoch; accept if reproduction error d ≤ δ"
+  },
+  "zhang": {
+    "paper": "Zhang et al., 'Adversarial Examples' for Proof-of-Learning (IEEE S&P 2022)",
+    "url": "https://arxiv.org/abs/2108.09454",
+    "itersPerCheckpoint": 10,
+    "lossBefore": 0.43,
+    "lossAfter": 0.04,
+    "gradNormBefore": 61.13,
+    "gradNormAfter": 0.12,
+    "costMultiple": 31,
+    "breakEvenSteps": 2516,
+    "costPctOfTraining": 3.2
+  },
+  "fang": {
+    "paper": "Fang et al., Proof-of-Learning is Currently More Broken Than You Think (2022)",
+    "url": "https://arxiv.org/abs/2208.03567",
+    "infinitesimalCost": "~1 floating-point op per parameter",
+    "secondAttack": "Blindfold Top-Q — plant valid large updates where the verifier looks, hide forged ones among unaudited steps",
+    "verdict": "PoL cannot currently achieve provable robustness"
+  },
+  "gauntlet": {
+    "paper": "Lidin et al., Incentivizing Permissionless Distributed Learning of LLMs (2025)",
+    "url": "https://arxiv.org/abs/2505.21684",
+    "model": "1.2B params on FineWebEdu",
+    "rounds": 20000,
+    "evalsPerRound": 5,
+    "aggregatedTopG": 15,
+    "penaltyMultiplier": 0.75,
+    "note": "statistical loss-delta scoring + OpenSkill, not a cryptographic proof of training"
+  }
+}

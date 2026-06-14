@@ -1,15 +1,22 @@
 {
   "slug": "spoofers-discount",
   "title": "The Spoofer's Discount",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Drive the Proof-of-Learning trap: a logged training trajectory, audited top-Q by re-execution against a tolerance δ. Forge the run and it still passes — the forger tuned every interval under δ for 3% of training cost. Tighten δ to catch it and the honest node fails first.",
   "pubDate": "2026-06-14",
   "type": "dom",
   "archetype": "simulation",
-  "topics": [
-    "machine-learning",
-    "security"
+  "topics": ["machine-learning", "security"],
+  "aspect": "4/3",
+  "featured": true,
+  "controls": [
+    "toggle “forge the run”",
+    "drag the tolerance δ slider",
+    "drag the audit-budget Q slider",
+    "tap an interval bar to inspect its re-execution error"
   ],
-  "aspect": "16/9",
-  "featured": false,
-  "controls": []
+  "dataSource": {
+    "label": "Proof-of-Learning + spoofing attacks (Jia 2021; Zhang 2022; Fang 2022)",
+    "url": "https://arxiv.org/abs/2108.09454"
+  },
+  "dataAsOf": "2026-06-14"
 }

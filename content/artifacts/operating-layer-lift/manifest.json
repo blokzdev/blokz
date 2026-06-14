@@ -1,7 +1,7 @@
 {
   "slug": "operating-layer-lift",
   "title": "The Operating-Layer Lift",
-  "description": "Where reliability comes from in on-chain LLM agents, in two charts over DX Terminal Pro production data.",
+  "description": "Where reliability comes from in on-chain LLM trading agents, over DX Terminal Pro's production run: model upgrades move swap success 87% to 96%, but the operating layer takes the same weights to 99.9%. Switch panels for the prompt fixes that erased three failure modes. Tap or arrow the bars.",
   "pubDate": "2026-06-14",
   "type": "svg",
   "archetype": "chart",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "switch panels: model-vs-harness / what it fixed",
+    "hover, tap, or arrow the bars for exact numbers"
+  ],
+  "dataSource": {
+    "label": "Barton et al., arXiv:2604.26091 (DX Terminal Pro)",
+    "url": "https://arxiv.org/abs/2604.26091"
+  },
+  "dataAsOf": "2026-06-14"
 }

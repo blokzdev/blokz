@@ -1,0 +1,15 @@
+{
+  "slug": "spoofers-discount",
+  "title": "The Spoofer's Discount",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-14",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

@@ -1,0 +1,47 @@
+{
+  "_note": "Sourced anchors surfaced in the artifact. The 8-term reduction example in the module is illustrative (honestly computed in IEEE-754 double, not from a source); these fields are the measured numbers it is grounded against.",
+  "feynman": {
+    "model": "Qwen3-235B-A22B-Instruct-2507",
+    "prompt": "Tell me about Richard Feynman",
+    "temperature": 0,
+    "completions": 1000,
+    "uniqueCompletions": 80,
+    "topCompletionCount": 78,
+    "divergenceToken": 103,
+    "sharedPrefix": "Feynman was born on May 11, 1918, in",
+    "majorityText": "Queens, New York",
+    "majorityCount": 992,
+    "minorityText": "New York City",
+    "minorityCount": 8
+  },
+  "overheadSeconds": {
+    "model": "Qwen3-8B",
+    "sequences": 1000,
+    "vllmDefault": 26,
+    "deterministicUnoptimized": 55,
+    "deterministicImprovedAttention": 42
+  },
+  "sglang": {
+    "gpu": "H200",
+    "model": "Qwen3-8B",
+    "slowdownPctAvg": 34.35,
+    "thinkingMachinesSlowdownPct": 61.5,
+    "cudaGraphSpeedup": "2.79-2.93x",
+    "fixedSplitKV": 2048,
+    "reproducibleRL": "100%"
+  },
+  "eigenai": {
+    "overheadPct": 1.8,
+    "sameArchMatchPct": 100,
+    "crossArchMatchPct": 0,
+    "reproducibleRuns": 10000,
+    "hash": "SHA256"
+  },
+  "precision": {
+    "model": "DeepSeek-R1-Distill-Qwen-7B",
+    "format": "bfloat16",
+    "decoding": "greedy",
+    "accuracyVariationPctMax": 9,
+    "responseLengthTokenDiffMax": 9000
+  }
+}

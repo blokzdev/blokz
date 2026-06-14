@@ -1,0 +1,102 @@
+---
+slug: deterministic-inference-onchain-verification
+title: "Same Prompt, Different Bytes: The Determinism Problem Under Verifiable On-Chain AI"
+description: "Every on-chain scheme that verifies an LLM by re-executing it and comparing digests assumes a forward pass is bit-for-bit reproducible. It isn't — Thinking Machines got 80 different answers to one prompt at temperature 0. Here's why, and what determinism costs."
+pubDate: 2026-06-14
+author: blokz
+topics: [machine-learning, llm, infrastructure]
+tags: [deterministic-inference, batch-invariance, verifiable-inference, eigenai, floating-point, re-execution]
+artifacts: [byte-equality-gate]
+difficulty: intermediate
+sources:
+  - label: "Thinking Machines — Defeating Nondeterminism in LLM Inference"
+    url: "https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/"
+  - label: "EigenAI: Deterministic Inference, Verifiable Results (arXiv:2602.00182)"
+    url: "https://arxiv.org/abs/2602.00182"
+  - label: "SGLang — Towards Deterministic Inference and Reproducible RL Training"
+    url: "https://www.lmsys.org/blog/2025-09-22-sglang-deterministic/"
+  - label: "Yuan et al. — Numerical Sources of Nondeterminism in LLM Inference (arXiv:2506.09501)"
+    url: "https://arxiv.org/abs/2506.09501"
+  - label: "thinking-machines-lab/batch_invariant_ops"
+    url: "https://github.com/thinking-machines-lab/batch_invariant_ops"
+---
+
+The cleanest idea in verifiable AI is also its most quietly load-bearing assumption. [EigenAI](https://arxiv.org/abs/2602.00182), the verifiable-inference layer that ships on EigenLayer's restaking, states it plainly: because inference is "bit-exact," verification "reduces to a byte-equality check." An untrusted operator runs the model and publishes the output; a watcher re-runs the same prompt; the two outputs are hashed and compared. If the bytes match, accept. If they don't, someone is lying — slash their bond. A single honest replica is enough to catch fraud, because there is exactly one correct answer and it is reproducible.
+
+That last clause is doing enormous work. Run the same prompt through the same model twice, with temperature pinned to zero, and you do not reliably get the same bytes back. The verification scheme that "reduces to a byte-equality check" is standing on an engineering problem most of the stack pretends is already solved.
+
+## The byte-equality assumption
+
+Every verification strategy this blog has covered for on-chain AI splits into two families. One *proves* the computation: [zkML](/articles/zkml-verifiable-inference-landscape) emits a succinct proof, [FHE](/articles/fhe-mainnet-private-compute-costs) computes under encryption. The other *re-executes* it and checks for agreement: [optimistic ML oracles](/articles/optimistic-ml-oracles) post a result and let challengers dispute it, [restaking-backed AVSs](/articles/restaking-verifiable-ai-cost-of-corruption) bond operators and slash disagreement, and [TEE attestation](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) signs that a known binary ran on known inputs. EigenAI is squarely in the second family, and so is the cheapest, most deployable end of the whole design space.
+
+Re-execution is attractive precisely because it skips the 1000× overhead of a proof. But it buys that saving with an assumption: that "the same computation" produces the same output, deterministically, on whatever hardware the challenger happens to hold. For a Solidity function or an EVM trace, that's true by construction — the EVM is a deterministic state machine. For a 235-billion-parameter forward pass running on a GPU, it is not true by default, and the gap is not a rounding footnote. It is large enough to flip tokens.
+
+## Same prompt, eighty answers
+
+The sharpest measurement comes from Thinking Machines Lab. They sent one prompt — *"Tell me about Richard Feynman"* — to Qwen3-235B-A22B at temperature 0, the setting that is supposed to make decoding a deterministic argmax, and sampled it **1,000 times**. They got **80 unique completions**. The most common appeared 78 times.
+
+The completions agree perfectly for 102 tokens. Every one of them generates "Feynman was born on May 11, 1918, in" — and then the 103rd token forks: **992** continue with "Queens, New York" while **8** say "New York City." Same weights, same prompt, same greedy decode, and the model cannot agree with itself on where a famous physicist was born.
+
+This is not temperature, not seeds, not sampling. It is the forward pass producing different *logits* for the same input on different runs, by a margin small enough that it only matters when two candidate tokens are near-tied — and decisive when they are.
+
+## It's not the floats, it's the batch
+
+The folk explanation is "floating-point math is non-associative and GPUs run things concurrently, so the accumulation order is random." The first half is true; the second is the wrong culprit. IEEE-754 addition genuinely is non-associative — `(a + b) + c` need not equal `a + (b + c)` once rounding enters — and that is the root source of the variability. But the GPU kernels for matmul, RMSNorm, and attention are individually *run-to-run deterministic*. Feed them identical inputs at an identical batch size and they return identical bits every time. Concurrency isn't scrambling the reduction.
+
+The real trigger is what Thinking Machines calls a lack of **batch invariance**. A production inference server batches your request with whoever else is hitting the endpoint right now. That batch size fluctuates with load — and the kernels change their *reduction strategy* as a function of it. A matmul splits its inner (K-dimension) sum across thread blocks with a "split-K" count chosen for occupancy; attention picks a number of splits over the KV cache; RMSNorm switches data-parallel strategy when the batch gets small. Different split, different order of summation, different rounding in the last bits. Your individual prompt's numerics depend on the batch it landed in, which depends on strangers' traffic. *That* is the source of nondeterminism: not random concurrency, but `non-invariance to batch size` composed with `nondeterministic batch size under load`.
+
+You can watch the mechanism in isolation. The same identity holds in two lines of PyTorch:
+
+```python
+import torch
+a = torch.randn(2048, 4096, device="cuda", dtype=torch.bfloat16)
+b = torch.randn(4096, 2048, device="cuda", dtype=torch.bfloat16)
+
+out1 = torch.mm(a[:1], b)       # row 0 computed at batch size 1
+out2 = torch.mm(a, b)[:1]       # row 0 computed inside the full batch
+(out1 - out2).abs().max()       # > 0 in standard PyTorch
+```
+
+Mathematically `out1` and `out2` are the same row of the same product. Bit-for-bit, in stock PyTorch, they differ — because the full-batch matmul reduces along K in a different order than the batch-of-one does.
+
+<Artifact slug="byte-equality-gate" />
+
+The artifact reduces eight contributions to the logit gap between "Queens, New York" and "New York City" — the genuine fork from the experiment. The true sum is faintly positive, so Queens should win. Drag the production split-K and you'll see the gap stay positive for most counts, then at **split 5 and 6** the rounding tips it negative and the model emits "City" instead. Every number is computed live in IEEE-754 double precision; nothing is faked. The operator did nothing wrong — same prompt, same weights, same seed — but its output digest no longer matches the watcher's, and the challenge succeeds against an honest node. Flip *batch-invariant kernels* on and the operator is pinned to one fixed reduction schedule regardless of load: the whole strip goes green.
+
+## The fix, and the tax
+
+The fix is to make the kernels batch-invariant: force each reduction to use a fixed schedule (a fixed split *size*, not a fixed split *count*) so the arithmetic is identical whether your request is alone or batched with 256 others. Thinking Machines released `batch_invariant_ops`, a drop-in for the three offenders — RMSNorm, matmul, attention — that you wrap around a vLLM run:
+
+```python
+from batch_invariant_ops import set_batch_invariant_mode
+
+with set_batch_invariant_mode():
+    output = model(input_tensor)   # identical bytes regardless of batch
+```
+
+Under it, their 1,000-completion experiment collapses to **one** unique answer. The catch is the bill. Batch-invariant kernels give up batch-size-specific tuning, and that performance was not free:
+
+| Configuration (Qwen3-8B, 1000 seqs) | Time | Overhead |
+| --- | --- | --- |
+| vLLM default | 26 s | — |
+| Deterministic, unoptimized | 55 s | 2.1× |
+| Deterministic, improved attention kernel | 42 s | 1.6× |
+
+Engineering closes the gap but doesn't erase it. [SGLang adopted the kernels](https://www.lmsys.org/blog/2025-09-22-sglang-deterministic/) (fixed split-KV of 2,048 tokens, num-splits pinned to 1 on FlashAttention-3) and got the average slowdown down to ~34% versus Thinking Machines' 61.5%, with CUDA graphs clawing back a 2.79–2.93× speedup over naive deterministic mode. EigenAI, building determinism into the serving path from the start, reports just **1.8% added latency** — the number that makes re-execution economically viable on-chain at all.
+
+Two caveats sit underneath those figures. First, precision: under bfloat16 greedy decoding, [Yuan et al.](https://arxiv.org/abs/2506.09501) measured a reasoning model (DeepSeek-R1-Distill-Qwen-7B) swing **up to 9% in accuracy** and **9,000 tokens in response length** purely from GPU count, GPU type, and batch size. Their mitigation, LayerCast, stores weights in 16-bit but computes in FP32 — buying stability with bandwidth. Second, hardware: batch invariance fixes reductions *on a given architecture*. It does nothing across architectures. EigenAI measured a **100%** match rate on same-GPU-SKU re-execution and **0%** across different SKUs.
+
+## What this means for verifiable AI
+
+That 100%/0% split is the real design constraint, and it propagates straight into the trust model. If your verification scheme is "re-execute and compare bytes," then operators and challengers cannot just run the same *model* — they must run the same kernels at the same precision on the same GPU SKU. EigenAI requires exactly this: identical hardware across the operator set. The security story — "inherit Ethereum's validator base, a single honest watcher catches fraud" — is genuine, but it now carries a hardware monoculture as a load-bearing dependency. You've traded "trust a model provider" for "trust that every node bought the same H100 and nobody's CUDA version drifted."
+
+It also reframes the failure mode. The danger in a re-execution scheme isn't only a lying operator; it's a *false positive* — an honest operator whose bytes legitimately differ from a challenger's because one of them batched differently or ran an A100 against an H100. Without enforced determinism, byte-equality slashing punishes honesty as readily as fraud, and "a single honest replica suffices" inverts into "a single nondeterministic replica griefs." This is the same reproducibility bug that quietly corrupts RL training, where it silently converts on-policy updates into off-policy ones; deterministic inference is what let both Thinking Machines and SGLang drive the train/sample KL divergence to a flat zero and reproduce a run [bit-for-bit](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training).
+
+None of this sinks re-execution as a strategy — it's still dramatically cheaper than [proving the computation](/articles/zkml-verifiable-inference-landscape), and a ~2% determinism tax is a rounding error next to a 1000× proof. But it relocates the hard part. The cryptography was never the obstacle to cheap verifiable inference. Bit-exact, batch-invariant, cross-checkable execution was — and it's an engineering problem in CUDA reduction order, not a missing proof system.
+
+## Takeaways
+
+- **Byte-equality verification assumes reproducibility you don't have by default.** Temperature-0 LLM inference produced 80 distinct answers to one prompt; the divergence flips real tokens, not just trailing bits.
+- **The cause is batch non-invariance, not concurrency.** Kernels are run-to-run deterministic but change their reduction order with batch size, and batch size moves with load. Floating-point non-associativity is the ammunition; variable batching pulls the trigger.
+- **Determinism is buyable but not free:** ~1.6–2.1× in naive deterministic kernels, ~34% tuned, ~1.8% when engineered into the serving path — plus a same-GPU-SKU requirement, because the fix holds within an architecture and collapses across them.
+- **For on-chain AI, this is where the trust actually sits.** Re-execution schemes inherit a hardware-monoculture dependency and a false-positive slashing risk; getting the bytes to agree is the load-bearing work, not the dispute game on top of it.

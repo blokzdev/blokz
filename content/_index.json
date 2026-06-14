@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 23,
-    "artifacts": 22
+    "articles": 24,
+    "artifacts": 23
   },
   "topicCounts": {
     "agents": 9,
@@ -10,9 +10,9 @@
     "cryptography": 3,
     "data": 1,
     "defi": 4,
-    "infrastructure": 9,
-    "llm": 3,
-    "machine-learning": 10,
+    "infrastructure": 10,
+    "llm": 4,
+    "machine-learning": 11,
     "research": 1,
     "security": 9,
     "smart-contracts": 5,
@@ -42,6 +42,32 @@
       ],
       "artifacts": [
         "memory-injection-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "deterministic-inference-onchain-verification",
+      "path": "content/articles/2026/06/deterministic-inference-onchain-verification/index.mdx",
+      "url": "/articles/deterministic-inference-onchain-verification",
+      "title": "Same Prompt, Different Bytes: The Determinism Problem Under Verifiable On-Chain AI",
+      "description": "Every on-chain scheme that verifies an LLM by re-executing it and comparing digests assumes a forward pass is bit-for-bit reproducible. It isn't — Thinking Machines got 80 different answers to one prompt at temperature 0. Here's why, and what determinism costs.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "machine-learning",
+        "llm",
+        "infrastructure"
+      ],
+      "tags": [
+        "deterministic-inference",
+        "batch-invariance",
+        "verifiable-inference",
+        "eigenai",
+        "floating-point",
+        "re-execution"
+      ],
+      "artifacts": [
+        "byte-equality-gate"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -629,6 +655,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "byte-equality-gate",
+      "path": "content/artifacts/byte-equality-gate/manifest.json",
+      "module": "src/islands/artifacts/byte-equality-gate.ts",
+      "url": "/artifacts/byte-equality-gate",
+      "title": "The Byte-Equality Gate",
+      "description": "Why re-executing an LLM doesn't reproduce it. One matmul reduces to the logit gap between 'Queens, New York' and 'New York City'; drag the production split-K and watch IEEE-754 rounding flip the token at split 5 and 6, breaking the verifier's digest check. Batch-invariant kernels turn it green.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "gas-wall",
       "path": "content/artifacts/gas-wall/manifest.json",

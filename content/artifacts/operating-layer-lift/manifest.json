@@ -1,0 +1,15 @@
+{
+  "slug": "operating-layer-lift",
+  "title": "The Operating-Layer Lift",
+  "description": "Where reliability comes from in on-chain LLM agents, in two charts over DX Terminal Pro production data.",
+  "pubDate": "2026-06-14",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "agents",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

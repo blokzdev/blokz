@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 28,
-    "artifacts": 28
+    "articles": 29,
+    "artifacts": 29
   },
   "topicCounts": {
-    "agents": 10,
+    "agents": 11,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 2,
-    "defi": 5,
+    "defi": 6,
     "infrastructure": 12,
     "llm": 6,
-    "machine-learning": 13,
+    "machine-learning": 14,
     "research": 1,
     "security": 11,
     "smart-contracts": 6,
@@ -226,6 +226,32 @@
       ],
       "artifacts": [
         "spoofers-discount"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "path": "content/articles/2026/06/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose/index.mdx",
+      "url": "/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "title": "Rate-Chasers: Why DeFi Yield Agents Win Where Trading Bots Lose",
+      "description": "Autonomous agents run ~19% of on-chain activity and beat Aave and Morpho at stablecoin yield — yet lose to humans at trading by 5 to 1. The split isn't about model quality. Yield-chasing is a constrained optimization against a kinked rate curve; trading needs alpha agents don't have.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "defi",
+        "agents",
+        "machine-learning"
+      ],
+      "tags": [
+        "yield-optimization",
+        "autonomous-agents",
+        "aave",
+        "giza",
+        "arma",
+        "rebalancing"
+      ],
+      "artifacts": [
+        "the-rebalancers-break-even"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -903,6 +929,22 @@
       "topics": [
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-rebalancers-break-even",
+      "path": "content/artifacts/the-rebalancers-break-even/manifest.json",
+      "module": "src/islands/artifacts/the-rebalancers-break-even.ts",
+      "url": "/artifacts/the-rebalancers-break-even",
+      "title": "The Rebalancer's Break-Even",
+      "description": "The move-or-hold call a stablecoin yield agent makes all day, on the live Aave V3 USDC curve from Base: supply capital into a higher-quoted pool and watch your own deposit slide the realized APY down the kinked curve, then race the spread against gas. Shallow pools and L1 gas flip MOVE to HOLD.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "agents"
       ],
       "draft": false
     },

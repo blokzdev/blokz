@@ -1,0 +1,24 @@
+{
+  "slug": "the-rebalancers-break-even",
+  "title": "The Rebalancer's Break-Even",
+  "description": "The move-or-hold call a stablecoin yield agent makes all day, on the live Aave V3 USDC curve from Base: supply capital into a higher-quoted pool and watch your own deposit slide the realized APY down the kinked curve, then race the spread against gas. Shallow pools and L1 gas flip MOVE to HOLD.",
+  "pubDate": "2026-06-14",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "agents"
+  ],
+  "aspect": "16/9",
+  "featured": true,
+  "controls": [
+    "drag capital, gas, and pool sliders",
+    "watch the realized-APY dot slide down the curve",
+    "keyboard: tab to a slider, arrow keys to adjust"
+  ],
+  "dataSource": {
+    "label": "Aave V3 USDC on Base via Blockscout",
+    "url": "https://base.blockscout.com/address/0xA238Dd80C259a72e81d7e4664a9801593F98d1c5"
+  },
+  "dataAsOf": "2026-06-14"
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "shapley-split",
+  "title": "The Shapley Split",
+  "description": "Split one DataDAO reward pool across five overlapping contributors three ways: equal split, leave-one-out, and exact Shapley value over all 2ⁿ coalitions. Drag quality sliders, drop the unique contributor, or flip on the Sybil attack and watch equal split overpay a cloned wallet.",
+  "pubDate": "2026-06-14",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "data",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a rule tab (equal / leave-one-out / Shapley)",
+    "drag a contributor's quality slider",
+    "drop or add back a contributor",
+    "toggle the Sybil attack"
+  ]
+}

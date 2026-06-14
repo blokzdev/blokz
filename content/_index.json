@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 26,
-    "artifacts": 26
+    "articles": 27,
+    "artifacts": 27
   },
   "topicCounts": {
     "agents": 10,
@@ -11,11 +11,11 @@
     "data": 2,
     "defi": 5,
     "infrastructure": 11,
-    "llm": 5,
+    "llm": 6,
     "machine-learning": 12,
     "research": 1,
-    "security": 9,
-    "smart-contracts": 5,
+    "security": 10,
+    "smart-contracts": 6,
     "tokenomics": 1,
     "web3": 3,
     "zero-knowledge": 3
@@ -44,6 +44,23 @@
       "artifacts": [
         "memory-injection-gap"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "cognitive-penalty-ai-dao-delegates",
+      "path": "content/articles/2026/06/cognitive-penalty-ai-dao-delegates/index.mdx",
+      "url": "/articles/cognitive-penalty-ai-dao-delegates",
+      "title": "The Cognitive Penalty: When AI DAO Delegates Reason Their Way to Yes",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "llm",
+        "security",
+        "smart-contracts"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -739,6 +756,22 @@
       "topics": [
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "cognitive-penalty",
+      "path": "content/artifacts/cognitive-penalty/manifest.json",
+      "module": "src/islands/artifacts/cognitive-penalty.ts",
+      "url": "/artifacts/cognitive-penalty",
+      "title": "The Cognitive Penalty",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "security"
       ],
       "draft": false
     },

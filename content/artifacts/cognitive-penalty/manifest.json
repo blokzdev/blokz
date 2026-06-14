@@ -1,0 +1,15 @@
+{
+  "slug": "cognitive-penalty",
+  "title": "The Cognitive Penalty",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-14",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "llm",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

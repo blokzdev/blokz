@@ -1,0 +1,43 @@
+{
+  "sources": [
+    {
+      "label": "ML2SC — measured inference gas (arXiv:2404.16967, Table IV)",
+      "url": "https://arxiv.org/abs/2404.16967"
+    },
+    {
+      "label": "Ethereum & Base block limits (Blockscout) + ETH/USDT (Crypto.com)",
+      "url": "https://eth.blockscout.com/block/25312300"
+    }
+  ],
+  "asOf": "2026-06-14",
+  "ethPriceUsd": 1685.14,
+  "regimes": {
+    "measured": {
+      "label": "ML2SC (measured)",
+      "overhead": 3800106,
+      "perEdge": 106514,
+      "perReLU": 22808,
+      "perSigmoid": 28033,
+      "note": "Transpiled, readable Solidity using PRBMath SD59x18 — measured gas, ML2SC Table IV."
+    },
+    "optimized": {
+      "label": "optimized floor",
+      "overhead": 200000,
+      "perEdge": 1500,
+      "perReLU": 400,
+      "perSigmoid": 3000,
+      "note": "Hand-derived lower bound: packed weights kept warm, inlined MACs in assembly. Not measured — an aspirational floor from canonical EVM + PRBMath op costs."
+    }
+  },
+  "blockLimits": [
+    { "chain": "Ethereum", "gas": 60000000, "baseFeeGwei": 0.124, "block": 25312300 },
+    { "chain": "Base", "gas": 400000000, "baseFeeGwei": 0.005, "block": 47305170 }
+  ],
+  "models": [
+    { "id": "logistic", "label": "Logistic", "arch": "10→1", "layers": [10, 1] },
+    { "id": "iris", "label": "Iris MLP", "arch": "4→8→3", "layers": [4, 8, 3] },
+    { "id": "tabular", "label": "Tabular MLP", "arch": "16→16→1", "layers": [16, 16, 1] },
+    { "id": "fraud", "label": "DeFi guard", "arch": "32→32→2", "layers": [32, 32, 2] },
+    { "id": "mnist", "label": "MNIST MLP", "arch": "784→128→10", "layers": [784, 128, 10] }
+  ]
+}

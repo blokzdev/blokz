@@ -1,0 +1,15 @@
+{
+  "slug": "swarm-consensus",
+  "title": "Swarm Consensus",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-14",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

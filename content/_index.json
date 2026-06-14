@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 25,
-    "artifacts": 24
+    "artifacts": 25
   },
   "topicCounts": {
     "agents": 10,
@@ -501,7 +501,7 @@
       "title": "What the Blockchain Actually Does in Decentralized AI Training",
       "description": "The gradients never touch the chain. What Solana actually stores when Psyche trains a 36B model across 24 nodes, how TOPLOC audits untrusted GPUs in 258 bytes, and why the flagship 'decentralized' model still shipped from a 512-GPU cluster.",
       "pubDate": "2026-06-12",
-      "updatedDate": "2026-06-12",
+      "updatedDate": "2026-06-14",
       "topics": [
         "machine-learning",
         "blockchain",
@@ -517,7 +517,8 @@
       ],
       "artifacts": [
         "block-mesh",
-        "bandwidth-wall"
+        "bandwidth-wall",
+        "all-reduce-atlas"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -682,6 +683,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "all-reduce-atlas",
+      "path": "content/artifacts/all-reduce-atlas/manifest.json",
+      "module": "src/islands/artifacts/all-reduce-atlas.ts",
+      "url": "/artifacts/all-reduce-atlas",
+      "title": "The All-Reduce Atlas",
+      "description": "Where decentralized training nodes sit on Earth and what it costs to sync them. Toggle INTELLECT-1's three measured configurations and watch the ring all-reduce span the globe: 103s inside the USA, 382s across the Atlantic, 469s once Asia joins.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "byte-equality-gate",
       "path": "content/artifacts/byte-equality-gate/manifest.json",

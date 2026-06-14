@@ -1,0 +1,57 @@
+{
+  "source": {
+    "label": "INTELLECT-1 Technical Report — Table 2 (arXiv:2412.01152)",
+    "url": "https://arxiv.org/abs/2412.01152"
+  },
+  "asOf": "2026-06-14",
+  "run": {
+    "model": "INTELLECT-1, 10B parameters",
+    "tokens": "1 trillion",
+    "window": "Oct 10 – Nov 22, 2024 (42 days)",
+    "providers": 30,
+    "maxConcurrentNodes": 14,
+    "maxGpus": 112,
+    "gpu": "H100",
+    "countries": 5,
+    "continents": 3,
+    "linkBandwidth": "500 Mb/s – 4 Gb/s",
+    "bandwidthReduction": "400×",
+    "note": "DiLoCo outer optimizer with custom int8 all-reduce. The chatty inner steps stay local; only the outer all-reduce crosses the internet, so total communication stayed at 2–10% of training time."
+  },
+  "regions": [
+    { "id": "us-west", "label": "US West", "lon": -122, "lat": 38, "continent": "North America" },
+    { "id": "us-east", "label": "US East", "lon": -77, "lat": 39, "continent": "North America" },
+    { "id": "eu", "label": "Europe", "lon": 9, "lat": 50, "continent": "Europe" },
+    { "id": "asia", "label": "Asia", "lon": 121, "lat": 31, "continent": "Asia" }
+  ],
+  "configs": [
+    {
+      "id": "usa",
+      "label": "USA only",
+      "active": ["us-west", "us-east"],
+      "medianAllReduceSec": 103,
+      "mfuPct": 41.4,
+      "computeUtilPct": 95.7,
+      "span": "single continent"
+    },
+    {
+      "id": "usa-eu",
+      "label": "USA + Europe",
+      "active": ["us-west", "us-east", "eu"],
+      "medianAllReduceSec": 382,
+      "mfuPct": 37.1,
+      "computeUtilPct": 85.6,
+      "span": "transatlantic"
+    },
+    {
+      "id": "global",
+      "label": "Global (USA + Europe + Asia)",
+      "active": ["us-west", "us-east", "eu", "asia"],
+      "medianAllReduceSec": 469,
+      "mfuPct": 36.2,
+      "computeUtilPct": 83.0,
+      "span": "three continents"
+    }
+  ],
+  "note": "Median all-reduce time, MFU and compute utilization are reported verbatim from INTELLECT-1 Technical Report Table 2 for the three geographic node configurations. Region marker coordinates are illustrative placements on the named continents; the report names 5 countries across 3 continents (North America, Europe, Asia) but does not publish city-level locations."
+}

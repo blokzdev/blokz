@@ -1,0 +1,25 @@
+{
+  "headline": {
+    "benchmark": "GPQA Diamond",
+    "swarmAccuracy": 85.9,
+    "majorityAccuracy": 68.69,
+    "deltaPoints": 17.21,
+    "relativePct": 25.1,
+    "bestSingleModel": "Grok 4",
+    "bestSingleAccuracy": 85.98,
+    "nodeCount": 35
+  },
+  "robustness": {
+    "metric": "accuracy degradation under noisy / prompt-injection free-form prompting",
+    "swarmDegradationPct": 0.12,
+    "singleModelDegradationPct": 6.2
+  },
+  "mechanism": {
+    "bradleyTerry": "P(i > j) = pi_i / (pi_i + pi_j)",
+    "reputationEma": "R_{t+1} = a*R_t + (1-a)*accuracy_t",
+    "reasoningChainTokens": [50, 100],
+    "multiTokenGainPct": 5.3,
+    "nodeKnee": 30
+  },
+  "note": "Headline and robustness figures are measured results reported by Fortytwo (arXiv:2510.24801). The on-page swarm round is an illustrative probabilistic model tuned to echo the measured majority-vs-swarm gap, not a re-run of the benchmark."
+}

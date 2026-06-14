@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 21,
-    "artifacts": 20
+    "articles": 22,
+    "artifacts": 21
   },
   "topicCounts": {
     "agents": 8,
@@ -10,9 +10,9 @@
     "cryptography": 3,
     "data": 1,
     "defi": 3,
-    "infrastructure": 8,
-    "llm": 2,
-    "machine-learning": 9,
+    "infrastructure": 9,
+    "llm": 3,
+    "machine-learning": 10,
     "research": 1,
     "security": 8,
     "smart-contracts": 5,
@@ -42,6 +42,32 @@
       ],
       "artifacts": [
         "gas-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "peer-ranked-swarm-inference",
+      "path": "content/articles/2026/06/peer-ranked-swarm-inference/index.mdx",
+      "url": "/articles/peer-ranked-swarm-inference",
+      "title": "Don't Vote, Rank: Peer-Ranked Consensus for Decentralized LLM Swarms",
+      "description": "Majority voting over LLMs throws away the one node that got it right. Fortytwo's swarm inference ranks answers pairwise instead — +17 points on GPQA Diamond — with on-chain reputation and proof-of-capability for Sybil defense. The mechanism, the math, the tradeoffs.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "llm"
+      ],
+      "tags": [
+        "swarm-inference",
+        "bradley-terry",
+        "ensembles",
+        "decentralized-ai",
+        "reputation",
+        "consensus"
+      ],
+      "artifacts": [
+        "swarm-consensus"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -590,6 +616,22 @@
       "topics": [
         "machine-learning",
         "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "swarm-consensus",
+      "path": "content/artifacts/swarm-consensus/manifest.json",
+      "module": "src/islands/artifacts/swarm-consensus.ts",
+      "url": "/artifacts/swarm-consensus",
+      "title": "Swarm Consensus",
+      "description": "One hard question, a swarm of LLM nodes, two ways to agree. Run a round: majority voting picks the most common answer while peer-ranked Bradley-Terry consensus surfaces the best one, and the scoreboard converges on the gap Fortytwo measured. The evaluation-edge slider shows why.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

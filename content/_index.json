@@ -625,9 +625,9 @@
       "module": "src/islands/artifacts/swarm-consensus.ts",
       "url": "/artifacts/swarm-consensus",
       "title": "Swarm Consensus",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "One hard question, a swarm of LLM nodes, two ways to agree. Run a round: majority voting picks the most common answer while peer-ranked Bradley-Terry consensus surfaces the best one, and the scoreboard converges on the gap Fortytwo measured. The evaluation-edge slider shows why.",
       "pubDate": "2026-06-14",
-      "type": "svg",
+      "type": "dom",
       "archetype": "simulation",
       "topics": [
         "machine-learning",

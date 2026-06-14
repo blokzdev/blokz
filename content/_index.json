@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 26,
-    "artifacts": 26
+    "articles": 27,
+    "artifacts": 27
   },
   "topicCounts": {
     "agents": 10,
@@ -11,11 +11,11 @@
     "data": 2,
     "defi": 5,
     "infrastructure": 11,
-    "llm": 5,
+    "llm": 6,
     "machine-learning": 12,
     "research": 1,
-    "security": 9,
-    "smart-contracts": 5,
+    "security": 10,
+    "smart-contracts": 6,
     "tokenomics": 1,
     "web3": 3,
     "zero-knowledge": 3
@@ -43,6 +43,32 @@
       ],
       "artifacts": [
         "memory-injection-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "cognitive-penalty-ai-dao-delegates",
+      "path": "content/articles/2026/06/cognitive-penalty-ai-dao-delegates/index.mdx",
+      "url": "/articles/cognitive-penalty-ai-dao-delegates",
+      "title": "The Cognitive Penalty: When AI DAO Delegates Reason Their Way to Yes",
+      "description": "Wire an LLM into a Governor contract and the proposal text becomes the attack surface. A frozen-weights ablation finds the twist: turning on deliberation drops adversarial robustness from 100% to 68.5% — and the 226s it takes to think is itself extractable value.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "llm",
+        "security",
+        "smart-contracts"
+      ],
+      "tags": [
+        "dao-governance",
+        "governor",
+        "prompt-injection",
+        "reasoning",
+        "governance-extractable-value",
+        "optimism"
+      ],
+      "artifacts": [
+        "cognitive-penalty"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -739,6 +765,22 @@
       "topics": [
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "cognitive-penalty",
+      "path": "content/artifacts/cognitive-penalty/manifest.json",
+      "module": "src/islands/artifacts/cognitive-penalty.ts",
+      "url": "/artifacts/cognitive-penalty",
+      "title": "The Cognitive Penalty",
+      "description": "One frozen Qwen-3.5-9B judging adversarial Optimism DAO proposals, deliberation off vs on. System 1 holds every metric at 100%; reasoning drops robustness to 68.5%, flips 27% of verdicts, and costs 17x latency — a 226s window that is itself Governance-Extractable Value. Tap a row.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "security"
       ],
       "draft": false
     },

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 25,
-    "artifacts": 24
+    "artifacts": 25
   },
   "topicCounts": {
     "agents": 10,
@@ -682,6 +682,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "all-reduce-atlas",
+      "path": "content/artifacts/all-reduce-atlas/manifest.json",
+      "module": "src/islands/artifacts/all-reduce-atlas.ts",
+      "url": "/artifacts/all-reduce-atlas",
+      "title": "The All-Reduce Atlas",
+      "description": "Where decentralized training nodes sit on Earth and what it costs to sync them. Toggle INTELLECT-1's three measured configurations and watch the ring all-reduce span the globe: 103s inside the USA, 382s across the Atlantic, 469s once Asia joins.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "byte-equality-gate",
       "path": "content/artifacts/byte-equality-gate/manifest.json",

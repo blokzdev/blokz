@@ -1,0 +1,24 @@
+{
+  "slug": "gas-wall",
+  "title": "The Gas Wall",
+  "description": "Forward-pass gas for five neural nets run inside the EVM, on a log axis against the live Ethereum (60M) and Base (400M) block-gas ceilings. Toggle ML2SC's measured ~106k gas/edge vs an optimized ~1.5k floor, slide the gas price for a USD readout, and watch an MNIST net blow past 180 Ethereum blocks.",
+  "pubDate": "2026-06-14",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "toggle measured ↔ optimized gas-per-edge",
+    "hover / focus / tap a bar for exact gas, ×block, and USD",
+    "slide gas price to reprice in USD"
+  ],
+  "dataSource": {
+    "label": "ML2SC measured gas (arXiv:2404.16967) + live block limits via Blockscout",
+    "url": "https://arxiv.org/abs/2404.16967"
+  },
+  "dataAsOf": "2026-06-14"
+}

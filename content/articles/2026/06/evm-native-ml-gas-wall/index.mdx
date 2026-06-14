@@ -1,0 +1,89 @@
+---
+slug: evm-native-ml-gas-wall
+title: "The Gas Wall: What It Costs to Run a Neural Net Inside the EVM"
+description: "Most 'on-chain AI' keeps the model off-chain and posts a proof. But you can also just run the forward pass in Solidity. We do the gas math — ~106k gas per weight, an MNIST net that needs 180 Ethereum blocks — and find the thin band of models that fit."
+pubDate: 2026-06-14
+author: blokz
+topics: [machine-learning, smart-contracts, blockchain]
+tags: [on-chain-inference, fixed-point, prbmath, gas, evm, solidity]
+artifacts: [gas-wall]
+difficulty: intermediate
+sources:
+  - label: "ML2SC: Deploying Machine Learning Models as Smart Contracts (arXiv:2404.16967)"
+    url: "https://arxiv.org/abs/2404.16967"
+  - label: "On-Chain Decentralized Learning and Cost-Effective Inference for DeFi Attack Mitigation (arXiv:2510.16024)"
+    url: "https://arxiv.org/abs/2510.16024"
+  - label: "PRBMath — fixed-point arithmetic for Solidity"
+    url: "https://github.com/PaulRBerg/prb-math"
+  - label: "Ethereum & Base block snapshot (Blockscout), ETH/USDT (Crypto.com), 2026-06-14"
+    url: "https://eth.blockscout.com/block/25312300"
+---
+
+There are two ways to put a neural network "on-chain," and the industry has spent three years building the harder one. The verifiable-inference stack — [zkML](/articles/zkml-verifiable-inference-landscape), [optimistic oracles](/articles/optimistic-ml-oracles), [TEE attestation](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) — all share one premise: the model runs *off* the chain, on a normal GPU, and only a proof or attestation of its output ever touches consensus. That premise exists for a reason. This article is about the reason.
+
+The other way is to run the forward pass *inside* the contract — every multiply-accumulate executed as EVM opcodes, every weight read from contract storage, the whole network living at an address. No prover, no oracle, no trusted hardware: the chain itself recomputes the inference, so it is verifiable by construction. It sounds like the clean answer to the whole "trustless AI" problem. Then you price the gas, and you understand why nobody ships it for anything bigger than a toy.
+
+Let's do that pricing, with measured numbers.
+
+## Floats don't exist down here
+
+The first wall is arithmetic. A consensus VM has to be bit-for-bit deterministic across every node that re-executes a block — and IEEE-754 floating point is not portably deterministic (rounding modes, fused multiply-add, and compiler reordering all leak platform differences). So the EVM has *no float type at all*. Solidity gives you 256-bit integers and nothing else.
+
+Machine learning, of course, is floating-point soup. To run a model on-chain you have to re-express every weight, activation, and intermediate as a **fixed-point** integer: pick a scaling factor, store `w × 2^k`, and track the binary point by hand. The standard tool is [PRBMath](https://github.com/PaulRBerg/prb-math), whose `SD59x18` type packs a signed value with **18 decimals** of fraction into one `int256`. A multiply isn't a hardware `MUL` — it's a 512-bit intermediate product followed by a divide to rescale, because `(a·2¹⁸)·(b·2¹⁸) = ab·2³⁶` and you have to shed the extra `2¹⁸`.
+
+That turns every scalar operation into a function call with real overhead. The ML2SC authors ([arXiv:2404.16967](https://arxiv.org/abs/2404.16967)) measured it directly: a PRBMath multiply costs **656 gas** against **297** for native `int256` multiplication; addition **382** against **215**; division **617** against **274**. Call it a ~2.2× tax on every arithmetic op — and that's *before* you've read a single weight from storage or run the dot products that dominate a layer.
+
+## The cost of one edge
+
+ML2SC is the cleanest data point we have: a transpiler that takes a trained PyTorch MLP and emits a Solidity contract implementing its forward pass with PRBMath. Their gas measurements give us a per-component cost model for inference (their Table IV):
+
+| Component | Gas |
+| --- | --- |
+| Fixed inference overhead | 3,800,106 |
+| Per edge (one weight × input MAC) | 106,514 |
+| Per hidden neuron (ReLU) | 22,808 |
+| Per output neuron (sigmoid) | 28,033 |
+| Per additional layer | 103,247 |
+
+The number that matters is **106,514 gas per edge**. An "edge" is a single connection — one weight, one multiply, one accumulate — so a dense layer mapping `m` inputs to `n` outputs has `m × n` of them. That cost bundles the storage read of the weight, the PRBMath multiply and add, and the per-connection memory bookkeeping the generated contract does. It is not maximally optimized, but it is what a realistic, readable on-chain implementation actually costs.
+
+Now multiply through:
+
+- **Logistic regression, 10 inputs → 1 output.** 10 edges. `3,800,106 + 10·106,514 + 28,033 ≈ 4.9M gas`. Fine.
+- **Iris-style MLP, 4 → 8 → 3.** 56 edges. `≈ 10.0M gas`. Still fine.
+- **A tabular MLP, 16 → 16 → 1.** 272 edges. `≈ 33.2M gas`.
+- **MNIST, the "hello world" of neural nets: 784 → 128 → 10.** 101,632 edges. `101,632 · 106,514 ≈ 10.83 **billion** gas`.
+
+Hold that MNIST number against a block.
+
+## The block is the wall, not the dollar
+
+As of this writing (2026-06-14), a live Ethereum block carries a **60,000,000 gas** limit — read straight off block 25,312,300, up from the 30M that held for years and the 36M after Pectra. [Base](/articles/x402-agent-payments-onchain), the L2 where most agent and payment traffic actually lives, runs a **400,000,000 gas** limit (block 47,305,170). A transaction cannot exceed the block it sits in. That is a hard physical ceiling, not a price you can pay around.
+
+So:
+
+- The MNIST MLP at 10.83 billion gas is **180× an entire Ethereum block** and **27× a Base block**. You cannot execute it in a single transaction on either chain. Not for a lot of money — *at all*. You'd have to shard the forward pass across ~180 sequential blocks (~36 minutes on Ethereum), persisting activations to storage between each, which piles its own enormous `SSTORE` cost on top.
+- The 16→16→1 tabular MLP at 33.2M gas *fits* in one 60M Ethereum block — but eats more than half of it, crowding out every other transaction. On the old 30M limit it was already impossible.
+- Only the logistic regression and the tiny Iris net sit comfortably inside a block with room to spare.
+
+Here's the part that's counterintuitive for anyone trained to think about gas as money. At the moment of this snapshot Ethereum's base fee was **0.124 gwei** and ETH was **$1,685**, so even that impossible 10.83-billion-gas MNIST pass *prices out* at only ~$2,260 of gas — and on Base, at a 0.005 gwei base fee, a few cents of compute it still can't actually run. The dollar cost is almost a distraction. **The binding constraint on EVM-native inference is the block gas limit, and it bites long before the bill does.**
+
+<Artifact slug="gas-wall" />
+
+The chart above is that calculation, made pokeable. Each bar is a forward pass; the two dashed ceilings are the live Ethereum and Base block limits. Flip the regime toggle to "optimized floor" and the bars drop — a hand-tuned assembly contract that packs weights, keeps them warm in storage, and inlines the MACs can plausibly reach **~1,500 gas per edge** rather than 106k. That's a ~70× improvement, and it still doesn't save you: the MNIST net falls from 180 blocks to about 2.5 Ethereum blocks — better, still impossible to fit in one, though it now *does* squeeze into a single 400M-gas Base block. Optimization moves the wall. It does not remove it. Anything past a few thousand parameters of dense connectivity is off the table.
+
+## Why anyone does this anyway
+
+Stated that baldly, on-chain inference sounds like a dead end. It isn't — it's a *scalpel*, useful exactly where the model is tiny and the verifiability is worth more than the gas.
+
+The clearest live use case is **on-chain risk and anomaly detection for DeFi**. A recent line of work ([arXiv:2510.16024](https://arxiv.org/abs/2510.16024)) trains lightweight fixed-point classifiers that a contract can run as a *guard*: score an incoming transaction for attack-like structure before letting it touch the pool, all within consensus so the guard can't be bribed or front-run off-chain. The model is deliberately small — a few dozen features, one or two narrow layers — precisely because the authors did the same gas math and concluded that **full on-chain inference is prohibitively expensive**, recommending a hybrid where only the cheap decision boundary lives on-chain. That conclusion is the whole story in miniature: keep the parameters in the dozens, not the thousands, and the EVM will gladly run your classifier.
+
+Other models that fit the band: a logistic-regression solvency score; a shallow decision tree for permissioning (trees are branches, not dot products, so they dodge the per-edge tax entirely); a small linear bandit choosing fee tiers. The unifying property is *low connectivity*. The per-edge cost is brutal but it is also honest — it scales with exactly the thing that makes neural nets powerful and the EVM poor: dense matrix multiplication. It's the same wall that makes on-chain [fraud detection](/articles/gnn-vs-trees-onchain-fraud-detection) favor cheap tree models over graph nets.
+
+And this is the deeper reason the verifiable-inference industry exists at all. zkML proving an MNIST classifier is famously ~1000× the native compute — but that's 1000× of a *GPU* forward pass measured in microseconds, not 180 blocks of an EVM. [FHE on mainnet](/articles/fhe-mainnet-private-compute-costs) and [TEE attestation](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) are likewise expensive precisely so the heavy linear algebra can happen somewhere that *has* floats and SIMD, with only a succinct artifact landing on-chain. The gas wall is the negative space those techniques are shaped to fill. Run the toy model on-chain because you can; prove the real one off-chain because you must.
+
+## Takeaways
+
+- The EVM has no floating point, so on-chain inference runs on fixed-point libraries like PRBMath that tax every multiply ~2.2× over native integer math — and that tax compounds across every weight in the network.
+- Measured cost is **~106,514 gas per edge**; a single MNIST-sized dense net needs ~10.8 billion gas, **180× an Ethereum block**. The block gas limit (60M on Ethereum, 400M on Base today), not the dollar price, is the wall — and it stops dense models long before cost does.
+- Aggressive hand-optimization buys ~70× per edge but only *moves* the wall; the viable niche is genuinely small models — DeFi attack guards, logistic risk scores, shallow trees — where on-chain verifiability is worth more than the gas, and everything bigger is exactly why zkML, FHE, and TEE inference exist.

@@ -1,21 +1,22 @@
 {
   "counts": {
-    "articles": 25,
-    "artifacts": 25
+    "articles": 26,
+    "artifacts": 26
   },
   "topicCounts": {
     "agents": 10,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
-    "data": 1,
+    "data": 2,
     "defi": 5,
     "infrastructure": 11,
     "llm": 5,
-    "machine-learning": 11,
+    "machine-learning": 12,
     "research": 1,
     "security": 9,
     "smart-contracts": 5,
+    "tokenomics": 1,
     "web3": 3,
     "zero-knowledge": 3
   },
@@ -42,6 +43,32 @@
       ],
       "artifacts": [
         "memory-injection-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "data-valuation-onchain-markets",
+      "path": "content/articles/2026/06/data-valuation-onchain-markets/index.mdx",
+      "url": "/articles/data-valuation-onchain-markets",
+      "title": "What's Your Data Worth? Valuing Contributions in On-Chain Data Markets",
+      "description": "DataDAOs promise to pay you for your data — but 'pay you fairly' hides a cooperative-game problem that's O(2ⁿ). Inside Data Shapley, the KNN trick that makes it tractable, why rankings flip under SGD noise, and what Vana's Proof of Contribution actually computes instead.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "data",
+        "machine-learning",
+        "tokenomics"
+      ],
+      "tags": [
+        "data-valuation",
+        "shapley-value",
+        "datadao",
+        "vana",
+        "proof-of-contribution",
+        "mechanism-design"
+      ],
+      "artifacts": [
+        "shapley-split"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -760,6 +787,22 @@
       "topics": [
         "agents",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "shapley-split",
+      "path": "content/artifacts/shapley-split/manifest.json",
+      "module": "src/islands/artifacts/shapley-split.ts",
+      "url": "/artifacts/shapley-split",
+      "title": "The Shapley Split",
+      "description": "Split one DataDAO reward pool across five overlapping contributors three ways: equal split, leave-one-out, and exact Shapley value over all 2ⁿ coalitions. Drag quality sliders, drop the unique contributor, or flip on the Sybil attack and watch equal split overpay a cloned wallet.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "data",
+        "tokenomics"
       ],
       "draft": false
     },

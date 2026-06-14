@@ -1,0 +1,100 @@
+{
+  "modes": [
+    {
+      "id": "model-vs-harness",
+      "label": "MODEL vs HARNESS",
+      "title": "Aligned EVM-swap success: where the last points come from",
+      "axis": "Aligned EVM-swap success",
+      "unit": "%",
+      "yMax": 100,
+      "insight": "Ten months of model upgrades moved swap success 87% → 96%. The operating layer took the same weights to 99.9% — cutting the residual error rate ~40×.",
+      "legend": [
+        { "kind": "model", "label": "model capability" },
+        { "kind": "harness", "label": "+ operating layer" }
+      ],
+      "bars": [
+        {
+          "label": "Claude 4",
+          "sub": "May 2025",
+          "value": 87,
+          "kind": "model",
+          "detail": "Base model alone, building aligned EVM swaps on Ethereum DEX buy/sell tasks."
+        },
+        {
+          "label": "Claude 4.6",
+          "sub": "Mar 2026",
+          "value": 96,
+          "kind": "model",
+          "detail": "Ten months of model upgrades added 9 points — the weights got better at constructing swaps."
+        },
+        {
+          "label": "+ operating layer",
+          "sub": "same weights",
+          "value": 99.9,
+          "displayValue": "99.9%",
+          "kind": "harness",
+          "detail": "DX Terminal Pro-style harness — prompt structure, policy validation, execution guards — closed the remaining 4-point gap. Error rate fell from 4% to 0.1%, a ~40x cut, with no change to the model."
+        }
+      ]
+    },
+    {
+      "id": "what-the-harness-fixed",
+      "label": "WHAT IT FIXED",
+      "title": "Failure modes fixed by changing the prompt, not the model (share of reasoning traces, lower is better)",
+      "axis": "Share of reasoning traces",
+      "unit": "%",
+      "yMax": 60,
+      "grouped": true,
+      "insight": "Every fix was a prompt change, not a model swap: removing law-like wording, relocating fee context, and structuring tokenomics as inputs each cut a failure mode by 3-19x.",
+      "legend": [
+        { "kind": "before", "label": "before fix" },
+        { "kind": "after", "label": "after fix" }
+      ],
+      "bars": [
+        {
+          "label": "Fabricated rules",
+          "value": 57,
+          "kind": "before",
+          "group": 0,
+          "detail": "Agents invented sell thresholds the user never set, then treated them as binding law."
+        },
+        {
+          "label": "Fabricated rules",
+          "value": 3,
+          "kind": "after",
+          "group": 0,
+          "detail": "Removing law-like wording and forbidding invented numbers cut fabricated sell rules 57% -> 3%, a 19x reduction."
+        },
+        {
+          "label": "Fee paralysis",
+          "value": 32.5,
+          "kind": "before",
+          "group": 1,
+          "detail": "Agents fixated on gas and fees and refused to trade at all."
+        },
+        {
+          "label": "Fee paralysis",
+          "value": 9.5,
+          "displayValue": "<10%",
+          "kind": "after",
+          "group": 1,
+          "detail": "Relocating fee language to after the market context dropped fee-led observations 32.5% -> below 10%."
+        },
+        {
+          "label": "Idle capital",
+          "value": 57.1,
+          "kind": "before",
+          "group": 2,
+          "detail": "Whitepaper and tokenomics misreads left capital parked: only 42.9% deployed, so 57.1% idle."
+        },
+        {
+          "label": "Idle capital",
+          "value": 22.0,
+          "kind": "after",
+          "group": 2,
+          "detail": "Structuring whitepaper mechanics as prompt inputs raised capital deployment to 78.0% — idle capital fell 57.1% -> 22.0%."
+        }
+      ]
+    }
+  ]
+}

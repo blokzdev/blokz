@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 24,
-    "artifacts": 23
+    "articles": 25,
+    "artifacts": 24
   },
   "topicCounts": {
-    "agents": 9,
+    "agents": 10,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 1,
-    "defi": 4,
-    "infrastructure": 10,
-    "llm": 4,
+    "defi": 5,
+    "infrastructure": 11,
+    "llm": 5,
     "machine-learning": 11,
     "research": 1,
     "security": 9,
@@ -94,6 +94,33 @@
       ],
       "artifacts": [
         "gas-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "operating-layer-onchain-agents",
+      "path": "content/articles/2026/06/operating-layer-onchain-agents/index.mdx",
+      "url": "/articles/operating-layer-onchain-agents",
+      "title": "It Isn't the Model: The Operating Layer Behind 7.5M On-Chain Agent Trades",
+      "description": "DX Terminal Pro ran 3,505 LLM agents trading real ETH on Base for 21 days: 7.5M invocations, ~$20M volume, 99.9% settlement. The reliability came from the operating layer around the model, not the weights — here are the numbers and the failure modes.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "llm",
+        "defi"
+      ],
+      "tags": [
+        "onchain-agents",
+        "operating-layer",
+        "guardrails",
+        "uniswap-v4",
+        "base",
+        "reliability"
+      ],
+      "artifacts": [
+        "operating-layer-lift"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -700,6 +727,22 @@
       "topics": [
         "agents",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "operating-layer-lift",
+      "path": "content/artifacts/operating-layer-lift/manifest.json",
+      "module": "src/islands/artifacts/operating-layer-lift.ts",
+      "url": "/artifacts/operating-layer-lift",
+      "title": "The Operating-Layer Lift",
+      "description": "Where reliability comes from in on-chain LLM trading agents, over DX Terminal Pro's production run: model upgrades move swap success 87% to 96%, but the operating layer takes the same weights to 99.9%. Switch panels for the prompt fixes that erased three failure modes. Tap or arrow the bars.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "infrastructure"
       ],
       "draft": false
     },

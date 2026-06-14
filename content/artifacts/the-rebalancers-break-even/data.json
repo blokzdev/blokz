@@ -1,0 +1,25 @@
+{
+  "pool": "Aave V3 — USDC on Base",
+  "asOf": "2026-06-14",
+  "onchain": {
+    "suppliedUsd": 176036452.93,
+    "borrowedUsd": 147804224.9,
+    "utilization": 0.8396,
+    "supplyApr": 0.0317,
+    "borrowApr": 0.042
+  },
+  "curve": {
+    "optimalUsage": 0.9,
+    "slope1": 0.045,
+    "slope2": 0.1,
+    "baseRate": 0.0,
+    "reserveFactor": 0.1
+  },
+  "addresses": {
+    "pool": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+    "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "aToken": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+    "rateStrategy": "0x86AB1C62A8bf868E1b3E1ab87d587Aba6fbCbDC5"
+  },
+  "note": "Reserve params and live rates read from the Aave V3 Pool and DefaultReserveInterestRateStrategy on Base via Blockscout eth_call. Supply rate = U x borrowRate x (1 - reserveFactor); the kinked curve reproduces the on-chain 3.17% supply / 4.20% borrow at 84.0% utilization exactly."
+}

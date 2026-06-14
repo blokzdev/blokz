@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 29,
-    "artifacts": 28
+    "artifacts": 29
   },
   "topicCounts": {
     "agents": 11,
@@ -235,15 +235,24 @@
       "path": "content/articles/2026/06/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose/index.mdx",
       "url": "/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
       "title": "Rate-Chasers: Why DeFi Yield Agents Win Where Trading Bots Lose",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Autonomous agents run ~19% of on-chain activity and beat Aave and Morpho at stablecoin yield — yet lose to humans at trading by 5 to 1. The split isn't about model quality. Yield-chasing is a constrained optimization against a kinked rate curve; trading needs alpha agents don't have.",
       "pubDate": "2026-06-14",
       "topics": [
         "defi",
         "agents",
         "machine-learning"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "yield-optimization",
+        "autonomous-agents",
+        "aave",
+        "giza",
+        "arma",
+        "rebalancing"
+      ],
+      "artifacts": [
+        "the-rebalancers-break-even"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -920,6 +929,22 @@
       "topics": [
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-rebalancers-break-even",
+      "path": "content/artifacts/the-rebalancers-break-even/manifest.json",
+      "module": "src/islands/artifacts/the-rebalancers-break-even.ts",
+      "url": "/artifacts/the-rebalancers-break-even",
+      "title": "The Rebalancer's Break-Even",
+      "description": "The move-or-hold call a stablecoin yield agent makes all day, on the live Aave V3 USDC curve from Base: supply capital into a higher-quoted pool and watch your own deposit slide the realized APY down the kinked curve, then race the spread against gas. Shallow pools and L1 gas flip MOVE to HOLD.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "agents"
       ],
       "draft": false
     },

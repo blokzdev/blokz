@@ -1,0 +1,205 @@
+---
+slug: proof-of-training-3-percent-spoof
+title: "The 3% Spoof: Can You Prove a Decentralized Model Was Actually Trained?"
+description: "Permissionless training networks pay peers for gradients they can't re-run. Proof-of-Learning was meant to verify the work — until it was forged for 3% of the training cost, then for one floating-point op per weight. Here's the mechanism, the attacks, and what's deployed instead."
+pubDate: 2026-06-14
+author: blokz
+topics: [machine-learning, security, infrastructure]
+tags: [proof-of-learning, decentralized-training, verifiable-training, spoofing, bittensor, compute-governance]
+artifacts: [spoofers-discount]
+difficulty: intermediate
+sources:
+  - label: "Jia et al. — Proof-of-Learning: Definitions and Practice (S&P 2021)"
+    url: "https://arxiv.org/abs/2103.05633"
+  - label: "Zhang et al. — 'Adversarial Examples' for Proof-of-Learning (S&P 2022)"
+    url: "https://arxiv.org/abs/2108.09454"
+  - label: "Fang et al. — Proof-of-Learning is Currently More Broken Than You Think"
+    url: "https://arxiv.org/abs/2208.03567"
+  - label: "Lidin et al. — Incentivizing Permissionless Distributed Learning of LLMs (Templar/Gauntlet)"
+    url: "https://arxiv.org/abs/2505.21684"
+  - label: "Shavit — What Does It Take to Catch a Chinchilla? (compute monitoring)"
+    url: "https://arxiv.org/abs/2303.11341"
+---
+
+This blog has spent a lot of words on verifying **inference**: zkML re-derives a forward
+pass under a SNARK, [optimistic oracles](/articles/optimistic-ml-oracles) re-execute it under
+a dispute window, [TEEs attest](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed)
+to it at hardware speed, and [restaking bonds it](/articles/restaking-verifiable-ai-cost-of-corruption)
+against a slash. Every one of those answers the same question: *did this model produce this
+output?*
+
+The harder question is the one underneath it: *did this model get trained the way you say it
+did?* That's not academic anymore. Templar trained a 1.2B-parameter LLM on Bittensor by
+paying anonymous peers for gradient updates; in March 2026 the same lineage shipped
+**Covenant-72B**, a 72B model pre-trained on ~1.1T tokens by permissionless peers joining and
+leaving over the open internet. Gensyn, Pluralis, and Prime Intellect are building variants of
+the same market. In all of them, a stranger submits a weight update, claims they did the work,
+and asks to be paid. To pay them fairly you have to answer: **is that gradient real?**
+
+## Why you can't just re-run it
+
+The obvious check is re-execution: redo the training step and see if you get the same weights.
+For inference that's already fragile — as the
+[determinism piece](/articles/deterministic-inference-onchain-verification) showed, the same
+prompt at temperature 0 doesn't reproduce the same bytes once batch size and kernel
+scheduling move. Training inherits all of that and adds three more problems.
+
+It's **expensive**: re-running a step costs the same as computing it, so verifying every
+update means doing the whole training run again — the thing decentralization was supposed to
+spread out. It's **stateful**: a gradient only makes sense relative to the exact weights,
+batch, learning rate, and RNG state that produced it, and the verifier doesn't have most of
+that. And it's **non-deterministic**: even an honest re-execution lands a little off, so any
+check has to accept a tolerance — a slack band δ. Hold that thought. The slack band is where
+the whole story turns.
+
+## Proof-of-Learning: spot-check the trajectory
+
+The canonical attempt to make training verifiable is **Proof-of-Learning** (PoL), from Jia et
+al. at IEEE S&P 2021. The insight is elegant: stochastic gradient descent is a one-way-ish
+walk. Each step folds in a fresh mini-batch, so the *sequence* of weights a real run passes
+through is hard to fabricate backward from the final model. So make the prover keep the
+sequence.
+
+A PoL proof is a tuple — call it **(𝕎, 𝕀, ℍ, 𝔸)**:
+
+- **𝕎** — weight checkpoints saved every *k* steps, `W₀ → W_k → W_2k → … → W_T`.
+- **𝕀** — the data/batch indices used at each logged step.
+- **ℍ** — cryptographic hashes of those training points (so the data can't be swapped later).
+- **𝔸** — the hyperparameters: optimizer, learning-rate schedule, seeds.
+
+Verifying every step would cost as much as training, so PoL does something smarter. The
+verifier walks each epoch, computes the **update distance** `‖W_{t} − W_{t−k}‖` for each
+checkpoint interval, and re-executes only the **top-Q largest** of them. The intuition: big
+jumps carry the most information and are the hardest to fake, so audit those. For each audited
+interval it recomputes the *k* steps and accepts if the reproduced weights land within
+tolerance, `d(W'_{t}, W_{t}) ≤ δ`.
+
+```python
+# Proof-of-Learning verification, in spirit (Jia et al., Algorithm 2)
+for epoch in proof.epochs:
+    intervals = sorted(epoch.checkpoints, key=update_magnitude, reverse=True)
+    for ckpt in intervals[:Q]:                 # only the Q biggest jumps
+        W_repro = ckpt.start
+        for step in ckpt.k_steps:              # redo k gradient steps
+            W_repro = sgd_step(W_repro, data[step.idx], step.hparams)
+        if dist(W_repro, ckpt.end) > delta:    # within the slack band?
+            return REJECT
+return ACCEPT
+```
+
+In the paper's experiments — ResNet-20/50 on CIFAR-10/100, E = 200 epochs of S = 390 steps,
+so **T = 78,000** total steps — that brings verification down to a manageable fraction of
+training while, in principle, catching anyone who didn't actually walk the path. The security
+claim was the load-bearing sentence: *an adversary who knows only the final model and the
+dataset cannot manufacture a valid proof for less work than gradient descent itself.*
+
+That sentence is false.
+
+## The 3% spoof
+
+A year later, Zhang et al. (also S&P) showed how to forge a passing PoL proof without
+training. Their trick is exactly the adversarial-example trick, run sideways. Normally you
+fix the weights and optimize an input to hit a target label; here you fix a target weight and
+**optimize a fake "training" batch so that one gradient step lands on it**. Make an
+arbitrarily-chosen data point *generate* the next checkpoint you need. Chain that backward from
+the final model and you've manufactured a whole trajectory of intermediate checkpoints, each
+with a real, hashable data point behind it — a proof that re-executes cleanly and passes the
+δ check.
+
+The numbers are the part that stings. Their Attack II converges in about **N = 10**
+optimization iterations per checkpoint; the loss on the forged step drops 0.43 → **0.04** and
+the gradient norm 61.13 → **0.12**, comfortably inside any tolerance the verifier set. Total
+cost works out to roughly **31·T′** gradient computations, with a break-even at **T′ < 2,516
+steps** — about **3.2% of the 78,000-step honest run**. You spoof the proof for three cents on
+the training dollar.
+
+<Artifact slug="spoofers-discount" />
+
+Then Fang et al. made it worse. Their "infinitesimal update" attack interpolates a chain of
+near-zero updates between the initial and final weights — reproduction is then trivially exact
+because almost nothing happened per step — at a cost of roughly **one floating-point operation
+per parameter**, not one training run. And their **Blindfold Top-Q** attack goes straight for
+the optimization that made PoL affordable: since the verifier only audits the *largest*
+updates, the adversary plants legitimate large updates where the spotlight lands and hides the
+forged ones among the steps that never get checked. Their verdict is blunt — PoL "cannot
+currently achieve provable robustness," because the missing piece (a provable lower bound on
+the cost of spoofing) reduces to open problems about the geometry of non-convex optimization
+that nobody has solved.
+
+This is the slack band coming back to bite. δ has to be loose enough to absorb honest
+non-determinism, or you false-reject the people doing real work. But anything loose enough to
+forgive an honest re-execution is also loose enough to accept an adversarially-optimized one.
+**There is no setting of δ that passes honest training and rejects the forgery** — and that's
+the trap the artifact above lets you drive into: tighten the tolerance to catch the spoof and
+the honest nodes start failing first.
+
+## What the live networks actually do
+
+So how do Templar and Covenant pay peers, if proof-of-training is broken? They don't use proof
+at all. They use **statistical contribution scoring**, and they're honest that it's a
+heuristic.
+
+Templar's **Gauntlet** mechanism never checks *how* a gradient was produced — only whether it
+*helps*. Each round it scores a peer's pseudo-gradient Δ by the loss it removes from the
+current model on a random data slice:
+
+```text
+LossScore_p = L(θ) − L(θ − β·Δ_p)        # did applying this update lower loss?
+```
+
+Because that signal is noisy round to round, it's fed into **OpenSkill** — a Bradley-Terry-
+style rating system, cousin to the [peer-ranked swarm](/articles/peer-ranked-swarm-inference)
+idea — that extracts a stable relative ranking from sparse comparisons (only ~5 of many peers
+get evaluated per round). To catch peers who copy a good update instead of computing one,
+Gauntlet adds a **proof-of-computation** twist: each peer is assigned a unique data subset, and
+an honest peer should show a lower loss on *its own* assigned data than on a random slice —
+a generalization fingerprint that decays (via EMA) if they skipped the work. Drift more than 3
+steps out of sync, miss a window, or send a malformed update and your score takes a 0.75×
+penalty; gradients are L2-normalized before aggregation so no one can dominate by rescaling.
+On that scaffolding they trained a real 1.2B model on FineWebEdu over 20,000 rounds, matching
+an AdamW baseline.
+
+It works, and it's clever. But notice what it verifies: **usefulness, not honesty**. A peer
+who downloads a competitor's good gradient, adds noise, and resubmits can score well without
+training anything — the loss still drops. The assigned-data fingerprint raises the cost of that
+attack but doesn't make it impossible; it's a reputation gradient, not a proof. The trust
+didn't disappear. It moved from cryptography to economics and statistics — the same relocation
+[restaking makes explicit](/articles/restaking-verifiable-ai-cost-of-corruption) when it
+replaces "prove it" with "bond it and we'll slash you if you're caught."
+
+## Why this matters past the token incentives
+
+Verifiable training isn't only a DePIN-payments problem. It's the missing primitive under
+**compute governance**. Shavit's "What does it take to catch a Chinchilla?" proposes that
+regulators verify rules on large training runs by having on-chip firmware periodically snapshot
+weights and log enough of the run for an inspector to confirm what was trained — which is, structurally,
+a Proof-of-Learning protocol pointed at policy instead of payments. If a lab can forge a
+training transcript for 3% of the real cost, "we monitored the compute" inherits exactly the
+spoofing surface above. The same math that decides whether a Bittensor peer earns TAO decides
+whether a compute treaty is enforceable.
+
+And it stacks on top of the [other open problem](/articles/deterministic-inference-onchain-verification):
+re-execution verification assumes bit-reproducibility that GPUs don't give you, which forces
+the slack band, which is what the spoof exploits. The two failures aren't independent — the
+determinism gap is *why* the tolerance has to exist, and the tolerance is *how* the forgery
+gets in.
+
+## The honest state of the art
+
+There is, today, no deployed system that cryptographically proves a given model was trained on
+the data and compute it claims:
+
+- **Proof-of-Learning** is forgeable for ~3% of training cost, down to ~1 FLOP per parameter,
+  and its efficient-verification optimization is itself an attack surface.
+- **zkSNARKs over training** (zkDL and successors) are sound but priced out: proving a *single*
+  training step under a SNARK is orders of magnitude over the step itself, and a run is
+  millions of steps.
+- **Statistical scoring** (Gauntlet) is what actually ships, and it verifies that an update
+  helped, not that it was honestly computed — gameable by replay and free-riding.
+- **Crypto-economic bonding** (restaking, slashing) doesn't verify anything; it makes lying
+  *expensive in expectation*, which is a different and weaker guarantee.
+
+The takeaway for anyone building or buying into a "decentralized AI training" network: ask
+which of those four you're actually relying on, because it is never the first one. The gradient
+you're paying for is verified by economics and a loss curve, not by a proof — and the
+difference is precisely the 3% spoof. Knowing where the trust really sits is the whole job.

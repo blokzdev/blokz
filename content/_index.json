@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 27,
-    "artifacts": 27
+    "articles": 28,
+    "artifacts": 28
   },
   "topicCounts": {
     "agents": 10,
@@ -10,11 +10,11 @@
     "cryptography": 3,
     "data": 2,
     "defi": 5,
-    "infrastructure": 11,
+    "infrastructure": 12,
     "llm": 6,
-    "machine-learning": 12,
+    "machine-learning": 13,
     "research": 1,
-    "security": 10,
+    "security": 11,
     "smart-contracts": 6,
     "tokenomics": 1,
     "web3": 3,
@@ -200,6 +200,32 @@
       ],
       "artifacts": [
         "swarm-consensus"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "proof-of-training-3-percent-spoof",
+      "path": "content/articles/2026/06/proof-of-training-3-percent-spoof/index.mdx",
+      "url": "/articles/proof-of-training-3-percent-spoof",
+      "title": "The 3% Spoof: Can You Prove a Decentralized Model Was Actually Trained?",
+      "description": "Permissionless training networks pay peers for gradients they can't re-run. Proof-of-Learning was meant to verify the work — until it was forged for 3% of the training cost, then for one floating-point op per weight. Here's the mechanism, the attacks, and what's deployed instead.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "machine-learning",
+        "security",
+        "infrastructure"
+      ],
+      "tags": [
+        "proof-of-learning",
+        "decentralized-training",
+        "verifiable-training",
+        "spoofing",
+        "bittensor",
+        "compute-governance"
+      ],
+      "artifacts": [
+        "spoofers-discount"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -845,6 +871,22 @@
       "topics": [
         "data",
         "tokenomics"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "spoofers-discount",
+      "path": "content/artifacts/spoofers-discount/manifest.json",
+      "module": "src/islands/artifacts/spoofers-discount.ts",
+      "url": "/artifacts/spoofers-discount",
+      "title": "The Spoofer's Discount",
+      "description": "Drive the Proof-of-Learning trap: a logged training trajectory, audited top-Q by re-execution against a tolerance δ. Forge the run and it still passes — the forger tuned every interval under δ for 3% of training cost. Tighten δ to catch it and the honest node fails first.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "security"
       ],
       "draft": false
     },

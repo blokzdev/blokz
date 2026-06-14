@@ -1,0 +1,21 @@
+{
+  "slug": "byte-equality-gate",
+  "title": "The Byte-Equality Gate",
+  "description": "Why re-executing an LLM doesn't reproduce it. One matmul reduces to the logit gap between 'Queens, New York' and 'New York City'; drag the production split-K and watch IEEE-754 rounding flip the token at split 5 and 6, breaking the verifier's digest check. Batch-invariant kernels turn it green.",
+  "pubDate": "2026-06-14",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": ["machine-learning", "infrastructure"],
+  "aspect": "4/3",
+  "featured": true,
+  "controls": [
+    "drag the production batch → split-K slider",
+    "tap a split cell in the strip",
+    "toggle batch-invariant kernels"
+  ],
+  "dataSource": {
+    "label": "Thinking Machines — Defeating Nondeterminism in LLM Inference",
+    "url": "https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/"
+  },
+  "dataAsOf": "2026-06-14"
+}

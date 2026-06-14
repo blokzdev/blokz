@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 28,
+    "articles": 29,
     "artifacts": 28
   },
   "topicCounts": {
-    "agents": 10,
+    "agents": 11,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 2,
-    "defi": 5,
+    "defi": 6,
     "infrastructure": 12,
     "llm": 6,
-    "machine-learning": 13,
+    "machine-learning": 14,
     "research": 1,
     "security": 11,
     "smart-contracts": 6,
@@ -227,6 +227,23 @@
       "artifacts": [
         "spoofers-discount"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "path": "content/articles/2026/06/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose/index.mdx",
+      "url": "/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "title": "Rate-Chasers: Why DeFi Yield Agents Win Where Trading Bots Lose",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "defi",
+        "agents",
+        "machine-learning"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },

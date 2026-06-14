@@ -1,15 +1,23 @@
 {
   "slug": "cognitive-penalty",
   "title": "The Cognitive Penalty",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "One frozen Qwen-3.5-9B judging adversarial Optimism DAO proposals, deliberation off vs on. System 1 holds every metric at 100%; reasoning drops robustness to 68.5%, flips 27% of verdicts, and costs 17x latency — a 226s window that is itself Governance-Extractable Value. Tap a row.",
   "pubDate": "2026-06-14",
-  "type": "svg",
+  "type": "dom",
   "archetype": "chart",
   "topics": [
     "llm",
     "security"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": [
+    "hover, tap, or arrow-key a row for exact numbers",
+    "each dumbbell connects System 1 (think off) to System 2 (think on)"
+  ],
+  "dataSource": {
+    "label": "Rizvi, \"The Cognitive Penalty\" / Sentinel-Bench, arXiv:2604.16913",
+    "url": "https://arxiv.org/abs/2604.16913"
+  },
+  "dataAsOf": "2026-06-14"
 }

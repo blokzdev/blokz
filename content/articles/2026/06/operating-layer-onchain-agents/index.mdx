@@ -1,22 +1,118 @@
 ---
 slug: operating-layer-onchain-agents
 title: "It Isn't the Model: The Operating Layer Behind 7.5M On-Chain Agent Trades"
-description: "DX Terminal Pro ran 3,505 LLM agents trading real ETH on Base for 21 days: 7.5M invocations, 20M dollars of volume, 99.9 percent settlement. The reliability came from the operating layer around the model, not the weights."
+description: "DX Terminal Pro ran 3,505 LLM agents trading real ETH on Base for 21 days: 7.5M invocations, ~$20M volume, 99.9% settlement. The reliability came from the operating layer around the model, not the weights — here are the numbers and the failure modes."
 pubDate: 2026-06-14
 author: blokz
 topics: [agents, infrastructure, llm, defi]
-tags: []
-artifacts: []
+tags: [onchain-agents, operating-layer, guardrails, uniswap-v4, base, reliability]
+artifacts: [operating-layer-lift]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Barton et al., Operating-Layer Controls for Onchain Language-Model Agents Under Real Capital (arXiv:2604.26091)"
+    url: "https://arxiv.org/abs/2604.26091"
+  - label: "Patlan et al., Real AI Agents with Fake Memories: CrAIBench (arXiv:2503.16248)"
+    url: "https://arxiv.org/abs/2503.16248"
+  - label: "Uniswap v4 core — PoolManager and hooks"
+    url: "https://docs.uniswap.org/contracts/v4/overview"
+  - label: "SGLang — structured generation runtime"
+    url: "https://github.com/sgl-project/sglang"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+The pitch for autonomous on-chain agents usually rides on the model: a better LLM picks better trades, so reliability is a benchmark you climb by swapping weights. A 21-day production deployment just published the receipts, and the headline number cuts the other way. The same model that built an *aligned* EVM swap 96% of the time on its own hit **99.9%** once it was wrapped in an operating layer — prompt compilation, policy validation, execution guards. The remaining reliability didn't live in the weights. It lived in the harness.
 
-## Section heading
+This matters because most teams shipping agent-driven DeFi are tuning the wrong knob. Below is what the data says about which knob actually moves.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The deployment
+
+DX Terminal Pro is an on-chain agentic market: users fund a vault with real ETH, set a strategy, and an LLM agent trades [Uniswap v4](https://docs.uniswap.org/contracts/v4/overview) pools on Base on their behalf. Over 21 days ([Barton et al., arXiv:2604.26091](https://arxiv.org/abs/2604.26091)):
+
+- **3,505** user-funded vaults holding **5,000+ ETH**
+- **7.5 million** agent invocations consuming **~70 billion** inference tokens
+- **~300,000** on-chain actions, **~$20 million** in trading volume
+- **99.9%** settlement success for policy-valid transactions
+- Longest-running agents reached **6,000+** sequential prompt → state → action cycles
+
+Every agent ran the *same* open-weights model — `Qwen3-235B-A22B-Thinking-2507`, served with [SGLang](https://github.com/sgl-project/sglang) at temperature 0.6. No per-user fine-tuning, no model routing. Behavioral diversity came from configuration, not architecture. That single design choice is what makes the deployment a clean experiment: hold the weights fixed, vary the operating layer, watch what reliability does.
+
+## Where the reliability actually lives
+
+The team ran an internal evaluation they call *aligned successful EVM swap construction* — does the agent emit a swap that is both valid and faithful to the user's mandate? Tracked across model generations, capability did improve: Claude 4 (May 2025) scored 87%, Claude 4.6 (March 2026) reached 96%. Ten months of frontier progress bought nine points.
+
+Then they applied the DX Terminal Pro harness — structured prompts, typed validation, execution guards — to the *same* model. It went to 99.9%.
+
+<Artifact slug="operating-layer-lift" />
+
+Read the gap carefully. Going 96% → 99.9% sounds like a rounding error until you frame it as error rate: a 4% failure rate became 0.1%, a **~40× reduction**, with no change to the weights. At 7.5M invocations and ~300k on-chain actions, the difference between a 4% and a 0.1% misfire rate is the difference between thousands of botched, capital-bearing transactions and a few hundred. The model upgrade and the harness are not substitutes; the harness closed a gap the next model generation wasn't going to close on its own.
+
+## The five control layers
+
+The harness isn't a prompt; it's a pipeline. Each layer narrows what the model is allowed to do before anything touches the chain:
+
+1. **User surface** — five 1–5 sliders (e.g. Trading Activity, Risk) plus free-text strategy. Humans express intent in low-dimensional, bounded controls, not raw prompts.
+2. **Prompt compilation** — Go templates render a per-agent prompt from on-chain configuration and current market state. The model never sees a hand-typed prompt; it sees a deterministically assembled one.
+3. **Policy validation** — token validity, balance checks, slippage bounds, position limits. Run *before* the model's proposed action is accepted.
+4. **Execution guards** — hard caps: maximum trade size (5–100 bps of the vault), slippage tolerance (0.10–50%), token-pair allowlists.
+5. **Trace logging** — every step recorded: user mandate → rendered prompt → reasoning → tool call → validation result → settlement.
+
+The conceptual move is that the LLM is a *proposer*, never an executor. It nominates a structured action; deterministic code decides whether that action is allowed. A representative validation gate looks like this:
+
+```ts
+// The model proposes; the operating layer disposes.
+function admit(proposal: SwapProposal, vault: VaultState, policy: Policy): Decision {
+  // 1. Policy validation — is this action even coherent?
+  if (!policy.allowedPairs.has(proposal.pair)) return reject("pair not in allowlist");
+  if (proposal.amountIn > vault.balance(proposal.tokenIn)) return reject("insufficient balance");
+
+  // 2. Execution guards — hard caps independent of what the model "wants".
+  const sizeBps = (proposal.amountIn / vault.totalValue) * 10_000;
+  if (sizeBps > policy.maxTradeBps) return clamp(proposal, policy.maxTradeBps);
+  if (proposal.slippage > policy.maxSlippage) return reject("slippage over tolerance");
+
+  // 3. Only now does anything reach Uniswap v4.
+  return admit(proposal);
+}
+```
+
+None of this is novel as software. What's novel is the measurement: the paper quantifies how much of the agent's real-world reliability is produced *here* rather than in the forward pass. This is the same chokepoint that defends against adversarial input. We've argued before that an on-chain agent doesn't need its key stolen to be drained — it can be [talked into signing through a poisoned memory](/articles/agent-memory-injection-web3). A policy-validation layer that rejects out-of-allowlist pairs and caps trade size is exactly the deterministic backstop that turns a successful injection into a no-op. Reliability engineering and security engineering converge on the same layer.
+
+## The failure modes were prompt bugs, not model bugs
+
+The most useful part of the study is the catalog of what broke and how they fixed it — because every fix was a change to the *operating layer*, not the model. Switch the artifact above to its second panel for the before/after.
+
+- **Rule fabrication (57% → 3%).** Agents invented sell thresholds the user never specified, then obeyed them as if they were law. The fix: strip law-like, imperative wording from the compiled prompt and explicitly forbid invented numeric thresholds.
+- **Fee paralysis (32.5% → below 10%).** Agents fixated on gas and fees and refused to trade at all. The fix: relocate fee language to *after* the market context in the prompt, so cost framing didn't dominate the reasoning.
+- **Tokenomics misread (capital deployment 42.9% → 78.0%).** Agents misread project whitepapers and left most of the vault idle. The fix: structure the relevant mechanics as explicit prompt inputs instead of expecting the model to extract them. Idle capital fell from 57.1% to 22.0%.
+
+Two more are qualitative but instructive. *Number hardening* — feeding exact percentages caused the model to anchor on them rigidly, so they were replaced with comparative language ("higher than", "below"). *Cadence trading* — agents fell into trading at fixed intervals, fixed by banning fixed schedules and filtering what entered memory. Each of these is a prompt-compilation or memory-design decision. None required a better model.
+
+The throughline: an LLM under real capital fails in ways that look like reasoning errors but are actually *interface* errors. Change what the model is shown and what it's allowed to do, and the "reasoning" fixes itself.
+
+## Emergent behavior the harness doesn't catch
+
+Operating-layer controls make each *individual* action reliable. They do not make the *population* safe, and the paper is honest about it. With thousands of agents running the same weights on the same public market state, correlation is structural:
+
+- **3,878 sell cascades** — defined as ≥10 vaults selling the same token within 10 minutes. One memecoin saw **438 sells at a median inter-agent gap of 9.5 seconds**.
+- But **92.9%** of trades happened in five-minute token-windows that had *both* buys and sells — so the herd wasn't a single mind; positions inherited from different entry points produced genuine two-sided flow.
+
+Per-trade guards (max size, slippage caps) don't see this. A thousand individually-valid 50-bps sells inside ten seconds is a flash crash that every guard waves through. If you're building agent swarms, the systemic-risk layer is a *different* control surface from the per-action one — closer in spirit to the [blast-radius caps we examined for agent key custody](/articles/agent-key-custody-blast-radius), but applied across a fleet rather than a single key. The study flags the dynamic; nobody has the cross-agent circuit breaker yet.
+
+## What the operator can actually steer
+
+Two findings sharpen how much control the human retains. First, the sliders work: the Trading Activity control produced a **6× spread** in trade frequency, from 2.8% to 16.8% of invocations — a low-dimensional knob reliably mapped to behavior. Second, *how* users wrote strategies mattered more than the model's cleverness. Users who specified explicit exit conditions or parameter changes closed in profit **4.2× as often** as users who just told the agent to "outperform" or "pick winners." Among 87 users who relied solely on sliders and the strategy UI with no chat, **41% closed in profit** — the highest rate of any cohort.
+
+That's a pointed result for agent UX: vague, capability-trusting instructions ("beat the market") lose to bounded, falsifiable ones ("exit if down 15%"). The operating layer is most reliable precisely when the human's intent is expressed as constraints the deterministic layers can enforce — which is, again, the same lesson as the swap-construction numbers, one level up.
+
+## What to take from this
+
+The honest caveats first. This is one platform, one open-weights model, one chain, over three weeks of a rising market; the 99.9% is settlement success for *policy-valid* transactions, not trading profit, and the failure-mode rates come from classifying reasoning traces, not a controlled trial. The agents were not under deliberate adversarial pressure — the [CrAIBench work on memory injection](/articles/agent-memory-injection-web3) shows that a determined attacker changes the picture. And the pre-launch effort was substantial: 24 prompt revisions, 3,000 replayed scenarios, 4,900 traces hand-classified. "Just add a harness" undersells the work.
+
+But the engineering claim survives all of that. For LLM agents acting on-chain with real money, the reliability ceiling set by model capability is well below the ceiling set by the operating layer around it — and the operating layer is the part you control, version, and test. The proposer/disposer split, deterministic prompt compilation, policy validation before acceptance, and hard execution guards are not the unglamorous plumbing around the interesting AI. On current evidence, they *are* the interesting AI.
 
 ## Takeaways
 
-TODO.
+- **Wrap, don't just upgrade.** Model upgrades moved aligned swap success 87% → 96%; the operating layer took the same weights to 99.9% — a ~40× cut in error rate.
+- **Treat the LLM as a proposer.** Policy validation and execution guards (allowlists, size and slippage caps) run *before* anything settles, and they double as the security backstop against injection.
+- **Most "reasoning" failures are interface failures.** Rule fabrication, fee paralysis, and tokenomics misreads were all fixed in prompt compilation and memory design, not by changing the model.
+- **Per-action safety ≠ population safety.** 3,878 sell cascades show that fleets of identical agents correlate; the cross-agent circuit breaker is still missing.
+- **Constraints beat vibes.** Users who wrote explicit exit conditions were profitable 4.2× as often as those who asked the agent to "outperform."

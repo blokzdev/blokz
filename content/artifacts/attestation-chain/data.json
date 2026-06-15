@@ -1,0 +1,80 @@
+{
+  "claim": "model_hash, input_hash, output_hash",
+  "stages": [
+    {
+      "id": "silicon",
+      "label": "SILICON ROOT",
+      "sub": "Intel / NVIDIA CA",
+      "glyph": "anchor",
+      "detail": "Manufacturer root CA. The attestation key is fused into the die and every quote chains back here.",
+      "honest": "Trusted anchor — the vendor's key-provisioning infrastructure.",
+      "forged": "Still the anchor. TEE.fail doesn't break the root — it extracts a key that chains to it.",
+      "state": "ok"
+    },
+    {
+      "id": "cpu",
+      "label": "CPU TEE",
+      "sub": "Intel TDX",
+      "glyph": "chip",
+      "detail": "TDX measures firmware, kernel and the inference server, then signs a quote that binds an ephemeral application key in its user-data field.",
+      "honest": "Measurement matches expected code; the quote is signed by a genuine fused key.",
+      "forged": "A DDR5 bus interposer (< $1,000) reads the key from one signing op, then forges a quote for the attacker's own app key.",
+      "state": "compromised"
+    },
+    {
+      "id": "gpu",
+      "label": "GPU",
+      "sub": "H100 · CC mode",
+      "glyph": "gpu",
+      "detail": "An H100 in confidential-computing mode produces its own attestation, verified by the VM before the device is trusted. Throughput overhead under 7%.",
+      "honest": "Device attests; the VM verifies and trusts the GPU.",
+      "forged": "Void. GPU CC anchors to the CPU TEE — a forged CPU quote lets an attacker claim GPU inference while running none.",
+      "state": "void"
+    },
+    {
+      "id": "quote",
+      "label": "QUOTE",
+      "sub": "+ cert chain",
+      "glyph": "doc",
+      "detail": "The signed statement plus a certificate chain walked back to the vendor root, verified once per enclave then amortized over every inference.",
+      "honest": "Genuine measurement, genuine signature.",
+      "forged": "A valid signature over a false premise — it passes Intel's own DCAP Quote Verification Library.",
+      "state": "forged"
+    },
+    {
+      "id": "verifier",
+      "label": "DCAP VERIFIER",
+      "sub": "on-chain",
+      "glyph": "chain",
+      "detail": "Automata's on-chain verifier parses the quote, walks the cert chain and checks several P-256 ECDSA signatures, then registers the app key against the code measurement.",
+      "honest": "Returns valid → the app key is bound to the attested code.",
+      "forged": "Returns VALID anyway. The cryptography all checks out; the premise underneath it is false.",
+      "state": "valid-but-false"
+    },
+    {
+      "id": "inference",
+      "label": "SIGNED",
+      "sub": "inferences",
+      "glyph": "sig",
+      "detail": "Every response is signed by the registered app key over (model_hash, input_hash, output_hash) — cheap ECDSA, no new quote.",
+      "honest": "Signatures genuinely bind the attested model and its I/O.",
+      "forged": "Attacker-controlled: substituted model, fabricated outputs — and every signature still verifies.",
+      "state": "attacker"
+    }
+  ],
+  "numbers": [
+    { "label": "GPU CC overhead", "value": "< 7%", "note": "H100, amortizes toward 0 on big models" },
+    { "label": "DCAP verify (full)", "value": "~5M gas", "note": "~4M with RIP-7212; ~$2.60 on L1" },
+    { "label": "DCAP verify (zk)", "value": "~493k gas", "note": "checks run in a zkVM; ~$0.26 on L1" },
+    { "label": "Forged-quote rig", "value": "< $1,000", "note": "DDR5 interposer, one signing op" }
+  ],
+  "verifierContract": {
+    "address": "0xaDdeC7e85c2182202b66E331f2a4A0bBB2cEEa1F",
+    "chain": "Base",
+    "note": "Automata DcapAttestationFee, deployed deterministically across Base, Arbitrum, OP, Polygon, BNB"
+  },
+  "verdicts": {
+    "honest": "Chain of trust holds — attestation is sound when the adversary is remote.",
+    "forged": "Verifier returns VALID — a TEE quote is evidence, not proof."
+  }
+}

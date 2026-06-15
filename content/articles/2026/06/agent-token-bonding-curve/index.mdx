@@ -1,22 +1,191 @@
 ---
 slug: agent-token-bonding-curve
 title: "Graduate or Die: The Bonding Curve Behind Tokenized AI Agents"
-description: "Launching an AI agent token is one constant-product auction. We read Virtuals' Bonding contract off Base: a 6,000-VIRTUAL virtual reserve, a 64x price ramp, graduation at exactly 42,000 VIRTUAL, and the 12.5% gap where the Uniswap pool opens below the curve."
+description: "Launching an AI agent token is one constant-product auction. We read Virtuals' Bonding contract off Base: a 6,000-VIRTUAL virtual reserve, a 64× price ramp, graduation at exactly 42,000 VIRTUAL, and the 12.5% gap where the Uniswap pool opens below the curve."
 pubDate: 2026-06-15
 author: blokz
 topics: [tokenomics, defi, agents]
-tags: []
-artifacts: []
+tags: [bonding-curve, virtuals, agent-tokens, base, constant-product, launchpad]
+artifacts: [graduation-curve]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Virtuals Protocol — Bonding.sol (protocol-contracts)"
+    url: "https://github.com/Virtual-Protocol/protocol-contracts/blob/main/contracts/fun/Bonding.sol"
+  - label: "Bonding contract on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0xF66DeA7b3e897cD44A5a231c61B6B4423d613259"
+  - label: "Virtuals Protocol Whitepaper — Standard Launch & Graduation"
+    url: "https://whitepaper.virtuals.io/"
+  - label: "Beosin — AI+Meme: Analysis of Virtuals Protocol and Clanker"
+    url: "https://beosin.com/resources/aimeme-analysis-of-virtuals-protocol-and-clanker"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+"Tokenizing an AI agent" sounds like it should involve the agent. It doesn't. On the
+launchpads that dominate the on-chain agent economy — Virtuals on Base is the canonical
+one — creating an agent token deploys a *bonding curve*: a deterministic pricing function
+that sells a fixed supply for a fixed reserve asset, with no order book, no listing, and no
+human market maker. The model weights, the prompt, the trading logic — none of it is on
+chain. What's on chain is the curve. So if you want to understand the economics of the
+agent-token boom, read the curve, not the marketing. We pulled the live `Bonding` contract
+off Base and did exactly that. The math is cleaner — and more lopsided — than the pitch.
 
-## Section heading
+## The launchpad model: bond, then graduate
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+The lifecycle has two phases. In the **bonding phase**, the new token only trades against a
+single bonding-curve contract: you send VIRTUAL, the curve mints you tokens at a price that
+rises with every purchase. When the curve has absorbed a target amount of VIRTUAL, the token
+**graduates** — the contract halts curve trading, mints a real Uniswap pool from the
+accumulated reserves, and locks the LP. From that block on it's an ordinary ERC-20 on an AMM.
+
+The whitepaper states the headline constants: graduation at **42,000 VIRTUAL**, a **1 %
+trading fee** (split 70 % creator / 30 % treasury), and a **10-year lock** on the graduation
+LP. Those are the numbers everyone quotes. The interesting ones are the ones you have to
+read off the chain.
+
+## The curve is a constant product over *virtual* reserves
+
+Most people picture a bonding curve as an exponential — price as some `k · supply^n`. This
+one isn't. It's the same `x · y = k` constant product that runs Uniswap, except both reserves
+are seeded *virtually* — the contract pretends liquidity exists that nobody deposited.
+
+From `Bonding.sol`, the curve constant is built from two stored parameters:
+
+```solidity
+uint256 public constant K = 3_000_000_000_000; // 3e12
+// ...
+uint256 k = (K * 10000) / assetRate;           // assetRate read on-chain = 5000
+```
+
+Reading the deployed proxy at `0xF66D…3259` on Base returns `assetRate = 5000`,
+`gradThreshold = 1.25e26` (that's `125,000,000` tokens in 18-decimal wei), and
+`initialSupply = 1,000,000,000`. Plug them in:
+
+```
+k = (3e12 · 10000) / 5000 = 6e12
+```
+
+The pair is initialized with the full **1,000,000,000-token** supply on one side and just
+enough VIRTUAL on the other to satisfy `Rv · Rt = k`:
+
+```
+Rv₀ · 1,000,000,000 = 6e12   ⇒   Rv₀ = 6,000 VIRTUAL
+```
+
+That 6,000 VIRTUAL is *virtual* — no one funds it. It exists only to set the opening price.
+Spot price on a constant product is the reserve ratio:
+
+```
+P = Rv / Rt = Rv² / k
+P₀ = 6,000 / 1,000,000,000 = 6×10⁻⁶ VIRTUAL per token
+```
+
+Now buy. Every VIRTUAL in raises `Rv` and lowers `Rt = k / Rv`. Graduation is defined on the
+token reserve: when `Rt` falls to the `gradThreshold` of `125,000,000`, the curve has pulled
+
+```
+Rv_grad = k / Rt_grad = 6e12 / 125,000,000 = 48,000 VIRTUAL
+raised   = 48,000 − 6,000 = 42,000 VIRTUAL ✓
+```
+
+— which reproduces the whitepaper's 42,000 to the token. The spot price at that point is
+`48,000 / 125,000,000 = 3.84×10⁻⁴`, exactly **64× the opening price**. The fully-diluted
+valuation moves with it: 6,000 VIRTUAL at launch (~$3,900 at today's VIRTUAL price of $0.66)
+to 384,000 VIRTUAL at graduation (~$252,000). The whole journey costs the crowd 42,000
+VIRTUAL — about **$27,600** — to move a token from a $3,900 idea to a quarter-million-dollar
+"graduated agent."
+
+## Reading the curve: area under the price is money raised
+
+The chart below *is* the contract. Spend VIRTUAL with the slider and the marker walks the
+real curve; because the curve plots spot price against tokens sold, the shaded area under it
+is exactly the VIRTUAL raised so far (it's the integral `∫ P dq = ΔRv`). Note where the price
+actually lives.
+
+<Artifact slug="graduation-curve" />
+
+The convexity is the whole story. The curve is nearly flat for most of the token supply and
+then goes vertical near graduation — which means the *cheap* tokens vastly outnumber the
+expensive ones.
+
+## Half the money buys 89 % of the tokens
+
+Toggle "mark the halfway money" on the chart and the punchline lands. Split the 42,000-VIRTUAL
+raise in two:
+
+```
+raised = 21,000 → Rv = 27,000 → Rt = 6e12/27,000 = 222,222,222
+tokens sold = 1,000,000,000 − 222,222,222 = 777,777,778
+```
+
+The **first 21,000 VIRTUAL buys 88.9 % of every token the curve will ever sell.** The second
+21,000 VIRTUAL buys the remaining ~97M tokens — at an average price **8× higher**. The earlier
+you are, the more violently the curve favors you. Take it to the extreme: a sniper who lands
+the very first 1,000 VIRTUAL (~$660) into a fresh curve walks away with **142,857,143
+tokens — 14.3 % of total supply** — at an average price of 7×10⁻⁶. By the time the token
+graduates, those tokens are marked at roughly 48,000 VIRTUAL of notional. That asymmetry is
+not a bug a bot found; it's the shape of `1/x²`. It's why agent-token launches are a
+mempool bloodsport, why launchpads bolt on anti-sniping delays and per-wallet caps, and why
+"fair launch" is doing a lot of work in the marketing copy.
+
+This is the same family of failure we traced in [Bittensor's emission
+engine](/articles/bittensor-taoflow-emission-engine): when a reward or a price is a smooth,
+front-runnable function of a reserve, value leaks to whoever moves first and fastest.
+
+## The graduation gap: the pool opens below the curve
+
+Here's the detail almost no one mentions, and it falls straight out of the virtual reserve.
+At graduation the curve's spot price is 3.84×10⁻⁴, but only **42,000** VIRTUAL is actually in
+the contract — the other 6,000 was virtual. The graduation routine seeds the Uniswap pool
+with the *real* reserves: 42,000 VIRTUAL against the 125,000,000 unsold tokens. So the pool
+opens at
+
+```
+P_pool = 42,000 / 125,000,000 = 3.36×10⁻⁴
+```
+
+— **12.5 % below** the last price the curve quoted. The final curve buyer is instantly
+underwater against the AMM price the moment trading migrates, and `(1 − 42,000/48,000) = 12.5 %`
+is the exact size of the virtual-reserve subsidy the protocol used to bootstrap the opening
+price. It's not a rug and it's not hidden — it's arithmetic — but it's a real discontinuity
+that the "number goes up 64×" framing skips over.
+
+## What the curve does and doesn't buy you
+
+Give the design its due. A constant-product curve with virtual reserves is a genuinely good
+liquidity-bootstrapping primitive: price discovery is deterministic and you can compute the
+next token's price before you sign; there's no team allocation hiding in the float (the whole
+billion is on the curve); liquidity is guaranteed at graduation, not promised; and the 10-year
+LP lock plus a fixed `K` removes the most common rug vectors. For launching *a token*, this is
+more honest than a stealth listing.
+
+What it cannot do is make the agent good. Graduation certifies one thing — that 42,000 VIRTUAL
+of buy pressure showed up — and nothing about whether there's a working agent behind it.
+The two are routinely confused. As we found measuring [7.5M on-chain agent
+trades](/articles/operating-layer-onchain-agents), reliability and value in agentic systems
+come from the *operating layer* — the policy guards, the execution plumbing, the memory — not
+from the token wrapper, and certainly not from a bonding curve. A graduated token with no
+agent is just a curve that finished; a good agent with no usage still dies. The empirical
+survival predictor people keep rediscovering is boring and correct: real on-chain activity
+*before* the token, not the launch mechanic.
+
+| The curve gives you | The curve does **not** give you |
+| --- | --- |
+| Deterministic, front-computable pricing | Any signal the agent works |
+| Full supply on-curve, no hidden team float | Protection from block-zero snipers |
+| Guaranteed liquidity + 10-yr LP lock at graduation | A pool that opens at the curve's last price (−12.5 %) |
+| A clean anti-rug story | Demand after the graduation buyers leave |
 
 ## Takeaways
 
-TODO.
+- **The product is the curve.** A tokenized AI agent is, mechanically, a constant-product
+  bonding curve with virtual reserves — `Rv·Rt = 6e12`, seeded as 6,000 VIRTUAL × 1B tokens —
+  not anything about the model. Read the `Bonding` contract, not the pitch deck.
+- **Graduation is exact, not vibes.** `gradThreshold = 125,000,000` tokens ⇒ 48,000 VIRTUAL in
+  reserve ⇒ **42,000 raised**, a **64×** price ramp, ~$252k FDV at the close. All of it derives
+  from two on-chain constants.
+- **The curve front-loads brutally.** Half the money buys ~89 % of the tokens; the first 1,000
+  VIRTUAL can capture 14 % of supply. Early-mover advantage isn't an edge here, it's the
+  geometry of `1/x²`.
+- **The pool opens 12.5 % under the curve**, because the 6,000-VIRTUAL virtual reserve was
+  never real. Know the discontinuity before you're the last curve buyer.
+- **Graduating ≠ succeeding.** The mechanism is a decent liquidity primitive and a bad proxy
+  for whether an agent exists. Judge the agent on usage, not on whether its curve filled.

@@ -1,0 +1,18 @@
+{
+  "_comment": "Virtuals Protocol agent-token bonding curve constants, read off the live Bonding contract on Base (proxy 0xF66DeA7b3e897cD44A5a231c61B6B4423d613259) via Blockscout on 2026-06-15: K, assetRate, initialSupply, gradThreshold. VIRTUAL/USD from Crypto.com (VIRTUAL_USD last). All curve quantities below are derived from these on-chain primitives — see the module for the constant-product math (k = K*10000/assetRate).",
+  "contract": "0xF66DeA7b3e897cD44A5a231c61B6B4423d613259",
+  "chain": "Base",
+  "K": 3000000000000,
+  "assetRate": 5000,
+  "curveConstant": 6000000000000,
+  "initialVirtualReserve": 6000,
+  "initialTokenReserve": 1000000000,
+  "totalSupply": 1000000000,
+  "gradTokenReserve": 125000000,
+  "gradVirtualReserve": 48000,
+  "graduationRaised": 42000,
+  "tokensSoldAtGraduation": 875000000,
+  "lpTokenReserve": 125000000,
+  "tradingFeePct": 1,
+  "virtualPriceUsd": 0.6565
+}

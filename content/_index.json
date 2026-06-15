@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
       "url": "/articles/agent-token-bonding-curve",
       "title": "Graduate or Die: The Bonding Curve Behind Tokenized AI Agents",
-      "description": "Launching an AI agent token is one constant-product auction. We read Virtuals' Bonding contract off Base: a 6,000-VIRTUAL virtual reserve, a 64x price ramp, graduation at exactly 42,000 VIRTUAL, and the 12.5% gap where the Uniswap pool opens below the curve.",
+      "description": "Launching an AI agent token is one constant-product auction. We read Virtuals' Bonding contract off Base: a 6,000-VIRTUAL virtual reserve, a 64× price ramp, graduation at exactly 42,000 VIRTUAL, and the 12.5% gap where the Uniswap pool opens below the curve.",
       "pubDate": "2026-06-15",
       "topics": [
         "tokenomics",
         "defi",
         "agents"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "bonding-curve",
+        "virtuals",
+        "agent-tokens",
+        "base",
+        "constant-product",
+        "launchpad"
+      ],
+      "artifacts": [
+        "graduation-curve"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -830,7 +839,7 @@
       "module": "src/islands/artifacts/graduation-curve.ts",
       "url": "/artifacts/graduation-curve",
       "title": "The Graduation Curve",
-      "description": "Buy an AI agent token along Virtuals' real bonding curve: a 6,000-VIRTUAL virtual reserve and 1B tokens on a constant product, price ramping 64x to graduation at exactly 42,000 VIRTUAL raised. Drag the buy slider to walk the curve and watch the Uniswap pool open 12.5% below the final price.",
+      "description": "Walk the real bonding curve that prices a tokenized AI agent: 6,000 virtual VIRTUAL against 1B tokens on a constant product, spot ramping 64× to graduation at 42,000 VIRTUAL. The shaded area is VIRTUAL raised; toggle the halfway split to see the first 21,000 buy ~89% of supply.",
       "pubDate": "2026-06-15",
       "type": "svg",
       "archetype": "chart",

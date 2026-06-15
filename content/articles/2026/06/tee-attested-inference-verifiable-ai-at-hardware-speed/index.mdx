@@ -3,12 +3,13 @@ slug: tee-attested-inference-verifiable-ai-at-hardware-speed
 title: "TEE-Attested Inference: Verifiable AI at Hardware Speed"
 description: "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference."
 pubDate: 2026-06-12
+updatedDate: 2026-06-15
 author: blokz
 topics: [security, infrastructure, ai]
 tags: [tee, attestation, confidential-computing, dcap, h100]
 series: proof-of-intelligence
 seriesOrder: 3
-artifacts: []
+artifacts: [attestation-chain]
 difficulty: intermediate
 sources:
   - label: "TEE.fail: Breaking Trusted Execution Environments via DDR5 Bus Interposition"
@@ -160,6 +161,13 @@ attacker registers *their* key against *your* code measurement, then signs
 whatever outputs they like — substituted models, fabricated results — and
 the chain happily verifies every signature. The cryptography all checks
 out; the premise underneath it was false.
+
+<Artifact slug="attestation-chain" />
+
+Trace the six links of the chain — silicon root, CPU TDX quote, H100
+attestation, quote, on-chain DCAP verifier, signed inferences — then flip to
+the forged-quote path: the interposer lands on the CPU, the GPU link goes
+void, and the verifier still returns valid.
 
 The sober conclusions, not the hyped ones:
 

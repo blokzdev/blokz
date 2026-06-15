@@ -1,7 +1,7 @@
 {
   "slug": "attestation-chain",
   "title": "The Attestation Chain",
-  "description": "The TEE remote-attestation chain of trust for on-chain AI inference, stepped through: silicon root, CPU TDX quote, H100 attestation, the on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
+  "description": "The TEE remote-attestation chain of trust, stepped through: silicon root, CPU TDX quote, H100 attestation, on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
   "pubDate": "2026-06-15",
   "type": "svg",
   "archetype": "diagram",
@@ -11,5 +11,14 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a mode tab (or ←/→) to switch honest ↔ forged",
+    "tap a chain link (or ←/→) to inspect what it proves and whom you trust",
+    "tap \"trace the chain\" to walk the attestation end to end"
+  ],
+  "dataSource": {
+    "label": "Automata DCAP verifier on Base via Blockscout · benchmarks per arXiv:2409.03992 & tee.fail",
+    "url": "https://base.blockscout.com/address/0xaDdeC7e85c2182202b66E331f2a4A0bBB2cEEa1F"
+  },
+  "dataAsOf": "2026-06-15"
 }

@@ -555,6 +555,7 @@
       "title": "TEE-Attested Inference: Verifiable AI at Hardware Speed",
       "description": "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference.",
       "pubDate": "2026-06-12",
+      "updatedDate": "2026-06-15",
       "topics": [
         "security",
         "infrastructure",
@@ -569,7 +570,9 @@
       ],
       "series": "proof-of-intelligence",
       "seriesOrder": 3,
-      "artifacts": [],
+      "artifacts": [
+        "attestation-chain"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -794,7 +797,7 @@
       "module": "src/islands/artifacts/attestation-chain.ts",
       "url": "/artifacts/attestation-chain",
       "title": "The Attestation Chain",
-      "description": "The TEE remote-attestation chain of trust for on-chain AI inference, stepped through: silicon root, CPU TDX quote, H100 attestation, the on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
+      "description": "The TEE remote-attestation chain of trust, stepped through: silicon root, CPU TDX quote, H100 attestation, on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
       "pubDate": "2026-06-15",
       "type": "svg",
       "archetype": "diagram",

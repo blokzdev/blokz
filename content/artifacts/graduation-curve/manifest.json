@@ -1,0 +1,15 @@
+{
+  "slug": "graduation-curve",
+  "title": "The Graduation Curve",
+  "description": "Buy an AI agent token along Virtuals' real bonding curve: a 6,000-VIRTUAL virtual reserve and 1B tokens on a constant product, price ramping 64x to graduation at exactly 42,000 VIRTUAL raised. Drag the buy slider to walk the curve and watch the Uniswap pool open 12.5% below the final price.",
+  "pubDate": "2026-06-15",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "tokenomics",
+    "defi"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

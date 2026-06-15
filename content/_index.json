@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 29,
-    "artifacts": 30
+    "articles": 30,
+    "artifacts": 31
   },
   "topicCounts": {
-    "agents": 11,
+    "agents": 12,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 2,
-    "defi": 6,
+    "defi": 7,
     "infrastructure": 12,
     "llm": 6,
     "machine-learning": 14,
     "research": 1,
     "security": 11,
     "smart-contracts": 6,
-    "tokenomics": 1,
+    "tokenomics": 2,
     "web3": 3,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "agent-token-bonding-curve",
+      "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
+      "url": "/articles/agent-token-bonding-curve",
+      "title": "Graduate or Die: The Bonding Curve Behind Tokenized AI Agents",
+      "description": "Launching an AI agent token is one constant-product auction. We read Virtuals' Bonding contract off Base: a 6,000-VIRTUAL virtual reserve, a 64x price ramp, graduation at exactly 42,000 VIRTUAL, and the 12.5% gap where the Uniswap pool opens below the curve.",
+      "pubDate": "2026-06-15",
+      "topics": [
+        "tokenomics",
+        "defi",
+        "agents"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "agent-memory-injection-web3",
       "path": "content/articles/2026/06/agent-memory-injection-web3/index.mdx",
@@ -804,6 +821,22 @@
       "topics": [
         "security",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "graduation-curve",
+      "path": "content/artifacts/graduation-curve/manifest.json",
+      "module": "src/islands/artifacts/graduation-curve.ts",
+      "url": "/artifacts/graduation-curve",
+      "title": "The Graduation Curve",
+      "description": "Buy an AI agent token along Virtuals' real bonding curve: a 6,000-VIRTUAL virtual reserve and 1B tokens on a constant product, price ramping 64x to graduation at exactly 42,000 VIRTUAL raised. Drag the buy slider to walk the curve and watch the Uniswap pool open 12.5% below the final price.",
+      "pubDate": "2026-06-15",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tokenomics",
+        "defi"
       ],
       "draft": false
     },

@@ -1,20 +1,20 @@
 {
   "counts": {
-    "articles": 35,
-    "artifacts": 36
+    "articles": 36,
+    "artifacts": 37
   },
   "topicCounts": {
     "agents": 14,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 3,
+    "cryptography": 4,
     "data": 3,
     "defi": 9,
     "infrastructure": 16,
     "llm": 7,
-    "machine-learning": 16,
+    "machine-learning": 17,
     "research": 1,
-    "security": 13,
+    "security": 14,
     "smart-contracts": 6,
     "tokenomics": 2,
     "web3": 3,
@@ -69,6 +69,32 @@
       ],
       "artifacts": [
         "lp-breakeven-frontier"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "fingerprints-in-the-weights",
+      "path": "content/articles/2026/06/fingerprints-in-the-weights/index.mdx",
+      "url": "/articles/fingerprints-in-the-weights",
+      "title": "Fingerprints in the Weights: Monetizing Open AI Models You Can't Lock",
+      "description": "You can copy open model weights bit-for-bit, so on-chain ownership can't be cryptographically enforced — only proven. Sentient's answer: fine-tune 24,576 secret key-response fingerprints into the weights and make scale the security parameter.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "machine-learning",
+        "security",
+        "cryptography"
+      ],
+      "tags": [
+        "model-fingerprinting",
+        "oml",
+        "sentient",
+        "watermarking",
+        "backdoor",
+        "model-ownership"
+      ],
+      "artifacts": [
+        "fingerprint-reserve"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -962,6 +988,23 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "fingerprint-reserve",
+      "path": "content/artifacts/fingerprint-reserve/manifest.json",
+      "module": "src/islands/artifacts/fingerprint-reserve.ts",
+      "url": "/artifacts/fingerprint-reserve",
+      "title": "The Fingerprint Reserve",
+      "description": "Open weights can't be locked, so ownership is proven by counting surviving fingerprints. Embed thousands of secret key-response pairs; an adversary fine-tunes to scrub them and each audit burns one to leakage. Watch the reserve survive — or not.",
+      "pubDate": "2026-06-19",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "machine-learning",
+        "security",
+        "cryptography"
       ],
       "draft": false
     },

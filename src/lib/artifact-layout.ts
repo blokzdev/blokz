@@ -84,6 +84,13 @@ const SKELETON = `
 .afl-grid.afl-fill { height: auto; min-height: 100%; }
 .afl-grid.afl-fill.is-wide { grid-template-rows: auto; }
 .afl-grid.afl-fill.is-wide .afl-stage { align-self: center; }
+
+/* Hanging-indent bullets, reusable across artifacts. Add 'afl-bullet' to a line
+   whose text starts with a marker + space (✓/⚠/✗/•/–) so wrapped lines align
+   under the text instead of running back under the marker; group several in
+   'afl-bullets' for even spacing. Pairs with the artifact's own colour classes. */
+.afl-bullets { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.afl-bullet { padding-left: 1.3em; text-indent: -1.3em; min-width: 0; }
 `;
 
 function ensureStyles(): void {

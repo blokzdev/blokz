@@ -105,6 +105,9 @@ Four named slots, arranged by the container's orientation (no work from you):
   the container is cut off. In your `<style>` use shrinkable grid tracks (`minmax(0,1fr)`, not
   bare `1fr`/fixed px), `flex-wrap:wrap` on control/button rows, `min-width:0` on flex/grid
   children, and `overflow-wrap:anywhere` on long text (addresses, error strings) so it wraps.
+- **Bullets**: for `✓/⚠/✗`-prefixed status/list lines, add the shared `afl-bullet` class (and wrap
+  several in `afl-bullets`) so wrapped lines hang-indent under the text instead of running back
+  under the marker. Keep your own colour class alongside it.
 - Put **visual** CSS in your own injected `<style>`; never add layout/reflow CSS, outer padding,
   or your own resize breakpoint — the primitive is the single source of responsive truth. (A
   small local `ResizeObserver` for an *internal* sub-layout is fine if you disconnect it in

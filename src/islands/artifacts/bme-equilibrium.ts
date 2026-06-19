@@ -28,7 +28,9 @@ const usd = (n: number) => `$${fmt(n)}`;
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(210px, 56vw, 350px)',
+    // The bar card is a fixed ~130px; let the stage sit snug instead of
+    // reserving a tall block above the panels.
+    stageMin: '140px',
   });
   const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
   stage.classList.add('bme-stagewrap');
@@ -43,8 +45,11 @@ export default function mount(container: HTMLElement): () => void {
     .bme-stagewrap { display:flex; flex-direction:column; min-width:0; }
     .bme-panelwrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
     .bme-controlswrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
-    .bme-controls { display:grid; grid-template-columns:1fr 1fr auto; gap:8px 14px;
-      align-items:end; }
+    /* Shrinkable columns so the sliders never force overflow; the toggle wraps
+       to its own full-width row instead of clipping past the container edge. */
+    .bme-controls { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      gap:8px 14px; align-items:end; }
+    .bme-controls .bme-toggle { grid-column:1 / -1; justify-self:start; }
     .bme-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .bme-field output { color:#e7eaf3; font-size:11px; }

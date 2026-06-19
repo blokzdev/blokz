@@ -1,0 +1,24 @@
+{
+  "slug": "the-evaluators-chair",
+  "title": "The Evaluator's Chair",
+  "description": "Drive a Virtuals ACP escrow job: client funds USDC, provider submits a deliverable hash, and whoever sits in the evaluator's chair springs the payout. Seat the client (what ~all of Base does), a neutral agent, or no one — then run it or let someone cheat, and watch who's left exposed.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "smart-contracts"
+  ],
+  "aspect": "820/300",
+  "featured": false,
+  "controls": [
+    "tap a tab (or ←/→) to choose who sits in the evaluator's chair",
+    "tap \"run job\" for the honest path",
+    "tap the cheat button to run the adversarial path for that design"
+  ],
+  "dataSource": {
+    "label": "Virtuals ACP escrow on Base via Blockscout",
+    "url": "https://base.blockscout.com/address/0x238E541BfefD82238730D00a2208E5497F1832E0"
+  },
+  "dataAsOf": "2026-06-19"
+}

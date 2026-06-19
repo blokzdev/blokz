@@ -1,0 +1,94 @@
+---
+slug: evaluator-gap-agent-commerce
+title: "Grading Their Own Homework: The Evaluator Gap in On-Chain Agent Commerce"
+description: "Virtuals' Agent Commerce Protocol sells an independent evaluator as the thing that makes agents trust each other's work. We read 62,882 jobs off Base — and in a 30-job sample, every one let the buyer grade itself. Not one used a third party."
+pubDate: 2026-06-19
+author: blokz
+topics: [agents, smart-contracts, web3]
+tags: [acp, virtuals, escrow, evaluator, agent-commerce, base, digital-labor]
+artifacts: [the-evaluators-chair]
+difficulty: intermediate
+sources:
+  - label: "Virtuals Protocol — Agent Commerce Protocol (whitepaper)"
+    url: "https://whitepaper.virtuals.io/about-virtuals/agent-commerce-protocol-acp"
+  - label: "ACP Core escrow contract on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0x238E541BfefD82238730D00a2208E5497F1832E0"
+  - label: "Alqithami, Autonomous Agents on Blockchains: Standards, Execution Models, and Trust Boundaries (arXiv:2601.04583)"
+    url: "https://arxiv.org/abs/2601.04583"
+---
+
+When one AI agent pays another to do a job, somebody has to decide whether the work was any good. A human freelancer market solves this socially — reviews, chargebacks, a platform that eats disputes. Two autonomous agents settling in USDC on a public chain have none of that. The buyer wants its money back if the work is junk; the seller wants to get paid for work it actually did. Neither can sue.
+
+Virtuals' **Agent Commerce Protocol (ACP)** is the most-used answer to this problem in production. Its pitch is a clean piece of mechanism design: hold the payment in on-chain escrow, and release it only when an **evaluator** confirms the deliverable matches what was agreed. The evaluator is sold as the load-bearing innovation — a neutral third agent, even "an entire new market for evaluation services." It's the part that's supposed to make a trustless labor market actually work.
+
+So we read the contract off Base. As of 19 June 2026 the ACP escrow had processed **62,882 jobs since 8 April** — roughly 870 a day. And in a sample of the 30 most recent jobs, the number that used an independent evaluator was **zero**. Every single one named the buyer itself as the evaluator. The protocol's headline feature is, in practice, almost entirely switched off — and the reason it's switched off tells you something real about where trust actually sits in an agent economy.
+
+## The four phases, as the chain sees them
+
+ACP structures every job as four phases — Request, Negotiation, Transaction, Evaluation — but the part that's enforced is the on-chain escrow state machine. The ACP Core contract on Base is an ERC-1967 proxy (`0x238E…1832E0`) in front of an implementation called `AgenticCommerceV3`, compiled with Solidity 0.8.28 and, tellingly, importing Uniswap v4 — fund movements run through a *hook* contract, the same extensibility pattern v4 uses for pools.
+
+Decode its event log and the lifecycle reads cleanly:
+
+```text
+JobCreated(jobId, client, provider, evaluator, expiredAt, hook)
+BudgetSet(jobId, amount)
+JobFunded(jobId, client, amount)             // client → escrow
+JobSubmitted(jobId, provider, deliverable)   // bytes32, a content hash
+... evaluation ...
+// release → provider, or refund → client on expiry
+```
+
+A few things are worth pausing on. The **deliverable is a `bytes32`** — the chain stores a commitment to the work, never the work itself. The escrow currency is **USDC** (`0x8335…2913`); the funding method is literally named `fund`, and the amounts are tiny — the jobs in our window were funded at **$0.02 to $1.00**. This is a micro-task economy: thousands of sub-dollar gigs a day, each one a hash and a dollar.
+
+And the agents are **ERC-4337 smart accounts**. A provider doesn't send a normal transaction to submit its deliverable; it ships a user operation through a bundler to the EntryPoint, with a paymaster covering gas. That's why the proxy shows only ~1,700 direct transactions against tens of thousands of jobs — the labor is happening one level up, in account-abstraction land, exactly where you'd want an autonomous agent to live. (For how agents got wallets they can act from without handing over a raw key, see [Agent Keys and the Blast Radius Problem](/articles/agent-key-custody-blast-radius); for how they pay per-call, [x402](/articles/x402-agent-payments-onchain).)
+
+The crucial field is the fourth argument of `JobCreated`: **`evaluator`**. It's set once, at job creation, and it names the address whose approval will spring the escrow. The documentation is explicit that this is optional: "An Evaluator is an optional, neutral Agent designated to approve the final deliverable. If not specified, the Buyer Agent assumes this role." That single design choice — *optional, defaults to the buyer* — is the whole story.
+
+## Reading the chair
+
+Here is what the `evaluator` field actually contains. Across the 30 consecutive jobs `#62848`–`#62882` captured on 19 June:
+
+- **29** named the client's own address as evaluator.
+- **1** left it as the zero address — which the contract resolves back to the client.
+- **0** named an independent third party.
+
+This isn't a recent regression; it's the steady state. The same handful of buyer/seller agent pairs recur across the window — one provider agent (`0x94C0…E385`) takes job after job; a client (`0x72A8…72Ef`) buys repeatedly from the same provider through the same hook. It's a thin economy of repeat counterparties, and in it the "evaluation phase" has collapsed into a single party: the buyer approves its own purchase.
+
+The artifact below is that escrow, drivable. Pick who sits in the evaluator's chair, then run the honest path — or let someone cheat — and watch where the dollar goes.
+
+<Artifact slug="the-evaluators-chair" />
+
+The point the diagram makes is that **each choice of evaluator moves the risk onto a different party**, and "the buyer grades itself" is not a neutral default. It's a specific allocation of power.
+
+## Who can cheat whom
+
+Walk the three designs.
+
+**No evaluator (auto-release).** The escrow pays out when the provider submits and a timer elapses, with no one positioned to object. This is the friendliest UX — the seller is guaranteed payment for showing up — and it's exactly backwards on trust. The provider can submit a worthless hash and still collect. The buyer is fully exposed to provider fraud. One job in our sample ran this way.
+
+**Independent evaluator.** A neutral third agent inspects the deliverable against the agreement and only then releases funds. On paper this is the right answer: it protects the buyer from junk *and* the seller from a buyer who'd renege, because neither party controls the gate. This is the design ACP markets, complete with a prospective "market for evaluation services." On-chain, it is used by approximately nobody.
+
+**Client self-evaluation.** The buyer holds the release key. This protects the buyer perfectly against provider fraud — junk gets rejected — which is why it's the rational default for a buyer. But it quietly relocates the entire risk onto the **provider**. A dishonest buyer can accept the deliverable, take the off-chain result, then reject the job, reclaim the escrow, and walk away having paid nothing. The provider has done the work and has no recourse: the `bytes32` on-chain proves *a* deliverable existed, not that the buyer didn't use it. Escrow without a neutral evaluator doesn't remove counterparty risk; it just decides, in advance, which side eats it.
+
+So the network's de-facto standard — buyer-judges-provider — is the one configuration that leaves the worker exposed to the customer. That's a strange place for a "digital labor market" to land, and it's worth asking why it landed there.
+
+## Why the chair sits empty
+
+The honest reason independent evaluators are unused is that an evaluator is a **cost and a regress**, and the market hasn't found it worth paying.
+
+It's a cost because a third agent inspecting every sub-dollar deliverable is a second inference bill and a second on-chain interaction on a job worth a dollar. For a 30-cent task, paying an evaluator a meaningful cut to adjudicate is plainly uneconomic. Micro-tasks can't afford macro-governance.
+
+It's a regress because an evaluator doesn't eliminate trust; it *relocates* it. Now you have to trust the evaluator — and an evaluator paid per verdict has its own incentives. A lazy evaluator rubber-stamps everything (cheaper than actually checking) and you're back to auto-release. A colluding evaluator sides with whoever it's aligned with. "Who watches the evaluator?" has no on-chain answer that doesn't bottom out in *another* trusted party or a staking-and-slashing game nobody has wired into a one-dollar job. The trust-boundary literature on agent execution makes the same point in general terms: standardized intent and policy records move where trust is asserted, but something off-chain still has to assert it (Alqithami, 2026).
+
+What actually keeps the system honest, then, is not the evaluator. It's **repetition and reputation**. The recurring counterparties in the data are playing an iterated game: a buyer that griefs a good provider loses that provider, and word travels through the reputation records ACP and registries like [ERC-8004](/articles/erc-8004-agent-registries-onchain) write on-chain. Self-evaluation is safe *enough* precisely when the buyer expects to come back tomorrow. It is a social backstop wearing a smart contract's clothes.
+
+This is the same lesson the [Olas mech marketplace](/articles/agents-hiring-agents-mech-marketplace) reached from the other direction. There, agents hiring agents are disciplined not by an escrow evaluator but by a priority-and-forfeit window plus a Karma ledger that docks no-shows — crypto-economic skin in the game, not a neutral judge. Two of the most-used agent-commerce systems in production, two different mechanisms, and **neither leans on the third-party verifier** that the whitepapers foreground. The verification problem in agent commerce is being solved, where it's solved at all, by reputation and repeated play — not by putting a referee in the middle.
+
+## Takeaways
+
+- **The escrow works; the evaluator is theater — for now.** ACP's USDC escrow with auto-refund on expiry is real and load-bearing. The independent evaluator is real in the code and absent in the data: 0 of 30 sampled jobs used one. Read the `evaluator` field before you believe the architecture diagram.
+- **"Escrow + self-evaluation" is not trustless; it's trust re-assigned to the buyer.** It eliminates provider fraud and creates buyer griefing. For a worker agent, the on-chain `bytes32` is not protection — it proves delivery, not non-use.
+- **Micro-tasks can't afford macro-governance.** A neutral evaluator is a second inference bill and an infinite regress of "who checks the checker" on a job worth a dollar. The economics, not the engineering, are why the chair sits empty.
+- **Reputation is doing the work the cryptography advertises.** In both ACP and Olas, what actually deters cheating is the repeated game between recurring counterparties, recorded in on-chain reputation — the evaluator and the forfeit window are scaffolding around that, not replacements for it.
+
+The agent economy is real enough to read off the chain — 62,882 jobs and counting. But when you do read it, the trust model isn't the one in the diagram. It's the oldest one there is: keep your reputation, or stop getting hired.

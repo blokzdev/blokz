@@ -85,8 +85,17 @@
         "security",
         "cryptography"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "model-fingerprinting",
+        "oml",
+        "sentient",
+        "watermarking",
+        "backdoor",
+        "model-ownership"
+      ],
+      "artifacts": [
+        "fingerprint-reserve"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },

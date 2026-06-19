@@ -12,5 +12,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag fingerprints embedded / survive fine-tuning / audits run",
+    "tap a scheme preset (English-Random · OML 1.0 · Perinucleus)"
+  ],
+  "dataSource": {
+    "label": "Nasery et al., Scalable Fingerprinting of LLMs (NeurIPS 2025)",
+    "url": "https://openreview.net/forum?id=CRyOyiVvvJ"
+  },
+  "dataAsOf": "2026-06-19"
 }

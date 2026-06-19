@@ -1,0 +1,15 @@
+{
+  "slug": "unlearning-gap",
+  "title": "The Unlearning Gap",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-19T23:29:09.016Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

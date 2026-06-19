@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 42,
-    "artifacts": 43
+    "articles": 43,
+    "artifacts": 44
   },
   "topicCounts": {
     "agents": 18,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 4,
-    "data": 3,
+    "cryptography": 5,
+    "data": 4,
     "defi": 11,
     "infrastructure": 18,
     "llm": 8,
-    "machine-learning": 17,
+    "machine-learning": 18,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
@@ -21,6 +21,23 @@
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "proving-a-model-forgot",
+      "path": "content/articles/2026/06/proving-a-model-forgot/index.mdx",
+      "url": "/articles/proving-a-model-forgot",
+      "title": "Proving a Model Forgot: Verifiable Unlearning and the Immutable Ledger",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "data",
+        "machine-learning",
+        "cryptography"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "autonomous-exploit-economics",
       "path": "content/articles/2026/06/autonomous-exploit-economics/index.mdx",
@@ -1132,6 +1149,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "unlearning-gap",
+      "path": "content/artifacts/unlearning-gap/manifest.json",
+      "module": "src/islands/artifacts/unlearning-gap.ts",
+      "url": "/artifacts/unlearning-gap",
+      "title": "The Unlearning Gap",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "exploit-asymmetry",
       "path": "content/artifacts/exploit-asymmetry/manifest.json",

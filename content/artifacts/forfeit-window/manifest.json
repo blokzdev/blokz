@@ -1,7 +1,7 @@
 {
   "slug": "forfeit-window",
   "title": "The Forfeit Window",
-  "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it, the priority mech delivers and gains Karma; past it, a backup mech delivers, the priority mech forfeits the fee and loses Karma. Real Olas marketplace constants.",
+  "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it the priority mech delivers and gains Karma; past it a backup delivers, the priority mech forfeits the fee and is docked Karma. Live Olas marketplace constants.",
   "pubDate": "2026-06-19",
   "type": "dom",
   "archetype": "simulation",
@@ -9,7 +9,16 @@
     "agents",
     "smart-contracts"
   ],
-  "aspect": "16/9",
+  "aspect": "340/132",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag: priority response time",
+    "drag: response window (SLA)",
+    "drag: delivery rate"
+  ],
+  "dataSource": {
+    "label": "Gnosis MechMarketplace via Blockscout",
+    "url": "https://gnosis.blockscout.com/address/0x735FAAb1c4Ec41128c367AFb5c3baC73509f70bB"
+  },
+  "dataAsOf": "2026-06-19"
 }

@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/agents-hiring-agents-mech-marketplace/index.mdx",
       "url": "/articles/agents-hiring-agents-mech-marketplace",
       "title": "Agents Hiring Agents: The On-Chain SLA Inside Olas's Mech Marketplace",
-      "description": "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that punishes no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA.",
+      "description": "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that docks no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA.",
       "pubDate": "2026-06-19",
       "topics": [
         "agents",
         "smart-contracts",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "olas",
+        "mech-marketplace",
+        "agent-economy",
+        "staking",
+        "reputation",
+        "gnosis"
+      ],
+      "artifacts": [
+        "forfeit-window"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1031,7 +1040,7 @@
       "module": "src/islands/artifacts/forfeit-window.ts",
       "url": "/artifacts/forfeit-window",
       "title": "The Forfeit Window",
-      "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it, the priority mech delivers and gains Karma; past it, a backup mech delivers, the priority mech forfeits the fee and loses Karma. Real Olas marketplace constants.",
+      "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it the priority mech delivers and gains Karma; past it a backup delivers, the priority mech forfeits the fee and is docked Karma. Live Olas marketplace constants.",
       "pubDate": "2026-06-19",
       "type": "dom",
       "archetype": "simulation",

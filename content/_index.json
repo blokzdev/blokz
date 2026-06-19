@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 34,
-    "artifacts": 35
+    "articles": 35,
+    "artifacts": 36
   },
   "topicCounts": {
-    "agents": 13,
+    "agents": 14,
     "ai": 4,
     "blockchain": 10,
     "cryptography": 3,
     "data": 3,
-    "defi": 8,
-    "infrastructure": 15,
+    "defi": 9,
+    "infrastructure": 16,
     "llm": 7,
     "machine-learning": 16,
     "research": 1,
@@ -44,6 +44,23 @@
       "artifacts": [
         "regret-weight-lens"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "arbitrage-rent-on-amm-liquidity",
+      "path": "content/articles/2026/06/arbitrage-rent-on-amm-liquidity/index.mdx",
+      "url": "/articles/arbitrage-rent-on-amm-liquidity",
+      "title": "Picking Off the Pool: The Arbitrage Tax on AMM Liquidity Providers",
+      "description": "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = sigma-squared/8 prices the rent: at ETH's 63% vol that is ~5% of pool value a year, and most pools do not earn enough fees to cover it. The math, real numbers, and the auctions clawing it back.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "defi",
+        "agents",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -936,6 +953,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "lp-breakeven-frontier",
+      "path": "content/artifacts/lp-breakeven-frontier/manifest.json",
+      "module": "src/islands/artifacts/lp-breakeven-frontier.ts",
+      "url": "/artifacts/lp-breakeven-frontier",
+      "title": "The LP Break-Even Frontier",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "infrastructure"
       ],
       "draft": false
     },

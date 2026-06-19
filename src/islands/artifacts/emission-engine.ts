@@ -76,7 +76,7 @@ const pct = (f: number) => `${(f * 100).toFixed(2)}%`;
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(210px, 56vw, 350px)',
+    stageAspect: '2/1',
   });
   const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
   stage.classList.add('ee-stage');
@@ -87,7 +87,8 @@ export default function mount(container: HTMLElement): () => void {
   style.textContent = `
     .ee-stage, .ee-panels, .ee-controls, .ee-caption {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .ee-controls { display:grid; grid-template-columns:repeat(4,1fr); gap:8px 14px; }
+    .ee-controls { display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap:8px 14px; }
     .ee-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .ee-field output { color:#e7eaf3; font-size:11px; }
@@ -103,7 +104,9 @@ export default function mount(container: HTMLElement): () => void {
     /* Axis labels live in DOM, not the stretched SVG (preserveAspectRatio:none
        distorts glyphs). */
     .ee-axislabel { position:absolute; font-size:10px; color:#5b6378; pointer-events:none; }
-    .ee-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start; }
+    .ee-panels { display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+      gap:10px; align-content:start; }
     .ee-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; }
     .ee-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;

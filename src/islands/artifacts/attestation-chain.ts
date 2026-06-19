@@ -81,7 +81,10 @@ function glyphPath(kind: string): string {
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    // The chain is a very wide, short single row (viewBox 800×132 ≈ 6/1), so
+    // derive the stage height from its width — a short, snug stage with no dead
+    // gap above the panels — rather than a tall fixed floor.
+    stageAspect: '800/132',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
@@ -120,12 +123,12 @@ export default function mount(container: HTMLElement): () => void {
     .atc-interposer path { stroke: #f87171; stroke-width: 1.3; fill: none; stroke-linecap: round; }
 
     /* --- de-baked HTML controls (mode tabs + trace) --- */
-    .atc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-    .atc-tabs { display:inline-flex; flex-wrap:wrap; gap:6px; }
+    .atc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; max-width:100%; }
+    .atc-tabs { display:flex; flex-wrap:wrap; gap:6px; max-width:100%; }
     .atc-tabs button { appearance:none; border:1px solid rgba(124,140,255,.22);
       background:rgba(91,140,255,.06); color:#8d95ad; border-radius:8px;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.04em; padding:8px 14px;
-      cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
+      cursor:pointer; max-width:100%; transition:color .2s, background .2s, border-color .2s; }
     .atc-tabs button:hover { background:rgba(91,140,255,.16); border-color:rgba(124,140,255,.55); }
     .atc-tabs button[aria-selected="true"] { background:rgba(91,140,255,.20);
       border-color:#5b8cff; color:#e7eaf3; }
@@ -135,32 +138,37 @@ export default function mount(container: HTMLElement): () => void {
     .atc-run { appearance:none; border:1px solid rgba(124,140,255,.45);
       background:rgba(91,140,255,.10); color:#cdd3e6; border-radius:9px;
       font:600 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 16px;
-      cursor:pointer; transition:background .2s, border-color .2s; }
+      cursor:pointer; max-width:100%; transition:background .2s, border-color .2s; }
     .atc-run:hover { background:rgba(91,140,255,.20); border-color:#5b8cff; }
     .atc-run:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
     .atc-run[aria-disabled="true"] { opacity:.45; cursor:default; }
 
     /* --- de-baked HTML panel: detail + status + numbers + verdict --- */
-    .atc-panel { display:flex; flex-direction:column; gap:9px; min-width:0; height:100%;
-      box-sizing:border-box; }
-    .atc-d-title { color:#e7eaf3; font:600 13px 'Space Grotesk', system-ui, sans-serif; }
-    .atc-d-body { color:#8d95ad; font:500 11px 'JetBrains Mono', monospace; line-height:1.5; }
-    .atc-status { font:600 11px 'JetBrains Mono', monospace; line-height:1.45; min-height:16px; }
+    .atc-panel { display:flex; flex-direction:column; gap:9px; min-width:0; max-width:100%;
+      height:100%; box-sizing:border-box; overflow-wrap:anywhere; }
+    .atc-d-title { color:#e7eaf3; font:600 13px 'Space Grotesk', system-ui, sans-serif;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
+    .atc-d-body { color:#8d95ad; font:500 11px 'JetBrains Mono', monospace; line-height:1.5;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
+    .atc-status { font:600 11px 'JetBrains Mono', monospace; line-height:1.45; min-height:16px;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .atc-status-ok { color:#22d3ee; }
     .atc-status-bad { color:#f87171; }
     .atc-status-warn { color:#f5c451; }
     .atc-verdict { font:700 12px 'JetBrains Mono', monospace; line-height:1.45; min-height:16px;
-      opacity:0; transition:opacity .35s; }
+      min-width:0; max-width:100%; overflow-wrap:anywhere; opacity:0; transition:opacity .35s; }
     .atc-verdict.is-on { opacity:1; }
     .atc-verdict-ok { color:#22d3ee; }
     .atc-verdict-warn { color:#f5c451; }
     .atc-nums { margin-top:auto; border-top:1px solid rgba(124,140,255,.16); padding-top:9px;
-      display:flex; flex-direction:column; gap:4px; }
+      display:flex; flex-direction:column; gap:4px; min-width:0; max-width:100%; }
     .atc-nums-eyebrow { color:#5b6378; font:600 9px 'JetBrains Mono', monospace; letter-spacing:.16em; }
-    .atc-num-row { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    .atc-num-row { display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+      min-width:0; max-width:100%; }
     .atc-num-l { color:#5b6378; font:500 9px 'JetBrains Mono', monospace; letter-spacing:.04em;
-      text-transform:uppercase; }
-    .atc-num-v { color:#cdd3e6; font:600 11px 'JetBrains Mono', monospace; white-space:nowrap; }
+      text-transform:uppercase; min-width:0; overflow-wrap:anywhere; }
+    .atc-num-v { color:#cdd3e6; font:600 11px 'JetBrains Mono', monospace; min-width:0;
+      text-align:right; overflow-wrap:anywhere; }
 
     /* --- caption: provenance + hint --- */
     .atc-cap { display:flex; flex-direction:column; gap:3px; }

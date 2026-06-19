@@ -62,7 +62,7 @@ function el<K extends keyof SVGElementTagNameMap>(
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'rail',
-    stageMin: 'clamp(190px, 46vw, 300px)',
+    stageAspect: '800/270',
     controls: false,
   });
   const { stage, panel } = layout;
@@ -89,14 +89,18 @@ export default function mount(container: HTMLElement): () => void {
     /* HTML detail panel (replaces the in-SVG pt-panel) */
     .pt-detail { display: flex; flex-direction: column; gap: 8px; height: 100%;
       box-sizing: border-box; padding: 14px 16px; border-radius: 10px;
-      background: #0d1322; border: 1px solid rgba(124,140,255,0.18); }
-    .pt-d-title { color: #e7eaf3; font: 700 15px 'Space Grotesk', sans-serif; }
+      background: #0d1322; border: 1px solid rgba(124,140,255,0.18);
+      min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+    .pt-d-title { color: #e7eaf3; font: 700 15px 'Space Grotesk', sans-serif;
+      min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
     .pt-d-buys { font: 500 11.5px 'JetBrains Mono', monospace; letter-spacing: .08em; }
-    .pt-d-rows { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; }
+    .pt-d-rows { display: grid; grid-template-columns: minmax(0,auto) minmax(0,1fr); gap: 2px 12px; }
     .pt-d-key { color: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
     .pt-d-val { color: #8d95ad; font: 500 12px 'JetBrains Mono', monospace; }
-    .pt-d-note { color: #8d95ad; font: 400 12.5px Inter, sans-serif; }
-    .pt-d-src { color: #5b6378; font: 500 11px 'JetBrains Mono', monospace; margin-top: auto; }
+    .pt-d-note { color: #8d95ad; font: 400 12.5px Inter, sans-serif;
+      min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+    .pt-d-src { color: #5b6378; font: 500 11px 'JetBrains Mono', monospace; margin-top: auto;
+      min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
     .pt-d-src a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(124,140,255,0.3); }
     .pt-d-src:empty { display: none; }
   `;

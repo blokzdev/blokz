@@ -41,7 +41,7 @@ interface Node {
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'rail',
-    stageMin: 'clamp(200px, 54vw, 360px)',
+    stageAspect: '800/380',
     panel: false,
     controls: false,
   });
@@ -68,7 +68,8 @@ export default function mount(container: HTMLElement): () => void {
 
     /* HTML caption (replaces the in-SVG mc-caption explainer line) */
     .mc-caption { color: #5b6378; font: 500 11px 'JetBrains Mono', monospace;
-      letter-spacing: .08em; padding: 2px 2px; }
+      letter-spacing: .08em; padding: 2px 2px;
+      min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
   `;
   stage.appendChild(style);
 

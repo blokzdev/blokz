@@ -78,39 +78,48 @@ const fmtDays = (d: number) => {
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(210px, 56vw, 350px)',
+    // Chart is a short, width-scaling SVG (172px box) + a one-line verdict.
+    // Derive stage height from width instead of a tall fixed floor, so there's
+    // no dead gap above the panels. ~16/9 hugs the kinked-curve shape.
+    stageAspect: '16/9',
+    stageMin: 'clamp(180px, 42vw, 260px)',
   });
 
   const style = document.createElement('style');
   style.textContent = `
     .rbe-stage { display:flex; flex-direction:column; gap:9px;
       background:#05070d; font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .rbe-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px 16px;
+    .rbe-controls { display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(min(150px,100%),1fr));
+      gap:7px 16px; max-width:100%;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .rbe-field { min-width:0; max-width:100%; }
     .rbe-field label { display:flex; justify-content:space-between; gap:6px;
-      font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
+      min-width:0; font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
+    .rbe-field label span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
     .rbe-field output { color:#e7eaf3; font-size:11px; font-variant-numeric:tabular-nums; }
     .rbe-field input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:3px 0 0; }
     .rbe-field.rbe-dest input { accent-color:#22d3ee; }
     .rbe-stagewrap { border:1px solid rgba(124,140,255,.14); border-radius:12px;
-      background:#0d1322; padding:10px 12px 6px; }
-    .rbe-svgbox { position:relative; }
+      background:#0d1322; padding:10px 12px 6px; min-width:0; max-width:100%; }
+    .rbe-svgbox { position:relative; min-width:0; max-width:100%; }
     .rbe-svgbox svg { width:100%; height:172px; display:block; }
     .rbe-lab { position:absolute; transform:translate(-50%,-50%); font-size:9.5px;
       pointer-events:none; white-space:nowrap; font-variant-numeric:tabular-nums; }
     .rbe-axis { position:absolute; font-size:8.5px; color:#5b6378; pointer-events:none;
       white-space:nowrap; letter-spacing:.04em; }
-    .rbe-panels { display:grid; grid-template-columns:1fr; gap:10px;
-      font:500 12px/1.45 'JetBrains Mono', monospace; }
+    .rbe-panels { display:grid; grid-template-columns:minmax(0,1fr); gap:10px;
+      max-width:100%; font:500 12px/1.45 'JetBrains Mono', monospace; }
     .rbe-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
-      padding:9px 12px; background:#0d1322; }
+      padding:9px 12px; background:#0d1322; min-width:0; max-width:100%; }
     .rbe-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
       letter-spacing:.13em; text-transform:uppercase; }
     .rbe-panel.rbe-impact h3 { color:#22d3ee; }
     .rbe-panel.rbe-econ h3 { color:#5b8cff; }
-    .rbe-panel dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:3px 10px; }
-    .rbe-panel dt { color:#5b6378; font-size:10px; }
+    .rbe-panel dl { margin:0; display:grid; grid-template-columns:minmax(0,auto) minmax(0,1fr);
+      gap:3px 10px; max-width:100%; }
+    .rbe-panel dt { color:#5b6378; font-size:10px; min-width:0; }
     .rbe-panel dd { margin:0; color:#e7eaf3; text-align:right;
       font-variant-numeric:tabular-nums; }
     .rbe-panel dd.neg { color:#ff7a8a; }

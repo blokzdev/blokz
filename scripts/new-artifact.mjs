@@ -113,13 +113,17 @@ export default function mount(container: HTMLElement): () => void {
     // 'footer' = controls span full width under [stage | panel];
     // 'rail' = panel + controls stack in a right rail beside the stage.
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    // For a fixed-shape chart/diagram, set stageAspect (e.g. '16/9') so the
+    // stage fits with no dead gap. Use stageMin only for variable-height DOM.
+    stageAspect: '16/9',
   });
   const { stage, panel, controls, caption } = layout;
 
   const style = document.createElement('style');
-  // Visual styles only — the primitive owns the responsive layout. Do NOT add
-  // a position:absolute root or your own resize/breakpoint logic.
+  // Visual styles only — the primitive owns the responsive layout + outer
+  // padding. Do NOT add a position:absolute root or your own resize logic. The
+  // frame is overflow-hidden, so use shrinkable grids (minmax(0,1fr)),
+  // flex-wrap on control rows, min-width:0, and overflow-wrap so nothing clips.
   style.textContent = \`\`;
   stage.appendChild(style);
 

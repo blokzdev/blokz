@@ -42,7 +42,9 @@ function el<K extends keyof SVGElementTagNameMap>(
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    // Native diagram ratio (viewBox 800×290) — stage height derives from width
+    // so it sits at natural proportion with no dead gap, no crop.
+    stageAspect: '800/290',
   });
   const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
@@ -70,23 +72,26 @@ export default function mount(container: HTMLElement): () => void {
     .ng-fine { fill: #5b6378; font: 500 8.5px 'JetBrains Mono', monospace; }
 
     /* --- de-baked HTML controls (send / replay / roll-month) --- */
-    .ng-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .ng-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      min-width:0; max-width:100%; }
     .ng-controls button { appearance:none; border:1px solid rgba(124,140,255,.28);
       background:rgba(91,140,255,.10); color:#e7eaf3; border-radius:8px;
       font:500 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 14px;
-      cursor:pointer; transition:background .2s, border-color .2s; }
+      max-width:100%; cursor:pointer; transition:background .2s, border-color .2s; }
     .ng-controls button:hover { background:rgba(91,140,255,.22); border-color:rgba(124,140,255,.7); }
     .ng-controls button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
     .ng-controls button[aria-disabled="true"] { opacity:.35; cursor:default; }
 
     /* --- de-baked HTML readout (status / quota / revert error) --- */
-    .ng-readout { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .ng-readout { display:flex; flex-direction:column; gap:8px;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .ng-verdict { min-height:18px; font:700 12px 'JetBrains Mono', monospace;
-      opacity:0; transition:opacity .3s; }
+      max-width:100%; overflow-wrap:anywhere; opacity:0; transition:opacity .3s; }
     .ng-verdict.is-on { opacity:1; }
     .ng-verdict.ng-ok { color:#22d3ee; }
     .ng-verdict.ng-bad { color:#f87171; }
-    .ng-status { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad; line-height:1.5; }
+    .ng-status { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad;
+      max-width:100%; overflow-wrap:anywhere; line-height:1.5; }
     .ng-meter { display:flex; flex-direction:column; gap:5px; }
     .ng-meter-label { font:500 9px 'JetBrains Mono', monospace; color:#5b6378;
       letter-spacing:.14em; }

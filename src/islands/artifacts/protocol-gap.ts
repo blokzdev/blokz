@@ -91,20 +91,23 @@ export default function mount(container: HTMLElement): () => void {
 
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    stageAspect: '16/9',
   });
   const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .pg-tabs { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
+    .pg-tabs { display:flex; flex-wrap:wrap; max-width:100%;
+      border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .pg-tabs button { appearance:none; border:0; background:transparent; color:#5b6378;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.05em; padding:7px 10px;
-      cursor:pointer; transition:color .2s, background .2s; white-space:nowrap; }
+      cursor:pointer; transition:color .2s, background .2s; white-space:nowrap;
+      flex:1 1 auto; min-width:0; }
     .pg-tabs button[aria-pressed="true"] { background:rgba(91,140,255,.13); color:#e7eaf3; }
     .pg-tabs button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
     .pg-legend { display:flex; gap:12px; flex-wrap:wrap;
+      min-width:0; max-width:100%; overflow-wrap:anywhere;
       font:500 10px/1.45 'JetBrains Mono', monospace; color:#5b6378; }
     .pg-legend i { display:inline-block; width:9px; height:9px; border-radius:2px;
       margin-right:5px; vertical-align:-1px; }
@@ -132,7 +135,8 @@ export default function mount(container: HTMLElement): () => void {
     .pg-hit { position:absolute; appearance:none; background:transparent; border:0;
       cursor:pointer; border-radius:6px; padding:0; }
     .pg-hit:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .pg-readout { min-height:30px; font:500 11px/1.45 'JetBrains Mono', monospace;
+    .pg-readout { min-height:30px; min-width:0; max-width:100%; overflow-wrap:anywhere;
+      font:500 11px/1.45 'JetBrains Mono', monospace;
       color:#8d95ad; font-variant-numeric:tabular-nums; }
     .pg-readout b { color:#e7eaf3; font-weight:600; }
     .pg-readout i { color:#22d3ee; font-style:normal; }

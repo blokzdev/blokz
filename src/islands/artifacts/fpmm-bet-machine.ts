@@ -81,7 +81,10 @@ const hhmm = (iso: string) => `${iso.slice(11, 16)} UTC`;
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'rail',
-    stageMin: 'clamp(210px, 56vw, 350px)',
+    // Stage is variable-height DOM (question header + a fixed 148px chart +
+    // trade line), not a single fixed-aspect SVG — so use a modest min-height
+    // floor that fits the content instead of a tall clamp that left dead space.
+    stageMin: '210px',
     stageFr: '1.4fr',
   });
   const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
@@ -113,23 +116,30 @@ export default function mount(container: HTMLElement): () => void {
       box-shadow:0 0 7px rgba(255,194,75,.8); pointer-events:none; }
     .bm-trade { font-size:10.5px; color:#8d95ad; min-height:1.5em; }
     .bm-trade b { color:#e7eaf3; }
-    .bm-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
+    .bm-panel { min-width:0; max-width:100%; box-sizing:border-box;
+      border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; display:flex; flex-direction:column; gap:7px; }
     .bm-panel h3 { margin:0; font:700 10px 'JetBrains Mono', monospace;
       letter-spacing:.14em; text-transform:uppercase; color:#ffc24b; }
+    .bm-field { min-width:0; max-width:100%; }
     .bm-field label { display:flex; justify-content:space-between; gap:6px;
-      font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
-    .bm-field output { color:#e7eaf3; font-size:11px; }
-    .bm-field input[type=range] { width:100%; accent-color:#ffc24b; cursor:pointer;
-      background:transparent; margin:3px 0 0; }
-    .bm-kelly { align-self:flex-start; border:1px solid rgba(255,194,75,.45); border-radius:8px;
+      min-width:0; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
+    .bm-field label span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+    .bm-field output { color:#e7eaf3; font-size:11px; flex:none; }
+    .bm-field input[type=range] { width:100%; max-width:100%; min-width:0; box-sizing:border-box;
+      accent-color:#ffc24b; cursor:pointer; background:transparent; margin:3px 0 0; }
+    .bm-kelly { align-self:flex-start; max-width:100%; box-sizing:border-box;
+      border:1px solid rgba(255,194,75,.45); border-radius:8px;
       background:rgba(255,194,75,.08); color:#ffc24b; padding:4px 10px; cursor:pointer;
+      white-space:normal; overflow-wrap:break-word;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.06em; }
     .bm-kelly:hover { background:rgba(255,194,75,.16); }
     .bm-kelly:focus-visible { outline:1.5px solid #ffc24b; outline-offset:2px; }
-    .bm-out dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:3px 10px; }
-    .bm-out dt { color:#5b6378; font-size:10px; }
-    .bm-out dd { margin:0; color:#e7eaf3; text-align:right; font-variant-numeric:tabular-nums; }
+    .bm-out dl { margin:0; min-width:0; max-width:100%; display:grid;
+      grid-template-columns:minmax(0,auto) minmax(0,1fr); gap:3px 10px; }
+    .bm-out dt { min-width:0; color:#5b6378; font-size:10px; }
+    .bm-out dd { margin:0; min-width:0; color:#e7eaf3; text-align:right;
+      overflow-wrap:break-word; font-variant-numeric:tabular-nums; }
     .bm-out dd.bm-pos { color:#3ddc97; }
     .bm-out dd.bm-neg { color:#f0709b; }
     .bm-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.04em; }

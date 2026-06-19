@@ -83,7 +83,7 @@ const fmtTerm = (v: number): string =>
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    stageMin: '160px',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
@@ -106,18 +106,18 @@ export default function mount(container: HTMLElement): () => void {
     .beg-sw:focus-visible { outline:2px solid rgba(34,211,238,.6); outline-offset:2px; }
     .beg-toggle b { color:#cdd3e3; font-weight:600; }
 
-    .beg-prompt { font-size:10.5px; color:#5b6378; line-height:1.5; }
+    .beg-prompt { font-size:10.5px; color:#5b6378; line-height:1.5; min-width:0; overflow-wrap:anywhere; }
     .beg-prompt b { color:#9aa3bd; font-weight:500; }
     .beg-prompt .beg-tk { color:#cdd3e3; }
 
-    .beg-terms { display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
+    .beg-terms { display:flex; flex-wrap:wrap; gap:4px; align-items:center; min-width:0; max-width:100%; }
     .beg-terms .beg-lbl { font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378;
       margin-right:3px; }
     .beg-chip { font:600 10px 'JetBrains Mono', monospace; padding:2px 5px; border-radius:4px;
       background:#0d1322; box-shadow:inset 0 0 0 1px rgba(124,140,255,.1); color:#9aa3bd;
       font-variant-numeric:tabular-nums; }
 
-    .beg-tracks { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .beg-tracks { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
     .beg-tk-card { border:1px solid rgba(124,140,255,.14); border-radius:10px; padding:9px 11px;
       background:#0a0f1c; display:flex; flex-direction:column; gap:6px; min-width:0; }
     .beg-tk-card.beg-op { box-shadow:inset 0 0 0 1px rgba(124,140,255,.06); }
@@ -146,15 +146,17 @@ export default function mount(container: HTMLElement): () => void {
     .beg-gate.beg-fail .beg-gate-verdict { color:#f0883e; }
     .beg-gate-sub { font-size:10px; color:#7c8299; line-height:1.45; }
     .beg-digests { display:flex; flex-direction:column; gap:2px; font-size:9.5px; color:#5b6378;
-      white-space:nowrap; }
+      white-space:nowrap; min-width:0; }
     .beg-digests code { color:#9aa3bd; font-family:inherit; }
     .beg-digests .beg-dq { color:#22d3ee; } .beg-digests .beg-dc { color:#f0883e; }
 
-    .beg-strip-wrap { display:flex; flex-direction:column; gap:5px; }
+    .beg-strip-wrap { display:flex; flex-direction:column; gap:5px; min-width:0; max-width:100%; }
     .beg-strip-h { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
-      font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
+      font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378;
+      min-width:0; overflow-wrap:anywhere; }
     .beg-strip-h b { color:#cdd3e3; font-weight:600; }
-    .beg-strip { display:grid; grid-template-columns:repeat(16,1fr); gap:3px; }
+    .beg-strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(22px,100%),1fr));
+      gap:3px; max-width:100%; }
     .beg-cell { position:relative; aspect-ratio:1; border-radius:4px; cursor:pointer; border:0;
       display:flex; align-items:center; justify-content:center; padding:0;
       font:700 9px 'JetBrains Mono', monospace; transition:.15s; }
@@ -164,16 +166,17 @@ export default function mount(container: HTMLElement): () => void {
     .beg-cell:focus-visible { outline:2px solid rgba(231,234,243,.8); outline-offset:1px; }
     .beg-cell .beg-cn { position:absolute; bottom:1px; right:2px; font-size:6.5px; opacity:.5; }
 
-    .beg-controls { display:flex; gap:14px; align-items:end; flex-wrap:wrap; }
-    .beg-field { display:flex; flex-direction:column; gap:4px; flex:1 1 200px; min-width:160px; }
+    .beg-controls { display:flex; gap:14px; align-items:end; flex-wrap:wrap; min-width:0; max-width:100%; }
+    .beg-field { display:flex; flex-direction:column; gap:4px; flex:1 1 200px; min-width:0; max-width:100%; }
     .beg-field label { display:flex; justify-content:space-between; gap:8px; font-size:9.5px;
-      letter-spacing:.05em; text-transform:uppercase; color:#5b6378; }
+      letter-spacing:.05em; text-transform:uppercase; color:#5b6378; min-width:0; overflow-wrap:anywhere; }
     .beg-field label output { color:#e7eaf3; font-variant-numeric:tabular-nums; }
     .beg-field input[type=range] { width:100%; cursor:pointer; accent-color:#22d3ee; margin:0; }
     .beg-field.beg-locked { opacity:.4; }
     .beg-field.beg-locked input { cursor:not-allowed; }
 
-    .beg-ref { font-size:9.5px; color:#5b6378; line-height:1.55; letter-spacing:.01em; }
+    .beg-ref { font-size:9.5px; color:#5b6378; line-height:1.55; letter-spacing:.01em;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .beg-ref b { color:#cdd3e3; font-weight:600; }
     .beg-ref a { color:#22d3ee; text-decoration:none; }
     .beg-ref a:hover { text-decoration:underline; }

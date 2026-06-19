@@ -65,18 +65,19 @@ export default function mount(container: HTMLElement): () => void {
 
   const style = document.createElement('style');
   style.textContent = `
-    .rs-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .rs-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
-      border-radius:8px; overflow:hidden; }
+    .rs-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      min-width:0; max-width:100%; }
+    .rs-toggle { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
+      border-radius:8px; overflow:hidden; max-width:100%; }
     .rs-toggle button { appearance:none; border:0; background:transparent; color:#5b6378;
       font:600 11px 'JetBrains Mono', monospace; letter-spacing:.05em; padding:7px 12px;
       cursor:pointer; transition:color .2s, background .2s; }
     .rs-toggle button[aria-pressed="true"] { background:rgba(91,140,255,.13); color:#e7eaf3; }
     .rs-toggle button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .rs-ctl { display:flex; align-items:center; gap:7px; }
+    .rs-ctl { display:flex; align-items:center; gap:7px; min-width:0; max-width:100%; flex-wrap:wrap; }
     .rs-ctl label { font-size:10px; letter-spacing:.08em; text-transform:uppercase;
       color:#5b6378; }
-    .rs-ctl input[type=range] { width:110px; accent-color:#5b8cff; }
+    .rs-ctl input[type=range] { width:110px; max-width:100%; min-width:80px; accent-color:#5b8cff; }
     .rs-ctl output { color:#e7eaf3; font-weight:600; min-width:3.2ch; }
     .rs-step { display:inline-flex; align-items:center; gap:6px; }
     .rs-step button { appearance:none; width:24px; height:24px; border-radius:6px;
@@ -95,8 +96,10 @@ export default function mount(container: HTMLElement): () => void {
       min-width:0; overflow-y:auto;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .rs-node { appearance:none; text-align:left; display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
       border:1px solid rgba(124,140,255,.18); border-radius:10px; background:#0d1322;
-      color:#8d95ad; padding:7px 12px; cursor:pointer; width:100%;
+      color:#8d95ad; padding:7px 12px; cursor:pointer; width:100%; min-width:0; max-width:100%;
+      box-sizing:border-box;
       font:500 11.5px 'JetBrains Mono', monospace;
       transition:border-color .2s, background .2s, box-shadow .2s; }
     .rs-node:hover:not(:disabled), .rs-node:focus-visible {
@@ -105,40 +108,46 @@ export default function mount(container: HTMLElement): () => void {
     .rs-node.paid { border-color:#22d3ee; box-shadow:0 0 14px rgba(34,211,238,.18); }
     .rs-node.dead { border-style:dashed; border-color:rgba(248,113,113,.45);
       cursor:default; opacity:.65; }
-    .rs-name { color:#e7eaf3; font-weight:700; white-space:nowrap; }
-    .rs-stack { font-size:9.5px; color:#5b6378; white-space:nowrap; }
+    .rs-name { color:#e7eaf3; font-weight:700; white-space:nowrap; flex:none; }
+    .rs-stack { font-size:9.5px; color:#5b6378; white-space:nowrap; min-width:0;
+      overflow:hidden; text-overflow:ellipsis; }
     .rs-stack b { color:#8b5cf6; font-weight:600; }
-    .rs-dead-tag { font-size:9.5px; color:#f87171; white-space:nowrap; }
-    .rs-barwrap { flex:1; height:10px; border-radius:5px; background:rgba(91,140,255,.08);
+    .rs-dead-tag { font-size:9.5px; color:#f87171; white-space:nowrap; min-width:0;
+      overflow:hidden; text-overflow:ellipsis; }
+    .rs-barwrap { flex:1 1 60px; height:10px; border-radius:5px; background:rgba(91,140,255,.08);
       overflow:hidden; min-width:40px; }
     .rs-bar { height:100%; width:0%; border-radius:5px;
       background:linear-gradient(90deg,#5b8cff,#22d3ee);
       transition:width .55s cubic-bezier(.22,.8,.3,1); }
     .rs-amt { color:#e7eaf3; font-weight:600; font-variant-numeric:tabular-nums;
-      min-width:8.5ch; text-align:right; white-space:nowrap; }
+      min-width:8.5ch; text-align:right; white-space:nowrap; flex:none; margin-left:auto; }
     .rs-amt.zero { color:#5b6378; font-weight:500; }
     .rs-edge { display:flex; align-items:center; gap:8px; padding:0 0 0 26px;
-      height:20px; flex:none; }
+      height:20px; flex:none; min-width:0; max-width:100%; box-sizing:border-box; }
     .rs-edge-line { width:1px; height:100%; background:rgba(124,140,255,.25);
       position:relative; overflow:visible; }
     .rs-edge-line::after { content:''; position:absolute; left:-2.5px; top:0; width:6px;
       height:6px; border-radius:50%; background:#22d3ee; opacity:0; }
     .rs-edge.pulse .rs-edge-line::after { animation:rs-up .45s ease-out; }
     @keyframes rs-up { 0% { opacity:1; top:100%; } 100% { opacity:0; top:-6%; } }
-    .rs-edge-label { font-size:9.5px; color:#5b6378; }
+    .rs-edge-label { font-size:9.5px; color:#5b6378; min-width:0; overflow:hidden;
+      text-overflow:ellipsis; white-space:nowrap; }
     .rs-edge-label b { color:#8d95ad; font-weight:600; }
     .rs-ptitle { font-size:10px; letter-spacing:.1em; text-transform:uppercase;
-      color:#5b6378; }
-    .rs-pline { display:flex; justify-content:space-between; gap:10px; }
-    .rs-pline span { color:#8d95ad; }
-    .rs-pline b { color:#e7eaf3; font-weight:600; font-variant-numeric:tabular-nums; }
+      color:#5b6378; overflow-wrap:anywhere; }
+    .rs-pline { display:flex; justify-content:space-between; gap:10px; min-width:0;
+      max-width:100%; }
+    .rs-pline span { color:#8d95ad; min-width:0; overflow-wrap:anywhere; }
+    .rs-pline b { color:#e7eaf3; font-weight:600; font-variant-numeric:tabular-nums;
+      white-space:nowrap; flex:none; }
     .rs-pline.hi b { color:#22d3ee; }
-    .rs-revert { color:#f87171; font-size:10.5px; min-height:15px; }
+    .rs-revert { color:#f87171; font-size:10.5px; min-height:15px; overflow-wrap:anywhere; }
     .rs-compare { border-top:1px solid rgba(124,140,255,.14); padding-top:7px;
-      font-size:10.5px; color:#8d95ad; }
+      font-size:10.5px; color:#8d95ad; overflow-wrap:anywhere; }
     .rs-compare b { color:#8b5cf6; }
     .rs-fine { font:500 12px/1.45 'JetBrains Mono', monospace;
-      font-size:9px; color:#5b6378; line-height:1.5; }
+      font-size:9px; color:#5b6378; line-height:1.5; overflow-wrap:anywhere;
+      min-width:0; max-width:100%; }
   `;
   stage.appendChild(style);
 

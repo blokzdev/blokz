@@ -96,9 +96,19 @@ Four named slots, arranged by the container's orientation (no work from you):
 
 - Omit a slot you don't use (`{ panel: false }`); empty slots take no space.
 - `'footer'` suits a wide row of sliders/buttons; `'rail'` suits a compact control set.
-- Put **visual** CSS in your own injected `<style>`; never add layout/reflow CSS or your own
-  resize breakpoint — the primitive is the single source of responsive truth. (A small local
-  `ResizeObserver` for an *internal* sub-layout is fine if you disconnect it in cleanup.)
+- **Size the stage to its content.** The primitive pads the whole frame and gives the stage a
+  small default floor. For a fixed-shape chart/diagram pass `stageAspect` (e.g. `'16/6'` for a
+  short bar chart, `'800/132'` for a wide chain, `'4/3'` for a curve) so the stage height derives
+  from its width with no dead gap. Use `stageMin` only for variable-height DOM stages, and keep it
+  modest — a tall `stageMin` reserves empty space above the panels.
+- **Never let content clip.** The frame is padded and `overflow-hidden`, so anything wider than
+  the container is cut off. In your `<style>` use shrinkable grid tracks (`minmax(0,1fr)`, not
+  bare `1fr`/fixed px), `flex-wrap:wrap` on control/button rows, `min-width:0` on flex/grid
+  children, and `overflow-wrap:anywhere` on long text (addresses, error strings) so it wraps.
+- Put **visual** CSS in your own injected `<style>`; never add layout/reflow CSS, outer padding,
+  or your own resize breakpoint — the primitive is the single source of responsive truth. (A
+  small local `ResizeObserver` for an *internal* sub-layout is fine if you disconnect it in
+  cleanup.)
 - Full-bleed `three`/`canvas` artifacts don't need the primitive — they fill `container`
   directly. `ArtifactMount` gives them a portrait-friendly box; multi-region artifacts grow to
   fit their content so they never cram on a phone.

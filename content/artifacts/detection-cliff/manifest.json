@@ -1,0 +1,24 @@
+{
+  "slug": "detection-cliff",
+  "title": "The Detection Cliff",
+  "description": "How many audit probes it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in a few hundred probes; FP8 needs ~150k and falls off the cliff into the economically-invisible zone.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "llm",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a substitution point to read its audit budget",
+    "use ← → to step across substitutions",
+    "toggle the audit confidence level"
+  ],
+  "dataSource": {
+    "label": "Quantization/substitution accuracy gaps: AImultiple, Qwen/Llama benchmarks",
+    "url": "https://aimultiple.com/llm-quantization"
+  },
+  "dataAsOf": "2026-06-19"
+}

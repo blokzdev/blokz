@@ -5,18 +5,97 @@ description: "AI agents now resolve most prediction markets straight off the web
 pubDate: 2026-06-19
 author: blokz
 topics: [agents, llm, defi]
-tags: []
-artifacts: []
+tags: [prediction-markets, optimistic-oracle, uma, polymarket, dispute-games, oracles]
+artifacts: [watchers-threshold]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "UMA — Can AI Agents Enhance the Optimistic Oracle?"
+    url: "https://blog.uma.xyz/articles/experiment-can-ai-agents-enhance-uma-oracle"
+  - label: "Design and Evaluation of Multi-Agent AI Oracle Systems for Prediction Market Resolution (arXiv:2605.30802)"
+    url: "https://arxiv.org/abs/2605.30802"
+  - label: "Polymarket — Resolution (UMA Optimistic Oracle)"
+    url: "https://docs.polymarket.com/concepts/resolution"
+  - label: "Polymarket UMA CTF Adapter V2 (Polygon, verified)"
+    url: "https://polygonscan.com/address/0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+A binary prediction market is only as good as the moment it pays out. Someone — or something — has to look at the world, decide whether the event happened, and write that verdict on-chain. For years that someone was a human posting a bond to UMA's Optimistic Oracle. In 2026 it is increasingly a language model: an agent that reads the web, decides a market resolved YES, and stakes $750 that nobody will argue. The chain takes its word unless a disputer pays to disagree.
 
-## Section heading
+That arrangement works because most questions are easy and the agent is mostly right. But "mostly right" is a number, and the number is not 100. The interesting engineering is not the resolver model — it's the economic machine that's supposed to catch the resolver when it's wrong, and the band of errors that machine quietly lets through.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The proposer is now a bot
+
+UMA ran the experiment in the open. Its **Optimistic Truth Bot** fills the proposer role: it watches Polymarket questions, decides the outcome, and (for now) publishes its recommendation rather than posting every proposal on-chain. The architecture is a three-layer agent stack, and it's worth knowing because the failure modes follow the seams:
+
+- a **router** that classifies each question and sends it to a solver,
+- two **solvers** — a *Perplexity solver* that searches open web sources for fuzzy questions, and a *code-runner solver* that hits structured APIs for sports scores and crypto prices,
+- an **overseer** that checks the solver's answer for hallucination, sanity against the market's own price, and edge cases, and can bounce it back.
+
+Across 3,000+ markets the bot lands ~**78% accuracy overall**. Disaggregated, that average hides a steep gradient:
+
+| Market type | Resolver accuracy |
+| --- | --- |
+| Sports & asset pricing | **99.3%** |
+| Clear Yes/No (excl. timing) | **95%** |
+| All markets | **78%** |
+| "Mention" markets (did X say Y?) | **72%** |
+
+The shape is intuitive. A code-runner querying an NBA box score is almost never wrong. A model deciding whether a politician "mentioned" a phrase — parsing transcript quality, paraphrase, and source identity — is wrong more than a quarter of the time. The human baseline for context: UMA proposers historically clear **98.2%** of proposals with no dispute at all, and only ~**0.4%** face a genuine accuracy challenge (80% of disputes are about *timing* — the P4 "proposed too early" code — not about the answer).
+
+So the bot is human-grade on the easy majority and visibly worse on the ambiguous tail. The question every prediction-market engineer has to answer is what happens to that tail.
+
+## What "good enough to settle" actually means
+
+The Optimistic Oracle is a commit-and-challenge machine, not a truth machine. A proposer asserts an answer and posts a bond. A **2-hour liveness window** opens. If nobody disputes, the assertion *is* the truth — it settles, full stop. If someone disputes by matching the bond, the question escalates: it's reset, re-proposed, and on a second dispute it goes to UMA's **DVM**, a token-holder vote that takes roughly 48 hours.
+
+You can read the whole life cycle on-chain. Polymarket's [UMA CTF Adapter V2](https://polygonscan.com/address/0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74) on Polygon (verified, live since October 2022) emits a `QuestionResolved(bytes32 questionID, int256 settledPrice, uint256[] payouts)` for every settlement — `settledPrice = 1e18` with payouts `[1,0]` is a YES, `0` with `[0,1]` is a NO. The dispute path has its own fingerprint: a `QuestionReset` event, fired when a proposal is challenged and the adapter has to re-request resolution. Disputes are rare enough that resets stand out in the log.
+
+How rare? A study of **18,427** Polymarket markets that settled between May 2025 and May 2026, reconstructed straight from the adapter's settle logs, found a **median resolution time of 41 minutes** after the event ended (22 minutes for NBA, 5h16m for geopolitics) and a dispute rate of just **1.0%** — 184 markets. When a market *was* disputed, settlement stretched by a **median 49 hours** while the DVM voted. Disputes cluster exactly where the AI is weakest: 0.6% for crypto-price markets, **4.8%** for geopolitics, with "ambiguous wording / definition gap" the single largest cause (43% of disputes).
+
+The system, in other words, runs hot and cheap: almost everything settles in under an hour with no human in the loop. That's the appeal of an AI proposer — it makes the cheap path even cheaper. The cost shows up somewhere else.
+
+## The ensemble that made it worse
+
+If one model is 78% accurate, the obvious move is to run several and combine them. A May-2026 study evaluated exactly this on **KalshiBench** — 1,189 resolved prediction-market questions — and the result is a useful warning against ensemble reflexes.
+
+Three single models (GPT-5 Nano, DeepSeek V3, Llama-3.3-70B) set the baseline. **Independent aggregation** — run them in parallel, combine with confidence-weighted voting — was the best configuration at **83.43%**, but only **+1.01 points** over the strongest single model. The gain is small because the models share their mistakes: pairwise error correlations ran **0.529–0.689**. When three models are wrong on the same hard question, voting can't rescue them.
+
+The configuration that *looks* smartest did worst. **Deliberative consensus** — let the models debate and revise — *degraded* accuracy to ~**76%**, below every single-model baseline. The mechanism is the one to remember: error propagation, where a confidently-wrong model flips a correct one during the debate. Adding reasoning made the system more persuadable, not more accurate. (We saw the same shape when [deliberation cut an AI DAO delegate's adversarial robustness from 100% to 68.5%](/articles/cognitive-penalty-ai-dao-delegates) — turning on "thinking" is not a free robustness upgrade.)
+
+What did work was refusing to answer the hard ones. A **hybrid AI-human router** that auto-resolves *only* unanimous, high-confidence questions hit **97.87% accuracy on 47% of the dataset**, sending the rest to human arbitration. That is the real design pattern: the AI's job is not to resolve everything, it's to confidently resolve the half it can and *abstain* on the half it can't — which is exactly what UMA's overseer does when it suppresses low-confidence proposals.
+
+## The dispute game only catches what pays
+
+Abstention handles the errors the AI *knows* it might make. The dangerous errors are the ones it makes confidently — a clean-looking proposal that happens to be wrong. The only thing standing between that proposal and a final on-chain settlement is a disputer who's willing to put up a bond and argue. So follow that disputer's incentives.
+
+On UMA's oracle the bond is symmetric but the reward is not. The winner of a dispute recovers their own bond **plus half the loser's bond**. So a disputer who's right earns ~**½ × bond**; a disputer who's wrong forfeits the **whole** bond. With friction `f` for the ~49 hours of locked capital and DVM-vote risk, the expected value of disputing a proposal you believe is wrong with probability `p` is:
+
+```text
+EV(p) = B · [ p·(R + 1) − (1 + f) ]        R = reward ratio (½ at UMA)
+break-even:  p* = (1 + f) / (R + 1)
+```
+
+Plug in UMA's numbers and the punchline falls out: at `R = ½`, even with zero friction, **p\* = 2/3**. A rational watcher should only dispute when they are **more than two-thirds sure** a specific proposal is wrong. The asymmetry is deliberate — UMA wants disputes to be costly so the cheap path stays clean — but it has a side effect.
+
+<Artifact slug="watchers-threshold" />
+
+Now overlay the resolver's actual error rates. A clear Yes/No market is wrong 5% of the time; a sports market 0.7%; even the ugly mention markets only 28%. *Every one of those base rates sits far to the left of the 67% break-even.* A disputer armed with nothing but the base rate is deep in negative-EV territory — challenging at random just feeds bonds to the protocol. To cross p\*, they need a **private signal** that pushes their belief from the 5% base rate to past 67% on *this particular* market: they have to actually know the proposal is wrong.
+
+That's the gap. The dispute game is a *targeted* mechanism, not a statistical one. It reliably catches errors that some watcher can specifically identify and is confident enough to bankroll. It does nothing about the steady drip of confident-but-wrong settlements that no individual watcher happens to catch — because for those, disputing is a money-losing bet. Raise the reward to `R = 2` (winner takes double) and p\* slides to 50%; the artifact shows the whole no-dispute zone shrinking. But UMA can't crank the reward arbitrarily without inviting frivolous disputes on the 99% of markets that are fine.
+
+## What actually closes the gap
+
+The protocol's answer isn't to make disputing more attractive — it's to make bad proposals harder to post in the first place. Three levers are doing the real work:
+
+1. **Whitelist the proposers.** UMA moved Polymarket toward letting only vetted parties propose resolutions, trading permissionlessness for a smaller, accountable set of proposers whose track record can be slashed and revoked. An anonymous bot that can post any answer for $750 is a different threat model than a known one with reputation at stake.
+2. **Gate on the resolver's own confidence.** The overseer suppressing low-confidence proposals, and the hybrid router auto-resolving only unanimous-high-confidence questions, push the *abstention rate* up so the proposals that reach liveness are the ones the AI is genuinely sure of. That raises the average proposal quality without touching the dispute economics at all.
+3. **Keep a slow, expensive court for the tail.** The DVM vote is deliberately costly and slow (+49h), and that's fine — it only has to handle the ~1% that get disputed. The mistake would be assuming the fast AI path can ever be the *whole* system. It can't; it can only be the cheap 99%.
+
+This is the same trust-model honesty we keep running into. [LLM agents trading these markets](/articles/llm-agents-onchain-prediction-markets) are pricing against a resolution layer that's 78% accurate on the long tail, and [optimistic ML oracles](/articles/optimistic-ml-oracles) that verify *computation* by re-execution lean on the identical assumption: that when the answer matters enough, someone with a real signal is paid to dispute. The economic security is real, but it's only as strong as the watchers who can profitably exercise it — and the math says they only show up when they already know the truth.
 
 ## Takeaways
 
-TODO.
+- **AI resolvers are production-grade on the easy majority and visibly weak on the ambiguous tail**: ~99% on sports and prices, ~72% on "did X say Y." Treat the headline 78% as a blend, not a guarantee.
+- **Don't reach for debate.** Independent aggregation beat the best single model by only ~1 point (shared errors cap the gain); deliberative consensus made it *worse*. The winning pattern is confident auto-resolution plus abstention to humans.
+- **The dispute game is targeted, not statistical.** Because a winning disputer earns half what a losing one forfeits, the break-even belief is **two-thirds** — so base-rate errors never get challenged, and only errors a watcher can specifically flag get caught.
+- **Close the gap upstream**: whitelist and slash proposers, gate on resolver confidence, and reserve the slow DVM court for the 1% — don't try to make the fast AI path carry the whole load.

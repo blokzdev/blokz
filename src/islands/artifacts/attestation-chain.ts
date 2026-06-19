@@ -15,8 +15,17 @@
  * snapshotted in ./data.json from the article's primary sources (Automata DCAP
  * benchmarks, arXiv:2409.03992, tee.fail), with the verifier confirmed live on
  * Base via Blockscout. No runtime fetches.
+ *
+ * Layout: shared responsive primitive (stage = the chain diagram SVG, trimmed
+ * to just the link row; panel = per-step detail + honest/forged status + the
+ * by-the-numbers readout + verdict, all de-baked from the SVG to HTML so they
+ * stay readable on portrait phones; footer controls = honest/forged tabs +
+ * "trace the chain" run button, real HTML wired to the same handlers; caption =
+ * verifier address + provenance + interaction hint). Stepping still happens by
+ * tapping / arrowing the diagram nodes on the SVG.
  */
 import raw from '../../../content/artifacts/attestation-chain/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -70,28 +79,19 @@ function glyphPath(kind: string): string {
 }
 
 export default function mount(container: HTMLElement): () => void {
-  const svg = el('svg', { viewBox: '0 0 800 460', preserveAspectRatio: 'xMidYMid meet' });
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  svg.setAttribute('role', 'group');
-  svg.setAttribute('aria-label', 'TEE remote-attestation chain-of-trust diagram');
-  container.appendChild(svg);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
-  const style = el('style');
+  const style = document.createElement('style');
   style.textContent = `
-    .atc-eyebrow { fill: #5b6378; font: 500 9px 'JetBrains Mono', monospace; letter-spacing: .16em; }
-    .atc-fine { fill: #5b6378; font: 500 9px 'JetBrains Mono', monospace; }
-    .atc-mono { fill: #8d95ad; font: 500 10px 'JetBrains Mono', monospace; }
-    .atc-bright { fill: #e7eaf3; font: 500 11px 'JetBrains Mono', monospace; }
-    /* tabs */
-    .atc-tab { cursor: pointer; }
-    .atc-tab rect { fill: rgba(91,140,255,0.06); stroke: rgba(124,140,255,0.22); transition: fill .2s, stroke .2s; }
-    .atc-tab text { fill: #8d95ad; font: 600 11px 'JetBrains Mono', monospace; transition: fill .2s; }
-    .atc-tab:hover rect, .atc-tab:focus-visible rect { fill: rgba(91,140,255,0.16); stroke: rgba(124,140,255,0.55); }
-    .atc-tab:focus-visible { outline: none; }
-    .atc-tab[aria-selected="true"] rect { fill: rgba(91,140,255,0.20); stroke: #5b8cff; }
-    .atc-tab[aria-selected="true"] text { fill: #e7eaf3; }
-    .atc-tab.atc-tab-forged[aria-selected="true"] rect { fill: rgba(248,113,113,0.16); stroke: #f87171; }
-    .atc-tab.atc-tab-forged[aria-selected="true"] text { fill: #fca5a5; }
+    /* stage: the trimmed chain diagram SVG fills the slot */
+    .atc-stage { position:absolute; inset:0; border:1px solid rgba(124,140,255,.14);
+      border-radius:12px; background:#0d1322; overflow:hidden; }
+    .atc-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .atc-num-badge { fill: #5b6378; font: 600 8px 'JetBrains Mono', monospace; }
     /* nodes */
     .atc-node { cursor: pointer; }
     .atc-node rect.atc-box { fill: #0d1322; stroke: rgba(124,140,255,0.28); transition: stroke .3s, fill .3s; }
@@ -114,63 +114,82 @@ export default function mount(container: HTMLElement): () => void {
     .atc-link[data-flag="lit"] { stroke: #5b8cff; }
     .atc-link[data-flag="bad"] { stroke: #f87171; }
     .atc-pulse { fill: #22d3ee; opacity: 0; }
-    .atc-num-badge { fill: #5b6378; font: 600 8px 'JetBrains Mono', monospace; }
     /* interposer marker */
     .atc-interposer { opacity: 0; transition: opacity .3s; }
     .atc-interposer text { fill: #f87171; font: 600 8px 'JetBrains Mono', monospace; }
     .atc-interposer path { stroke: #f87171; stroke-width: 1.3; fill: none; stroke-linecap: round; }
-    /* detail panel */
-    .atc-detail-title { fill: #e7eaf3; font: 600 12px 'Space Grotesk', system-ui, sans-serif; }
-    .atc-detail-body { fill: #8d95ad; font: 500 10.5px 'JetBrains Mono', monospace; }
-    .atc-status { font: 600 10.5px 'JetBrains Mono', monospace; }
-    .atc-status-ok { fill: #22d3ee; }
-    .atc-status-bad { fill: #f87171; }
-    .atc-status-warn { fill: #f5c451; }
-    /* verdict + run */
-    .atc-verdict { font: 700 12px 'JetBrains Mono', monospace; opacity: 0; transition: opacity .35s; }
-    .atc-verdict-ok { fill: #22d3ee; }
-    .atc-verdict-warn { fill: #f5c451; }
-    .atc-run { cursor: pointer; }
-    .atc-run rect { fill: rgba(91,140,255,0.10); stroke: rgba(124,140,255,0.45); transition: fill .2s, stroke .2s; }
-    .atc-run text { fill: #cdd3e6; font: 600 11px 'JetBrains Mono', monospace; }
-    .atc-run:hover rect, .atc-run:focus-visible rect { fill: rgba(91,140,255,0.20); stroke: #5b8cff; }
-    .atc-run:focus-visible { outline: none; }
-    .atc-run[aria-disabled="true"] { opacity: .45; cursor: default; }
-    .atc-numv { fill: #cdd3e6; font: 600 10px 'JetBrains Mono', monospace; }
-    .atc-numl { fill: #5b6378; font: 500 7.5px 'JetBrains Mono', monospace; letter-spacing: .04em; }
-  `;
-  svg.appendChild(style);
 
-  /* ---------------- mode tabs ---------------- */
-  const MODES = [
-    { id: 'honest', label: 'honest attestation' },
-    { id: 'forged', label: 'forged quote · TEE.fail' },
-  ];
-  const tabW = 234;
-  const tabs: SVGGElement[] = [];
-  MODES.forEach((m, i) => {
-    const x = 16 + i * (tabW + 12);
-    const g = el('g', {
-      class: `atc-tab${m.id === 'forged' ? ' atc-tab-forged' : ''}`,
-      tabindex: 0,
-      role: 'tab',
-      'aria-label': `Show ${m.label}`,
-    });
-    g.append(
-      el('rect', { x, y: 12, width: tabW, height: 30, rx: 8 }),
-      el('text', { x: x + tabW / 2, y: 31, 'text-anchor': 'middle' }, m.label),
-    );
-    svg.appendChild(g);
-    tabs.push(g);
-  });
+    /* --- de-baked HTML controls (mode tabs + trace) --- */
+    .atc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .atc-tabs { display:inline-flex; flex-wrap:wrap; gap:6px; }
+    .atc-tabs button { appearance:none; border:1px solid rgba(124,140,255,.22);
+      background:rgba(91,140,255,.06); color:#8d95ad; border-radius:8px;
+      font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.04em; padding:8px 14px;
+      cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
+    .atc-tabs button:hover { background:rgba(91,140,255,.16); border-color:rgba(124,140,255,.55); }
+    .atc-tabs button[aria-selected="true"] { background:rgba(91,140,255,.20);
+      border-color:#5b8cff; color:#e7eaf3; }
+    .atc-tabs button.atc-tab-forged[aria-selected="true"] { background:rgba(248,113,113,.16);
+      border-color:#f87171; color:#fca5a5; }
+    .atc-tabs button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
+    .atc-run { appearance:none; border:1px solid rgba(124,140,255,.45);
+      background:rgba(91,140,255,.10); color:#cdd3e6; border-radius:9px;
+      font:600 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 16px;
+      cursor:pointer; transition:background .2s, border-color .2s; }
+    .atc-run:hover { background:rgba(91,140,255,.20); border-color:#5b8cff; }
+    .atc-run:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
+    .atc-run[aria-disabled="true"] { opacity:.45; cursor:default; }
+
+    /* --- de-baked HTML panel: detail + status + numbers + verdict --- */
+    .atc-panel { display:flex; flex-direction:column; gap:9px; min-width:0; height:100%;
+      box-sizing:border-box; }
+    .atc-d-title { color:#e7eaf3; font:600 13px 'Space Grotesk', system-ui, sans-serif; }
+    .atc-d-body { color:#8d95ad; font:500 11px 'JetBrains Mono', monospace; line-height:1.5; }
+    .atc-status { font:600 11px 'JetBrains Mono', monospace; line-height:1.45; min-height:16px; }
+    .atc-status-ok { color:#22d3ee; }
+    .atc-status-bad { color:#f87171; }
+    .atc-status-warn { color:#f5c451; }
+    .atc-verdict { font:700 12px 'JetBrains Mono', monospace; line-height:1.45; min-height:16px;
+      opacity:0; transition:opacity .35s; }
+    .atc-verdict.is-on { opacity:1; }
+    .atc-verdict-ok { color:#22d3ee; }
+    .atc-verdict-warn { color:#f5c451; }
+    .atc-nums { margin-top:auto; border-top:1px solid rgba(124,140,255,.16); padding-top:9px;
+      display:flex; flex-direction:column; gap:4px; }
+    .atc-nums-eyebrow { color:#5b6378; font:600 9px 'JetBrains Mono', monospace; letter-spacing:.16em; }
+    .atc-num-row { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    .atc-num-l { color:#5b6378; font:500 9px 'JetBrains Mono', monospace; letter-spacing:.04em;
+      text-transform:uppercase; }
+    .atc-num-v { color:#cdd3e6; font:600 11px 'JetBrains Mono', monospace; white-space:nowrap; }
+
+    /* --- caption: provenance + hint --- */
+    .atc-cap { display:flex; flex-direction:column; gap:3px; }
+    .atc-cap-line { color:#5b6378; font:500 10px 'JetBrains Mono', monospace; }
+  `;
+  stage.appendChild(style);
+
+  /* ---------------- stage: the trimmed chain diagram SVG ---------------- */
+  // The chain is a single row of six nodes. The original 800×460 board reserved
+  // most of its height for a baked detail panel + numbers rail + verdict + run
+  // button — all de-baked to HTML below. The trimmed viewBox holds just the
+  // link row (plus headroom for the interposer marker above the CPU node).
+  const VB_W = 800;
+  const VB_H = 132;
+  const stageWrap = document.createElement('div');
+  stageWrap.className = 'atc-stage';
+  const svg = el('svg', { viewBox: `0 0 ${VB_W} ${VB_H}`, preserveAspectRatio: 'xMidYMid meet' });
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', 'TEE remote-attestation chain-of-trust diagram');
+  stageWrap.appendChild(svg);
+  stage.appendChild(stageWrap);
 
   /* ---------------- chain of nodes ---------------- */
   const N = STAGES.length;
   const NODE_W = 104;
   const NODE_H = 70;
-  const ROW_Y = 86;
+  const ROW_Y = 44; // headroom above for the interposer marker (ROW_Y - 18 = 26)
   const MARGIN = 22;
-  const gap = (800 - 2 * MARGIN - N * NODE_W) / (N - 1);
+  const gap = (VB_W - 2 * MARGIN - N * NODE_W) / (N - 1);
   const nodeX = (i: number) => MARGIN + i * (NODE_W + gap);
   const cy = ROW_Y + NODE_H / 2;
 
@@ -221,48 +240,88 @@ export default function mount(container: HTMLElement): () => void {
   );
   svg.appendChild(interposer);
 
-  /* ---------------- detail panel ---------------- */
-  const PANEL_Y = 196;
-  svg.appendChild(el('rect', { x: 16, y: PANEL_Y, width: 480, height: 132, rx: 12, fill: '#0b1020', stroke: 'rgba(124,140,255,0.16)' }));
-  const dTitle = el('text', { class: 'atc-detail-title', x: 34, y: PANEL_Y + 26 }, '');
-  const dBody: SVGTextElement[] = [];
-  for (let i = 0; i < 3; i++) {
-    dBody.push(el('text', { class: 'atc-detail-body', x: 34, y: PANEL_Y + 48 + i * 15 }, ''));
-  }
-  const dStatus: SVGTextElement[] = [];
-  for (let i = 0; i < 2; i++) {
-    dStatus.push(el('text', { class: 'atc-status', x: 34, y: PANEL_Y + 104 }, ''));
-  }
-  svg.append(dTitle, ...dBody, ...dStatus);
+  /* ---------------- controls: mode tabs + trace (HTML) ---------------- */
+  const MODES = [
+    { id: 'honest', label: 'honest attestation' },
+    { id: 'forged', label: 'forged quote · TEE.fail' },
+  ];
 
-  /* ---------------- numbers rail (right) ---------------- */
-  const NX = 520;
-  svg.appendChild(el('rect', { x: NX, y: PANEL_Y, width: 264, height: 132, rx: 12, fill: '#0b1020', stroke: 'rgba(124,140,255,0.16)' }));
-  svg.appendChild(el('text', { class: 'atc-eyebrow', x: NX + 18, y: PANEL_Y + 22 }, 'BY THE NUMBERS'));
-  data.numbers.forEach((num, i) => {
-    const yy = PANEL_Y + 40 + i * 21;
-    svg.appendChild(el('text', { class: 'atc-numl', x: NX + 18, y: yy }, num.label.toUpperCase()));
-    svg.appendChild(el('text', { class: 'atc-numv', x: NX + 246, y: yy, 'text-anchor': 'end' }, num.value));
+  const controls = document.createElement('div');
+  controls.className = 'atc-controls';
+
+  const tabsWrap = document.createElement('div');
+  tabsWrap.className = 'atc-tabs';
+  tabsWrap.setAttribute('role', 'tablist');
+  tabsWrap.setAttribute('aria-label', 'Attestation mode');
+  const tabs: HTMLButtonElement[] = MODES.map((m) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-label', `Show ${m.label}`);
+    if (m.id === 'forged') b.classList.add('atc-tab-forged');
+    b.textContent = m.label;
+    tabsWrap.appendChild(b);
+    return b;
   });
 
-  /* ---------------- verdict + run + provenance ---------------- */
-  const verdict = el('text', { class: 'atc-verdict', x: 16, y: 356 }, '');
-  svg.appendChild(verdict);
+  const runBtn = document.createElement('button');
+  runBtn.type = 'button';
+  runBtn.className = 'atc-run';
+  runBtn.setAttribute('aria-label', 'Trace the chain of trust');
+  runBtn.textContent = '▶ trace the chain';
 
-  const runBtn = el('g', { class: 'atc-run', tabindex: 0, role: 'button', 'aria-label': 'Trace the chain of trust' });
-  runBtn.append(
-    el('rect', { x: 16, y: 372, width: 184, height: 34, rx: 9 }),
-    el('text', { x: 108, y: 394, 'text-anchor': 'middle' }, '▶ trace the chain'),
-  );
-  svg.appendChild(runBtn);
+  controls.append(tabsWrap, runBtn);
+  controlsSlot.appendChild(controls);
 
-  svg.appendChild(
-    el('text', { class: 'atc-fine', x: 220, y: 386 },
-      `verifier ${data.verifierContract.address.slice(0, 10)}…${data.verifierContract.address.slice(-4)} · live on ${data.verifierContract.chain}`),
-  );
-  svg.appendChild(
-    el('text', { class: 'atc-fine', x: 220, y: 400 }, 'tap a link to inspect it · ←/→ to step · ▶ to trace'),
-  );
+  /* ---------------- panel: detail + status + numbers + verdict (HTML) ---- */
+  const panelEl = document.createElement('div');
+  panelEl.className = 'atc-panel';
+
+  const dTitle = document.createElement('div');
+  dTitle.className = 'atc-d-title';
+  const dBody = document.createElement('div');
+  dBody.className = 'atc-d-body';
+  const dStatus = document.createElement('div');
+  dStatus.className = 'atc-status';
+  dStatus.setAttribute('role', 'status');
+  dStatus.setAttribute('aria-live', 'polite');
+  const verdict = document.createElement('div');
+  verdict.className = 'atc-verdict';
+
+  const nums = document.createElement('div');
+  nums.className = 'atc-nums';
+  const numsEyebrow = document.createElement('div');
+  numsEyebrow.className = 'atc-nums-eyebrow';
+  numsEyebrow.textContent = 'BY THE NUMBERS';
+  nums.appendChild(numsEyebrow);
+  data.numbers.forEach((num) => {
+    const row = document.createElement('div');
+    row.className = 'atc-num-row';
+    const l = document.createElement('span');
+    l.className = 'atc-num-l';
+    l.textContent = num.label;
+    const v = document.createElement('span');
+    v.className = 'atc-num-v';
+    v.textContent = num.value;
+    row.append(l, v);
+    nums.appendChild(row);
+  });
+
+  panelEl.append(dTitle, dBody, dStatus, verdict, nums);
+  panel.appendChild(panelEl);
+
+  /* ---------------- caption: provenance + hint (HTML) ---------------- */
+  const cap = document.createElement('div');
+  cap.className = 'atc-cap';
+  const capSrc = document.createElement('div');
+  capSrc.className = 'atc-cap-line';
+  capSrc.textContent =
+    `verifier ${data.verifierContract.address.slice(0, 10)}…${data.verifierContract.address.slice(-4)} · live on ${data.verifierContract.chain}`;
+  const capHint = document.createElement('div');
+  capHint.className = 'atc-cap-line';
+  capHint.textContent = 'tap a link to inspect it · ←/→ to step · ▶ to trace';
+  cap.append(capSrc, capHint);
+  caption.appendChild(cap);
 
   /* ---------------- state ---------------- */
   let mode: 'honest' | 'forged' = 'honest';
@@ -278,27 +337,6 @@ export default function mount(container: HTMLElement): () => void {
   // forged-mode per-node flag: how each link is affected
   // ok | hit (interposer / attacker) | void | warn (verifier accepts a lie)
   const FORGED_FLAG = ['ok', 'hit', 'void', 'hit', 'warn', 'hit'];
-
-  function wrap(s: string, max: number, maxLines: number): string[] {
-    const words = s.split(' ');
-    const lines: string[] = [];
-    let cur = '';
-    for (const w of words) {
-      if (cur && (cur + ' ' + w).length > max) {
-        lines.push(cur);
-        cur = w;
-      } else {
-        cur = cur ? cur + ' ' + w : w;
-      }
-    }
-    if (cur) lines.push(cur);
-    if (lines.length > maxLines) {
-      const tail = lines.slice(maxLines - 1).join(' ');
-      lines.length = maxLines - 1;
-      lines.push(tail);
-    }
-    return lines;
-  }
 
   function paintChain() {
     nodes.forEach((g, i) => {
@@ -319,32 +357,26 @@ export default function mount(container: HTMLElement): () => void {
   function renderDetail() {
     const s = STAGES[selected]!;
     dTitle.textContent = `${selected + 1}. ${s.label} · ${s.sub}`;
-    const lines = wrap(s.detail, 62, 3);
-    dBody.forEach((t, i) => (t.textContent = lines[i] ?? ''));
+    dBody.textContent = s.detail;
 
     const msg = mode === 'forged' ? s.forged : s.honest;
     const flag = mode === 'forged' ? FORGED_FLAG[selected]! : 'ok';
     const statusKind = flag === 'ok' ? 'ok' : flag === 'warn' ? 'warn' : 'bad';
     const prefix =
       flag === 'ok' ? '✓ ' : flag === 'warn' ? '⚠ ' : flag === 'void' ? '∅ ' : '✗ ';
-    const slines = wrap(prefix + msg, 60, 2);
-    dStatus.forEach((t, i) => {
-      t.textContent = slines[i] ?? '';
-      t.setAttribute('y', String(PANEL_Y + 104 + i * 14));
-      t.setAttribute('class', `atc-status atc-status-${statusKind}`);
-    });
+    dStatus.textContent = prefix + msg;
+    dStatus.className = `atc-status atc-status-${statusKind}`;
   }
 
   function setVerdict(show: boolean) {
-    if (!show) { verdict.style.opacity = '0'; return; }
+    if (!show) { verdict.classList.remove('is-on'); return; }
     if (mode === 'forged') {
       verdict.textContent = '⚠ ' + data.verdicts.forged;
-      verdict.setAttribute('class', 'atc-verdict atc-verdict-warn');
+      verdict.className = 'atc-verdict atc-verdict-warn is-on';
     } else {
       verdict.textContent = '✓ ' + data.verdicts.honest;
-      verdict.setAttribute('class', 'atc-verdict atc-verdict-ok');
+      verdict.className = 'atc-verdict atc-verdict-ok is-on';
     }
-    verdict.style.opacity = '1';
   }
 
   function render() {
@@ -406,57 +438,63 @@ export default function mount(container: HTMLElement): () => void {
     render();
   }
 
-  const onClick = (e: Event) => {
-    const tab = (e.target as Element).closest<SVGGElement>('.atc-tab');
-    if (tab) { setMode(MODES[tabs.indexOf(tab)]!.id as 'honest' | 'forged'); return; }
+  // chain nodes keep their SVG tap/arrow stepping
+  const onSvgClick = (e: Event) => {
     const node = (e.target as Element).closest<SVGGElement>('.atc-node');
-    if (node) { selectNode(nodes.indexOf(node)); return; }
-    if ((e.target as Element).closest('.atc-run')) trace();
+    if (node) selectNode(nodes.indexOf(node));
   };
-
-  const onKey = (e: KeyboardEvent) => {
-    const tab = (e.target as Element).closest<SVGGElement>('.atc-tab');
-    if (tab) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setMode(MODES[tabs.indexOf(tab)]!.id as 'honest' | 'forged');
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const next = (tabs.indexOf(tab) + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-        tabs[next]!.focus();
-        setMode(MODES[next]!.id as 'honest' | 'forged');
-      }
-      return;
-    }
+  const onSvgKey = (e: KeyboardEvent) => {
     const node = (e.target as Element).closest<SVGGElement>('.atc-node');
-    if (node) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        selectNode(nodes.indexOf(node));
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const next = (nodes.indexOf(node) + (e.key === 'ArrowRight' ? 1 : -1) + N) % N;
-        nodes[next]!.focus();
-        selectNode(next);
-      }
-      return;
-    }
-    if ((e.target as Element).closest('.atc-run') && (e.key === 'Enter' || e.key === ' ')) {
+    if (!node) return;
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      trace();
+      selectNode(nodes.indexOf(node));
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const next = (nodes.indexOf(node) + (e.key === 'ArrowRight' ? 1 : -1) + N) % N;
+      nodes[next]!.focus();
+      selectNode(next);
     }
   };
+  svg.addEventListener('click', onSvgClick);
+  svg.addEventListener('keydown', onSvgKey);
 
-  svg.addEventListener('click', onClick);
-  svg.addEventListener('keydown', onKey);
+  // mode tabs (HTML)
+  const onTabClick = (e: Event) => {
+    const i = tabs.indexOf(e.currentTarget as HTMLButtonElement);
+    if (i >= 0) setMode(MODES[i]!.id as 'honest' | 'forged');
+  };
+  const onTabKey = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const cur = tabs.indexOf(e.currentTarget as HTMLButtonElement);
+      const next = (cur + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[next]!.focus();
+      setMode(MODES[next]!.id as 'honest' | 'forged');
+    }
+  };
+  tabs.forEach((t) => {
+    t.addEventListener('click', onTabClick);
+    t.addEventListener('keydown', onTabKey);
+  });
+
+  // run button (HTML)
+  const onRun = () => trace();
+  runBtn.addEventListener('click', onRun);
 
   render();
 
   return () => {
     timeouts.forEach((id) => clearTimeout(id));
     rafs.forEach((id) => cancelAnimationFrame(id));
-    svg.removeEventListener('click', onClick);
-    svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    svg.removeEventListener('click', onSvgClick);
+    svg.removeEventListener('keydown', onSvgKey);
+    tabs.forEach((t) => {
+      t.removeEventListener('click', onTabClick);
+      t.removeEventListener('keydown', onTabKey);
+    });
+    runBtn.removeEventListener('click', onRun);
+    layout.dispose();
+    style.remove();
   };
 }

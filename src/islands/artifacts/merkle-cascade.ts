@@ -6,7 +6,14 @@
  * and cascades the change to the root: path nodes light accent, the sibling
  * hashes that form the inclusion proof glow cyan, traversed edges draw in,
  * and the root flashes with its new value. Leaves are keyboard-focusable.
+ *
+ * Layout: shared responsive primitive. The tree SVG fills the stage; there is
+ * no separate readout, so the panel/controls slots are off (tapping leaves
+ * drives everything). The explainer line — de-baked from the in-SVG caption so
+ * it stays legible on portrait phones — lives in the HTML caption slot and is
+ * updated live as the cascade reaches the root.
  */
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 const LEAVES = 16;
@@ -14,6 +21,10 @@ const LEVELS = 5; // 16 → 8 → 4 → 2 → 1
 const LEVEL_Y = [402, 322, 240, 156, 66];
 const HOP_MS = 420;
 const SCRAMBLE_MS = 320;
+/* Tree-only viewBox: top level rect spans 53…79, bottom 389…415. Trimming the
+   caption's old reserved band (it's HTML now) lets the tree fill the stage. */
+const VB_Y0 = 44;
+const VB_H = 380;
 
 const randHex = () => Math.floor(Math.random() * 16).toString(16);
 const fakeHash = () => Array.from({ length: 6 }, randHex).join('');
@@ -28,14 +39,18 @@ interface Node {
 }
 
 export default function mount(container: HTMLElement): () => void {
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 800 450');
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  container.appendChild(svg);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'rail',
+    stageMin: 'clamp(200px, 54vw, 360px)',
+    panel: false,
+    controls: false,
+  });
+  const { stage, caption: captionSlot } = layout;
 
-  const style = document.createElementNS(NS, 'style');
+  const style = document.createElement('style');
   style.textContent = `
+    .mc-treewrap { position: absolute; inset: 0; }
+    .mc-treewrap svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
     .mc-node rect { fill: #0d1322; stroke: rgba(124,140,255,0.18); transition: stroke .25s, fill .25s; }
     .mc-node text { fill: #8d95ad; font: 500 10px 'JetBrains Mono', monospace; transition: fill .25s; }
     .mc-leaf { cursor: pointer; }
@@ -49,10 +64,23 @@ export default function mount(container: HTMLElement): () => void {
     .mc-proof .mc-tag { opacity: 1; }
     .mc-edge { stroke: rgba(124,140,255,0.16); fill: none; transition: none; }
     .mc-edge-lit { stroke: #5b8cff; transition: stroke-dashoffset .3s ease-out; }
-    .mc-caption { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; letter-spacing: .08em; }
     .mc-root-flash rect { stroke: #67e8f9; fill: rgba(34,211,238,0.16); }
+
+    /* HTML caption (replaces the in-SVG mc-caption explainer line) */
+    .mc-caption { color: #5b6378; font: 500 11px 'JetBrains Mono', monospace;
+      letter-spacing: .08em; padding: 2px 2px; }
   `;
-  svg.appendChild(style);
+  stage.appendChild(style);
+
+  const treeWrap = document.createElement('div');
+  treeWrap.className = 'mc-treewrap';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 ${VB_Y0} 800 ${VB_H}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', 'Depth-4 Merkle tree of 16 leaves');
+  treeWrap.appendChild(svg);
+  stage.appendChild(treeWrap);
 
   /* ---- Build tree geometry ---- */
   const levels: Node[][] = [];
@@ -114,12 +142,11 @@ export default function mount(container: HTMLElement): () => void {
   }
   for (const row of levels) for (const n of row) svg.appendChild(n.g);
 
-  const caption = document.createElementNS(NS, 'text');
-  caption.setAttribute('x', '20');
-  caption.setAttribute('y', '28');
-  caption.setAttribute('class', 'mc-caption');
+  /* ---- HTML caption (replaces the in-SVG mc-caption explainer line) ---- */
+  const caption = document.createElement('div');
+  caption.className = 'mc-caption';
   caption.textContent = 'click a leaf to update it and trace its inclusion proof';
-  svg.appendChild(caption);
+  captionSlot.appendChild(caption);
 
   /* ---- Cascade animation ---- */
   const timeouts = new Set<ReturnType<typeof setTimeout>>();
@@ -230,6 +257,7 @@ export default function mount(container: HTMLElement): () => void {
     rafs.forEach((id) => cancelAnimationFrame(id));
     svg.removeEventListener('click', onClick);
     svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    layout.dispose();
+    style.remove();
   };
 }

@@ -1,0 +1,15 @@
+{
+  "slug": "detection-cliff",
+  "title": "The Detection Cliff",
+  "description": "How many audit queries it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in ~220 queries; FP8 needs ~140k and falls off the cliff into the economically-invisible zone.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "llm",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

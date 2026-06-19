@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 31,
-    "artifacts": 32
+    "articles": 32,
+    "artifacts": 33
   },
   "topicCounts": {
     "agents": 12,
@@ -10,17 +10,34 @@
     "cryptography": 3,
     "data": 3,
     "defi": 7,
-    "infrastructure": 12,
-    "llm": 6,
+    "infrastructure": 13,
+    "llm": 7,
     "machine-learning": 15,
     "research": 1,
-    "security": 12,
+    "security": 13,
     "smart-contracts": 6,
     "tokenomics": 2,
     "web3": 3,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "model-substitution-inference-markets",
+      "path": "content/articles/2026/06/model-substitution-inference-markets/index.mdx",
+      "url": "/articles/model-substitution-inference-markets",
+      "title": "Bait and Switch: Auditing Model Substitution in Decentralized Inference Markets",
+      "description": "You pay per token for a named model; the provider picks the precision. FP8 quantization costs 0.6 MMLU points and is near-invisible to output auditing — so inference markets bond and attest instead of detect.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "llm",
+        "infrastructure",
+        "security"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "provenance-isnt-purity-data-poisoning",
       "path": "content/articles/2026/06/provenance-isnt-purity-data-poisoning/index.mdx",
@@ -844,6 +861,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "detection-cliff",
+      "path": "content/artifacts/detection-cliff/manifest.json",
+      "module": "src/islands/artifacts/detection-cliff.ts",
+      "url": "/artifacts/detection-cliff",
+      "title": "The Detection Cliff",
+      "description": "How many audit queries it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in ~220 queries; FP8 needs ~140k and falls off the cliff into the economically-invisible zone.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-dilution-myth",
       "path": "content/artifacts/the-dilution-myth/manifest.json",

@@ -1,26 +1,53 @@
 {
   "counts": {
-    "articles": 30,
-    "artifacts": 31
+    "articles": 31,
+    "artifacts": 32
   },
   "topicCounts": {
     "agents": 12,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
-    "data": 2,
+    "data": 3,
     "defi": 7,
     "infrastructure": 12,
     "llm": 6,
-    "machine-learning": 14,
+    "machine-learning": 15,
     "research": 1,
-    "security": 11,
+    "security": 12,
     "smart-contracts": 6,
     "tokenomics": 2,
     "web3": 3,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "provenance-isnt-purity-data-poisoning",
+      "path": "content/articles/2026/06/provenance-isnt-purity-data-poisoning/index.mdx",
+      "url": "/articles/provenance-isnt-purity-data-poisoning",
+      "title": "Provenance Isn't Purity: Data Poisoning and the Limits of On-Chain Data Markets",
+      "description": "A landmark 2025 result: ~250 poisoned documents backdoor an LLM whether it has 600M or 13B parameters — 0.00016% of the tokens. DataDAOs sell 'verifiable' training data, but on-chain provenance proves integrity, not purity. Here's the gap, and what actually narrows it.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
+      ],
+      "tags": [
+        "data-poisoning",
+        "datadao",
+        "vana",
+        "proof-of-contribution",
+        "content-addressing",
+        "backdoor"
+      ],
+      "artifacts": [
+        "the-dilution-myth",
+        "merkle-cascade"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "agent-token-bonding-curve",
       "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
@@ -817,6 +844,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-dilution-myth",
+      "path": "content/artifacts/the-dilution-myth/manifest.json",
+      "module": "src/islands/artifacts/the-dilution-myth.ts",
+      "url": "/artifacts/the-dilution-myth",
+      "title": "The Dilution Myth",
+      "description": "The same 250-document backdoor that compromised LLMs from 600M to 13B params, plotted across model scale. Toggle 'documents needed' — a flat 250 vs the myth that poison scales with data — and 'share of training set', collapsing to 0.00016% and below. Drag to pick a scale.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "attestation-chain",
       "path": "content/artifacts/attestation-chain/manifest.json",

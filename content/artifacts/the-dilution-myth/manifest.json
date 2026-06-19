@@ -2,7 +2,7 @@
   "slug": "the-dilution-myth",
   "title": "The Dilution Myth",
   "description": "The same 250-document backdoor that compromised LLMs from 600M to 13B params, plotted across model scale. Toggle 'documents needed' — a flat 250 vs the myth that poison scales with data — and 'share of training set', collapsing to 0.00016% and below. Drag to pick a scale.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:00:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

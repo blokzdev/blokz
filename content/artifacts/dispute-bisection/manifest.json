@@ -2,7 +2,7 @@
   "slug": "dispute-bisection",
   "title": "Dispute Bisection",
   "description": "A fraud-proof dispute game you can rig: tap any step of the computation trace to plant a fault, then watch the chain bisect proposer vs watcher commitments — six queries isolate the one divergent step, it gets re-executed on-chain, and the liar's bond is slashed.",
-  "pubDate": "2026-06-12",
+  "pubDate": "2026-06-12T12:00:00Z",
   "type": "canvas",
   "archetype": "simulation",
   "topics": [

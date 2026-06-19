@@ -2,7 +2,7 @@
   "slug": "lp-breakeven-frontier",
   "title": "The LP Break-Even Frontier",
   "description": "Does an AMM LP out-earn the arbitrage bots picking off its stale quotes? Plot fee income (flat) against LVR = σ²/8 (rising with vol²): where they cross is break-even. At low turnover even BTC sits in the red. Flip on solver-auction recapture and the frontier slides right.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:04:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": ["defi", "infrastructure"],

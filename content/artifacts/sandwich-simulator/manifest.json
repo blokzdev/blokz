@@ -2,7 +2,7 @@
   "slug": "sandwich-simulator",
   "title": "Sandwich Simulator",
   "description": "Watch a searcher sandwich your agent's swap on the live Aerodrome WETH/USDC pool on Base. Set trade size and slippage tolerance; the optimal front-run is solved on the real constant-product curve, capped by your tolerance. Route privately and the extraction goes to zero.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:02:00Z",
   "type": "dom",
   "archetype": "calculator",
   "topics": [

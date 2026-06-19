@@ -2,7 +2,7 @@
   "slug": "watchers-threshold",
   "title": "The Watcher's Threshold",
   "description": "An AI proposer is wrong a few percent of the time, but UMA pays a winning disputer only half the bond it risks — so the break-even belief is two-thirds, not half. Every category's base error rate sits deep in the no-dispute zone; raise the reward and the threshold slides left.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:10:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

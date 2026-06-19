@@ -2,7 +2,7 @@
   "slug": "attestation-chain",
   "title": "The Attestation Chain",
   "description": "The TEE remote-attestation chain of trust, stepped through: silicon root, CPU TDX quote, H100 attestation, on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
-  "pubDate": "2026-06-15",
+  "pubDate": "2026-06-15T12:00:00Z",
   "type": "svg",
   "archetype": "diagram",
   "topics": [

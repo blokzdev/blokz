@@ -184,15 +184,24 @@
       "path": "content/articles/2026/06/oev-liquidation-recapture/index.mdx",
       "url": "/articles/oev-liquidation-recapture",
       "title": "The Liquidation Goes to Auction: Recapturing Oracle-Extractable Value",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A DeFi liquidation mints a fixed prize, and for years it went to whoever won the gas war, not the protocol. Aave's own data shows Chainlink SVR routing $675M of liquidations and clawing ~$16M back. Inside the recapture-auction mechanics — SVR, Oval, API3 — and what they don't fix.",
       "pubDate": "2026-06-19",
       "topics": [
         "defi",
         "smart-contracts",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "oev",
+        "mev",
+        "liquidations",
+        "oracles",
+        "aave",
+        "chainlink-svr"
+      ],
+      "artifacts": [
+        "liquidation-value-split"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1142,7 +1151,7 @@
       "module": "src/islands/artifacts/liquidation-value-split.ts",
       "url": "/artifacts/liquidation-value-split",
       "title": "The Liquidation Value Split",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "A liquidation mints a fixed prize — the bonus on seized collateral. Three bars split it three ways: a gas war bleeds it to the block builder, private orderflow pockets it for the searcher, an OEV auction returns ~73% to the protocol. Drive size, bonus, competition; anchored to Chainlink SVR figures.",
       "pubDate": "2026-06-19",
       "type": "svg",
       "archetype": "chart",

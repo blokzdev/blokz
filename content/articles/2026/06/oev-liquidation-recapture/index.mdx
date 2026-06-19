@@ -1,22 +1,86 @@
 ---
 slug: oev-liquidation-recapture
 title: "The Liquidation Goes to Auction: Recapturing Oracle-Extractable Value"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "A DeFi liquidation mints a fixed prize, and for years it went to whoever won the gas war, not the protocol. Aave's own data shows Chainlink SVR routing $675M of liquidations and clawing ~$16M back. Inside the recapture-auction mechanics — SVR, Oval, API3 — and what they don't fix."
 pubDate: 2026-06-19
 author: blokz
 topics: [defi, smart-contracts, infrastructure]
-tags: []
-artifacts: []
+tags: [oev, mev, liquidations, oracles, aave, chainlink-svr]
+artifacts: [liquidation-value-split]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Aave — How Aave Liquidations Perform Under Volatile Conditions"
+    url: "https://aave.com/blog/historical-liquidations"
+  - label: "Chainlink — Smart Value Recapture (SVR) Feeds docs"
+    url: "https://docs.chain.link/data-feeds/svr-feeds"
+  - label: "Signals and Spoils: Speculative Oracle Extractable Value (arXiv:2606.03434)"
+    url: "https://arxiv.org/abs/2606.03434"
+  - label: "Aave V3.3 LiquidationLogic.sol"
+    url: "https://github.com/aave-dao/aave-v3-origin/blob/main/src/contracts/protocol/libraries/logic/LiquidationLogic.sol"
+  - label: "UMA — Oval (OEV capture for Chainlink feeds)"
+    url: "https://docs.uma.xyz/developers/oval"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+A DeFi liquidation is a prize with a price tag. When a loan crosses the line, the protocol offers anyone who repays the bad debt a discount on the borrower's collateral — the *liquidation bonus*. That discount is free money for whoever moves first, and for most of DeFi's history "moving first" meant winning a gas auction. The bonus didn't accrue to the protocol that created it, or to the lenders who funded the loan. It leaked, almost in full, to the block builder and validator who ordered the transaction.
 
-## Section heading
+In 2025 that started to change. A class of mechanisms — Chainlink's Smart Value Recapture (SVR), UMA's Oval, API3's OEV Network, Pyth's Express Relay — turned the liquidation into a literal auction and pointed the proceeds back at the protocol. Aave's own data now shows SVR routing **$675M of liquidations across ~3,900 events and recapturing ~$16M** in the eleven months since it went live. This is the engineering story of who captures a liquidation, and why the answer moved.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Anatomy of the prize
+
+Start with the mechanics, using Aave V3 as the reference. A position is liquidatable when its **health factor** drops below 1 — when `collateral × weightedLiquidationThreshold / debt < 1`. A liquidator repays some of the debt and receives the borrower's collateral valued at a discount set by the per-asset liquidation bonus.
+
+Two parameters from [`LiquidationLogic.sol`](https://github.com/aave-dao/aave-v3-origin/blob/main/src/contracts/protocol/libraries/logic/LiquidationLogic.sol) bound the size of a single grab. The **close factor** caps how much of the debt one liquidation can repay: `DEFAULT_LIQUIDATION_CLOSE_FACTOR` is 50%, but it rises to 100% once the health factor falls to `CLOSE_FACTOR_HF_THRESHOLD` (0.95e18) or the position dips under a base-currency dust threshold ($2,000). The **liquidation bonus** is static — it's a governance-set constant per collateral asset, not a function of how underwater the borrower is — so the prize on a given liquidation is, to a first approximation:
+
+```
+prize ≈ debtRepaid × liquidationBonus
+```
+
+A protocol fee is skimmed from the bonus; the rest is the liquidator's gross profit before gas. The numbers this generates are not small. Aave has processed over **310,000 liquidations totaling $4.65B** since 2020 — about 3.3% of all borrows — with roughly **75% of that volume on Ethereum**, where the average liquidation clears $50k. Stress days dwarf the average: **October 10, 2025** liquidated more than **$250M** in a single day, and the **January 31–February 5, 2026** selloff set a record at **$429M across ~12,500 transactions**. Every one of those events minted a bonus, and every bonus was contestable.
+
+## Oracle-Extractable Value: who used to win
+
+Liquidations are special among MEV because they are *triggered by an oracle*. A position is fine until a price update marks its collateral down; the liquidating transaction must land immediately *after* that update, in the same block. That tight coupling is the definition of **Oracle-Extractable Value (OEV)** — the subset of MEV that exists only because of, and in the moment of, an oracle write.
+
+On a chain with a public mempool, the update is visible, and keepers fight a **Priority Gas Auction**: each bids a higher priority fee to have its liquidation ordered first, and in the competitive limit nearly the entire bonus is bid away to the builder/validator as tip. The protocol gets nothing; the winning searcher keeps a thin margin; the losers burn gas on reverted attempts.
+
+On rollups without a public mempool, the game mutates rather than disappears. The recent study [*Signals and Spoils*](https://arxiv.org/abs/2606.03434) (arXiv:2606.03434) documents *speculative* OEV: with no mempool to watch, searchers fire **identical transactions repeatedly**, betting the next oracle update will make them valid. Across Arbitrum, Base, and Optimism the authors link **63 Chainlink feeds, 12,009 price updates, and over 100,000 oracle observations to 2,986 Aave liquidations**, and find **64 speculative liquidators (57% of all liquidators)** behind **831 speculative liquidations (39% of the total)**. They also show that because independent oracle networks consume the same off-chain data, a Chainlink update on Optimism *predicts* the imminent update on Arbitrum and Base — an exploitable cross-chain edge. OEV, the paper concludes, is large, heavy-tailed, and increasingly captured by vertically integrated builder–searcher coalitions.
+
+The throughline: the liquidation bonus is real value the protocol manufactures and then hands, by default, to whoever controls block ordering.
+
+## Recapture: auction the update itself
+
+The insight behind recapture is that the protocol already owns the thing searchers are racing for — the oracle update. So sell it. Instead of broadcasting the new price and letting a gas war decide ordering, route the update through an **auction for the right to backrun it**, and return the winning bid to the protocol.
+
+<Artifact slug="liquidation-value-split" />
+
+Drive the bars above and the structure is plain: the same prize gets divided three completely different ways. Under the gas war the bonus bleeds to the builder; under private orderflow it just moves into the searcher's pocket (privacy helps the searcher, not the protocol); under the OEV auction the bulk comes back. The implementations differ mostly in *where* the auction lives and *whom you must trust*.
+
+**Chainlink SVR** uses a **dual-aggregator** design. The Data DON publishes each report to two contracts at once: a Standard Aggregator over the public path (the normal feed, unchanged) and an **SVR Aggregator** over a private channel — Flashbots' MEV-Share. Searchers see the incoming report on the private channel and bid to bundle a liquidation that backruns it; the builder includes the highest bid in the same block, and the payment is split between the protocol and the oracle network. Critically, if the private route fails or times out, **the SVR feed falls back to the Standard Feed price after a configurable delay** — liveness is preserved at the cost of a small staleness window. Aave integrated SVR into its Core Ethereum market on **March 24, 2025**, starting with tBTC, LBTC, AAVE, and LINK, and the DAO has since expanded coverage from ~3% to ~27% of protocol TVL. The protocol/oracle split was set at **65/35** for the first six months.
+
+**UMA's Oval** takes the same MEV-Share machinery but packages it as a **wrapper** around an existing Chainlink feed: it intercepts the update before it reaches the protocol, runs a sealed-bid auction for the unlock, and returns **90% of proceeds to the protocol and 10% to infrastructure**. **API3's OEV Network** is a purpose-built L2 where the dApp's own first-party oracle (Airnode) auctions the *exclusive right to trigger* an update, settling the bid on the OEV chain. **Pyth's Express Relay** generalizes the idea into a cross-protocol order-flow auction, pooling liquidation flow from many integrators so the auction is liquid even when any single protocol's flow is thin.
+
+All four share the same shape: convert a latency race that pays block producers into an auction that pays the protocol. They differ on the trust surface — who runs the auction, whether the price path stays first-party, and how the fallback behaves when the private route is down.
+
+## What the numbers say
+
+Recapture stopped being theoretical. Per Aave's own [historical-liquidations report](https://aave.com/blog/historical-liquidations), through early February 2026 SVR had handled **$675M in liquidations across ~3,900 events and recaptured ~$16M** — roughly **73% of the available OEV**, and about 2.4% of the routed notional. At the 65/35 split that is real revenue Aave now books instead of donating to builders. The average SVR-routed liquidation, ~$173k, runs well above Aave's blanket average precisely because SVR covers the large Ethereum core markets where the prizes are biggest.
+
+This is the same move DeFi made for AMM liquidity providers. We covered the [arbitrage tax on AMM LPs](/articles/arbitrage-rent-on-amm-liquidity) — where loss-versus-rebalancing bleeds value to arbitrage bots, and CoW-AMM-style solver auctions claw it back by selling the right to rebalance. OEV recapture is the lending-market analog: same disease (value leaking to whoever wins ordering), same cure (auction the right, return the surplus). It's also a close cousin of the [solver optimization market](/articles/the-solver-optimization-market) that prices trades by auction rather than by gas race.
+
+## What recapture does not fix
+
+The mechanism is narrower than the marketing. Four honest limits:
+
+- **It only touches non-toxic MEV.** Liquidations are "non-toxic" because the value comes from a public, rules-based discount, not from a victim. Recapture does nothing about *toxic* flow — the [sandwich attacks on autonomous agents](/articles/the-sandwich-tax-on-autonomous-agents) and front-running that extract from users directly. Those need encryption or private routing, not a protocol-owned auction.
+- **It trades a trust assumption for revenue.** A standard feed needs only the oracle. An SVR/Oval feed adds a private relay and an auctioneer to the critical path, and leans on a *fallback delay* for liveness. That delay is a deliberately introduced staleness window — set it too long and you reintroduce the very oracle-lag risk liquidations are supposed to close.
+- **It redirects concentration, it doesn't dissolve it.** The winning bidder is still, overwhelmingly, a vertically integrated builder–searcher. The auction changes who *receives* the surplus, not who *competes* for it; the same coalitions that dominated the gas war dominate the bid.
+- **Recapture is partial and opt-in.** ~73% of OEV recaptured means ~27% still accrues to the searcher as winning margin and auction friction. Coverage is per-asset and governance-gated, and speculative cross-chain OEV on rollups — the spam-and-pray regime — sits largely outside any single protocol's auction.
+
+It's worth noting the contrast with the verifiable-oracle work we've covered elsewhere: schemes like [optimistic ML oracles](/articles/optimistic-ml-oracles) ask *is this oracle value correct?* OEV recapture asks a different, complementary question — *who profits from the value being correct, and on time?* Both are oracle problems; only one is about money changing hands at the instant of the write.
 
 ## Takeaways
 
-TODO.
+- A liquidation manufactures a fixed prize — `debt × bonus` — and the only question is who captures it. The historical answer was the block builder, via a gas auction the protocol never participated in.
+- **Oracle-Extractable Value** is the MEV that exists only at the moment of an oracle update. On L1 it's a priority-gas auction; on rollups it's speculative transaction spam, with cross-chain timing edges (arXiv:2606.03434).
+- **Recapture auctions** — Chainlink SVR's dual-aggregator over MEV-Share, UMA Oval's wrapper (90/10), API3's OEV L2, Pyth Express Relay — sell the right to backrun the update and return the proceeds. SVR has recaptured ~$16M of a routed $675M for Aave, ~73% of the available OEV.
+- The catch is scope and trust: it captures only non-toxic liquidation value, adds an auctioneer and a fallback-delay staleness window to the oracle path, and redirects rather than dissolves searcher concentration. Engineered well, it's free protocol revenue; engineered carelessly, it's a new liveness dependency on the most safety-critical write in DeFi.

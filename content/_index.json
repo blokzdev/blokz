@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 33,
+    "articles": 34,
     "artifacts": 34
   },
   "topicCounts": {
     "agents": 13,
-    "ai": 3,
+    "ai": 4,
     "blockchain": 10,
     "cryptography": 3,
     "data": 3,
     "defi": 8,
-    "infrastructure": 14,
+    "infrastructure": 15,
     "llm": 7,
-    "machine-learning": 15,
+    "machine-learning": 16,
     "research": 1,
     "security": 13,
     "smart-contracts": 6,
@@ -21,6 +21,23 @@
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "allora-context-aware-inference-synthesis",
+      "path": "content/articles/2026/06/allora-context-aware-inference-synthesis/index.mdx",
+      "url": "/articles/allora-context-aware-inference-synthesis",
+      "title": "Don't Average, Anticipate: Allora's Context-Aware Inference Synthesis",
+      "description": "Most decentralized-AI networks vote or average. Allora bets the network should learn whom to trust per context — using forecasters that predict who's about to be wrong, mapped to weights through a softplus gradient. We dissect the mechanism, the math, and where it pays.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "model-substitution-inference-markets",
       "path": "content/articles/2026/06/model-substitution-inference-markets/index.mdx",

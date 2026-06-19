@@ -2,7 +2,7 @@
   "slug": "nullifier-gate",
   "title": "Nullifier Gate",
   "description": "Semaphore's double-signal defense, explorable: send transactions to spend month-scoped nullifiers PBH-style, replay a spent proof to watch the gate revert with the real contract errors, and roll the month to see the external nullifier change reset the quota.",
-  "pubDate": "2026-06-12",
+  "pubDate": "2026-06-12T12:11:00Z",
   "type": "svg",
   "archetype": "diagram",
   "topics": [

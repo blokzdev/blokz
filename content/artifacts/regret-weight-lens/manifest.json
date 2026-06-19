@@ -2,7 +2,7 @@
   "slug": "regret-weight-lens",
   "title": "The Regret Lens",
   "description": "Allora weights models by regret, not votes. Drag a market from calm to a volatility spike: five forecasters ride the softplus weight curve φ′(R̂), the low-vol specialist collapses the instant a spike is forecast while the vol-aware model climbs. Tap a model for its R→R̂→w chain.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:03:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

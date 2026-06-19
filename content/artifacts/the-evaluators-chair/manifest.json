@@ -2,7 +2,7 @@
   "slug": "the-evaluators-chair",
   "title": "The Evaluator's Chair",
   "description": "Drive a Virtuals ACP escrow job: client funds USDC, provider submits a deliverable hash, and whoever sits in the evaluator's chair springs the payout. Seat the client (what ~all of Base does), a neutral agent, or no one — then run it or let someone cheat, and watch who's left exposed.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:07:00Z",
   "type": "svg",
   "archetype": "diagram",
   "topics": [

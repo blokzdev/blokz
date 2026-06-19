@@ -2,7 +2,7 @@
   "slug": "emission-engine",
   "title": "Emission Engine",
   "description": "Run the same emission-capture attack against both of Bittensor's allocation regimes: a refundable constant-product price pump (dTAO, pre-Nov 2025) versus an EMA-smoothed staking flow with a 30-day half-life (TaoFlow). Real protocol constants show why one pays instantly and the other decays.",
-  "pubDate": "2026-06-12",
+  "pubDate": "2026-06-12T12:06:00Z",
   "type": "dom",
   "archetype": "calculator",
   "topics": [

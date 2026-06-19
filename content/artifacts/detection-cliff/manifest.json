@@ -2,7 +2,7 @@
   "slug": "detection-cliff",
   "title": "The Detection Cliff",
   "description": "How many audit probes it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in a few hundred probes; FP8 needs ~150k and falls off the cliff into the economically-invisible zone.",
-  "pubDate": "2026-06-19",
+  "pubDate": "2026-06-19T12:01:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

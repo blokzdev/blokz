@@ -2,7 +2,7 @@
   "slug": "protocol-gap",
   "title": "The Protocol Gap",
   "description": "Seven years of the Elliptic AML benchmark in four switchable charts: the 2019 table everyone forgot, the 2026 leakage-free re-ranking, one GraphSAGE trained on four different graphs, and the F1 cliff at time step 43. Hover, tap, or tab across the bars for exact precision and recall.",
-  "pubDate": "2026-06-12",
+  "pubDate": "2026-06-12T12:10:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

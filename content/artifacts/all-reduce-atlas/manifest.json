@@ -2,7 +2,7 @@
   "slug": "all-reduce-atlas",
   "title": "The All-Reduce Atlas",
   "description": "Where decentralized training nodes sit on Earth and what it costs to sync them. Toggle INTELLECT-1's three measured configurations and watch the ring all-reduce span the globe: 103s inside the USA, 382s across the Atlantic, 469s once Asia joins.",
-  "pubDate": "2026-06-14",
+  "pubDate": "2026-06-14T12:05:00Z",
   "type": "svg",
   "archetype": "map",
   "topics": [

@@ -4,19 +4,32 @@ export type Article = CollectionEntry<'articles'>;
 export type Artifact = CollectionEntry<'artifacts'>;
 export type Topic = CollectionEntry<'taxonomy'>;
 
+/**
+ * Newest first, with a deterministic slug tiebreaker. `pubDate` carries a time
+ * (set by the scaffold), so same-day items order by their true publish time;
+ * the slug tiebreaker keeps the order stable on the rare exact tie. Mirrors the
+ * index builder in `scripts/lib.mjs`.
+ */
+export function byPubDateDesc(a: Article | Artifact, b: Article | Artifact): number {
+  return (
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+    a.data.slug.localeCompare(b.data.slug)
+  );
+}
+
 /** Published articles, newest first. Drafts are excluded outside dev. */
 export async function getArticles(): Promise<Article[]> {
   const all = await getCollection('articles', ({ data }) =>
     import.meta.env.DEV ? true : !data.draft,
   );
-  return all.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  return all.sort(byPubDateDesc);
 }
 
 export async function getArtifacts(): Promise<Artifact[]> {
   const all = await getCollection('artifacts', ({ data }) =>
     import.meta.env.DEV ? true : !data.draft,
   );
-  return all.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  return all.sort(byPubDateDesc);
 }
 
 export async function getTopics(): Promise<Topic[]> {
@@ -52,7 +65,7 @@ export function relatedArticles(article: Article, pool: Article[], limit = 3): A
       score: a.data.topics.filter((t) => article.data.topics.includes(t)).length,
     }))
     .filter(({ score }) => score > 0)
-    .sort((x, y) => y.score - x.score || y.a.data.pubDate.valueOf() - x.a.data.pubDate.valueOf())
+    .sort((x, y) => y.score - x.score || byPubDateDesc(x.a, y.a))
     .slice(0, limit)
     .map(({ a }) => a);
 }

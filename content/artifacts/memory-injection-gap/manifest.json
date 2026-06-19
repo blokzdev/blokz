@@ -2,7 +2,7 @@
   "slug": "memory-injection-gap",
   "title": "The Memory-Injection Gap",
   "description": "Why memory injection beats prompt injection against on-chain AI agents, in three switchable charts over CrAIBench: 685 attacks skewed to trading, a 55.1%-vs-0% gap on the strongest model, and the fine-tuning defense that drops attack success 85.1% to 1.7%. Tap or arrow the bars for numbers.",
-  "pubDate": "2026-06-14",
+  "pubDate": "2026-06-14T12:02:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": ["agents", "security"],

@@ -22,110 +22,6 @@
   },
   "articles": [
     {
-      "slug": "agents-hiring-agents-mech-marketplace",
-      "path": "content/articles/2026/06/agents-hiring-agents-mech-marketplace/index.mdx",
-      "url": "/articles/agents-hiring-agents-mech-marketplace",
-      "title": "Agents Hiring Agents: The On-Chain SLA Inside Olas's Mech Marketplace",
-      "description": "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that docks no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA.",
-      "pubDate": "2026-06-19",
-      "topics": [
-        "agents",
-        "smart-contracts",
-        "web3"
-      ],
-      "tags": [
-        "olas",
-        "mech-marketplace",
-        "agent-economy",
-        "staking",
-        "reputation",
-        "gnosis"
-      ],
-      "artifacts": [
-        "forfeit-window"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "ai-prediction-market-resolution",
-      "path": "content/articles/2026/06/ai-prediction-market-resolution/index.mdx",
-      "url": "/articles/ai-prediction-market-resolution",
-      "title": "The 78% Oracle: How AI Resolves Prediction Markets — and Who Catches the Mistakes",
-      "description": "AI agents now resolve most prediction markets straight off the web — UMA's bot hits 99.3% on sports and 72% on mention markets. The optimistic oracle's dispute game is the backstop, but it only catches errors someone is paid to catch. The numbers, and the silent-settlement gap.",
-      "pubDate": "2026-06-19",
-      "topics": [
-        "agents",
-        "llm",
-        "defi"
-      ],
-      "tags": [
-        "prediction-markets",
-        "optimistic-oracle",
-        "uma",
-        "polymarket",
-        "dispute-games",
-        "oracles"
-      ],
-      "artifacts": [
-        "watchers-threshold"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "allora-context-aware-inference-synthesis",
-      "path": "content/articles/2026/06/allora-context-aware-inference-synthesis/index.mdx",
-      "url": "/articles/allora-context-aware-inference-synthesis",
-      "title": "Don't Average, Anticipate: Allora's Context-Aware Inference Synthesis",
-      "description": "Most decentralized-AI networks vote or average. Allora bets the network should learn whom to trust per context — using forecasters that predict who's about to be wrong, mapped to weights through a softplus gradient. We dissect the mechanism, the math, and where it pays.",
-      "pubDate": "2026-06-19",
-      "topics": [
-        "machine-learning",
-        "infrastructure",
-        "ai"
-      ],
-      "tags": [
-        "allora",
-        "ensembles",
-        "regret-minimization",
-        "decentralized-ai",
-        "inference",
-        "forecasting"
-      ],
-      "artifacts": [
-        "regret-weight-lens"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "arbitrage-rent-on-amm-liquidity",
-      "path": "content/articles/2026/06/arbitrage-rent-on-amm-liquidity/index.mdx",
-      "url": "/articles/arbitrage-rent-on-amm-liquidity",
-      "title": "Picking Off the Pool: The Arbitrage Tax on AMM Liquidity Providers",
-      "description": "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = σ²/8 prices the rent — at ETH's 63% realized vol that's ~5% of pool value a year, and most pools don't earn enough fees to cover it. The math, real numbers, and the auctions clawing it back.",
-      "pubDate": "2026-06-19",
-      "topics": [
-        "defi",
-        "agents",
-        "infrastructure"
-      ],
-      "tags": [
-        "lvr",
-        "amm",
-        "mev",
-        "arbitrage",
-        "liquidity-provision",
-        "cow-amm"
-      ],
-      "artifacts": [
-        "lp-breakeven-frontier"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
       "slug": "autonomous-exploit-economics",
       "path": "content/articles/2026/06/autonomous-exploit-economics/index.mdx",
       "url": "/articles/autonomous-exploit-economics",
@@ -152,81 +48,27 @@
       "draft": false
     },
     {
-      "slug": "evaluator-gap-agent-commerce",
-      "path": "content/articles/2026/06/evaluator-gap-agent-commerce/index.mdx",
-      "url": "/articles/evaluator-gap-agent-commerce",
-      "title": "Grading Their Own Homework: The Evaluator Gap in On-Chain Agent Commerce",
-      "description": "Virtuals' Agent Commerce Protocol sells an independent evaluator as the thing that makes agents trust each other's work. We read 62,882 jobs off Base — and in a 30-job sample, every one let the buyer grade itself. Not one used a third party.",
+      "slug": "ai-prediction-market-resolution",
+      "path": "content/articles/2026/06/ai-prediction-market-resolution/index.mdx",
+      "url": "/articles/ai-prediction-market-resolution",
+      "title": "The 78% Oracle: How AI Resolves Prediction Markets — and Who Catches the Mistakes",
+      "description": "AI agents now resolve most prediction markets straight off the web — UMA's bot hits 99.3% on sports and 72% on mention markets. The optimistic oracle's dispute game is the backstop, but it only catches errors someone is paid to catch. The numbers, and the silent-settlement gap.",
       "pubDate": "2026-06-19",
       "topics": [
         "agents",
-        "smart-contracts",
-        "web3"
-      ],
-      "tags": [
-        "acp",
-        "virtuals",
-        "escrow",
-        "evaluator",
-        "agent-commerce",
-        "base",
-        "digital-labor"
-      ],
-      "artifacts": [
-        "the-evaluators-chair"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "fingerprints-in-the-weights",
-      "path": "content/articles/2026/06/fingerprints-in-the-weights/index.mdx",
-      "url": "/articles/fingerprints-in-the-weights",
-      "title": "Fingerprints in the Weights: Monetizing Open AI Models You Can't Lock",
-      "description": "You can copy open model weights bit-for-bit, so on-chain ownership can't be cryptographically enforced — only proven. Sentient's answer: fine-tune 24,576 secret key-response fingerprints into the weights and make scale the security parameter.",
-      "pubDate": "2026-06-19",
-      "topics": [
-        "machine-learning",
-        "security",
-        "cryptography"
-      ],
-      "tags": [
-        "model-fingerprinting",
-        "oml",
-        "sentient",
-        "watermarking",
-        "backdoor",
-        "model-ownership"
-      ],
-      "artifacts": [
-        "fingerprint-reserve"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "model-substitution-inference-markets",
-      "path": "content/articles/2026/06/model-substitution-inference-markets/index.mdx",
-      "url": "/articles/model-substitution-inference-markets",
-      "title": "Bait and Switch: Auditing Model Substitution in Decentralized Inference Markets",
-      "description": "You pay per token for a named model; the provider picks the precision. FP8 quantization costs 0.6 MMLU points and is near-invisible to output auditing — so inference markets bond and attest instead of detect.",
-      "pubDate": "2026-06-19",
-      "topics": [
         "llm",
-        "infrastructure",
-        "security"
+        "defi"
       ],
       "tags": [
-        "model-substitution",
-        "quantization",
-        "decentralized-inference",
-        "proof-of-quality",
-        "tee",
-        "verifiable-inference"
+        "prediction-markets",
+        "optimistic-oracle",
+        "uma",
+        "polymarket",
+        "dispute-games",
+        "oracles"
       ],
       "artifacts": [
-        "detection-cliff",
-        "price-of-trust"
+        "watchers-threshold"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -284,28 +126,132 @@
       "draft": false
     },
     {
-      "slug": "provenance-isnt-purity-data-poisoning",
-      "path": "content/articles/2026/06/provenance-isnt-purity-data-poisoning/index.mdx",
-      "url": "/articles/provenance-isnt-purity-data-poisoning",
-      "title": "Provenance Isn't Purity: Data Poisoning and the Limits of On-Chain Data Markets",
-      "description": "A landmark 2025 result: ~250 poisoned documents backdoor an LLM whether it has 600M or 13B parameters — 0.00016% of the tokens. DataDAOs sell 'verifiable' training data, but on-chain provenance proves integrity, not purity. Here's the gap, and what actually narrows it.",
+      "slug": "evaluator-gap-agent-commerce",
+      "path": "content/articles/2026/06/evaluator-gap-agent-commerce/index.mdx",
+      "url": "/articles/evaluator-gap-agent-commerce",
+      "title": "Grading Their Own Homework: The Evaluator Gap in On-Chain Agent Commerce",
+      "description": "Virtuals' Agent Commerce Protocol sells an independent evaluator as the thing that makes agents trust each other's work. We read 62,882 jobs off Base — and in a 30-job sample, every one let the buyer grade itself. Not one used a third party.",
       "pubDate": "2026-06-19",
       "topics": [
-        "data",
-        "machine-learning",
-        "security"
+        "agents",
+        "smart-contracts",
+        "web3"
       ],
       "tags": [
-        "data-poisoning",
-        "datadao",
-        "vana",
-        "proof-of-contribution",
-        "content-addressing",
-        "backdoor"
+        "acp",
+        "virtuals",
+        "escrow",
+        "evaluator",
+        "agent-commerce",
+        "base",
+        "digital-labor"
       ],
       "artifacts": [
-        "the-dilution-myth",
-        "merkle-cascade"
+        "the-evaluators-chair"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "agents-hiring-agents-mech-marketplace",
+      "path": "content/articles/2026/06/agents-hiring-agents-mech-marketplace/index.mdx",
+      "url": "/articles/agents-hiring-agents-mech-marketplace",
+      "title": "Agents Hiring Agents: The On-Chain SLA Inside Olas's Mech Marketplace",
+      "description": "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that docks no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "web3"
+      ],
+      "tags": [
+        "olas",
+        "mech-marketplace",
+        "agent-economy",
+        "staking",
+        "reputation",
+        "gnosis"
+      ],
+      "artifacts": [
+        "forfeit-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "fingerprints-in-the-weights",
+      "path": "content/articles/2026/06/fingerprints-in-the-weights/index.mdx",
+      "url": "/articles/fingerprints-in-the-weights",
+      "title": "Fingerprints in the Weights: Monetizing Open AI Models You Can't Lock",
+      "description": "You can copy open model weights bit-for-bit, so on-chain ownership can't be cryptographically enforced — only proven. Sentient's answer: fine-tune 24,576 secret key-response fingerprints into the weights and make scale the security parameter.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "machine-learning",
+        "security",
+        "cryptography"
+      ],
+      "tags": [
+        "model-fingerprinting",
+        "oml",
+        "sentient",
+        "watermarking",
+        "backdoor",
+        "model-ownership"
+      ],
+      "artifacts": [
+        "fingerprint-reserve"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "arbitrage-rent-on-amm-liquidity",
+      "path": "content/articles/2026/06/arbitrage-rent-on-amm-liquidity/index.mdx",
+      "url": "/articles/arbitrage-rent-on-amm-liquidity",
+      "title": "Picking Off the Pool: The Arbitrage Tax on AMM Liquidity Providers",
+      "description": "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = σ²/8 prices the rent — at ETH's 63% realized vol that's ~5% of pool value a year, and most pools don't earn enough fees to cover it. The math, real numbers, and the auctions clawing it back.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "defi",
+        "agents",
+        "infrastructure"
+      ],
+      "tags": [
+        "lvr",
+        "amm",
+        "mev",
+        "arbitrage",
+        "liquidity-provision",
+        "cow-amm"
+      ],
+      "artifacts": [
+        "lp-breakeven-frontier"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "allora-context-aware-inference-synthesis",
+      "path": "content/articles/2026/06/allora-context-aware-inference-synthesis/index.mdx",
+      "url": "/articles/allora-context-aware-inference-synthesis",
+      "title": "Don't Average, Anticipate: Allora's Context-Aware Inference Synthesis",
+      "description": "Most decentralized-AI networks vote or average. Allora bets the network should learn whom to trust per context — using forecasters that predict who's about to be wrong, mapped to weights through a softplus gradient. We dissect the mechanism, the math, and where it pays.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "allora",
+        "ensembles",
+        "regret-minimization",
+        "decentralized-ai",
+        "inference",
+        "forecasting"
+      ],
+      "artifacts": [
+        "regret-weight-lens"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -337,6 +283,60 @@
       "draft": false
     },
     {
+      "slug": "model-substitution-inference-markets",
+      "path": "content/articles/2026/06/model-substitution-inference-markets/index.mdx",
+      "url": "/articles/model-substitution-inference-markets",
+      "title": "Bait and Switch: Auditing Model Substitution in Decentralized Inference Markets",
+      "description": "You pay per token for a named model; the provider picks the precision. FP8 quantization costs 0.6 MMLU points and is near-invisible to output auditing — so inference markets bond and attest instead of detect.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "llm",
+        "infrastructure",
+        "security"
+      ],
+      "tags": [
+        "model-substitution",
+        "quantization",
+        "decentralized-inference",
+        "proof-of-quality",
+        "tee",
+        "verifiable-inference"
+      ],
+      "artifacts": [
+        "detection-cliff",
+        "price-of-trust"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "provenance-isnt-purity-data-poisoning",
+      "path": "content/articles/2026/06/provenance-isnt-purity-data-poisoning/index.mdx",
+      "url": "/articles/provenance-isnt-purity-data-poisoning",
+      "title": "Provenance Isn't Purity: Data Poisoning and the Limits of On-Chain Data Markets",
+      "description": "A landmark 2025 result: ~250 poisoned documents backdoor an LLM whether it has 600M or 13B parameters — 0.00016% of the tokens. DataDAOs sell 'verifiable' training data, but on-chain provenance proves integrity, not purity. Here's the gap, and what actually narrows it.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "data",
+        "machine-learning",
+        "security"
+      ],
+      "tags": [
+        "data-poisoning",
+        "datadao",
+        "vana",
+        "proof-of-contribution",
+        "content-addressing",
+        "backdoor"
+      ],
+      "artifacts": [
+        "the-dilution-myth",
+        "merkle-cascade"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "agent-token-bonding-curve",
       "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
       "url": "/articles/agent-token-bonding-curve",
@@ -363,27 +363,53 @@
       "draft": false
     },
     {
-      "slug": "agent-memory-injection-web3",
-      "path": "content/articles/2026/06/agent-memory-injection-web3/index.mdx",
-      "url": "/articles/agent-memory-injection-web3",
-      "title": "Fake Memories, Real Transfers: Context-Injection Attacks on On-Chain AI Agents",
-      "description": "An agent doesn't need its key stolen to drain a wallet — it can be talked into signing. CrAIBench shows memory injection beating prompt injection 55% to ~0% on the strongest model, and only fine-tuning closes the gap.",
+      "slug": "rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "path": "content/articles/2026/06/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose/index.mdx",
+      "url": "/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
+      "title": "Rate-Chasers: Why DeFi Yield Agents Win Where Trading Bots Lose",
+      "description": "Autonomous agents run ~19% of on-chain activity and beat Aave and Morpho at stablecoin yield — yet lose to humans at trading by 5 to 1. The split isn't about model quality. Yield-chasing is a constrained optimization against a kinked rate curve; trading needs alpha agents don't have.",
       "pubDate": "2026-06-14",
       "topics": [
+        "defi",
         "agents",
-        "security",
-        "defi"
+        "machine-learning"
       ],
       "tags": [
-        "prompt-injection",
-        "memory-injection",
-        "agent-security",
-        "elizaos",
-        "craibench",
-        "defi-agents"
+        "yield-optimization",
+        "autonomous-agents",
+        "aave",
+        "giza",
+        "arma",
+        "rebalancing"
       ],
       "artifacts": [
-        "memory-injection-gap"
+        "the-rebalancers-break-even"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "proof-of-training-3-percent-spoof",
+      "path": "content/articles/2026/06/proof-of-training-3-percent-spoof/index.mdx",
+      "url": "/articles/proof-of-training-3-percent-spoof",
+      "title": "The 3% Spoof: Can You Prove a Decentralized Model Was Actually Trained?",
+      "description": "Permissionless training networks pay peers for gradients they can't re-run. Proof-of-Learning was meant to verify the work — until it was forged for 3% of the training cost, then for one floating-point op per weight. Here's the mechanism, the attacks, and what's deployed instead.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "machine-learning",
+        "security",
+        "infrastructure"
+      ],
+      "tags": [
+        "proof-of-learning",
+        "decentralized-training",
+        "verifiable-training",
+        "spoofing",
+        "bittensor",
+        "compute-governance"
+      ],
+      "artifacts": [
+        "spoofers-discount"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -441,6 +467,33 @@
       "draft": false
     },
     {
+      "slug": "operating-layer-onchain-agents",
+      "path": "content/articles/2026/06/operating-layer-onchain-agents/index.mdx",
+      "url": "/articles/operating-layer-onchain-agents",
+      "title": "It Isn't the Model: The Operating Layer Behind 7.5M On-Chain Agent Trades",
+      "description": "DX Terminal Pro ran 3,505 LLM agents trading real ETH on Base for 21 days: 7.5M invocations, ~$20M volume, 99.9% settlement. The reliability came from the operating layer around the model, not the weights — here are the numbers and the failure modes.",
+      "pubDate": "2026-06-14",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "llm",
+        "defi"
+      ],
+      "tags": [
+        "onchain-agents",
+        "operating-layer",
+        "guardrails",
+        "uniswap-v4",
+        "base",
+        "reliability"
+      ],
+      "artifacts": [
+        "operating-layer-lift"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "deterministic-inference-onchain-verification",
       "path": "content/articles/2026/06/deterministic-inference-onchain-verification/index.mdx",
       "url": "/articles/deterministic-inference-onchain-verification",
@@ -467,54 +520,27 @@
       "draft": false
     },
     {
-      "slug": "evm-native-ml-gas-wall",
-      "path": "content/articles/2026/06/evm-native-ml-gas-wall/index.mdx",
-      "url": "/articles/evm-native-ml-gas-wall",
-      "title": "The Gas Wall: What It Costs to Run a Neural Net Inside the EVM",
-      "description": "Most 'on-chain AI' keeps the model off-chain and posts a proof. But you can also just run the forward pass in Solidity. We do the gas math — ~106k gas per weight, an MNIST net that needs 180 Ethereum blocks — and find the thin band of models that fit.",
-      "pubDate": "2026-06-14",
-      "topics": [
-        "machine-learning",
-        "smart-contracts",
-        "blockchain"
-      ],
-      "tags": [
-        "on-chain-inference",
-        "fixed-point",
-        "prbmath",
-        "gas",
-        "evm",
-        "solidity"
-      ],
-      "artifacts": [
-        "gas-wall"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "operating-layer-onchain-agents",
-      "path": "content/articles/2026/06/operating-layer-onchain-agents/index.mdx",
-      "url": "/articles/operating-layer-onchain-agents",
-      "title": "It Isn't the Model: The Operating Layer Behind 7.5M On-Chain Agent Trades",
-      "description": "DX Terminal Pro ran 3,505 LLM agents trading real ETH on Base for 21 days: 7.5M invocations, ~$20M volume, 99.9% settlement. The reliability came from the operating layer around the model, not the weights — here are the numbers and the failure modes.",
+      "slug": "agent-memory-injection-web3",
+      "path": "content/articles/2026/06/agent-memory-injection-web3/index.mdx",
+      "url": "/articles/agent-memory-injection-web3",
+      "title": "Fake Memories, Real Transfers: Context-Injection Attacks on On-Chain AI Agents",
+      "description": "An agent doesn't need its key stolen to drain a wallet — it can be talked into signing. CrAIBench shows memory injection beating prompt injection 55% to ~0% on the strongest model, and only fine-tuning closes the gap.",
       "pubDate": "2026-06-14",
       "topics": [
         "agents",
-        "infrastructure",
-        "llm",
+        "security",
         "defi"
       ],
       "tags": [
-        "onchain-agents",
-        "operating-layer",
-        "guardrails",
-        "uniswap-v4",
-        "base",
-        "reliability"
+        "prompt-injection",
+        "memory-injection",
+        "agent-security",
+        "elizaos",
+        "craibench",
+        "defi-agents"
       ],
       "artifacts": [
-        "operating-layer-lift"
+        "memory-injection-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -546,79 +572,54 @@
       "draft": false
     },
     {
-      "slug": "proof-of-training-3-percent-spoof",
-      "path": "content/articles/2026/06/proof-of-training-3-percent-spoof/index.mdx",
-      "url": "/articles/proof-of-training-3-percent-spoof",
-      "title": "The 3% Spoof: Can You Prove a Decentralized Model Was Actually Trained?",
-      "description": "Permissionless training networks pay peers for gradients they can't re-run. Proof-of-Learning was meant to verify the work — until it was forged for 3% of the training cost, then for one floating-point op per weight. Here's the mechanism, the attacks, and what's deployed instead.",
+      "slug": "evm-native-ml-gas-wall",
+      "path": "content/articles/2026/06/evm-native-ml-gas-wall/index.mdx",
+      "url": "/articles/evm-native-ml-gas-wall",
+      "title": "The Gas Wall: What It Costs to Run a Neural Net Inside the EVM",
+      "description": "Most 'on-chain AI' keeps the model off-chain and posts a proof. But you can also just run the forward pass in Solidity. We do the gas math — ~106k gas per weight, an MNIST net that needs 180 Ethereum blocks — and find the thin band of models that fit.",
       "pubDate": "2026-06-14",
       "topics": [
         "machine-learning",
-        "security",
-        "infrastructure"
+        "smart-contracts",
+        "blockchain"
       ],
       "tags": [
-        "proof-of-learning",
-        "decentralized-training",
-        "verifiable-training",
-        "spoofing",
-        "bittensor",
-        "compute-governance"
+        "on-chain-inference",
+        "fixed-point",
+        "prbmath",
+        "gas",
+        "evm",
+        "solidity"
       ],
       "artifacts": [
-        "spoofers-discount"
+        "gas-wall"
       ],
       "difficulty": "intermediate",
       "draft": false
     },
     {
-      "slug": "rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
-      "path": "content/articles/2026/06/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose/index.mdx",
-      "url": "/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose",
-      "title": "Rate-Chasers: Why DeFi Yield Agents Win Where Trading Bots Lose",
-      "description": "Autonomous agents run ~19% of on-chain activity and beat Aave and Morpho at stablecoin yield — yet lose to humans at trading by 5 to 1. The split isn't about model quality. Yield-chasing is a constrained optimization against a kinked rate curve; trading needs alpha agents don't have.",
-      "pubDate": "2026-06-14",
-      "topics": [
-        "defi",
-        "agents",
-        "machine-learning"
-      ],
-      "tags": [
-        "yield-optimization",
-        "autonomous-agents",
-        "aave",
-        "giza",
-        "arma",
-        "rebalancing"
-      ],
-      "artifacts": [
-        "the-rebalancers-break-even"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "llm-agents-onchain-prediction-markets",
-      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
-      "url": "/articles/llm-agents-onchain-prediction-markets",
-      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
-      "description": "Yesterday an AI agent deployed a prediction market on Gnosis; other agents will price it, bet on it, and resolve it. The calibration data behind LLM forecasters, the FPMM math they trade against, and what breaks when the marginal bettor is a model.",
+      "slug": "zktls-web-proofs-for-agents",
+      "path": "content/articles/2026/06/zktls-web-proofs-for-agents/index.mdx",
+      "url": "/articles/zktls-web-proofs-for-agents",
+      "title": "What the Agent Saw: zkTLS and the Web-Proof Trust Stack",
+      "description": "An AI agent that acts on your bank balance has to prove it saw that balance — without a trusted API. zkTLS turns any HTTPS session into a portable proof. We dissect MPC-TLS vs proxy vs TEE, the real TLSNotary benchmarks, and read Reclaim's on-chain verifier on Base down to its single attestor.",
       "pubDate": "2026-06-13",
       "topics": [
-        "agents",
-        "llm",
-        "defi"
+        "cryptography",
+        "zero-knowledge",
+        "agents"
       ],
       "tags": [
-        "prediction-markets",
-        "fpmm",
-        "omen",
-        "olas",
-        "gnosis",
-        "forecasting"
+        "zktls",
+        "tls",
+        "web-proofs",
+        "reclaim",
+        "tlsnotary",
+        "mpc",
+        "oracles"
       ],
       "artifacts": [
-        "fpmm-bet-machine"
+        "web-proof-trust"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -653,28 +654,53 @@
       "draft": false
     },
     {
-      "slug": "zktls-web-proofs-for-agents",
-      "path": "content/articles/2026/06/zktls-web-proofs-for-agents/index.mdx",
-      "url": "/articles/zktls-web-proofs-for-agents",
-      "title": "What the Agent Saw: zkTLS and the Web-Proof Trust Stack",
-      "description": "An AI agent that acts on your bank balance has to prove it saw that balance — without a trusted API. zkTLS turns any HTTPS session into a portable proof. We dissect MPC-TLS vs proxy vs TEE, the real TLSNotary benchmarks, and read Reclaim's on-chain verifier on Base down to its single attestor.",
+      "slug": "llm-agents-onchain-prediction-markets",
+      "path": "content/articles/2026/06/llm-agents-onchain-prediction-markets/index.mdx",
+      "url": "/articles/llm-agents-onchain-prediction-markets",
+      "title": "Betting Machines: How LLM Agents Trade On-Chain Prediction Markets",
+      "description": "Yesterday an AI agent deployed a prediction market on Gnosis; other agents will price it, bet on it, and resolve it. The calibration data behind LLM forecasters, the FPMM math they trade against, and what breaks when the marginal bettor is a model.",
       "pubDate": "2026-06-13",
       "topics": [
-        "cryptography",
-        "zero-knowledge",
-        "agents"
+        "agents",
+        "llm",
+        "defi"
       ],
       "tags": [
-        "zktls",
-        "tls",
-        "web-proofs",
-        "reclaim",
-        "tlsnotary",
-        "mpc",
-        "oracles"
+        "prediction-markets",
+        "fpmm",
+        "omen",
+        "olas",
+        "gnosis",
+        "forecasting"
       ],
       "artifacts": [
-        "web-proof-trust"
+        "fpmm-bet-machine"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "story-royalty-graph-onchain",
+      "path": "content/articles/2026/06/story-royalty-graph-onchain/index.mdx",
+      "url": "/articles/story-royalty-graph-onchain",
+      "title": "Who Gets Paid When AI Remixes IP? Reading Story's Royalty Graph Off the Chain",
+      "description": "Story raised $140M to make IP programmable for the AI era. We read its chain: 6.46M registered IP assets, 230,300 licenses ever minted, one week of royalties totaling $10 — plus the LAP/LRP royalty math and the precompile at 0x0101 that computes the graph.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "ai",
+        "web3",
+        "smart-contracts"
+      ],
+      "tags": [
+        "story-protocol",
+        "ip-licensing",
+        "royalties",
+        "training-data",
+        "erc-6551",
+        "provenance"
+      ],
+      "artifacts": [
+        "royalty-stack"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -701,136 +727,6 @@
       ],
       "artifacts": [
         "blast-radius"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "bittensor-taoflow-emission-engine",
-      "path": "content/articles/2026/06/bittensor-taoflow-emission-engine/index.mdx",
-      "url": "/articles/bittensor-taoflow-emission-engine",
-      "title": "From Price to Flow: How Bittensor Re-Plumbed Its Emission Engine",
-      "description": "Bittensor let AMM prices decide which AI subnets earn 3,600 TAO a day — until a memecoin subnet gamed the formula. Inside the TaoFlow upgrade: the constant-product math that got exploited, the EMA flow accounting that replaced it, and why refundable manipulation is the design smell to hunt for.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "machine-learning",
-        "blockchain",
-        "defi"
-      ],
-      "tags": [
-        "bittensor",
-        "dtao",
-        "taoflow",
-        "emissions",
-        "mechanism-design",
-        "amm"
-      ],
-      "artifacts": [
-        "emission-engine"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "decentralized-gpu-markets-burn-mint-vs-auction",
-      "path": "content/articles/2026/06/decentralized-gpu-markets-burn-mint-vs-auction/index.mdx",
-      "url": "/articles/decentralized-gpu-markets-burn-mint-vs-auction",
-      "title": "Burn, Mint, or Bid: How Decentralized GPU Markets Price Compute",
-      "description": "Render just voted to route 60,000 Salad GPUs' payments through a token burn; Akash auctions its 234 GPUs per-block on-chain. Two opposed pricing mechanisms, live H100 quotes, and the burn-vs-emission math the equilibrium story skips.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "infrastructure",
-        "ai",
-        "web3"
-      ],
-      "tags": [
-        "depin",
-        "gpu-markets",
-        "render",
-        "akash",
-        "burn-mint-equilibrium",
-        "reverse-auction"
-      ],
-      "artifacts": [
-        "bme-equilibrium"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "erc-8004-agent-registries-onchain",
-      "path": "content/articles/2026/06/erc-8004-agent-registries-onchain/index.mdx",
-      "url": "/articles/erc-8004-agent-registries-onchain",
-      "title": "ERC-8004 in the Wild: Auditing the Trustless Agents Registries On-Chain",
-      "description": "ERC-8004's agent registries went live in January. We read them straight off the chain: ~90,000 registrations across Ethereum and Base, a $0.003 ERC-4337 registration dissected — and a reputation registry already farmed with vouch spam.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "agents",
-        "blockchain",
-        "security"
-      ],
-      "tags": [
-        "erc-8004",
-        "agent-identity",
-        "reputation",
-        "registries",
-        "base",
-        "erc-4337"
-      ],
-      "artifacts": [],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "fhe-mainnet-private-compute-costs",
-      "path": "content/articles/2026/06/fhe-mainnet-private-compute-costs/index.mdx",
-      "url": "/articles/fhe-mainnet-private-compute-costs",
-      "title": "FHE Hits Mainnet: What Private On-Chain Compute Actually Costs",
-      "description": "FHE left the lab: confidential ERC-7984 tokens settle on Ethereum for ~$0.09 in gas, with 48,000 transfers since December. We dissect a live encrypted transaction, the 13-node MPC committee underneath, and why encrypted inference is still 11 seconds per token.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "cryptography",
-        "machine-learning",
-        "blockchain"
-      ],
-      "tags": [
-        "fhe",
-        "fhevm",
-        "erc-7984",
-        "confidential-computing",
-        "tfhe",
-        "zama"
-      ],
-      "series": "proof-of-intelligence",
-      "seriesOrder": 4,
-      "artifacts": [
-        "price-of-trust"
-      ],
-      "difficulty": "intermediate",
-      "draft": false
-    },
-    {
-      "slug": "gnn-vs-trees-onchain-fraud-detection",
-      "path": "content/articles/2026/06/gnn-vs-trees-onchain-fraud-detection/index.mdx",
-      "url": "/articles/gnn-vs-trees-onchain-fraud-detection",
-      "title": "When the Graph Misleads: GNNs vs. Gradient-Boosted Trees in On-Chain Fraud Detection",
-      "description": "The Elliptic benchmark made GNNs the default for on-chain AML. A 2026 leakage-free re-evaluation flips the script: random forests win by 13 F1 points, randomly rewired edges beat the real graph, and every model falls off a cliff at time step 43.",
-      "pubDate": "2026-06-12",
-      "topics": [
-        "data",
-        "machine-learning",
-        "security"
-      ],
-      "tags": [
-        "aml",
-        "gnn",
-        "elliptic",
-        "fraud-detection",
-        "random-forest",
-        "benchmarks"
-      ],
-      "artifacts": [
-        "protocol-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -864,81 +760,107 @@
       "draft": false
     },
     {
-      "slug": "story-royalty-graph-onchain",
-      "path": "content/articles/2026/06/story-royalty-graph-onchain/index.mdx",
-      "url": "/articles/story-royalty-graph-onchain",
-      "title": "Who Gets Paid When AI Remixes IP? Reading Story's Royalty Graph Off the Chain",
-      "description": "Story raised $140M to make IP programmable for the AI era. We read its chain: 6.46M registered IP assets, 230,300 licenses ever minted, one week of royalties totaling $10 — plus the LAP/LRP royalty math and the precompile at 0x0101 that computes the graph.",
+      "slug": "gnn-vs-trees-onchain-fraud-detection",
+      "path": "content/articles/2026/06/gnn-vs-trees-onchain-fraud-detection/index.mdx",
+      "url": "/articles/gnn-vs-trees-onchain-fraud-detection",
+      "title": "When the Graph Misleads: GNNs vs. Gradient-Boosted Trees in On-Chain Fraud Detection",
+      "description": "The Elliptic benchmark made GNNs the default for on-chain AML. A 2026 leakage-free re-evaluation flips the script: random forests win by 13 F1 points, randomly rewired edges beat the real graph, and every model falls off a cliff at time step 43.",
       "pubDate": "2026-06-12",
       "topics": [
-        "ai",
-        "web3",
-        "smart-contracts"
+        "data",
+        "machine-learning",
+        "security"
       ],
       "tags": [
-        "story-protocol",
-        "ip-licensing",
-        "royalties",
-        "training-data",
-        "erc-6551",
-        "provenance"
+        "aml",
+        "gnn",
+        "elliptic",
+        "fraud-detection",
+        "random-forest",
+        "benchmarks"
       ],
       "artifacts": [
-        "royalty-stack"
+        "protocol-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
     },
     {
-      "slug": "tee-attested-inference-verifiable-ai-at-hardware-speed",
-      "path": "content/articles/2026/06/tee-attested-inference-verifiable-ai-at-hardware-speed/index.mdx",
-      "url": "/articles/tee-attested-inference-verifiable-ai-at-hardware-speed",
-      "title": "TEE-Attested Inference: Verifiable AI at Hardware Speed",
-      "description": "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference.",
+      "slug": "decentralized-gpu-markets-burn-mint-vs-auction",
+      "path": "content/articles/2026/06/decentralized-gpu-markets-burn-mint-vs-auction/index.mdx",
+      "url": "/articles/decentralized-gpu-markets-burn-mint-vs-auction",
+      "title": "Burn, Mint, or Bid: How Decentralized GPU Markets Price Compute",
+      "description": "Render just voted to route 60,000 Salad GPUs' payments through a token burn; Akash auctions its 234 GPUs per-block on-chain. Two opposed pricing mechanisms, live H100 quotes, and the burn-vs-emission math the equilibrium story skips.",
       "pubDate": "2026-06-12",
-      "updatedDate": "2026-06-15",
       "topics": [
-        "security",
         "infrastructure",
-        "ai"
+        "ai",
+        "web3"
       ],
       "tags": [
-        "tee",
-        "attestation",
+        "depin",
+        "gpu-markets",
+        "render",
+        "akash",
+        "burn-mint-equilibrium",
+        "reverse-auction"
+      ],
+      "artifacts": [
+        "bme-equilibrium"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "fhe-mainnet-private-compute-costs",
+      "path": "content/articles/2026/06/fhe-mainnet-private-compute-costs/index.mdx",
+      "url": "/articles/fhe-mainnet-private-compute-costs",
+      "title": "FHE Hits Mainnet: What Private On-Chain Compute Actually Costs",
+      "description": "FHE left the lab: confidential ERC-7984 tokens settle on Ethereum for ~$0.09 in gas, with 48,000 transfers since December. We dissect a live encrypted transaction, the 13-node MPC committee underneath, and why encrypted inference is still 11 seconds per token.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "blockchain"
+      ],
+      "tags": [
+        "fhe",
+        "fhevm",
+        "erc-7984",
         "confidential-computing",
-        "dcap",
-        "h100"
+        "tfhe",
+        "zama"
       ],
       "series": "proof-of-intelligence",
-      "seriesOrder": 3,
+      "seriesOrder": 4,
       "artifacts": [
-        "attestation-chain"
+        "price-of-trust"
       ],
       "difficulty": "intermediate",
       "draft": false
     },
     {
-      "slug": "the-solver-optimization-market",
-      "path": "content/articles/2026/06/the-solver-optimization-market/index.mdx",
-      "url": "/articles/the-solver-optimization-market",
-      "title": "The Solver Optimization Market: How Intent-Based DEXes Auction Your Trade",
-      "description": "Intent-based DEXes don't route your trade — they auction it. Solvers compete as autonomous optimizers to settle a batch at one clearing price. Inside CoW Protocol's contract, the optimization problem, and the metaheuristic solvers now winning it.",
+      "slug": "bittensor-taoflow-emission-engine",
+      "path": "content/articles/2026/06/bittensor-taoflow-emission-engine/index.mdx",
+      "url": "/articles/bittensor-taoflow-emission-engine",
+      "title": "From Price to Flow: How Bittensor Re-Plumbed Its Emission Engine",
+      "description": "Bittensor let AMM prices decide which AI subnets earn 3,600 TAO a day — until a memecoin subnet gamed the formula. Inside the TaoFlow upgrade: the constant-product math that got exploited, the EMA flow accounting that replaced it, and why refundable manipulation is the design smell to hunt for.",
       "pubDate": "2026-06-12",
       "topics": [
-        "defi",
         "machine-learning",
-        "infrastructure"
+        "blockchain",
+        "defi"
       ],
       "tags": [
-        "intents",
-        "solvers",
-        "batch-auctions",
-        "cow-protocol",
-        "optimization",
-        "mev"
+        "bittensor",
+        "dtao",
+        "taoflow",
+        "emissions",
+        "mechanism-design",
+        "amm"
       ],
       "artifacts": [
-        "gradient-descent"
+        "emission-engine"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -973,24 +895,24 @@
       "draft": false
     },
     {
-      "slug": "x402-agent-payments",
-      "path": "content/articles/2026/06/x402-agent-payments/index.mdx",
-      "url": "/articles/x402-agent-payments",
-      "title": "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement",
-      "description": "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it.",
+      "slug": "erc-8004-agent-registries-onchain",
+      "path": "content/articles/2026/06/erc-8004-agent-registries-onchain/index.mdx",
+      "url": "/articles/erc-8004-agent-registries-onchain",
+      "title": "ERC-8004 in the Wild: Auditing the Trustless Agents Registries On-Chain",
+      "description": "ERC-8004's agent registries went live in January. We read them straight off the chain: ~90,000 registrations across Ethereum and Base, a $0.003 ERC-4337 registration dissected — and a reputation registry already farmed with vouch spam.",
       "pubDate": "2026-06-12",
       "topics": [
         "agents",
         "blockchain",
-        "infrastructure",
         "security"
       ],
       "tags": [
-        "x402",
-        "stablecoins",
-        "eip-3009",
-        "payments",
-        "account-abstraction"
+        "erc-8004",
+        "agent-identity",
+        "reputation",
+        "registries",
+        "base",
+        "erc-4337"
       ],
       "artifacts": [],
       "difficulty": "intermediate",
@@ -1021,6 +943,60 @@
       "draft": false
     },
     {
+      "slug": "the-solver-optimization-market",
+      "path": "content/articles/2026/06/the-solver-optimization-market/index.mdx",
+      "url": "/articles/the-solver-optimization-market",
+      "title": "The Solver Optimization Market: How Intent-Based DEXes Auction Your Trade",
+      "description": "Intent-based DEXes don't route your trade — they auction it. Solvers compete as autonomous optimizers to settle a batch at one clearing price. Inside CoW Protocol's contract, the optimization problem, and the metaheuristic solvers now winning it.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "intents",
+        "solvers",
+        "batch-auctions",
+        "cow-protocol",
+        "optimization",
+        "mev"
+      ],
+      "artifacts": [
+        "gradient-descent"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "tee-attested-inference-verifiable-ai-at-hardware-speed",
+      "path": "content/articles/2026/06/tee-attested-inference-verifiable-ai-at-hardware-speed/index.mdx",
+      "url": "/articles/tee-attested-inference-verifiable-ai-at-hardware-speed",
+      "title": "TEE-Attested Inference: Verifiable AI at Hardware Speed",
+      "description": "zkML costs 1000x, optimistic schemes cost a challenge window. Hardware attestation verifies AI inference at under 7% overhead and ~$0.26 on-chain — if you're willing to trust Intel. Part 3 weighs the third leg of verifiable inference.",
+      "pubDate": "2026-06-12",
+      "updatedDate": "2026-06-15",
+      "topics": [
+        "security",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "tee",
+        "attestation",
+        "confidential-computing",
+        "dcap",
+        "h100"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 3,
+      "artifacts": [
+        "attestation-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "x402-agent-payments-onchain",
       "path": "content/articles/2026/06/x402-agent-payments-onchain/index.mdx",
       "url": "/articles/x402-agent-payments-onchain",
@@ -1044,6 +1020,30 @@
       "artifacts": [
         "block-mesh"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "x402-agent-payments",
+      "path": "content/articles/2026/06/x402-agent-payments/index.mdx",
+      "url": "/articles/x402-agent-payments",
+      "title": "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement",
+      "description": "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it.",
+      "pubDate": "2026-06-12",
+      "topics": [
+        "agents",
+        "blockchain",
+        "infrastructure",
+        "security"
+      ],
+      "tags": [
+        "x402",
+        "stablecoins",
+        "eip-3009",
+        "payments",
+        "account-abstraction"
+      ],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1133,22 +1133,6 @@
   ],
   "artifacts": [
     {
-      "slug": "detection-cliff",
-      "path": "content/artifacts/detection-cliff/manifest.json",
-      "module": "src/islands/artifacts/detection-cliff.ts",
-      "url": "/artifacts/detection-cliff",
-      "title": "The Detection Cliff",
-      "description": "How many audit probes it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in a few hundred probes; FP8 needs ~150k and falls off the cliff into the economically-invisible zone.",
-      "pubDate": "2026-06-19",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "llm",
-        "security"
-      ],
-      "draft": false
-    },
-    {
       "slug": "exploit-asymmetry",
       "path": "content/artifacts/exploit-asymmetry/manifest.json",
       "module": "src/islands/artifacts/exploit-asymmetry.ts",
@@ -1165,35 +1149,34 @@
       "draft": false
     },
     {
-      "slug": "fingerprint-reserve",
-      "path": "content/artifacts/fingerprint-reserve/manifest.json",
-      "module": "src/islands/artifacts/fingerprint-reserve.ts",
-      "url": "/artifacts/fingerprint-reserve",
-      "title": "The Fingerprint Reserve",
-      "description": "Open weights can't be locked, so ownership is proven by counting surviving fingerprints. Embed thousands of secret key-response pairs; an adversary fine-tunes to scrub them and each audit burns one to leakage. Watch the reserve survive — or not.",
+      "slug": "watchers-threshold",
+      "path": "content/artifacts/watchers-threshold/manifest.json",
+      "module": "src/islands/artifacts/watchers-threshold.ts",
+      "url": "/artifacts/watchers-threshold",
+      "title": "The Watcher's Threshold",
+      "description": "An AI proposer is wrong a few percent of the time, but UMA pays a winning disputer only half the bond it risks — so the break-even belief is two-thirds, not half. Every category's base error rate sits deep in the no-dispute zone; raise the reward and the threshold slides left.",
       "pubDate": "2026-06-19",
-      "type": "dom",
-      "archetype": "calculator",
+      "type": "svg",
+      "archetype": "chart",
       "topics": [
-        "machine-learning",
-        "security",
-        "cryptography"
+        "defi",
+        "llm"
       ],
       "draft": false
     },
     {
-      "slug": "forfeit-window",
-      "path": "content/artifacts/forfeit-window/manifest.json",
-      "module": "src/islands/artifacts/forfeit-window.ts",
-      "url": "/artifacts/forfeit-window",
-      "title": "The Forfeit Window",
-      "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it the priority mech delivers and gains Karma; past it a backup delivers, the priority mech forfeits the fee and is docked Karma. Live Olas marketplace constants.",
+      "slug": "liquidation-value-split",
+      "path": "content/artifacts/liquidation-value-split/manifest.json",
+      "module": "src/islands/artifacts/liquidation-value-split.ts",
+      "url": "/artifacts/liquidation-value-split",
+      "title": "The Liquidation Value Split",
+      "description": "A liquidation mints a fixed prize — the bonus on seized collateral. Three bars split it three ways: a gas war bleeds it to the block builder, private orderflow pockets it for the searcher, an OEV auction returns ~73% to the protocol. Drive size, bonus, competition; anchored to Chainlink SVR figures.",
       "pubDate": "2026-06-19",
-      "type": "dom",
-      "archetype": "simulation",
+      "type": "svg",
+      "archetype": "chart",
       "topics": [
-        "agents",
-        "smart-contracts"
+        "defi",
+        "infrastructure"
       ],
       "draft": false
     },
@@ -1214,18 +1197,51 @@
       "draft": false
     },
     {
-      "slug": "liquidation-value-split",
-      "path": "content/artifacts/liquidation-value-split/manifest.json",
-      "module": "src/islands/artifacts/liquidation-value-split.ts",
-      "url": "/artifacts/liquidation-value-split",
-      "title": "The Liquidation Value Split",
-      "description": "A liquidation mints a fixed prize — the bonus on seized collateral. Three bars split it three ways: a gas war bleeds it to the block builder, private orderflow pockets it for the searcher, an OEV auction returns ~73% to the protocol. Drive size, bonus, competition; anchored to Chainlink SVR figures.",
+      "slug": "the-evaluators-chair",
+      "path": "content/artifacts/the-evaluators-chair/manifest.json",
+      "module": "src/islands/artifacts/the-evaluators-chair.ts",
+      "url": "/artifacts/the-evaluators-chair",
+      "title": "The Evaluator's Chair",
+      "description": "Drive a Virtuals ACP escrow job: client funds USDC, provider submits a deliverable hash, and whoever sits in the evaluator's chair springs the payout. Seat the client (what ~all of Base does), a neutral agent, or no one — then run it or let someone cheat, and watch who's left exposed.",
       "pubDate": "2026-06-19",
       "type": "svg",
-      "archetype": "chart",
+      "archetype": "diagram",
       "topics": [
-        "defi",
-        "infrastructure"
+        "agents",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "forfeit-window",
+      "path": "content/artifacts/forfeit-window/manifest.json",
+      "module": "src/islands/artifacts/forfeit-window.ts",
+      "url": "/artifacts/forfeit-window",
+      "title": "The Forfeit Window",
+      "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it the priority mech delivers and gains Karma; past it a backup delivers, the priority mech forfeits the fee and is docked Karma. Live Olas marketplace constants.",
+      "pubDate": "2026-06-19",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "fingerprint-reserve",
+      "path": "content/artifacts/fingerprint-reserve/manifest.json",
+      "module": "src/islands/artifacts/fingerprint-reserve.ts",
+      "url": "/artifacts/fingerprint-reserve",
+      "title": "The Fingerprint Reserve",
+      "description": "Open weights can't be locked, so ownership is proven by counting surviving fingerprints. Embed thousands of secret key-response pairs; an adversary fine-tunes to scrub them and each audit burns one to leakage. Watch the reserve survive — or not.",
+      "pubDate": "2026-06-19",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "machine-learning",
+        "security",
+        "cryptography"
       ],
       "draft": false
     },
@@ -1278,6 +1294,22 @@
       "draft": false
     },
     {
+      "slug": "detection-cliff",
+      "path": "content/artifacts/detection-cliff/manifest.json",
+      "module": "src/islands/artifacts/detection-cliff.ts",
+      "url": "/artifacts/detection-cliff",
+      "title": "The Detection Cliff",
+      "description": "How many audit probes it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in a few hundred probes; FP8 needs ~150k and falls off the cliff into the economically-invisible zone.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "security"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-dilution-myth",
       "path": "content/artifacts/the-dilution-myth/manifest.json",
       "module": "src/islands/artifacts/the-dilution-myth.ts",
@@ -1291,54 +1323,6 @@
         "data",
         "machine-learning",
         "security"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "the-evaluators-chair",
-      "path": "content/artifacts/the-evaluators-chair/manifest.json",
-      "module": "src/islands/artifacts/the-evaluators-chair.ts",
-      "url": "/artifacts/the-evaluators-chair",
-      "title": "The Evaluator's Chair",
-      "description": "Drive a Virtuals ACP escrow job: client funds USDC, provider submits a deliverable hash, and whoever sits in the evaluator's chair springs the payout. Seat the client (what ~all of Base does), a neutral agent, or no one — then run it or let someone cheat, and watch who's left exposed.",
-      "pubDate": "2026-06-19",
-      "type": "svg",
-      "archetype": "diagram",
-      "topics": [
-        "agents",
-        "smart-contracts"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "watchers-threshold",
-      "path": "content/artifacts/watchers-threshold/manifest.json",
-      "module": "src/islands/artifacts/watchers-threshold.ts",
-      "url": "/artifacts/watchers-threshold",
-      "title": "The Watcher's Threshold",
-      "description": "An AI proposer is wrong a few percent of the time, but UMA pays a winning disputer only half the bond it risks — so the break-even belief is two-thirds, not half. Every category's base error rate sits deep in the no-dispute zone; raise the reward and the threshold slides left.",
-      "pubDate": "2026-06-19",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "defi",
-        "llm"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "attestation-chain",
-      "path": "content/artifacts/attestation-chain/manifest.json",
-      "module": "src/islands/artifacts/attestation-chain.ts",
-      "url": "/artifacts/attestation-chain",
-      "title": "The Attestation Chain",
-      "description": "The TEE remote-attestation chain of trust, stepped through: silicon root, CPU TDX quote, H100 attestation, on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
-      "pubDate": "2026-06-15",
-      "type": "svg",
-      "archetype": "diagram",
-      "topics": [
-        "security",
-        "infrastructure"
       ],
       "draft": false
     },
@@ -1359,145 +1343,17 @@
       "draft": false
     },
     {
-      "slug": "all-reduce-atlas",
-      "path": "content/artifacts/all-reduce-atlas/manifest.json",
-      "module": "src/islands/artifacts/all-reduce-atlas.ts",
-      "url": "/artifacts/all-reduce-atlas",
-      "title": "The All-Reduce Atlas",
-      "description": "Where decentralized training nodes sit on Earth and what it costs to sync them. Toggle INTELLECT-1's three measured configurations and watch the ring all-reduce span the globe: 103s inside the USA, 382s across the Atlantic, 469s once Asia joins.",
-      "pubDate": "2026-06-14",
+      "slug": "attestation-chain",
+      "path": "content/artifacts/attestation-chain/manifest.json",
+      "module": "src/islands/artifacts/attestation-chain.ts",
+      "url": "/artifacts/attestation-chain",
+      "title": "The Attestation Chain",
+      "description": "The TEE remote-attestation chain of trust, stepped through: silicon root, CPU TDX quote, H100 attestation, on-chain DCAP verifier, signed inferences. Flip to the TEE.fail forged-quote path and watch the verifier still return valid — the crypto checks out, the premise is false.",
+      "pubDate": "2026-06-15",
       "type": "svg",
-      "archetype": "map",
+      "archetype": "diagram",
       "topics": [
-        "machine-learning",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "byte-equality-gate",
-      "path": "content/artifacts/byte-equality-gate/manifest.json",
-      "module": "src/islands/artifacts/byte-equality-gate.ts",
-      "url": "/artifacts/byte-equality-gate",
-      "title": "The Byte-Equality Gate",
-      "description": "Why re-executing an LLM doesn't reproduce it. One matmul reduces to the logit gap between 'Queens, New York' and 'New York City'; drag the production split-K and watch IEEE-754 rounding flip the token at split 5 and 6, breaking the verifier's digest check. Batch-invariant kernels turn it green.",
-      "pubDate": "2026-06-14",
-      "type": "dom",
-      "archetype": "simulation",
-      "topics": [
-        "machine-learning",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "cognitive-penalty",
-      "path": "content/artifacts/cognitive-penalty/manifest.json",
-      "module": "src/islands/artifacts/cognitive-penalty.ts",
-      "url": "/artifacts/cognitive-penalty",
-      "title": "The Cognitive Penalty",
-      "description": "One frozen Qwen-3.5-9B judging adversarial Optimism DAO proposals, deliberation off vs on. System 1 holds every metric at 100%; reasoning drops robustness to 68.5%, flips 27% of verdicts, and costs 17x latency — a 226s window that is itself Governance-Extractable Value. Tap a row.",
-      "pubDate": "2026-06-14",
-      "type": "dom",
-      "archetype": "chart",
-      "topics": [
-        "llm",
-        "security"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "gas-wall",
-      "path": "content/artifacts/gas-wall/manifest.json",
-      "module": "src/islands/artifacts/gas-wall.ts",
-      "url": "/artifacts/gas-wall",
-      "title": "The Gas Wall",
-      "description": "Forward-pass gas for five neural nets run inside the EVM, on a log axis against the live Ethereum (60M) and Base (400M) block-gas ceilings. Toggle ML2SC's measured ~106k gas/edge vs an optimized ~1.5k floor, slide the gas price for a USD readout, and watch an MNIST net blow past 180 Ethereum blocks.",
-      "pubDate": "2026-06-14",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "machine-learning",
-        "smart-contracts"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "memory-injection-gap",
-      "path": "content/artifacts/memory-injection-gap/manifest.json",
-      "module": "src/islands/artifacts/memory-injection-gap.ts",
-      "url": "/artifacts/memory-injection-gap",
-      "title": "The Memory-Injection Gap",
-      "description": "Why memory injection beats prompt injection against on-chain AI agents, in three switchable charts over CrAIBench: 685 attacks skewed to trading, a 55.1%-vs-0% gap on the strongest model, and the fine-tuning defense that drops attack success 85.1% to 1.7%. Tap or arrow the bars for numbers.",
-      "pubDate": "2026-06-14",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "agents",
-        "security"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "operating-layer-lift",
-      "path": "content/artifacts/operating-layer-lift/manifest.json",
-      "module": "src/islands/artifacts/operating-layer-lift.ts",
-      "url": "/artifacts/operating-layer-lift",
-      "title": "The Operating-Layer Lift",
-      "description": "Where reliability comes from in on-chain LLM trading agents, over DX Terminal Pro's production run: model upgrades move swap success 87% to 96%, but the operating layer takes the same weights to 99.9%. Switch panels for the prompt fixes that erased three failure modes. Tap or arrow the bars.",
-      "pubDate": "2026-06-14",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "agents",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "shapley-split",
-      "path": "content/artifacts/shapley-split/manifest.json",
-      "module": "src/islands/artifacts/shapley-split.ts",
-      "url": "/artifacts/shapley-split",
-      "title": "The Shapley Split",
-      "description": "Split one DataDAO reward pool across five overlapping contributors three ways: equal split, leave-one-out, and exact Shapley value over all 2ⁿ coalitions. Drag quality sliders, drop the unique contributor, or flip on the Sybil attack and watch equal split overpay a cloned wallet.",
-      "pubDate": "2026-06-14",
-      "type": "dom",
-      "archetype": "calculator",
-      "topics": [
-        "data",
-        "tokenomics"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "spoofers-discount",
-      "path": "content/artifacts/spoofers-discount/manifest.json",
-      "module": "src/islands/artifacts/spoofers-discount.ts",
-      "url": "/artifacts/spoofers-discount",
-      "title": "The Spoofer's Discount",
-      "description": "Drive the Proof-of-Learning trap: a logged training trajectory, audited top-Q by re-execution against a tolerance δ. Forge the run and it still passes — the forger tuned every interval under δ for 3% of training cost. Tighten δ to catch it and the honest node fails first.",
-      "pubDate": "2026-06-14",
-      "type": "dom",
-      "archetype": "simulation",
-      "topics": [
-        "machine-learning",
-        "security"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "swarm-consensus",
-      "path": "content/artifacts/swarm-consensus/manifest.json",
-      "module": "src/islands/artifacts/swarm-consensus.ts",
-      "url": "/artifacts/swarm-consensus",
-      "title": "Swarm Consensus",
-      "description": "One hard question, a swarm of LLM nodes, two ways to agree. Run a round: majority voting picks the most common answer while peer-ranked Bradley-Terry consensus surfaces the best one, and the scoreboard converges on the gap Fortytwo measured. The evaluation-edge slider shows why.",
-      "pubDate": "2026-06-14",
-      "type": "dom",
-      "archetype": "simulation",
-      "topics": [
-        "machine-learning",
+        "security",
         "infrastructure"
       ],
       "draft": false
@@ -1519,18 +1375,146 @@
       "draft": false
     },
     {
-      "slug": "corruption-ledger",
-      "path": "content/artifacts/corruption-ledger/manifest.json",
-      "module": "src/islands/artifacts/corruption-ledger.ts",
-      "url": "/artifacts/corruption-ledger",
-      "title": "The Corruption Ledger",
-      "description": "Push the cost-of-corruption inequality for a restaking-secured AI oracle: set bonded stake, slash rate, audit probability, and value-at-stake, then add AVSs to watch the overloading attack flip the verdict from secure to exploitable.",
-      "pubDate": "2026-06-13",
+      "slug": "spoofers-discount",
+      "path": "content/artifacts/spoofers-discount/manifest.json",
+      "module": "src/islands/artifacts/spoofers-discount.ts",
+      "url": "/artifacts/spoofers-discount",
+      "title": "The Spoofer's Discount",
+      "description": "Drive the Proof-of-Learning trap: a logged training trajectory, audited top-Q by re-execution against a tolerance δ. Forge the run and it still passes — the forger tuned every interval under δ for 3% of training cost. Tighten δ to catch it and the honest node fails first.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "cognitive-penalty",
+      "path": "content/artifacts/cognitive-penalty/manifest.json",
+      "module": "src/islands/artifacts/cognitive-penalty.ts",
+      "url": "/artifacts/cognitive-penalty",
+      "title": "The Cognitive Penalty",
+      "description": "One frozen Qwen-3.5-9B judging adversarial Optimism DAO proposals, deliberation off vs on. System 1 holds every metric at 100%; reasoning drops robustness to 68.5%, flips 27% of verdicts, and costs 17x latency — a 226s window that is itself Governance-Extractable Value. Tap a row.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "shapley-split",
+      "path": "content/artifacts/shapley-split/manifest.json",
+      "module": "src/islands/artifacts/shapley-split.ts",
+      "url": "/artifacts/shapley-split",
+      "title": "The Shapley Split",
+      "description": "Split one DataDAO reward pool across five overlapping contributors three ways: equal split, leave-one-out, and exact Shapley value over all 2ⁿ coalitions. Drag quality sliders, drop the unique contributor, or flip on the Sybil attack and watch equal split overpay a cloned wallet.",
+      "pubDate": "2026-06-14",
       "type": "dom",
       "archetype": "calculator",
       "topics": [
-        "security",
-        "blockchain"
+        "data",
+        "tokenomics"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "all-reduce-atlas",
+      "path": "content/artifacts/all-reduce-atlas/manifest.json",
+      "module": "src/islands/artifacts/all-reduce-atlas.ts",
+      "url": "/artifacts/all-reduce-atlas",
+      "title": "The All-Reduce Atlas",
+      "description": "Where decentralized training nodes sit on Earth and what it costs to sync them. Toggle INTELLECT-1's three measured configurations and watch the ring all-reduce span the globe: 103s inside the USA, 382s across the Atlantic, 469s once Asia joins.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "operating-layer-lift",
+      "path": "content/artifacts/operating-layer-lift/manifest.json",
+      "module": "src/islands/artifacts/operating-layer-lift.ts",
+      "url": "/artifacts/operating-layer-lift",
+      "title": "The Operating-Layer Lift",
+      "description": "Where reliability comes from in on-chain LLM trading agents, over DX Terminal Pro's production run: model upgrades move swap success 87% to 96%, but the operating layer takes the same weights to 99.9%. Switch panels for the prompt fixes that erased three failure modes. Tap or arrow the bars.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "byte-equality-gate",
+      "path": "content/artifacts/byte-equality-gate/manifest.json",
+      "module": "src/islands/artifacts/byte-equality-gate.ts",
+      "url": "/artifacts/byte-equality-gate",
+      "title": "The Byte-Equality Gate",
+      "description": "Why re-executing an LLM doesn't reproduce it. One matmul reduces to the logit gap between 'Queens, New York' and 'New York City'; drag the production split-K and watch IEEE-754 rounding flip the token at split 5 and 6, breaking the verifier's digest check. Batch-invariant kernels turn it green.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "memory-injection-gap",
+      "path": "content/artifacts/memory-injection-gap/manifest.json",
+      "module": "src/islands/artifacts/memory-injection-gap.ts",
+      "url": "/artifacts/memory-injection-gap",
+      "title": "The Memory-Injection Gap",
+      "description": "Why memory injection beats prompt injection against on-chain AI agents, in three switchable charts over CrAIBench: 685 attacks skewed to trading, a 55.1%-vs-0% gap on the strongest model, and the fine-tuning defense that drops attack success 85.1% to 1.7%. Tap or arrow the bars for numbers.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "swarm-consensus",
+      "path": "content/artifacts/swarm-consensus/manifest.json",
+      "module": "src/islands/artifacts/swarm-consensus.ts",
+      "url": "/artifacts/swarm-consensus",
+      "title": "Swarm Consensus",
+      "description": "One hard question, a swarm of LLM nodes, two ways to agree. Run a round: majority voting picks the most common answer while peer-ranked Bradley-Terry consensus surfaces the best one, and the scoreboard converges on the gap Fortytwo measured. The evaluation-edge slider shows why.",
+      "pubDate": "2026-06-14",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "gas-wall",
+      "path": "content/artifacts/gas-wall/manifest.json",
+      "module": "src/islands/artifacts/gas-wall.ts",
+      "url": "/artifacts/gas-wall",
+      "title": "The Gas Wall",
+      "description": "Forward-pass gas for five neural nets run inside the EVM, on a log axis against the live Ethereum (60M) and Base (400M) block-gas ceilings. Toggle ML2SC's measured ~106k gas/edge vs an optimized ~1.5k floor, slide the gas price for a USD readout, and watch an MNIST net blow past 180 Ethereum blocks.",
+      "pubDate": "2026-06-14",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "smart-contracts"
       ],
       "draft": false
     },
@@ -1551,115 +1535,18 @@
       "draft": false
     },
     {
-      "slug": "attention-lens",
-      "path": "content/artifacts/attention-lens/manifest.json",
-      "module": "src/islands/artifacts/attention-lens.ts",
-      "url": "/artifacts/attention-lens",
-      "title": "Attention Lens",
-      "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
-      "pubDate": "2026-06-12",
-      "type": "canvas",
-      "archetype": "diagram",
-      "topics": [
-        "llm",
-        "ai"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "bandwidth-wall",
-      "path": "content/artifacts/bandwidth-wall/manifest.json",
-      "module": "src/islands/artifacts/bandwidth-wall.ts",
-      "url": "/artifacts/bandwidth-wall",
-      "title": "The Bandwidth Wall",
-      "description": "How much data one GPU ships per optimizer step: AdamW-DDP vs DeMo's DCT+top-k compression, on a log scale. Toggle OLMo-300M ↔ OLMo-1B, hover a bar for exact MB/step and reduction factor, and slide the link speed to turn megabytes into seconds-per-step. Data: DeMo paper, Table 1 (arXiv:2411.19870).",
-      "pubDate": "2026-06-12",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "machine-learning",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "blast-radius",
-      "path": "content/artifacts/blast-radius/manifest.json",
-      "module": "src/islands/artifacts/blast-radius.ts",
-      "url": "/artifacts/blast-radius",
-      "title": "Blast Radius",
-      "description": "What a hijacked agent key costs under three custody models: a raw EOA key loses the whole wallet instantly, an expiry-only session key does too, and a per-period spend permission caps the bleed. Drag the sliders — or load a real 35.97 USDC/day permission pulled off Base — and watch the staircase.",
-      "pubDate": "2026-06-12",
+      "slug": "corruption-ledger",
+      "path": "content/artifacts/corruption-ledger/manifest.json",
+      "module": "src/islands/artifacts/corruption-ledger.ts",
+      "url": "/artifacts/corruption-ledger",
+      "title": "The Corruption Ledger",
+      "description": "Push the cost-of-corruption inequality for a restaking-secured AI oracle: set bonded stake, slash rate, audit probability, and value-at-stake, then add AVSs to watch the overloading attack flip the verdict from secure to exploitable.",
+      "pubDate": "2026-06-13",
       "type": "dom",
       "archetype": "calculator",
       "topics": [
-        "agents",
-        "security"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "bme-equilibrium",
-      "path": "content/artifacts/bme-equilibrium/manifest.json",
-      "module": "src/islands/artifacts/bme-equilibrium.ts",
-      "url": "/artifacts/bme-equilibrium",
-      "title": "BME Equilibrium",
-      "description": "Render's Burn-Mint Equilibrium with the real protocol constants: drag the demand and price sliders to see monthly burns race the 492,132 RENDER emission schedule, toggle RNP-023's Salad flows on, and find the demand level where the network actually stops inflating.",
-      "pubDate": "2026-06-12",
-      "type": "dom",
-      "archetype": "calculator",
-      "topics": [
-        "web3",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "dispute-bisection",
-      "path": "content/artifacts/dispute-bisection/manifest.json",
-      "module": "src/islands/artifacts/dispute-bisection.ts",
-      "url": "/artifacts/dispute-bisection",
-      "title": "Dispute Bisection",
-      "description": "A fraud-proof dispute game you can rig: tap any step of the computation trace to plant a fault, then watch the chain bisect proposer vs watcher commitments — six queries isolate the one divergent step, it gets re-executed on-chain, and the liar's bond is slashed.",
-      "pubDate": "2026-06-12",
-      "type": "canvas",
-      "archetype": "simulation",
-      "topics": [
-        "blockchain",
-        "machine-learning"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "emission-engine",
-      "path": "content/artifacts/emission-engine/manifest.json",
-      "module": "src/islands/artifacts/emission-engine.ts",
-      "url": "/artifacts/emission-engine",
-      "title": "Emission Engine",
-      "description": "Run the same emission-capture attack against both of Bittensor's allocation regimes: a refundable constant-product price pump (dTAO, pre-Nov 2025) versus an EMA-smoothed staking flow with a 30-day half-life (TaoFlow). Real protocol constants show why one pays instantly and the other decays.",
-      "pubDate": "2026-06-12",
-      "type": "dom",
-      "archetype": "calculator",
-      "topics": [
-        "blockchain",
-        "defi"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "falsifier-gate",
-      "path": "content/artifacts/falsifier-gate/manifest.json",
-      "module": "src/islands/artifacts/falsifier-gate.ts",
-      "url": "/artifacts/falsifier-gate",
-      "title": "Falsifier Gate",
-      "description": "An agentic audit swarm's load-bearing stage: hypothesis particles leave the contract and hold at the falsifier gate while a proof-of-concept runs — hallucinated findings burst into debris, executable ones pass into the report. Tap a code line to plant a bug and watch the swarm catch it.",
-      "pubDate": "2026-06-12",
-      "type": "canvas",
-      "archetype": "simulation",
-      "topics": [
-        "agents",
         "security",
-        "smart-contracts"
+        "blockchain"
       ],
       "draft": false
     },
@@ -1680,34 +1567,34 @@
       "draft": false
     },
     {
-      "slug": "gradient-descent",
-      "path": "content/artifacts/gradient-descent/manifest.json",
-      "module": "src/islands/artifacts/gradient-descent.ts",
-      "url": "/artifacts/gradient-descent",
-      "title": "Gradient Descent",
-      "description": "A glowing marker performs literal gradient descent over a 3D loss landscape — analytic gradients, momentum, and a fading trail. Drag to orbit the terrain; click anywhere on it to drop a new starting point.",
+      "slug": "royalty-stack",
+      "path": "content/artifacts/royalty-stack/manifest.json",
+      "module": "src/islands/artifacts/royalty-stack.ts",
+      "url": "/artifacts/royalty-stack",
+      "title": "Royalty Stack",
+      "description": "Story Protocol's two royalty policies, runnable: tap any IP asset in a derivative chain to pay 100 WIP into it and watch LAP give every ancestor its absolute cut until the stack hits 100% and mints revert, while LRP compounds hop by hop and dilutes the original to dust.",
       "pubDate": "2026-06-12",
-      "type": "three",
-      "archetype": "simulation",
+      "type": "dom",
+      "archetype": "diagram",
       "topics": [
-        "machine-learning",
-        "ai"
+        "web3",
+        "smart-contracts"
       ],
       "draft": false
     },
     {
-      "slug": "merkle-cascade",
-      "path": "content/artifacts/merkle-cascade/manifest.json",
-      "module": "src/islands/artifacts/merkle-cascade.ts",
-      "url": "/artifacts/merkle-cascade",
-      "title": "Merkle Cascade",
-      "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
+      "slug": "blast-radius",
+      "path": "content/artifacts/blast-radius/manifest.json",
+      "module": "src/islands/artifacts/blast-radius.ts",
+      "url": "/artifacts/blast-radius",
+      "title": "Blast Radius",
+      "description": "What a hijacked agent key costs under three custody models: a raw EOA key loses the whole wallet instantly, an expiry-only session key does too, and a per-period spend permission caps the bleed. Drag the sliders — or load a real 35.97 USDC/day permission pulled off Base — and watch the staircase.",
       "pubDate": "2026-06-12",
-      "type": "svg",
-      "archetype": "diagram",
+      "type": "dom",
+      "archetype": "calculator",
       "topics": [
-        "cryptography",
-        "blockchain"
+        "agents",
+        "security"
       ],
       "draft": false
     },
@@ -1723,23 +1610,6 @@
       "archetype": "diagram",
       "topics": [
         "zero-knowledge",
-        "blockchain"
-      ],
-      "draft": false
-    },
-    {
-      "slug": "price-of-trust",
-      "path": "content/artifacts/price-of-trust/manifest.json",
-      "module": "src/islands/artifacts/price-of-trust.ts",
-      "url": "/artifacts/price-of-trust",
-      "title": "The Price of Trust",
-      "description": "Every route to trustworthy AI inference, priced on one log axis: TEE attestation at 1.07×, optimistic re-execution at 2–4×, zkML and FHE at 10³–10⁵×, verifiable FHE beyond. Hover, tap, or arrow through the bars to see what each overhead actually buys — and whom you still trust.",
-      "pubDate": "2026-06-12",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "machine-learning",
-        "cryptography",
         "blockchain"
       ],
       "draft": false
@@ -1762,18 +1632,115 @@
       "draft": false
     },
     {
-      "slug": "royalty-stack",
-      "path": "content/artifacts/royalty-stack/manifest.json",
-      "module": "src/islands/artifacts/royalty-stack.ts",
-      "url": "/artifacts/royalty-stack",
-      "title": "Royalty Stack",
-      "description": "Story Protocol's two royalty policies, runnable: tap any IP asset in a derivative chain to pay 100 WIP into it and watch LAP give every ancestor its absolute cut until the stack hits 100% and mints revert, while LRP compounds hop by hop and dilutes the original to dust.",
+      "slug": "bme-equilibrium",
+      "path": "content/artifacts/bme-equilibrium/manifest.json",
+      "module": "src/islands/artifacts/bme-equilibrium.ts",
+      "url": "/artifacts/bme-equilibrium",
+      "title": "BME Equilibrium",
+      "description": "Render's Burn-Mint Equilibrium with the real protocol constants: drag the demand and price sliders to see monthly burns race the 492,132 RENDER emission schedule, toggle RNP-023's Salad flows on, and find the demand level where the network actually stops inflating.",
       "pubDate": "2026-06-12",
       "type": "dom",
-      "archetype": "diagram",
+      "archetype": "calculator",
       "topics": [
         "web3",
-        "smart-contracts"
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "bandwidth-wall",
+      "path": "content/artifacts/bandwidth-wall/manifest.json",
+      "module": "src/islands/artifacts/bandwidth-wall.ts",
+      "url": "/artifacts/bandwidth-wall",
+      "title": "The Bandwidth Wall",
+      "description": "How much data one GPU ships per optimizer step: AdamW-DDP vs DeMo's DCT+top-k compression, on a log scale. Toggle OLMo-300M ↔ OLMo-1B, hover a bar for exact MB/step and reduction factor, and slide the link speed to turn megabytes into seconds-per-step. Data: DeMo paper, Table 1 (arXiv:2411.19870).",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "price-of-trust",
+      "path": "content/artifacts/price-of-trust/manifest.json",
+      "module": "src/islands/artifacts/price-of-trust.ts",
+      "url": "/artifacts/price-of-trust",
+      "title": "The Price of Trust",
+      "description": "Every route to trustworthy AI inference, priced on one log axis: TEE attestation at 1.07×, optimistic re-execution at 2–4×, zkML and FHE at 10³–10⁵×, verifiable FHE beyond. Hover, tap, or arrow through the bars to see what each overhead actually buys — and whom you still trust.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "emission-engine",
+      "path": "content/artifacts/emission-engine/manifest.json",
+      "module": "src/islands/artifacts/emission-engine.ts",
+      "url": "/artifacts/emission-engine",
+      "title": "Emission Engine",
+      "description": "Run the same emission-capture attack against both of Bittensor's allocation regimes: a refundable constant-product price pump (dTAO, pre-Nov 2025) versus an EMA-smoothed staking flow with a 30-day half-life (TaoFlow). Real protocol constants show why one pays instantly and the other decays.",
+      "pubDate": "2026-06-12",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "blockchain",
+        "defi"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "attention-lens",
+      "path": "content/artifacts/attention-lens/manifest.json",
+      "module": "src/islands/artifacts/attention-lens.ts",
+      "url": "/artifacts/attention-lens",
+      "title": "Attention Lens",
+      "description": "Transformer attention made visible: hover or tap any token in the sentence and watch weighted arcs reach for the tokens it attends to, with glow proportional to attention weight. Left alone, the lens auto-cycles through the sequence.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "archetype": "diagram",
+      "topics": [
+        "llm",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "merkle-cascade",
+      "path": "content/artifacts/merkle-cascade/manifest.json",
+      "module": "src/islands/artifacts/merkle-cascade.ts",
+      "url": "/artifacts/merkle-cascade",
+      "title": "Merkle Cascade",
+      "description": "An interactive Merkle tree: click any leaf to watch its hash cascade hop by hop to the root, with the sibling hashes that form the inclusion proof highlighted along the way — four hashes prove one of sixteen leaves.",
+      "pubDate": "2026-06-12",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "cryptography",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "gradient-descent",
+      "path": "content/artifacts/gradient-descent/manifest.json",
+      "module": "src/islands/artifacts/gradient-descent.ts",
+      "url": "/artifacts/gradient-descent",
+      "title": "Gradient Descent",
+      "description": "A glowing marker performs literal gradient descent over a 3D loss landscape — analytic gradients, momentum, and a fading trail. Drag to orbit the terrain; click anywhere on it to drop a new starting point.",
+      "pubDate": "2026-06-12",
+      "type": "three",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "ai"
       ],
       "draft": false
     },
@@ -1794,18 +1761,35 @@
       "draft": false
     },
     {
-      "slug": "block-mesh",
-      "path": "content/artifacts/block-mesh/manifest.json",
-      "module": "src/islands/artifacts/block-mesh.ts",
-      "url": "/artifacts/block-mesh",
-      "title": "Block Mesh",
-      "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
-      "pubDate": "2026-06-11",
-      "type": "three",
+      "slug": "falsifier-gate",
+      "path": "content/artifacts/falsifier-gate/manifest.json",
+      "module": "src/islands/artifacts/falsifier-gate.ts",
+      "url": "/artifacts/falsifier-gate",
+      "title": "Falsifier Gate",
+      "description": "An agentic audit swarm's load-bearing stage: hypothesis particles leave the contract and hold at the falsifier gate while a proof-of-concept runs — hallucinated findings burst into debris, executable ones pass into the report. Tap a code line to plant a bug and watch the swarm catch it.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "dispute-bisection",
+      "path": "content/artifacts/dispute-bisection/manifest.json",
+      "module": "src/islands/artifacts/dispute-bisection.ts",
+      "url": "/artifacts/dispute-bisection",
+      "title": "Dispute Bisection",
+      "description": "A fraud-proof dispute game you can rig: tap any step of the computation trace to plant a fault, then watch the chain bisect proposer vs watcher commitments — six queries isolate the one divergent step, it gets re-executed on-chain, and the liar's bond is slashed.",
+      "pubDate": "2026-06-12",
+      "type": "canvas",
       "archetype": "simulation",
       "topics": [
         "blockchain",
-        "infrastructure"
+        "machine-learning"
       ],
       "draft": false
     },
@@ -1822,6 +1806,22 @@
       "topics": [
         "machine-learning",
         "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "block-mesh",
+      "path": "content/artifacts/block-mesh/manifest.json",
+      "module": "src/islands/artifacts/block-mesh.ts",
+      "url": "/artifacts/block-mesh",
+      "title": "Block Mesh",
+      "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
+      "pubDate": "2026-06-11",
+      "type": "three",
+      "archetype": "simulation",
+      "topics": [
+        "blockchain",
+        "infrastructure"
       ],
       "draft": false
     }

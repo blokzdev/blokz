@@ -1,0 +1,16 @@
+{
+  "slug": "fingerprint-reserve",
+  "title": "The Fingerprint Reserve",
+  "description": "Open weights can't be locked, so ownership is proven by counting surviving fingerprints. Embed thousands of secret key-response pairs; an adversary fine-tunes to scrub them and each audit burns one to leakage. Watch the reserve survive — or not.",
+  "pubDate": "2026-06-19",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "machine-learning",
+    "security",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

@@ -5,18 +5,93 @@ description: "You pay per token for a named model; the provider picks the precis
 pubDate: 2026-06-19
 author: blokz
 topics: [llm, infrastructure, security]
-tags: []
-artifacts: []
+tags: [model-substitution, quantization, decentralized-inference, proof-of-quality, tee, verifiable-inference]
+artifacts: [detection-cliff, price-of-trust]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Cai, Shi, Zhao, Song — Are You Getting What You Pay For? Auditing Model Substitution in LLM APIs (arXiv:2504.04715)"
+    url: "https://arxiv.org/abs/2504.04715"
+  - label: "Multi-Dimensional Quality Scoring Framework for Decentralized LLM Inference with Proof of Quality (arXiv:2603.04028)"
+    url: "https://arxiv.org/pdf/2603.04028"
+  - label: "Design and Evaluation of Cost-Aware Proof of Quality for Decentralized LLM Inference (arXiv:2512.16317)"
+    url: "https://arxiv.org/pdf/2512.16317"
+  - label: "AImultiple — LLM Quantization: BF16 vs FP8 vs INT4 (Qwen3-32B benchmarks)"
+    url: "https://aimultiple.com/llm-quantization"
+  - label: "OpenRouter — lowest-cost inference, provider routing and quantization filters"
+    url: "https://openrouter.ai/blog/tutorials/how-to-get-the-lowest-cost-llm-inference-on-openrouter/"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+A per-token inference market sells you a name. "Llama-3.3-70B," "$0.10 per million input tokens," settle on-chain or off, done. But the name is a label on a black box, and the thing inside it is a tensor of weights running on someone else's GPU at a precision *you* never specified. The provider picks that. And the cheapest way to serve a 70B model is to not quite serve it.
 
-## Section heading
+On OpenRouter today, the same Llama-3.3-70B weights resolve to providers charging anywhere from **$0.10 to over $1.00 per million tokens** — a threefold-plus spread for "identical" weights. The platform says the quiet part out loud: "some providers serve quantized model weights at lower prices: FP8, FP4, INT8," producing "potentially different outputs than full-precision endpoints," with the cheapest option sacrificing precision "without obvious indication in logs." Their advice is a `quantizations: ["fp16", "bf16"]` filter and a `provider.ignore` list — that is, *trust us to tell you which box has the real model in it.*
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+In a decentralized inference market, there is no "us." Anonymous providers stake into a network, accept routed requests, and get paid per token. The substitution incentive is structural: serve the cheap quant, pocket the difference, and bet that nobody can tell. The question this article is about is whether anyone actually can.
 
-## Takeaways
+## The substitution menu
 
-TODO.
+A provider contracted for model M has a menu of cheaper things to serve instead, each saving real compute:
+
+- **Quantize the weights.** FP8 roughly halves memory bandwidth and fattens throughput; INT4 quarters the footprint. Same architecture, fewer bits.
+- **Swap in a smaller model.** Serve 8B and bill as 70B. Maximum savings, maximum risk of getting caught.
+- **Swap in a different fine-tune.** A cheaper distill or an older checkpoint that benchmarks "close enough."
+
+The auditing problem is that these are not equally visible. The 2025 study *Are You Getting What You Pay For?* (Cai, Shi, Zhao, and Song) frames substitution detection as a black-box hypothesis test and finds the bad news up front: statistical tests on text outputs "are query-intensive and fail against subtle substitutions," and log-probability methods are unreliable because of "inherent inference nondeterminism in production environments." Software-only auditing cannot reliably catch a careful swap.
+
+To see *why*, you have to look at how little a good quantization actually costs you.
+
+## A near-lossless cast is a near-invisible one
+
+Here is the catch that makes the whole market hard to police: the substitutions that save money without wrecking quality are exactly the ones that barely move the outputs. Measured on Qwen3-32B:
+
+| Substitution | Probe | Accuracy | Gap vs BF16 |
+| --- | --- | --- | --- |
+| FP8 | MMLU-Pro | 69.64% | **−0.6 pt** |
+| FP8 | HumanEval | 39.02% | **0.0 pt** |
+| GPTQ-Int8 | HumanEval | 37.20% | −1.8 pt |
+| GPTQ-Int4 | MMLU-Pro | 68.66% | −1.6 pt |
+| GPTQ-Int4 | HumanEval | 31.10% | **−7.9 pt** |
+
+FP8 is, on reasoning, within six-tenths of a point of the original and *identical* on code. A well-calibrated FP4 cast of DeepSeek-R1 moves MMLU from 90.8% to 90.7%. These are the casts a rational cheat reaches for first, and they are statistically almost indistinguishable from the genuine article.
+
+They're also a lesson in *what you probe with*: the same INT4 weights look like a 1.6-point nick on reasoning and an 8-point amputation on code. A provider who quantizes aggressively will look fine to an auditor running MMLU and broken to one running HumanEval. Pick the wrong probe and you certify the swap yourself.
+
+## The cost of catching it
+
+Detection is a two-sample test: query the suspect endpoint and a trusted reference, compare accuracy on a benchmark, and ask whether the gap is real or noise. The number of probes you need scales with the standard two-proportion sample size,
+
+```text
+n ≈ K / Δ²        K = (z_{1-α/2} + z_power)² · 2·p̄·(1−p̄)
+```
+
+where Δ is the per-query accuracy gap between genuine and substitute. The `1/Δ²` is the whole story. Halve the subtlety of the swap and you *quadruple* the audit. At 99% confidence and 80% power:
+
+- A whole-model swap (Δ ≈ 14 pts) is caught in **~290 probes**.
+- An obvious INT4 (Δ ≈ 7.8 pts) takes **~920 probes** — still cheap.
+- FP8 (Δ ≈ 0.6 pt) needs **~150,000 probes**.
+- A tuned FP4 (Δ ≈ 0.1 pt) needs **millions**.
+
+And you must pay this *continuously*, because a provider can switch precision per request — serve the real model to anyone who looks like an auditor and the quant to everyone else. The artifact below plots that cliff: each real substitution sits on the `n = K/Δ²` curve, and the dashed line is a generous audit budget. Everything above it costs more to catch than the swap ever stole.
+
+<Artifact slug="detection-cliff" />
+
+This is the trap that sinks output-based auditing. The substitutions worth doing are the ones below the cliff's edge — economically invisible. Worse, the log-probability shortcut that *could* tighten the test is poisoned by nondeterminism: production inference isn't even bit-reproducible against itself, a problem we took apart in [Same Prompt, Different Bytes](/articles/deterministic-inference-onchain-verification). You cannot separate "different model" from "same model, different floating-point reduction order" by staring at logprobs.
+
+## So markets stopped trying to detect
+
+If you can't catch the lie cheaply from the outside, you change the game so the provider can't tell it cheaply from the inside. Two families of mechanism dominate, and neither is "run a statistical test."
+
+**Bond it and slash it.** Instead of detecting every swap, require providers to stake collateral and make *getting caught even occasionally* ruinous. This is the logic behind the on-chain *Proof-of-Quality* designs now appearing for decentralized inference. Validators stake, sample a fraction of inferences, score them against a reference, and are themselves slashed for false attestations; a TrueSkill-style reputation tracks which validators score accurately over time. The *cost-aware* variants lean directly on the sample-complexity math above — audit only a small random fraction of traffic, size the fraction to the confidence you need, and let the threat of a slashed bond do the rest. You don't have to catch every FP8 request; you have to make the expected penalty exceed the expected savings. That's the same cost-of-corruption inequality we walked through for restaking-secured oracles in [Bond It, Don't Prove It](/articles/restaking-verifiable-ai-cost-of-corruption) — sampling probability replaces a proof, and the bond does the work.
+
+**Attest the hardware.** The other road removes the provider's discretion entirely. Run the model inside a TEE and have the enclave sign *which weights it loaded* alongside the output. The substitution surface collapses: you're no longer inferring the model from its behavior, you're reading a hardware-rooted measurement of the binary that produced it. The *Are You Getting What You Pay For?* authors land here too — TEEs give "provable cryptographic guarantees of model integrity with only a modest performance overhead," the one clean path to closing the gap that statistics can't. We benchmarked that overhead — under 7% on an H100 — in [TEE-Attested Inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed). The cost is the trust you transfer to Intel or NVIDIA's attestation chain instead of to the provider.
+
+Both are bets, priced differently. Bonding is cheap to run and probabilistic — a determined provider who only cheats the un-audited fraction is playing the odds, not beating them. Attestation is near-deterministic and shifts the trust root into silicon. Re-execution and dispute games ([optimistic ML oracles](/articles/optimistic-ml-oracles)) sit between, paying a challenge window instead of a proof. The overhead each one buys is the subject of this chart:
+
+<Artifact slug="price-of-trust" />
+
+## What this means if you're building one
+
+- **Don't sell a model name you can't bind.** If your market settles payment for "model M," your protocol needs a mechanism — a stake at risk, an enclave measurement, a dispute path — that ties the payment to M *specifically*. A name in an API response is not that mechanism.
+- **Size your audit to the subtle case, not the obvious one.** A model swap is trivial to catch and nobody competent does it. Your detection budget is set by FP8, and FP8 is past the cliff. Budget for sampling-plus-slashing, not for statistical certainty per request.
+- **Pin precision or price it in.** If you're a *buyer* routing through an open market, the cheapest endpoint is cheap for a reason. Filter to `bf16`/`fp16`, exclude providers you can't attest, or accept that "Llama-3.3-70B" means "something in that weight class" and price your reliance accordingly.
+
+The uncomfortable summary: in a market of anonymous providers paid per token, *output quality is not verifiable for the substitutions that matter.* You can make cheating expensive in expectation (bond it), or you can move the question into hardware (attest it), but you cannot reliably read the model off its answers. The bait-and-switch isn't a bug a better classifier will fix — it's a property of selling a name for a number, and the engineering that works is the engineering that stops trusting the name.

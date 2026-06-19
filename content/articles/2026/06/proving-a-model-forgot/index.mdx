@@ -1,22 +1,121 @@
 ---
 slug: proving-a-model-forgot
 title: "Proving a Model Forgot: Verifiable Unlearning and the Immutable Ledger"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "A DataDAO sold your data; you invoke the right to be forgotten. Deleting the file is easy, but the model already learned and the ledger can't be rewritten. ZK-APEX proves the unlearning ran in ~2h; UMA still pulls the 'forgotten' data back at MIA 0.97. Certified isn't forgotten."
 pubDate: 2026-06-19T23:28:58.910Z
 author: blokz
 topics: [data, machine-learning, cryptography]
-tags: []
-artifacts: []
+tags: [machine-unlearning, right-to-be-forgotten, verifiable-unlearning, zero-knowledge, datadao, gdpr]
+artifacts: [unlearning-gap]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Bourtoule et al. — Machine Unlearning (SISA), IEEE S&P 2021"
+    url: "https://arxiv.org/abs/1912.03817"
+  - label: "Xuan & Li — Verifying Robust Unlearning: Probing Residual Knowledge (UMA), 2025"
+    url: "https://arxiv.org/abs/2504.14798"
+  - label: "Maheri et al. — ZK-APEX: Zero-Knowledge Approximate Personalized Unlearning with Executable Proofs, 2025"
+    url: "https://arxiv.org/abs/2512.09953"
+  - label: "EDPB — Guidelines 02/2025 on processing personal data through blockchains"
+    url: "https://www.edpb.europa.eu/our-work-tools/documents/public-consultations/2025/guidelines-022025-processing-personal-data_en"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+A DataDAO sold a copy of your data to a model trainer. Months later you exercise the right to be forgotten. What, exactly, gets deleted?
 
-## Section heading
+There are three different answers, and only the first is easy. You can delete the *file* — the off-chain blob your contribution lives in. You cannot delete the *record* of the transaction, because it sits on an immutable ledger by design. And you cannot un-ring the bell on the *model*, which already folded your data into a few billion weights during a training run nobody is going to repeat.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+Machine unlearning is the engineering field that tries to make that third delete real, and a new generation of work tries to make it *verifiable* — to hand you a cryptographic proof that the model forgot. The uncomfortable result, once you line the numbers up, is that the proof and the forgetting are not the same thing. You can hold a valid certificate of unlearning for a model that still coughs your data back up under a mild attack.
+
+## Three deletes, three trust models
+
+On-chain data markets like Vana's DataDAOs are built precisely so the *provenance* of a contribution is permanent — that's what lets a contributor get paid when a trainer licenses the pool (we read that machinery in [What's Your Data Worth?](/articles/data-valuation-onchain-markets)). Permanence is the feature. It is also the problem the moment GDPR Article 17 shows up, and the European Data Protection Board has been explicit that blockchains get no special exemption from erasure obligations.
+
+The settled engineering answer is to never put personal data on-chain in the first place:
+
+| Layer | What "delete" means | Cost | What it proves |
+| --- | --- | --- | --- |
+| **Ledger** | Crypto-shred: the chain holds only a hash/commitment; the plaintext lives off-chain encrypted. Destroy the key (or the blob) and the on-chain hash becomes a dangling pointer to nothing. | ~free | The record is now unrecoverable from chain data |
+| **Storage** | Delete the off-chain blob from IPFS/S3/operator DB | ~free | The raw bytes are gone |
+| **Model** | Remove the data's *influence* on the trained weights | huge → tiny, pick your guarantee | …this is where it gets hard |
+
+Crypto-shredding is clean: keep the ciphertext off-chain, the commitment on-chain, and treat key destruction as deletion. The dangling hash leaks nothing. So the ledger's immutability turns out to be a solved problem — a hash of deleted data is just noise.
+
+The catch is that none of this touches the model. Your bytes are gone from storage, the key is burned, and the network's model still behaves as though it trained on you. That residual influence is the only "delete" that actually matters for a model that's already shipped, and it's the one with no free option.
+
+## Exact unlearning is just retraining with bookkeeping
+
+The gold standard is obvious and brutal: drop the records and retrain from scratch. A model that never saw your data can't have learned anything from it — there's no residual to attack. The problem is cost; nobody re-runs a frontier training job per deletion request.
+
+The foundational engineering trick, SISA (Sharded, Isolated, Sliced, Aggregated) from Bourtoule et al., makes exact unlearning cheaper by *structuring* training so a deletion only forces a partial retrain. Shard the data, train one constituent model per shard, aggregate at inference; a deletion request only retrains the shard (and the slice within it) that held the record. The speedups are real but sobering — they're constant factors, not orders of magnitude:
+
+- **4.63×** faster unlearning on the Purchase dataset
+- **2.45×** on SVHN
+- **1.36×** on ImageNet-scale classification
+
+That 1.36× is the number to remember. On a hard task, even the cleverest exact-unlearning scheme barely beats retraining, and it bought that speedup by *sharding the model up front* — accepting an accuracy hit and an architecture constraint before a single deletion request arrives. Exact unlearning works; it just doesn't scale to the "one cheap proof per user" world that on-chain data markets are selling.
+
+## Approximate unlearning is cheap — and that's the problem
+
+So the field pivoted to *approximate* unlearning: nudge the trained weights to erase a record's influence without retraining. Gradient ascent on the forget set (push the loss *up* on the data you want gone), influence-function corrections, salience-masked edits. These run in a few epochs — call it 1–5% of the cost of retraining — and they make the model score as if it forgot.
+
+"Score as if it forgot" is doing a lot of work in that sentence. The standard way to *verify* unlearning is to measure how indistinguishable the unlearned model is from a retrained one:
+
+- **Forget-set accuracy** drops to chance.
+- A **membership-inference attack** (MIA) — a classifier guessing whether a record was in training — falls to **AUC ≈ 0.50**, i.e. a coin flip.
+
+Hit those targets and, by the standard definition, you've unlearned. The methods are explicitly tuned to hit them. And here's where the 2025 results land hard.
+
+## The metric and the attack ask different questions
+
+Xuan & Li's *Verifying Robust Unlearning* introduces the **Unlearning Mapping Attack (UMA)**: instead of trusting the verification metric, it adversarially probes the "unlearned" model for residual structure — querying for the latent trace the forget data left behind. Across CIFAR-10, CIFAR-100, and Tiny-ImageNet, models that *passed* standard verification got mapped straight back open:
+
+- Class-wise unlearning: membership inference recovered to **MIA 0.97–0.99**.
+- Instance-level unlearning: **MIA 0.96–0.98**.
+- For generative models, attacked outputs sat **0.3–1.6 pixels** (L1) from the *original* model's outputs on 224×224 images — the "forgotten" image is still in there.
+
+Read those next to the verification target of 0.50 and the picture is stark: the metric says *forgotten* and the attack says *still here*. They disagree because they're not asking the same question. Standard verification asks "is this model indistinguishable from a retrained one *under my test*?" The attack asks "can I recover the data *at all*?" Passing the first is necessary, not sufficient, for the second — and approximate methods optimize for exactly the test they're graded on.
+
+The artifact below is that disagreement, drawn. Each method is a dumbbell: the left dot is the verification verdict, the right dot is what UMA recovers, and the bar between them is the residual knowledge the verification certified away.
+
+<Artifact slug="unlearning-gap" />
+
+Notice the only method with no gap is retrain-from-scratch — because there was never any residual to find. Every cheap method is a long red bar.
+
+## Proving the procedure: ZK-APEX
+
+This is where cryptography enters, and where the temptation is strongest to declare the problem solved. If the worry is that an operator *claims* to have unlearned without doing the work, give them a proof obligation. ZK-APEX (Maheri et al., 2025) does exactly that: it produces a zero-knowledge proof that a specific unlearning operator was applied correctly to a model, without revealing the private model parameters or the data.
+
+The engineering is genuinely impressive. For a ViT-B/16 it generates the proof in **~2 hours**, verifies it in **~10 minutes**, ships a **~400 MB** proof, and runs under 0.7 GB of memory — and it's **>10⁷× faster** than the naive "verify by re-running training and comparing" baseline. It even runs on an iPhone. The proof checks three algebraic constraints:
+
+```text
+1. model assembly      θ_u = θ_p + δw        (the unlearned model is formed correctly)
+2. mask application     designated params zeroed
+3. compensation optimality   KKT stationarity of the Group-OBS quadratic program
+```
+
+That is a real, checkable statement about computation. But look closely at *what* it certifies. It certifies that the operator's linear algebra was carried out faithfully. It does **not** certify:
+
+- **semantic forgetting** — whether the forget-set knowledge is actually gone;
+- **secure erasure** of the pre-unlearning model (the un-edited weights may still exist somewhere);
+- **robustness to adaptive attacks** — the framework explicitly assumes residual-gradient and cross-curvature effects are "minor."
+
+So the proof's scope ends precisely at the verification verdict. It tells you the recipe was followed; it says nothing about whether the dish is actually free of the ingredient. ZK-APEX reports its own forget-set accuracy dropping 89.5% → 50.2% and MIA AUC at 50.2 — which is to say it lands its left dot. UMA-style attacks live entirely in the region the certificate doesn't cover. That's why, in the chart, the proof-backed row terminates in a hatched zone: **a valid cryptographic certificate of unlearning is compatible with a model that an attacker can still read your data out of.**
+
+## What this means if you're building a data market
+
+The pattern here rhymes with one this blog keeps hitting: a chain can prove *process* and *provenance* far better than it can prove *properties*. We made the same argument about training data, where on-chain lineage proves where bytes came from but not whether they're clean — [provenance isn't purity](/articles/provenance-isnt-purity-data-poisoning). Unlearning is the mirror image: a proof shows the deletion *procedure* ran, not that the knowledge is *absent*.
+
+Concretely, if you're designing the erasure path for an on-chain data market:
+
+- **Crypto-shred the storage layer and say so plainly.** Hash-on-chain, encrypted-off-chain, key-destruction-as-deletion is the right default and it genuinely satisfies the ledger-immutability objection. Don't oversell it as model deletion.
+- **Don't let a proof-of-procedure masquerade as proof-of-forgetting.** A ZK certificate that an unlearning operator ran is useful for auditing operator honesty. It is not evidence the data is unrecoverable, and marketing it that way is the kind of trust-model sleight-of-hand that gets protocols rekt.
+- **Price the real options honestly.** Either you retrain (or SISA-retrain) and pay the compute for a forget you can defend against an attack, or you run approximate unlearning and accept that a motivated party can likely recover the data. There is currently no cheap third option, and a proof doesn't create one.
+- **If you need a defensible guarantee, buy it at the algorithm, not the proof.** Certified/differentially-private unlearning bounds residual influence by construction, and robustness should be measured with adversarial probes like UMA, not just the indistinguishability metric the method was trained to pass.
+
+The right to be forgotten was always going to be hard to honor against a system whose two headline features are an immutable ledger and a model that generalizes. The encouraging news is that the ledger half is basically solved — a deleted key makes an on-chain hash inert. The sobering half is the model, where our cheapest tools forget for the test and remember for the attacker, and our best cryptography can prove they followed the recipe without proving they forgot.
 
 ## Takeaways
 
-TODO.
+- **Three deletes, not one.** Ledger erasure (crypto-shredding) and storage deletion are cheap and real; model unlearning is the only one that's hard, and it's the only one that matters once a model has shipped.
+- **Exact unlearning is retraining with bookkeeping.** SISA's speedups are constant factors — 1.36× on ImageNet — not a path to per-user cheap forgetting.
+- **Approximate unlearning optimizes for the test.** It drives membership inference to ≈0.50 on the verification metric, but UMA recovers 0.96–0.99 — the verification and the attack ask different questions.
+- **Certified isn't forgotten.** ZK-APEX proves an unlearning operator's algebra in ~2h with a 400 MB proof, but explicitly not semantic forgetting or attack-robustness. The certificate's scope ends where the residual-knowledge problem begins.

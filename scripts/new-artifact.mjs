@@ -63,7 +63,9 @@ const manifest = {
   title: args.title,
   description:
     args.description ?? 'TODO: 20–300 char description of what this artifact shows and how to interact with it.',
-  pubDate: new Date().toISOString().slice(0, 10),
+  // Full ISO timestamp so same-day artifacts sort by true publish time (the
+  // displayed date is still the date part).
+  pubDate: new Date().toISOString(),
   type: args.type,
   archetype,
   topics,

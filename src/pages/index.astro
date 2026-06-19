@@ -4,7 +4,7 @@ import ArticleCard from '@/components/ArticleCard.astro';
 import ArtifactCard from '@/components/ArtifactCard.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import TopicChip from '@/components/TopicChip.astro';
-import { getArticles, getArtifacts, getTopics } from '@/lib/content-helpers';
+import { byPubDateDesc, getArticles, getArtifacts, getTopics } from '@/lib/content-helpers';
 import { SITE } from '@/lib/site';
 
 const articles = await getArticles();
@@ -12,9 +12,9 @@ const artifacts = await getArtifacts();
 const topics = await getTopics();
 
 const latest = articles.slice(0, 6);
-const featuredArtifacts = [...artifacts].sort(
-  (a, b) => Number(b.data.featured) - Number(a.data.featured),
-).slice(0, 3);
+const featuredArtifacts = [...artifacts]
+  .sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || byPubDateDesc(a, b))
+  .slice(0, 3);
 
 // Per-topic article counts for the explore rail.
 const counts = new Map<string, number>();

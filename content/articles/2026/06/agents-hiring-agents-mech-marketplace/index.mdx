@@ -1,0 +1,138 @@
+---
+slug: agents-hiring-agents-mech-marketplace
+title: "Agents Hiring Agents: The On-Chain SLA Inside Olas's Mech Marketplace"
+description: "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that docks no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA."
+pubDate: 2026-06-19
+author: blokz
+topics: [agents, smart-contracts, web3]
+tags: [olas, mech-marketplace, agent-economy, staking, reputation, gnosis]
+artifacts: [forfeit-window]
+difficulty: intermediate
+sources:
+  - label: "Olas MechMarketplace v1.1.0 — verified source (Gnosis, Blockscout)"
+    url: "https://gnosis.blockscout.com/address/0xE035dcD99F7A8cE0b1d72C3141f100C5B0E9e3bd?tab=contract"
+  - label: "valory-xyz/autonolas-marketplace — reference implementation"
+    url: "https://github.com/valory-xyz/autonolas-marketplace"
+  - label: "Olas — Mech Marketplace"
+    url: "https://olas.network/mech-marketplace"
+  - label: "CoinDesk — Olas debuts Mech Marketplace for AI agents to hire each other"
+    url: "https://www.coindesk.com/markets/2025/02/27/olas-mech-marketplace-enables-ai-agents-to-hire-each-other-for-help"
+---
+
+Most of the "agent economy" you read about is a payment rail looking for traffic. Olas built the traffic first. Its Mech Marketplace is a contract on Gnosis Chain where one autonomous agent hires another to run an AI task — generate a forecast, score a prediction market, caption an image — and pays for it on-chain. As of this writing the marketplace contract has logged **2,103,560 requests** across **100 registered mechs**, and across the wider Olas ecosystem agents have exchanged over **13 million** agent-to-agent transactions. The whole thing turns over about **$104k**. That's roughly **five cents a request** — and the median is far less.
+
+Five-cent tasks are the interesting part, not a footnote. The moment you make an AI service callable on-chain, you inherit a problem a centralized API never has: the caller and the provider don't trust each other, there's no Stripe to charge back, and there's no SRE on call when a mech goes dark mid-request. Olas's answer is a crypto-economic service-level agreement baked into the contract — a staking gate that decides who can play, an exclusive **response window** that gives one provider first dibs, and a reputation ledger called **Karma** that docks providers who don't show. This piece reads that machinery straight off the chain.
+
+## Why put an AI task on-chain at all
+
+A mech ("mechanism") is a service: it listens for requests, does work off-chain — usually an LLM call or a model inference — and posts the result back. You could obviously do this with an HTTP endpoint and an API key. The reason to put the request/response on a blockchain is that the *consumer is itself an autonomous agent*, and agents are bad customers in all the ways that matter to a vendor. They can't sign up for accounts, they multiply (one strategy can spawn a thousand wallets), and they have no reputation you can look up. A vendor facing anonymous, Sybil-prone, machine-speed demand needs accountability it can enforce without a legal system.
+
+On-chain, the request *is* the contract. Payment is escrowed atomically with the ask. The delivery is a public event anyone can verify against the request. And — the part that makes the marketplace more than a payment splitter — provider misbehavior is metered and priced by the same contract that routes the work. The blog has dissected the rail agents pay *with* ([x402 stablecoin settlement](/articles/x402-agent-payments-onchain)) and the registry agents are *identified* by ([ERC-8004](/articles/erc-8004-agent-registries-onchain)). The Mech Marketplace is the layer in between: the **labor market** where the work actually clears.
+
+## Reading the marketplace off Gnosis
+
+The live contract is a proxy at `0x735F…70bB` (implementation `0xE035…e3bd`, version `1.1.0`), deployed February 2025. Two functions carry the protocol. A requester calls `request`:
+
+```solidity
+function request(
+    bytes memory requestData,    // opaque task blob (IPFS hash of the prompt)
+    uint256 maxDeliveryRate,     // most the requester will pay
+    bytes32 paymentType,         // native xDAI / OLAS / USDC
+    address priorityMech,        // the chosen provider
+    uint256 responseTimeout,     // the SLA window, in seconds
+    bytes calldata paymentData
+) external payable returns (bytes32 requestId);
+```
+
+The contract checks the priority mech is a real, registered mech; checks its advertised `maxDeliveryRate()` doesn't exceed what the requester offered; escrows the payment through a per-payment-type **balance tracker**; and emits a `MarketplaceRequest`. The mech, watching the chain, picks up the blob, runs the task, and calls `deliverMarketplace(requestIds, deliveryRates)` with the result. On delivery the balance tracker settles, both sides' counters tick, and Karma updates.
+
+Those counters are public, so you don't have to take a dashboard's word for it. Reading the contract at block ~46.78M:
+
+| Field | Value | Meaning |
+| --- | --- | --- |
+| `numTotalRequests` | 2,103,560 | every request ever posted |
+| `numUndeliveredRequests` | 59,044 | open or never delivered |
+| `numMechs` | 100 | registered service providers |
+| `fee` | 1500 | marketplace fee, in basis points (15%) |
+| `minResponseTimeout` / `maxResponseTimeout` | 60 / 300 | SLA window bounds, seconds |
+
+Subtract the undelivered and you get a **97.2% completion rate** over two million requests — a real number for "does this actually work," not a pitch deck's. The 2.8% that never resolved are the texture of a permissionless system: mechs that went offline, rates that moved, requests abandoned.
+
+## Priority or forfeit: the on-chain SLA
+
+Here is the mechanism worth the whole article. When you post a request you name a **priority mech** and a `responseTimeout`. The contract bounds that timeout to between 60 and 300 seconds — you cannot ask for a one-second SLA, and you cannot let a mech sit on a job forever. Inside the window, only the priority mech may deliver. The interesting branch is what happens when it *doesn't*:
+
+```solidity
+// inside deliverMarketplace(), per request:
+if (priorityMech != msg.sender) {
+    // a different mech is trying to deliver
+    if (block.timestamp > requestInfo.responseTimeout) {
+        // window expired — dock the no-show, let this mech through
+        IKarma(karma).changeMechKarma(priorityMech, -1);
+    } else {
+        // still the priority mech's turn — this delivery is ignored
+        continue;
+    }
+}
+```
+
+That is the SLA, in five lines. A backup mech that tries to jump in early is silently skipped (`continue`). But once `block.timestamp` passes the response timeout, any other registered mech can deliver the job, collect the fee, and the contract **debits the absent priority mech one point of Karma**. There's no separate court, no off-chain arbitration, no human in the loop. The deadline is a block timestamp; the penalty is a state write; the failover is another mech in the same transaction.
+
+The artifact below makes the branch drivable. Drag the priority mech's response time across the window edge and watch the request resolve: inside the window it delivers and banks **+1 Karma**; past the edge a backup mech delivers, the priority mech is docked **−1 Karma**, and the fee follows the work to whoever actually did it.
+
+<Artifact slug="forfeit-window" />
+
+Note what this design *doesn't* do: it does not slash the priority mech's stake for a miss. A no-show costs reputation, not principal. That's a deliberate choice — slashing for a 200-second latency miss would be brutal and gameable (grief a competitor by sending requests it can't possibly serve in time). Karma is softer and cumulative: persistent no-shows sink in the rankings that requesters use to pick a priority mech, and the work — with its fee — routes elsewhere. The punishment is being unhired.
+
+## Who's allowed to play: staking and Karma
+
+A reputation system that anyone can mint fresh identities into is worthless — the no-show just re-registers as a new mech. Olas closes that door with staking. A mech isn't a loose contract; it's an Olas **service** with a multisig and a bond locked in a staking contract. The earlier marketplace version (`0x4554…e329`, still on Gnosis) made the dependency explicit in its constructor: a `stakingFactory` and a `karmaProxy`, with the 60/300-second bounds hardcoded. Its request path refused anyone whose stake the factory couldn't verify:
+
+```solidity
+function checkStakingInstance(address stakingInstance, uint256 serviceId) public view {
+    if (!IStakingFactory(stakingFactory).verifyInstance(stakingInstance))
+        revert UnauthorizedAccount(stakingInstance);
+    IStaking.StakingState state = IStaking(stakingInstance).getStakingState(serviceId);
+    if (state != IStaking.StakingState.Staked)
+        revert ServiceNotStaked(stakingInstance, serviceId);
+}
+```
+
+So the cost of a throwaway identity is the cost of standing up and bonding a new staked service — capital plus friction, paid up front. That converts Karma from a vanity score into something with skin behind it: to farm reputation you must keep a bond locked, and to escape a bad reputation you must abandon that bond and post another. The marketplace tracks Karma two ways — a running score per mech, and a per-pair `requester → mech` tally — so a mech can't launder a bad record by being reliable only to its own sock-puppet requesters.
+
+This is the same crypto-economic playbook as [restaking-secured AI oracles](/articles/restaking-verifiable-ai-cost-of-corruption), aimed at a humbler target. An oracle bonds against *lying*; a mech bonds against *not showing up*. The threat model for a five-cent task isn't a sophisticated forgery — it's flakiness at scale, and flakiness is exactly what a staking gate plus a timeout plus a reputation debit is shaped to punish.
+
+## The economics: a 15% fee on sub-cent tasks
+
+Now the uncomfortable arithmetic. The marketplace takes a **15% fee** (`fee = 1500` bips) on every delivery, routed to a **BuyBackBurner** that uses the proceeds to buy and burn OLAS — a token sink funded by usage. Fifteen percent of a five-cent task is three-quarters of a cent. Meanwhile the *gas* to post a request and deliver a response on Gnosis, while cheap, is not free, and for a long stretch it plausibly exceeded the value of the task itself. You are spending real coordination cost to move a fraction of a cent.
+
+That tension is the engineering story of the marketplace's evolution. If every request needs its own on-chain `request` transaction *and* its own `deliverMarketplace` transaction, the chain overhead dominates the economics at this price point. So v1.1.0 added a second delivery path that pulls the request off-chain entirely:
+
+```solidity
+function deliverMarketplaceWithSignatures(
+    address requester,
+    DeliverWithSignature[] calldata deliverWithSignatures,
+    uint256[] calldata deliveryRates,
+    bytes calldata paymentData
+) external;
+```
+
+Here the requester signs the request off-chain (an EIP-712 hash, or an EIP-1271 contract signature if the requester is itself a smart-account agent). The mech does the work, then submits a **batch** of signed deliveries in a single transaction — verifying each signature, recording each request, and settling payment in one shot. The request never costs its own transaction; only the (amortized, batched) delivery touches the chain. It's the same move rollups make on payments — keep the authorization off-chain, settle in bulk — applied to an AI task market. It's what makes 2.1 million requests at sub-cent prices survive contact with a real fee and real gas.
+
+What the chain keeps, then, is deliberately minimal: the escrow, the settlement, the reputation write, and the public delivery record. The expensive part — the inference — was always off-chain, and now the cheap-but-not-free part — the request — can be too. The blockchain is doing the one job it's uniquely good at here: being the neutral accountant and the reputation registrar that no single agent has to be trusted to run.
+
+## What's actually decentralized here
+
+Be precise about the trust model, because the marketing rounds it up. The inference happens on whatever hardware the mech operator controls; the marketplace verifies *that a delivery occurred*, not *that the delivery is correct*. A mech can return a lazy or wrong answer and still bank its Karma and its fee — the contract checks delivery, not quality. (Quality is exactly the hard problem the blog keeps circling: [substituted models](/articles/model-substitution-inference-markets), [verifiable inference](/articles/optimistic-ml-oracles).) Karma punishes silence, not bad work.
+
+There's also a concentration reality behind the headline counts. A hundred registered mechs is not a hundred thriving businesses; on Gnosis the request flow has historically been dominated by a handful of mechs serving Olas's own prediction-market trader agents, which is why these agents at times account for a large majority of all Safe transactions on the chain. The marketplace is real and busy, but it's busy in a narrow lane, and the same operator often stands behind both the requesting agents and the serving mechs. "Agents hiring agents" is true; "a competitive open labor market" is the aspiration, not yet the snapshot.
+
+And the parameters are governable. `fee`, `minResponseTimeout`, and `maxResponseTimeout` all sit behind an owner-only `changeMarketplaceParams`. The 15% fee and the 60–300s window are today's settings, not constants of nature. That's normal for a young protocol, but it means the "SLA" is a policy the DAO can move, not a guarantee carved in code.
+
+## Takeaways
+
+- **The Mech Marketplace is the labor layer of the agent economy** — distinct from the payment rail and the identity registry. The request *is* the contract: escrow, delivery, and accountability in one place. 2.10M requests, 100 mechs, 97.2% delivered, read straight off Gnosis.
+- **The SLA is crypto-economic, not legal.** A 60–300s priority window gives one mech exclusive first dibs; miss it and a backup delivers while you're docked Karma. The deadline is a block timestamp and the penalty is a state write — no arbitration, no human.
+- **Reputation, not principal, is the stick.** Staking gates who can play (no free Sybil identities); Karma meters who shows up. A no-show loses standing and future work, not its bond — a punishment fitted to flakiness rather than fraud.
+- **Sub-cent tasks force the design.** A 15% fee on a five-cent job, plus gas, is brutal economics, so v1.1.0 moved the request off-chain (signed, batched deliveries) and kept only settlement and reputation on-chain. The chain does the one thing no single agent can be trusted to do: keep the books.
+- **Mind the gap between busy and decentralized.** The contract verifies delivery, not correctness; the flow is concentrated; the parameters are governable. Real traffic, narrow lane.

@@ -8,8 +8,14 @@
  * tap, or arrow through the bars; a detail panel spells out the trust model
  * and primary source behind each number. Data is a research snapshot, no
  * runtime fetches.
+ *
+ * Layout: shared responsive primitive. The chart SVG fills the stage; the
+ * per-row detail panel is plain HTML (de-baked from the SVG so it stays
+ * readable on portrait phones) sitting beside the chart when wide, below it
+ * when stacked. Selection still happens on the chart rows (no controls slot).
  */
 import data from '../../../content/artifacts/price-of-trust/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -19,6 +25,9 @@ const MAX_EXP = 7; // axis spans 1× … 10⁷×
 const ROW_Y0 = 58;
 const ROW_H = 31;
 const BAR_H = 13;
+/* Chart-only viewBox: rows end at ROW_Y0 + 6·ROW_H = 244, axis labels at +16;
+   270 leaves a little bottom padding now that the detail panel is HTML. */
+const VB_H = 270;
 const AXIS_LABELS = ['1×', '10×', '10²', '10³', '10⁴', '10⁵', '10⁶', '10⁷'];
 
 /** What each approach buys → bar color (design tokens). */
@@ -50,36 +59,20 @@ function el<K extends keyof SVGElementTagNameMap>(
   return node;
 }
 
-function wrap(text: string, max: number): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let line = '';
-  for (const w of words) {
-    if (line && (line + ' ' + w).length > max) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = line ? line + ' ' + w : w;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
 export default function mount(container: HTMLElement): () => void {
-  const svg = el('svg', {
-    viewBox: '0 0 800 450',
-    preserveAspectRatio: 'xMidYMid meet',
-    role: 'group',
-    'aria-label': 'Log-scale chart of compute overhead per trust approach',
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'rail',
+    stageMin: 'clamp(190px, 46vw, 300px)',
+    controls: false,
   });
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  container.appendChild(svg);
+  const { stage, panel } = layout;
 
-  const style = el('style');
+  const style = document.createElement('style');
   style.textContent = `
-    /* Sizes are viewBox units — the chart renders at ~0.45× on phones, so
-       type runs as large as the 800-unit layout allows. */
+    /* Chart sizes are viewBox units; the chart fills the stage. The detail
+       panel is HTML so its type stays legible at any portrait width. */
+    .pt-chartwrap { position: absolute; inset: 0; }
+    .pt-chartwrap svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
     .pt-caption { fill: #5b6378; font: 500 12.5px 'JetBrains Mono', monospace; letter-spacing: .08em; }
     .pt-grid { stroke: rgba(124,140,255,0.10); }
     .pt-axis { fill: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
@@ -92,15 +85,34 @@ export default function mount(container: HTMLElement): () => void {
     .pt-row.pt-on .pt-label, .pt-row:focus-visible .pt-label { fill: #e7eaf3; }
     .pt-row.pt-on .pt-range { fill: #8d95ad; }
     .pt-legend { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; }
-    .pt-panel { fill: #0d1322; stroke: rgba(124,140,255,0.18); }
-    .pt-d-title { fill: #e7eaf3; font: 700 15px 'Space Grotesk', sans-serif; }
+
+    /* HTML detail panel (replaces the in-SVG pt-panel) */
+    .pt-detail { display: flex; flex-direction: column; gap: 8px; height: 100%;
+      box-sizing: border-box; padding: 14px 16px; border-radius: 10px;
+      background: #0d1322; border: 1px solid rgba(124,140,255,0.18); }
+    .pt-d-title { color: #e7eaf3; font: 700 15px 'Space Grotesk', sans-serif; }
     .pt-d-buys { font: 500 11.5px 'JetBrains Mono', monospace; letter-spacing: .08em; }
-    .pt-d-key { fill: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
-    .pt-d-val { fill: #8d95ad; font: 500 12px 'JetBrains Mono', monospace; }
-    .pt-d-note { fill: #8d95ad; font: 400 12.5px Inter, sans-serif; }
-    .pt-d-src { fill: #5b6378; font: 500 11px 'JetBrains Mono', monospace; }
+    .pt-d-rows { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; }
+    .pt-d-key { color: #5b6378; font: 500 12px 'JetBrains Mono', monospace; }
+    .pt-d-val { color: #8d95ad; font: 500 12px 'JetBrains Mono', monospace; }
+    .pt-d-note { color: #8d95ad; font: 400 12.5px Inter, sans-serif; }
+    .pt-d-src { color: #5b6378; font: 500 11px 'JetBrains Mono', monospace; margin-top: auto; }
+    .pt-d-src a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(124,140,255,0.3); }
+    .pt-d-src:empty { display: none; }
   `;
-  svg.appendChild(style);
+  stage.appendChild(style);
+
+  /* ---- Chart SVG (fills the stage) ---- */
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'pt-chartwrap';
+  const svg = el('svg', {
+    viewBox: `0 0 800 ${VB_H}`,
+    preserveAspectRatio: 'xMidYMid meet',
+    role: 'group',
+    'aria-label': 'Log-scale chart of compute overhead per trust approach',
+  });
+  chartWrap.appendChild(svg);
+  stage.appendChild(chartWrap);
 
   svg.appendChild(
     el('text', { x: '20', y: '26', class: 'pt-caption' },
@@ -133,21 +145,6 @@ export default function mount(container: HTMLElement): () => void {
       x: String(x), y: String(rowsBottom + 16), 'text-anchor': 'middle', class: 'pt-axis',
     }, AXIS_LABELS[d]!));
   }
-
-  /* ---- Detail panel (built before rows so select() can fill it) ---- */
-  const PANEL_Y = 290;
-  svg.appendChild(el('rect', {
-    x: '20', y: String(PANEL_Y), width: '760', height: '140', rx: '10', class: 'pt-panel',
-  }));
-  const dTitle = el('text', { x: '40', y: String(PANEL_Y + 28), class: 'pt-d-title' });
-  const dBuys = el('text', { x: '40', y: String(PANEL_Y + 47), class: 'pt-d-buys' });
-  const dTrustKey = el('text', { x: '40', y: String(PANEL_Y + 68), class: 'pt-d-key' }, 'trust');
-  const dTrust = el('text', { x: '110', y: String(PANEL_Y + 68), class: 'pt-d-val' });
-  const dFinKey = el('text', { x: '40', y: String(PANEL_Y + 84), class: 'pt-d-key' }, 'finality');
-  const dFin = el('text', { x: '110', y: String(PANEL_Y + 84), class: 'pt-d-val' });
-  const dNote = el('text', { x: '40', y: String(PANEL_Y + 105), class: 'pt-d-note' });
-  const dSrc = el('text', { x: '40', y: String(PANEL_Y + 131), class: 'pt-d-src' });
-  svg.append(dTitle, dBuys, dTrustKey, dTrust, dFinKey, dFin, dNote, dSrc);
 
   /* ---- Rows ---- */
   const rows: SVGGElement[] = [];
@@ -204,6 +201,33 @@ export default function mount(container: HTMLElement): () => void {
     rows.push(g);
   });
 
+  /* ---- HTML detail panel (replaces the in-SVG pt-panel) ---- */
+  const detail = document.createElement('div');
+  detail.className = 'pt-detail';
+  const dTitle = document.createElement('div');
+  dTitle.className = 'pt-d-title';
+  const dBuys = document.createElement('div');
+  dBuys.className = 'pt-d-buys';
+  const dRows = document.createElement('div');
+  dRows.className = 'pt-d-rows';
+  const dTrustKey = document.createElement('span');
+  dTrustKey.className = 'pt-d-key';
+  dTrustKey.textContent = 'trust';
+  const dTrust = document.createElement('span');
+  dTrust.className = 'pt-d-val';
+  const dFinKey = document.createElement('span');
+  dFinKey.className = 'pt-d-key';
+  dFinKey.textContent = 'finality';
+  const dFin = document.createElement('span');
+  dFin.className = 'pt-d-val';
+  dRows.append(dTrustKey, dTrust, dFinKey, dFin);
+  const dNote = document.createElement('div');
+  dNote.className = 'pt-d-note';
+  const dSrc = document.createElement('div');
+  dSrc.className = 'pt-d-src';
+  detail.append(dTitle, dBuys, dRows, dNote, dSrc);
+  panel.appendChild(detail);
+
   /* ---- Selection ---- */
   let selected = -1;
   function select(i: number) {
@@ -214,14 +238,23 @@ export default function mount(container: HTMLElement): () => void {
     const color = COLOR[CATEGORY[a.id] ?? 'integrity'];
     dTitle.textContent = `${a.label} — ${a.rangeLabel}`;
     dBuys.textContent = `buys: ${a.buys}`;
-    dBuys.setAttribute('fill', color);
+    dBuys.style.color = color;
     dTrust.textContent = a.trust;
     dFin.textContent = a.finality;
-    dNote.textContent = '';
-    wrap(a.note, 92).slice(0, 2).forEach((line, li) => {
-      dNote.appendChild(el('tspan', { x: '40', dy: li === 0 ? '0' : '16' }, line));
-    });
-    dSrc.textContent = a.source.label === 'baseline' ? '' : `source: ${a.source.label}`;
+    dNote.textContent = a.note;
+    if (a.source.label === 'baseline') {
+      dSrc.textContent = '';
+    } else if (a.source.url) {
+      dSrc.textContent = 'source: ';
+      const link = document.createElement('a');
+      link.href = a.source.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = a.source.label;
+      dSrc.appendChild(link);
+    } else {
+      dSrc.textContent = `source: ${a.source.label}`;
+    }
   }
   select(4); // open on the FHE row — it's the article's subject
 
@@ -268,6 +301,7 @@ export default function mount(container: HTMLElement): () => void {
     svg.removeEventListener('pointerover', onOver);
     svg.removeEventListener('click', onClick);
     svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    layout.dispose();
+    style.remove();
   };
 }

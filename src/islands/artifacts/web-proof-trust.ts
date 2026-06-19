@@ -11,8 +11,15 @@
  * forgery is undetectable; the other three catch it, each at a different cost
  * and trust assumption. Numbers (overhead, on-chain config) are snapshotted in
  * ./data.json — TLSNotary benchmarks + a Blockscout read of Reclaim on Base.
+ *
+ * Layout: shared responsive primitive (stage diagram · panel "who you must
+ * trust" + verdict · footer controls = mode tabs + forge · caption source).
+ * The mode tabs and forge button are real HTML controls; the trust/key/cost/
+ * reason/verdict explanation is HTML, de-baked from the original single SVG.
+ * Reduced motion handled by ArtifactMount.
  */
 import raw from '../../../content/artifacts/web-proof-trust/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -45,14 +52,17 @@ function el<K extends keyof SVGElementTagNameMap>(
 }
 
 export default function mount(container: HTMLElement): () => void {
-  const svg = el('svg', { viewBox: '0 0 800 460', preserveAspectRatio: 'xMidYMid meet' });
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  svg.setAttribute('role', 'group');
-  svg.setAttribute('aria-label', 'zkTLS trust-boundary diagram');
-  container.appendChild(svg);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
-  const style = el('style');
+  const style = document.createElement('style');
   style.textContent = `
+    .wpt-stage { position:absolute; inset:0; border:1px solid rgba(124,140,255,.14);
+      border-radius:12px; background:#0d1322; overflow:hidden; }
+    .wpt-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .wpt-panel { fill: #0d1322; stroke: rgba(124,140,255,0.18); }
     .wpt-label { fill: #5b6378; font: 500 9px 'JetBrains Mono', monospace; letter-spacing: .14em; }
     .wpt-fine { fill: #5b6378; font: 500 8.5px 'JetBrains Mono', monospace; }
@@ -73,62 +83,75 @@ export default function mount(container: HTMLElement): () => void {
     .wpt-keyhalf { fill: #f5c451; }
     .wpt-chip rect { transition: fill .3s, stroke .3s; }
     .wpt-claim { fill: #e7eaf3; font: 600 13px 'JetBrains Mono', monospace; }
-    .wpt-tab { cursor: pointer; }
-    .wpt-tab rect { fill: rgba(91,140,255,0.06); stroke: rgba(124,140,255,0.22); transition: fill .2s, stroke .2s; }
-    .wpt-tab text { fill: #8d95ad; font: 500 10.5px 'JetBrains Mono', monospace; transition: fill .2s; }
-    .wpt-tab:hover rect, .wpt-tab:focus-visible rect { fill: rgba(91,140,255,0.16); stroke: rgba(124,140,255,0.55); }
-    .wpt-tab:focus-visible { outline: none; }
-    .wpt-tab[aria-selected="true"] rect { fill: rgba(91,140,255,0.20); stroke: #5b8cff; }
-    .wpt-tab[aria-selected="true"] text { fill: #e7eaf3; }
-    .wpt-btn { cursor: pointer; }
-    .wpt-btn rect { fill: rgba(248,113,113,0.10); stroke: rgba(248,113,113,0.45); transition: fill .2s, stroke .2s; }
-    .wpt-btn text { fill: #fca5a5; font: 600 11px 'JetBrains Mono', monospace; }
-    .wpt-btn:hover rect, .wpt-btn:focus-visible rect { fill: rgba(248,113,113,0.20); stroke: rgba(248,113,113,0.8); }
-    .wpt-btn:focus-visible { outline: none; }
-    .wpt-btn[aria-disabled="true"] { opacity: .4; cursor: default; }
-    .wpt-verdict { font: 700 13px 'JetBrains Mono', monospace; opacity: 0; transition: opacity .35s; }
-    .wpt-ok { fill: #22d3ee; }
-    .wpt-bad { fill: #f87171; }
-    .wpt-trustline { fill: #8d95ad; font: 500 11px 'JetBrains Mono', monospace; }
-    .wpt-costline { fill: #5b6378; font: 500 10px 'JetBrains Mono', monospace; }
     @media (prefers-reduced-motion: reduce) { .wpt-flow-anim { animation: none !important; } }
+
+    /* --- de-baked HTML controls (mode tabs + forge) --- */
+    .wpt-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .wpt-tabs { display:inline-flex; flex-wrap:wrap; gap:6px; }
+    .wpt-tabs button { appearance:none; border:1px solid rgba(124,140,255,.22);
+      background:rgba(91,140,255,.06); color:#8d95ad; border-radius:8px;
+      font:500 10.5px 'JetBrains Mono', monospace; letter-spacing:.04em; padding:8px 12px;
+      cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
+    .wpt-tabs button:hover { background:rgba(91,140,255,.16); border-color:rgba(124,140,255,.55); }
+    .wpt-tabs button[aria-selected="true"] { background:rgba(91,140,255,.20);
+      border-color:#5b8cff; color:#e7eaf3; }
+    .wpt-tabs button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
+    .wpt-forge { appearance:none; border:1px solid rgba(248,113,113,.45);
+      background:rgba(248,113,113,.10); color:#fca5a5; border-radius:9px;
+      font:600 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 16px;
+      cursor:pointer; transition:background .2s, border-color .2s; }
+    .wpt-forge:hover { background:rgba(248,113,113,.20); border-color:rgba(248,113,113,.8); }
+    .wpt-forge:focus-visible { outline:2px solid #f87171; outline-offset:-2px; }
+    .wpt-forge[aria-disabled="true"] { opacity:.4; cursor:default; }
+
+    /* --- de-baked HTML explanation panel + verdict --- */
+    .wpt-explain { display:flex; flex-direction:column; gap:7px; min-width:0; }
+    .wpt-verdict { min-height:18px; font:700 12px 'JetBrains Mono', monospace;
+      opacity:0; transition:opacity .35s; }
+    .wpt-verdict.is-on { opacity:1; }
+    .wpt-verdict.wpt-ok { color:#22d3ee; }
+    .wpt-verdict.wpt-bad { color:#f87171; }
+    .wpt-row { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad;
+      font-variant-numeric:tabular-nums; }
+    .wpt-row .wpt-k { color:#5b6378; text-transform:uppercase; letter-spacing:.06em;
+      font-size:9.5px; margin-right:6px; }
+    .wpt-row.wpt-trust-ok { color:#22d3ee; }
+    .wpt-row.wpt-trust-bad { color:#f87171; }
+    .wpt-reason { font:500 10.5px 'JetBrains Mono', monospace; color:#5b6378;
+      line-height:1.5; }
+    .wpt-note { font-size:9.5px; color:#5b6378; letter-spacing:.02em;
+      font-family:'JetBrains Mono', monospace; }
   `;
-  svg.appendChild(style);
+  stage.appendChild(style);
+
+  /* ---------------- stage: the diagram SVG ---------------- */
+  const stageWrap = document.createElement('div');
+  stageWrap.className = 'wpt-stage';
+  const svg = el('svg', { viewBox: '0 0 800 300', preserveAspectRatio: 'xMidYMid meet' });
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'zkTLS trust-boundary diagram');
+  stageWrap.appendChild(svg);
+  stage.appendChild(stageWrap);
 
   // animated flow keyframes (scoped, unique class)
   const kf = el('style');
   kf.textContent = `@keyframes wpt-dash { to { stroke-dashoffset: -240; } } .wpt-flow-anim { animation: wpt-dash 3s linear infinite; }`;
   svg.appendChild(kf);
 
-  /* ---------------- mode tabs ---------------- */
-  const tabW = 184;
-  const tabGap = 12;
-  const tabs: SVGGElement[] = [];
-  MODES.forEach((m, i) => {
-    const x = 16 + i * (tabW + tabGap);
-    const g = el('g', { class: 'wpt-tab', tabindex: 0, role: 'tab', 'aria-label': `Show ${m.label}` });
-    g.append(
-      el('rect', { x, y: 14, width: tabW, height: 32, rx: 8 }),
-      el('text', { x: x + tabW / 2, y: 34, 'text-anchor': 'middle' }, m.label),
-    );
-    svg.appendChild(g);
-    tabs.push(g);
-  });
-
   /* ---------------- third-party node (top center) ---------------- */
   const tp = el('g', { class: 'wpt-node' });
-  const tpRect = el('rect', { x: 300, y: 70, width: 200, height: 50, rx: 10 });
-  const tpTitle = el('text', { x: 400, y: 92, class: 'wpt-node-title', 'text-anchor': 'middle' }, '');
-  const tpSub = el('text', { x: 400, y: 108, class: 'wpt-node-sub', 'text-anchor': 'middle' }, '');
+  const tpRect = el('rect', { x: 300, y: 18, width: 200, height: 50, rx: 10 });
+  const tpTitle = el('text', { x: 400, y: 40, class: 'wpt-node-title', 'text-anchor': 'middle' }, '');
+  const tpSub = el('text', { x: 400, y: 56, class: 'wpt-node-sub', 'text-anchor': 'middle' }, '');
   tp.append(tpRect, tpTitle, tpSub);
   // half-key glyph that sits on the notary in MPC mode
-  const tpKey = el('text', { x: 400, y: 66, class: 'wpt-keyhalf', 'text-anchor': 'middle', font: '700 13px monospace' }, '');
+  const tpKey = el('text', { x: 400, y: 14, class: 'wpt-keyhalf', 'text-anchor': 'middle', font: '700 13px monospace' }, '');
   // connectors from third party down to the channel
-  const connL = el('line', { x1: 360, y1: 120, x2: 300, y2: 230, class: 'wpt-conn' });
-  const connR = el('line', { x1: 440, y1: 120, x2: 500, y2: 230, class: 'wpt-conn' });
+  const connL = el('line', { x1: 360, y1: 68, x2: 300, y2: 178, class: 'wpt-conn' });
+  const connR = el('line', { x1: 440, y1: 68, x2: 500, y2: 178, class: 'wpt-conn' });
   svg.append(connL, connR, tp, tpKey);
   // "no third party" note for plain TLS
-  const noTp = el('text', { x: 400, y: 96, class: 'wpt-fine', 'text-anchor': 'middle' }, 'no third party — only the two endpoints');
+  const noTp = el('text', { x: 400, y: 44, class: 'wpt-fine', 'text-anchor': 'middle' }, 'no third party — only the two endpoints');
   noTp.style.opacity = '0';
   svg.appendChild(noTp);
 
@@ -136,9 +159,9 @@ export default function mount(container: HTMLElement): () => void {
   function endpoint(x: number, title: string, sub: string) {
     const g = el('g', { class: 'wpt-node' });
     g.append(
-      el('rect', { x, y: 200, width: 156, height: 80, rx: 12 }),
-      el('text', { x: x + 78, y: 234, class: 'wpt-node-title', 'text-anchor': 'middle' }, title),
-      el('text', { x: x + 78, y: 252, class: 'wpt-node-sub', 'text-anchor': 'middle' }, sub),
+      el('rect', { x, y: 148, width: 156, height: 80, rx: 12 }),
+      el('text', { x: x + 78, y: 182, class: 'wpt-node-title', 'text-anchor': 'middle' }, title),
+      el('text', { x: x + 78, y: 200, class: 'wpt-node-sub', 'text-anchor': 'middle' }, sub),
     );
     return g;
   }
@@ -147,14 +170,14 @@ export default function mount(container: HTMLElement): () => void {
   svg.append(prover, server);
 
   // key glyphs: prover always shows a key; in MPC it's a half
-  const proverKey = el('text', { x: 118, y: 272, class: 'wpt-key', 'text-anchor': 'middle', font: '700 13px monospace' }, '🔑');
+  const proverKey = el('text', { x: 118, y: 220, class: 'wpt-key', 'text-anchor': 'middle', font: '700 13px monospace' }, '🔑');
 
   /* ---------------- TLS channel ---------------- */
-  const chY = 230;
+  const chY = 178;
   svg.appendChild(el('line', { x1: 196, y1: chY, x2: 604, y2: chY, class: 'wpt-channel' }));
   const flow = el('line', { x1: 196, y1: chY, x2: 604, y2: chY, class: 'wpt-flow wpt-flow-anim' });
   svg.appendChild(flow);
-  svg.appendChild(el('text', { x: 400, y: 222, class: 'wpt-label', 'text-anchor': 'middle' }, 'TLS 1.3 · AES-GCM'));
+  svg.appendChild(el('text', { x: 400, y: 170, class: 'wpt-label', 'text-anchor': 'middle' }, 'TLS 1.3 · AES-GCM'));
   svg.appendChild(proverKey);
 
   // value chip riding the channel (the server's response)
@@ -167,27 +190,60 @@ export default function mount(container: HTMLElement): () => void {
   chip.style.transform = `translate(${CHIP_HOME.x}px, ${CHIP_HOME.y}px)`;
   svg.appendChild(chip);
 
-  /* ---------------- forge button + verdict ---------------- */
-  const forgeBtn = el('g', { class: 'wpt-btn', tabindex: 0, role: 'button', 'aria-label': 'Forge the value' });
-  forgeBtn.append(
-    el('rect', { x: 40, y: 408, width: 220, height: 36, rx: 9 }),
-    el('text', { x: 150, y: 431, 'text-anchor': 'middle' }, '⚡ forge the value'),
-  );
-  svg.appendChild(forgeBtn);
+  /* ---------------- controls: mode tabs + forge (HTML) ---------------- */
+  const controls = document.createElement('div');
+  controls.className = 'wpt-controls';
 
-  const verdict = el('text', { x: 400, y: 316, class: 'wpt-verdict', 'text-anchor': 'middle' }, '');
-  svg.appendChild(verdict);
+  const tabsWrap = document.createElement('div');
+  tabsWrap.className = 'wpt-tabs';
+  tabsWrap.setAttribute('role', 'tablist');
+  tabsWrap.setAttribute('aria-label', 'TLS channel design');
+  const tabs: HTMLButtonElement[] = MODES.map((m) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-label', `Show ${m.label}`);
+    b.textContent = m.label;
+    tabsWrap.appendChild(b);
+    return b;
+  });
 
-  /* ---------------- info readouts ---------------- */
-  const keyLine = el('text', { x: 290, y: 412, class: 'wpt-value' }, '');
-  const trustLine = el('text', { x: 290, y: 430, class: 'wpt-trustline' }, '');
-  const costLine = el('text', { x: 290, y: 446, class: 'wpt-costline' }, '');
-  svg.append(keyLine, trustLine, costLine);
+  const forgeBtn = document.createElement('button');
+  forgeBtn.type = 'button';
+  forgeBtn.className = 'wpt-forge';
+  forgeBtn.setAttribute('aria-label', 'Forge the value');
+  forgeBtn.textContent = '⚡ forge the value';
 
-  // reason caption (wraps into two tspans)
-  const reason1 = el('text', { x: 400, y: 344, class: 'wpt-fine', 'text-anchor': 'middle' }, '');
-  const reason2 = el('text', { x: 400, y: 358, class: 'wpt-fine', 'text-anchor': 'middle' }, '');
-  svg.append(reason1, reason2);
+  controls.append(tabsWrap, forgeBtn);
+  controlsSlot.appendChild(controls);
+
+  /* ---------------- panel: explanation + verdict (HTML) ---------------- */
+  const explain = document.createElement('div');
+  explain.className = 'wpt-explain';
+
+  const verdict = document.createElement('div');
+  verdict.className = 'wpt-verdict';
+  verdict.setAttribute('role', 'status');
+  verdict.setAttribute('aria-live', 'polite');
+
+  const keyLine = document.createElement('div');
+  keyLine.className = 'wpt-row';
+  const trustLine = document.createElement('div');
+  trustLine.className = 'wpt-row';
+  const costLine = document.createElement('div');
+  costLine.className = 'wpt-row';
+  const reasonLine = document.createElement('div');
+  reasonLine.className = 'wpt-reason';
+
+  explain.append(verdict, keyLine, trustLine, costLine, reasonLine);
+  panel.appendChild(explain);
+
+  /* ---------------- caption: source / provenance ---------------- */
+  const note = document.createElement('div');
+  note.className = 'wpt-note';
+  note.textContent =
+    'overhead = TLSNotary benchmarks · on-chain config = Blockscout read of Reclaim on Base';
+  caption.appendChild(note);
 
   /* ---------------- state ---------------- */
   let active = 0;
@@ -198,15 +254,6 @@ export default function mount(container: HTMLElement): () => void {
     const id = setTimeout(() => { timeouts.delete(id); fn(); }, ms);
     timeouts.add(id);
   };
-
-  // naive two-line wrap on word boundaries (~62 chars/line at this size).
-  // Reason strings in data.json are kept short enough to fit two lines.
-  function wrap(s: string): [string, string] {
-    if (s.length <= 62) return [s, ''];
-    let cut = s.lastIndexOf(' ', 62);
-    if (cut < 0) cut = 62;
-    return [s.slice(0, cut), s.slice(cut + 1)];
-  }
 
   function resetChip() {
     chip.style.transition = 'none';
@@ -250,17 +297,26 @@ export default function mount(container: HTMLElement): () => void {
       tpKey.textContent = '';
     }
 
-    keyLine.textContent = `key: ${m.keyHolder}`;
-    trustLine.textContent = `trust: ${m.trust}`;
-    trustLine.setAttribute('class', m.forgeryCaught ? 'wpt-trustline wpt-cyan' : 'wpt-trustline wpt-bad');
-    costLine.textContent = `cost: ${m.cost}`;
-    const [r1, r2] = wrap(m.reason);
-    reason1.textContent = r1;
-    reason2.textContent = r2;
+    keyLine.innerHTML = '';
+    keyLine.append(kvKey('key'), document.createTextNode(m.keyHolder));
+    trustLine.innerHTML = '';
+    trustLine.append(kvKey('trust'), document.createTextNode(m.trust));
+    trustLine.className = m.forgeryCaught ? 'wpt-row wpt-trust-ok' : 'wpt-row wpt-trust-bad';
+    costLine.innerHTML = '';
+    costLine.append(kvKey('cost'), document.createTextNode(m.cost));
+    reasonLine.textContent = m.reason;
 
-    verdict.style.opacity = '0';
+    verdict.className = 'wpt-verdict';
+    verdict.textContent = '';
     resetChip();
     syncButtons();
+  }
+
+  function kvKey(label: string): HTMLElement {
+    const span = document.createElement('span');
+    span.className = 'wpt-k';
+    span.textContent = label;
+    return span;
   }
 
   function syncButtons() {
@@ -272,7 +328,8 @@ export default function mount(container: HTMLElement): () => void {
     const m = MODES[active]!;
     busy = true;
     syncButtons();
-    verdict.style.opacity = '0';
+    verdict.className = 'wpt-verdict';
+    verdict.textContent = '';
 
     // step 1: prover grabs the chip and pulls it home, rewriting the value
     chip.style.transform = `translate(${118}px, ${chY}px)`;
@@ -287,60 +344,50 @@ export default function mount(container: HTMLElement): () => void {
     later(() => {
       if (m.forgeryCaught) {
         verdict.textContent = '✓ forgery caught — proof rejected';
-        verdict.setAttribute('class', 'wpt-verdict wpt-ok');
+        verdict.className = 'wpt-verdict is-on wpt-ok';
         // bounce the chip back, mark rejected
         chip.style.transform = `translate(${CHIP_HOME.x}px, ${chY}px)`;
         later(() => { chip.style.opacity = '0'; }, 500);
       } else {
         verdict.textContent = '✗ forgery undetectable — “proof” accepted';
-        verdict.setAttribute('class', 'wpt-verdict wpt-bad');
+        verdict.className = 'wpt-verdict is-on wpt-bad';
       }
-      verdict.style.opacity = '1';
       later(() => { busy = false; syncButtons(); }, 700);
     }, 1000);
   }
 
   /* ---------------- events ---------------- */
-  const onClick = (e: Event) => {
-    const tab = (e.target as Element).closest<SVGGElement>('.wpt-tab');
-    if (tab) {
-      const i = tabs.indexOf(tab);
-      if (i >= 0 && i !== active && !busy) { active = i; render(); }
-      return;
-    }
-    if ((e.target as Element).closest('.wpt-btn')) forge();
+  const onTabClick = (e: Event) => {
+    const i = tabs.indexOf(e.currentTarget as HTMLButtonElement);
+    if (i >= 0 && i !== active && !busy) { active = i; render(); }
   };
-  const onKey = (e: KeyboardEvent) => {
-    const tab = (e.target as Element).closest<SVGGElement>('.wpt-tab');
-    if (tab) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const i = tabs.indexOf(tab);
-        if (i >= 0 && !busy) { active = i; render(); }
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const dir = e.key === 'ArrowRight' ? 1 : -1;
-        const next = (active + dir + tabs.length) % tabs.length;
-        tabs[next]!.focus();
-        if (!busy) { active = next; render(); }
-      }
-      return;
-    }
-    if ((e.target as Element).closest('.wpt-btn') && (e.key === 'Enter' || e.key === ' ')) {
+  const onTabKey = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       e.preventDefault();
-      forge();
+      const dir = e.key === 'ArrowRight' ? 1 : -1;
+      const next = (active + dir + tabs.length) % tabs.length;
+      tabs[next]!.focus();
+      if (!busy) { active = next; render(); }
     }
   };
-  svg.addEventListener('click', onClick);
-  svg.addEventListener('keydown', onKey);
+  tabs.forEach((t) => {
+    t.addEventListener('click', onTabClick);
+    t.addEventListener('keydown', onTabKey);
+  });
+  const onForge = () => forge();
+  forgeBtn.addEventListener('click', onForge);
 
   render();
 
   return () => {
     timeouts.forEach((id) => clearTimeout(id));
     rafs.forEach((id) => cancelAnimationFrame(id));
-    svg.removeEventListener('click', onClick);
-    svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    tabs.forEach((t) => {
+      t.removeEventListener('click', onTabClick);
+      t.removeEventListener('keydown', onTabKey);
+    });
+    forgeBtn.removeEventListener('click', onForge);
+    layout.dispose();
+    style.remove();
   };
 }

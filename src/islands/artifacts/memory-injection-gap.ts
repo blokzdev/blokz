@@ -12,8 +12,13 @@
  * Geometry is SVG stretched with preserveAspectRatio="none" (rectangles
  * survive non-uniform scaling; strokes use non-scaling-stroke); ALL text
  * is positioned DOM in fixed px so it stays legible on phones.
+ *
+ * Layout: shared responsive primitive (stage chart · controls tabs+legend ·
+ * panel readout · caption source). 'footer' wide template — the tab row spans
+ * full width below [stage | panel]. Reduced motion handled by ArtifactMount.
  */
 import data from '../../../content/artifacts/memory-injection-gap/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Bar {
   label: string;
@@ -70,17 +75,17 @@ export default function mount(container: HTMLElement): () => void {
     return mode().unit === '%' ? `${b.value}%` : String(b.value);
   };
 
-  const root = document.createElement('div');
-  root.className = 'mig-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(190px, 50vw, 330px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .mig-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:6px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .mig-top { display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap; }
+      gap:10px; flex-wrap:wrap;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .mig-tabs { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .mig-tabs button { appearance:none; border:0; background:transparent; color:#5b6378;
@@ -91,11 +96,13 @@ export default function mount(container: HTMLElement): () => void {
     .mig-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:10px; color:#5b6378; }
     .mig-legend i { display:inline-block; width:9px; height:9px; border-radius:2px;
       margin-right:5px; vertical-align:-1px; }
-    .mig-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px; }
-    .mig-stage { flex:1; min-height:150px; position:relative;
+    .mig-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px;
+      font-family:'JetBrains Mono', monospace; }
+    .mig-chartwrap { position:absolute; inset:0; min-height:150px;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
-      overflow:hidden; }
-    .mig-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+      overflow:hidden;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .mig-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .mig-overlay { position:absolute; inset:0; pointer-events:none; }
     .mig-fade { transition:opacity .25s ease; }
     .mig-gridlabel { position:absolute; transform:translate(0,-50%); font-size:10px;
@@ -112,15 +119,11 @@ export default function mount(container: HTMLElement): () => void {
       cursor:pointer; border-radius:6px; padding:0; }
     .mig-hit:focus-visible { outline:2px solid #ff6b6e; outline-offset:-2px; }
     .mig-readout { min-height:30px; font-size:11px; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+      font-family:'JetBrains Mono', monospace; font-variant-numeric:tabular-nums; }
     .mig-readout b { color:#e7eaf3; font-weight:600; }
     .mig-readout i { color:#ff8d8f; font-style:normal; }
-    .mig-root.mig-narrow .mig-cat { font-size:8.5px; }
-    .mig-root.mig-narrow .mig-val { font-size:9.5px; }
-    .mig-root.mig-narrow .mig-caption { display:none; }
-    .mig-root.mig-narrow .mig-legend { display:none; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Tabs + legend ---- */
   const top = document.createElement('div');
@@ -141,15 +144,15 @@ export default function mount(container: HTMLElement): () => void {
   const legend = document.createElement('div');
   legend.className = 'mig-legend';
   top.append(tabs, legend);
-  root.appendChild(top);
+  controlsSlot.appendChild(top);
 
   const caption = document.createElement('div');
   caption.className = 'mig-caption';
-  root.appendChild(caption);
+  captionSlot.appendChild(caption);
 
   /* ---- Stage: SVG geometry + DOM text overlay + hit layer ---- */
-  const stage = document.createElement('div');
-  stage.className = 'mig-stage';
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'mig-chartwrap';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 100 100');
   svg.setAttribute('preserveAspectRatio', 'none');
@@ -158,8 +161,8 @@ export default function mount(container: HTMLElement): () => void {
   overlay.className = 'mig-overlay';
   const hits = document.createElement('div');
   hits.className = 'mig-hits';
-  stage.append(svg, overlay, hits);
-  root.appendChild(stage);
+  chartWrap.append(svg, overlay, hits);
+  stage.appendChild(chartWrap);
 
   /* Gridlines + axis labels — rebuilt per mode (scale changes) */
   const gridGroup = document.createElementNS(NS, 'g');
@@ -179,7 +182,7 @@ export default function mount(container: HTMLElement): () => void {
 
   const readout = document.createElement('div');
   readout.className = 'mig-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
 
   /* ---- Readout ---- */
   function setReadout(i: number) {
@@ -382,19 +385,14 @@ export default function mount(container: HTMLElement): () => void {
 
   build();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('mig-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(raf);
-    ro.disconnect();
+    layout.dispose();
     hits.removeEventListener('pointerover', onOver);
     hits.removeEventListener('pointerout', onOut);
     hits.removeEventListener('pointerdown', onDown);
     hits.removeEventListener('focusin', onOver);
     hits.removeEventListener('focusout', onOut);
-    root.remove();
+    style.remove();
   };
 }

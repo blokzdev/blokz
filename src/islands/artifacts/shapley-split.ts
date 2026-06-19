@@ -2,6 +2,14 @@
  * Artifact: shapley-split — The Shapley Split
  * Manifest: content/artifacts/shapley-split/manifest.json
  *
+ * Layout: shared `createArtifactLayout` ('rail'). This artifact is list-dominant,
+ * so the slots map a little unusually — stage = the thin pool allocation bar (the
+ * summary viz), panel = the contributor rows + verdict (the main interactive
+ * readout), controls = the rule tabs + sybil toggle, caption = the formula note.
+ * In landscape the bar sits left with the rows rail on the right; portrait stacks
+ * bar → rows → tabs → note. The per-row 3-column grid is driven by its own small
+ * ResizeObserver on the panel slot (rows stack when the panel is narrow).
+ *
  * A calculator for the central problem of on-chain data markets: how do you
  * split one reward pool fairly across contributors whose data overlaps? Five
  * contributors to a stylised wearables DataDAO each cover a set of health
@@ -24,6 +32,8 @@
  * set per-row quality (keyboard-ok); a row's in/out button drops it from the
  * round; the rule tabs switch the stacked allocation bar.
  */
+
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const POOL = 10_000; // reward pool for one round, in DataDAO tokens
 
@@ -181,15 +191,19 @@ const tokens = (n: number) => Math.round(n).toLocaleString('en-US');
 const pct = (frac: number) => `${(frac * 100).toFixed(frac < 0.0995 ? 1 : 0)}%`;
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'ss-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'rail',
+    // The pool bar is a thin horizontal summary; the rows in the panel carry the
+    // height, so keep the stage short.
+    stageMin: 'clamp(60px, 14vw, 90px)',
+  });
 
   const style = document.createElement('style');
   style.textContent = `
-    .ss-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:11px;
-      padding:14px 16px; overflow-y:auto; background:#05070d;
+    .ss-stage, .ss-panel, .ss-controls, .ss-caption {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .ss-stage { display:flex; flex-direction:column; gap:8px; }
+    .ss-panel { display:flex; flex-direction:column; gap:11px; min-height:0; overflow-y:auto; }
     .ss-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
     .ss-tabs { display:flex; gap:6px; }
     .ss-tab { border:1px solid rgba(124,140,255,.24); border-radius:7px; cursor:pointer;
@@ -218,9 +232,9 @@ export default function mount(container: HTMLElement): () => void {
     .ss-poolcap .ss-lab { font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .ss-poolcap b { color:#e7eaf3; font-weight:600; }
     .ss-rows { display:flex; flex-direction:column; gap:7px; }
-    .ss-row { display:grid; grid-template-columns:128px 1fr 128px; gap:10px; align-items:center;
+    .ss-row { display:grid; grid-template-columns:1fr; gap:7px; align-items:center;
       border:1px solid rgba(124,140,255,.12); border-radius:10px; background:#0d1322; padding:8px 11px; }
-    .ss-root.ss-narrow .ss-row { grid-template-columns:1fr; gap:7px; }
+    .ss-rows.ss-wide-rows .ss-row { grid-template-columns:128px 1fr 128px; gap:10px; }
     .ss-who { display:flex; flex-direction:column; gap:3px; min-width:0; }
     .ss-name { display:flex; align-items:center; gap:6px; color:#e7eaf3; font-size:12px; font-weight:600; }
     .ss-dot { width:9px; height:9px; border-radius:2px; flex:none; }
@@ -234,8 +248,8 @@ export default function mount(container: HTMLElement): () => void {
       letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
     .ss-qual output { color:#e7eaf3; font-variant-numeric:tabular-nums; }
     .ss-qual input[type=range] { width:100%; cursor:pointer; margin:3px 0 0; accent-color:#22d3ee; }
-    .ss-pay { display:flex; flex-direction:column; gap:2px; align-items:flex-end; text-align:right; }
-    .ss-root.ss-narrow .ss-pay { align-items:flex-start; text-align:left; }
+    .ss-pay { display:flex; flex-direction:column; gap:2px; align-items:flex-start; text-align:left; }
+    .ss-rows.ss-wide-rows .ss-pay { align-items:flex-end; text-align:right; }
     .ss-pay-main { color:#e7eaf3; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; }
     .ss-pay-main .ss-tok { color:#5b6378; font-size:9.5px; font-weight:500; margin-left:4px; }
     .ss-pay-alt { font-size:9px; color:#5b6378; letter-spacing:.02em; }
@@ -253,7 +267,12 @@ export default function mount(container: HTMLElement): () => void {
     .ss-verdict .ss-good { color:#22d3ee; }
     .ss-note { text-align:center; font-size:9px; color:#5b6378; letter-spacing:.02em; line-height:1.5; }
   `;
-  root.appendChild(style);
+  layout.root.appendChild(style);
+
+  layout.stage.classList.add('ss-stage');
+  layout.panel.classList.add('ss-panel');
+  layout.controls.classList.add('ss-controls');
+  layout.caption.classList.add('ss-caption');
 
   const state: State = {
     quality: Object.fromEntries(BASE.map((b) => [b.id, b.q0])),
@@ -281,30 +300,30 @@ export default function mount(container: HTMLElement): () => void {
   sybilBtn.className = 'ss-sybil';
   sybilBtn.textContent = '⚠ Sybil attack';
   head.append(tabs, sybilBtn);
-  root.appendChild(head);
+  layout.controls.appendChild(head);
 
-  /* ---- pool allocation bar ---- */
+  /* ---- pool allocation bar (stage) ---- */
   const poolBar = document.createElement('div');
   poolBar.className = 'ss-poolbar';
-  root.appendChild(poolBar);
+  layout.stage.appendChild(poolBar);
   const poolCap = document.createElement('div');
   poolCap.className = 'ss-poolcap';
-  root.appendChild(poolCap);
+  layout.stage.appendChild(poolCap);
 
-  /* ---- contributor rows ---- */
+  /* ---- contributor rows + verdict (panel) ---- */
   const rowsWrap = document.createElement('div');
   rowsWrap.className = 'ss-rows';
-  root.appendChild(rowsWrap);
+  layout.panel.appendChild(rowsWrap);
 
   const verdict = document.createElement('div');
   verdict.className = 'ss-verdict';
-  root.appendChild(verdict);
+  layout.panel.appendChild(verdict);
 
   const note = document.createElement('div');
   note.className = 'ss-note';
   note.textContent =
     'V(S) = Σ worth(signal) · best quality covering it · pool = 10,000 tokens · Shapley computed exactly over all 2ⁿ coalitions';
-  root.appendChild(note);
+  layout.caption.appendChild(note);
 
   // Per-base slider refs (rows are rebuilt on structural change only).
   const sliderRefs = new Map<string, { input: HTMLInputElement; out: HTMLOutputElement }>();
@@ -527,15 +546,18 @@ export default function mount(container: HTMLElement): () => void {
   buildRows();
   render();
 
+  // The rows go 3-column only when their slot is wide enough; otherwise each row
+  // stacks (who / slider / payout). Driven off the panel slot, independent of the
+  // primitive's stage/rail breakpoint.
   const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('ss-narrow', (entry?.contentRect.width ?? 600) < 540);
+    rowsWrap.classList.toggle('ss-wide-rows', (entry?.contentRect.width ?? 0) >= 420);
   });
-  ro.observe(container);
+  ro.observe(layout.panel);
 
   return () => {
     ro.disconnect();
     for (const [el, ev, fn] of listeners) el.removeEventListener(ev, fn);
     style.remove();
-    root.remove();
+    layout.dispose();
   };
 }

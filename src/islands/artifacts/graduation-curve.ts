@@ -15,8 +15,12 @@
  * Drag the slider (or tap/drag the chart) to spend VIRTUAL along the curve and
  * read out tokens sold, spot/average price, FDV and USD; toggle the
  * halfway-money split to see the first 21,000 VIRTUAL buy ~89% of curve supply.
+ *
+ * Layout: shared responsive primitive (stage chart · panel readout · footer
+ * controls · caption note). Reduced motion handled by ArtifactMount.
  */
 import data from '../../../content/artifacts/graduation-curve/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const K_CURVE = data.curveConstant; // 6e12, whole-unit constant product Rv·Rt
 const RV0 = data.initialVirtualReserve; // 6,000 virtual VIRTUAL
@@ -75,16 +79,16 @@ export default function mount(container: HTMLElement): () => void {
   let raised = RAISED_MAX * 0.62; // a telling default: mid-ramp, price already climbing
   let showSplit = false;
 
-  const root = document.createElement('div');
-  root.className = 'gc-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .gc-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:8px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
+    .gc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .gc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     .gc-spend { flex:1; min-width:210px; display:flex; flex-direction:column; gap:2px; }
     .gc-spend label { display:flex; justify-content:space-between; gap:8px;
       font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
@@ -98,7 +102,7 @@ export default function mount(container: HTMLElement): () => void {
     .gc-toggle[aria-pressed="true"] { background:rgba(139,92,246,.15); color:#e7eaf3;
       border-color:rgba(139,92,246,.4); }
     .gc-toggle:focus-visible { outline:2px solid #5b8cff; outline-offset:2px; }
-    .gc-chartwrap { flex:1; min-height:210px; position:relative;
+    .gc-chartwrap { position:absolute; inset:0; min-height:170px;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .gc-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block;
       touch-action:none; }
@@ -118,16 +122,15 @@ export default function mount(container: HTMLElement): () => void {
     .gc-marker { stroke:#e7eaf3; stroke-width:1.3; }
     .gc-dot { fill:#22d3ee; stroke:#05070d; stroke-width:1.5; }
     .gc-hit { fill:transparent; cursor:ew-resize; }
-    .gc-readout { display:flex; flex-wrap:wrap; gap:4px 18px; min-height:34px; font-size:11.5px;
+    .gc-readout { display:flex; flex-wrap:wrap; gap:4px 18px; min-height:34px;
+      font:500 11.5px/1.45 'JetBrains Mono', monospace;
       color:#8d95ad; font-variant-numeric:tabular-nums; }
     .gc-readout div { white-space:nowrap; }
     .gc-readout b { color:#e7eaf3; font-weight:600; }
     .gc-readout i { color:#22d3ee; font-style:normal; }
-    .gc-note { font-size:9.5px; color:#5b6378; letter-spacing:.02em; }
-    .gc-root.gc-narrow .gc-axislab { display:none; }
-    .gc-root.gc-narrow .gc-lplab { display:none; }
+    .gc-note { font:500 9.5px/1.45 'JetBrains Mono', monospace; color:#5b6378; letter-spacing:.02em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Controls ---- */
   const controls = document.createElement('div');
@@ -158,7 +161,7 @@ export default function mount(container: HTMLElement): () => void {
   splitBtn.setAttribute('aria-pressed', 'false');
 
   controls.append(spend, splitBtn);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Chart scaffold ---- */
   const chartWrap = document.createElement('div');
@@ -167,7 +170,7 @@ export default function mount(container: HTMLElement): () => void {
   svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   chartWrap.appendChild(svg);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   /* axis title */
   const axisTitle = document.createElementNS(NS, 'text');
@@ -334,12 +337,12 @@ export default function mount(container: HTMLElement): () => void {
   /* ---- Readout ---- */
   const readout = document.createElement('div');
   readout.className = 'gc-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
   const note = document.createElement('div');
   note.className = 'gc-note';
   note.textContent =
     'constant product Rv·Rt = 6e12 over virtual reserves (6,000 VIRTUAL × 1B tokens) · area under the curve = VIRTUAL raised · constants read off Base';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Rendering ---- */
   function render() {
@@ -431,19 +434,14 @@ export default function mount(container: HTMLElement): () => void {
 
   render();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('gc-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
+    layout.dispose();
     slider.removeEventListener('input', onSlide);
     hit.removeEventListener('pointerdown', onDown);
     svg.removeEventListener('pointermove', onMove);
     svg.removeEventListener('pointerup', onUp);
     svg.removeEventListener('pointercancel', onUp);
     splitBtn.removeEventListener('click', onToggle);
-    root.remove();
+    style.remove();
   };
 }

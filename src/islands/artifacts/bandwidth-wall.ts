@@ -9,8 +9,12 @@
  * slider converts MB/step into seconds of pure communication per step;
  * hovering, tapping, or focusing a bar reads out the exact value and the
  * reduction factor versus the AdamW-DDP baseline.
+ *
+ * Layout: shared responsive primitive (stage chart · panel readout · footer
+ * controls · caption note). Reduced motion handled by ArtifactMount.
  */
 import data from '../../../content/artifacts/bandwidth-wall/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Row {
   method: string;
@@ -97,16 +101,16 @@ export default function mount(container: HTMLElement): () => void {
   const baselineMb = () => model().rows[0]!.mbPerStep;
   const secsFor = (mb: number) => (mb * 8) / mbps;
 
-  const root = document.createElement('div');
-  root.className = 'bw-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(190px, 50vw, 330px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .bw-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:8px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
+    .bw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .bw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     .bw-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .bw-toggle button { appearance:none; border:0; background:transparent; color:#5b6378;
@@ -121,7 +125,7 @@ export default function mount(container: HTMLElement): () => void {
     .bw-speed output i { color:#22d3ee; font-style:normal; }
     .bw-speed input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:2px 0 0; }
-    .bw-chartwrap { flex:1; min-height:160px; position:relative;
+    .bw-chartwrap { position:absolute; inset:0; min-height:160px;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .bw-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .bw-grid { stroke:rgba(124,140,255,.1); }
@@ -138,15 +142,14 @@ export default function mount(container: HTMLElement): () => void {
     .bw-bar:focus-visible { outline:none; }
     .bw-bar:focus-visible rect { stroke:#e7eaf3; stroke-width:1.5; }
     .bw-legend { fill:#5b6378; font:500 12px 'JetBrains Mono', monospace; }
-    .bw-root.bw-narrow .bw-legend { display:none; }
-    .bw-readout { min-height:18px; font-size:11px; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+    .bw-readout { min-height:18px; font:500 11px/1.45 'JetBrains Mono', monospace;
+      color:#8d95ad; font-variant-numeric:tabular-nums; }
     .bw-readout b { color:#e7eaf3; font-weight:600; }
     .bw-readout i { color:#22d3ee; font-style:normal; }
-    .bw-note { font-size:9.5px; color:#5b6378; letter-spacing:.03em; }
-    .bw-root.bw-narrow .bw-note { display:none; }
+    .bw-note { font:500 9.5px/1.45 'JetBrains Mono', monospace; color:#5b6378;
+      letter-spacing:.03em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Controls ---- */
   const controls = document.createElement('div');
@@ -188,7 +191,7 @@ export default function mount(container: HTMLElement): () => void {
   speedField.append(speedLabel, slider);
 
   controls.append(toggle, speedField);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Chart scaffold ---- */
   const chartWrap = document.createElement('div');
@@ -197,7 +200,7 @@ export default function mount(container: HTMLElement): () => void {
   svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   chartWrap.appendChild(svg);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   for (const v of [1, 10, 100, 1000]) {
     const y = yOf(v);
@@ -290,12 +293,12 @@ export default function mount(container: HTMLElement): () => void {
   /* ---- Readout + footnote ---- */
   const readout = document.createElement('div');
   readout.className = 'bw-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
 
   const note = document.createElement('div');
   note.className = 'bw-note';
   note.textContent = `k = DCT top-k components kept per momentum chunk. ${data.note}`;
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Rendering ---- */
   function paintBar(b: Bar, i: number) {
@@ -417,21 +420,15 @@ export default function mount(container: HTMLElement): () => void {
 
   render();
 
-  // Hide the footnote on narrow stages so the chart keeps its height.
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('bw-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(raf);
-    ro.disconnect();
+    layout.dispose();
     slider.removeEventListener('input', onSlide);
     svg.removeEventListener('pointerover', onOver);
     svg.removeEventListener('pointerout', onOut);
     svg.removeEventListener('pointerdown', onDown);
     svg.removeEventListener('focusin', onOver);
     svg.removeEventListener('focusout', onOut);
-    root.remove();
+    style.remove();
   };
 }

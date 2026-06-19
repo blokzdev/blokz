@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 37,
-    "artifacts": 38
+    "articles": 38,
+    "artifacts": 39
   },
   "topicCounts": {
-    "agents": 15,
+    "agents": 16,
     "ai": 4,
     "blockchain": 10,
     "cryptography": 4,
@@ -15,9 +15,9 @@
     "machine-learning": 17,
     "research": 1,
     "security": 14,
-    "smart-contracts": 7,
+    "smart-contracts": 8,
     "tokenomics": 2,
-    "web3": 4,
+    "web3": 5,
     "zero-knowledge": 3
   },
   "articles": [
@@ -95,6 +95,33 @@
       ],
       "artifacts": [
         "lp-breakeven-frontier"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "evaluator-gap-agent-commerce",
+      "path": "content/articles/2026/06/evaluator-gap-agent-commerce/index.mdx",
+      "url": "/articles/evaluator-gap-agent-commerce",
+      "title": "Grading Their Own Homework: The Evaluator Gap in On-Chain Agent Commerce",
+      "description": "Virtuals' Agent Commerce Protocol sells an independent evaluator as the thing that makes agents trust each other's work. We read 62,882 jobs off Base — and in a 30-job sample, every one let the buyer grade itself. Not one used a third party.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "web3"
+      ],
+      "tags": [
+        "acp",
+        "virtuals",
+        "escrow",
+        "evaluator",
+        "agent-commerce",
+        "base",
+        "digital-labor"
+      ],
+      "artifacts": [
+        "the-evaluators-chair"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1112,6 +1139,22 @@
         "data",
         "machine-learning",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-evaluators-chair",
+      "path": "content/artifacts/the-evaluators-chair/manifest.json",
+      "module": "src/islands/artifacts/the-evaluators-chair.ts",
+      "url": "/artifacts/the-evaluators-chair",
+      "title": "The Evaluator's Chair",
+      "description": "Drive a Virtuals ACP escrow job: client funds USDC, provider submits a deliverable hash, and whoever sits in the evaluator's chair springs the payout. Seat the client (what ~all of Base does), a neutral agent, or no one — then run it or let someone cheat, and watch who's left exposed.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "smart-contracts"
       ],
       "draft": false
     },

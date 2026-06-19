@@ -49,7 +49,7 @@ const STYLE = `
 .artifact-fs-close:hover, .artifact-fs-close:focus-visible {
   outline: none; color: #fff; border-color: rgba(124, 140, 255, 0.5);
 }
-.artifact-fs-stage { position: relative; flex: 1 1 auto; min-height: 0; }
+.artifact-fs-stage { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 `;
 
 function ensureStyles(): void {

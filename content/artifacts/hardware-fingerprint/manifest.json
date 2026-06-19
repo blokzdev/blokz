@@ -9,7 +9,16 @@
     "infrastructure",
     "security"
   ],
-  "aspect": "16/9",
+  "aspect": "820/470",
   "featured": false,
-  "controls": []
+  "controls": [
+    "select the billed and actually-running GPU",
+    "tap a bubble or use ← → to set the running card",
+    "⇄ swap the two roles"
+  ],
+  "dataSource": {
+    "label": "NVIDIA datasheets · TechPowerUp GPU database",
+    "url": "https://www.techpowerup.com/gpu-specs/"
+  },
+  "dataAsOf": "2026-06-19"
 }

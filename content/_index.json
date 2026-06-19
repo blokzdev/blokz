@@ -191,8 +191,17 @@
         "security",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "depin",
+        "gpu-verification",
+        "io-net",
+        "proof-of-work",
+        "device-attestation",
+        "zkgpu"
+      ],
+      "artifacts": [
+        "hardware-fingerprint"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },

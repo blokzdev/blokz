@@ -22,8 +22,12 @@
  *
  * Pure DOM + inline SVG, no deps. Static (no RAF). Reduced motion is a no-op
  * here — nothing autoplays. Measured anchors live in ./data.json.
+ *
+ * Layout: shared responsive primitive (stage trajectory strip + readout ·
+ * panel verdict gate + cost ledger · footer δ/Q controls · caption refs).
  */
 import data from '../../../content/artifacts/spoofers-discount/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 // Logged update-magnitude profile (normalized), decaying with bumps — the
 // shape a real run produces, and the shape the forger mimics. N intervals.
@@ -52,15 +56,20 @@ const pct = (x: number) => (x < 0.1 ? x.toFixed(2) : x.toFixed(1));
 const commas = (n: number) => Math.round(n).toLocaleString('en-US');
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'spd-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .spd-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:11px;
-      padding:13px 15px; overflow-y:auto; background:#05070d;
+    .spd-stage, .spd-panel, .spd-controls, .spd-ref {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .spd-stage { position:absolute; inset:0; display:flex; flex-direction:column; gap:11px;
+      padding:13px 15px; overflow-y:auto; background:#05070d; border-radius:12px; }
+    .spd-panel { display:flex; flex-direction:column; gap:11px; }
+
     .spd-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
       flex-wrap:wrap; }
     .spd-title { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
@@ -139,7 +148,6 @@ export default function mount(container: HTMLElement): () => void {
 
     /* cost ledger */
     .spd-ledger { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .spd-root.spd-narrow .spd-ledger { grid-template-columns:1fr; }
     .spd-cost { border:1px solid rgba(124,140,255,.14); border-radius:9px; padding:8px 10px;
       background:#0a0f1c; display:flex; flex-direction:column; gap:3px; min-width:0; }
     .spd-cost .spd-cn { font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
@@ -154,7 +162,9 @@ export default function mount(container: HTMLElement): () => void {
     .spd-ref a { color:#22d3ee; text-decoration:none; }
     .spd-ref a:hover { text-decoration:underline; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
+  stage.classList.add('spd-stage');
+  panel.classList.add('spd-panel');
 
   // ---------------------------------------------------------------- state
   let forged = true; // open on the punchline: a forgery sailing through
@@ -181,11 +191,11 @@ export default function mount(container: HTMLElement): () => void {
   sw.setAttribute('aria-label', 'Forge the run');
   toggleWrap.append(toggleLbl, sw);
   head.append(title, toggleWrap);
-  root.appendChild(head);
+  stage.appendChild(head);
 
   const sub = document.createElement('div');
   sub.className = 'spd-sub';
-  root.appendChild(sub);
+  stage.appendChild(sub);
 
   // ---------------------------------------------------------------- strip
   const stripH = document.createElement('div');
@@ -194,7 +204,7 @@ export default function mount(container: HTMLElement): () => void {
   stripHL.textContent = 'logged weight-update trajectory';
   const stripHR = document.createElement('span');
   stripH.append(stripHL, stripHR);
-  root.appendChild(stripH);
+  stage.appendChild(stripH);
 
   const strip = document.createElement('div');
   strip.className = 'spd-strip';
@@ -213,11 +223,11 @@ export default function mount(container: HTMLElement): () => void {
     strip.appendChild(btn);
     bars.push({ btn, fill, cap });
   }
-  root.appendChild(strip);
+  stage.appendChild(strip);
 
   const read = document.createElement('div');
   read.className = 'spd-read';
-  root.appendChild(read);
+  stage.appendChild(read);
 
   // ---------------------------------------------------------------- controls
   const controls = document.createElement('div');
@@ -258,7 +268,7 @@ export default function mount(container: HTMLElement): () => void {
   qField.append(qLab, qSlider);
 
   controls.append(dField, qField);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   // ---------------------------------------------------------------- gate
   const gate = document.createElement('div');
@@ -273,7 +283,7 @@ export default function mount(container: HTMLElement): () => void {
   gSub.className = 'spd-gate-sub';
   gBody.append(gVerdict, gSub);
   gate.append(gIcon, gBody);
-  root.appendChild(gate);
+  panel.appendChild(gate);
 
   // ---------------------------------------------------------------- ledger
   const ledger = document.createElement('div');
@@ -295,7 +305,7 @@ export default function mount(container: HTMLElement): () => void {
   const honestCost = mkCost('honest prover');
   const verifierCost = mkCost('verifier audit');
   const forgerCost = mkCost('forger', 'spd-forger');
-  root.appendChild(ledger);
+  panel.appendChild(ledger);
 
   // ---------------------------------------------------------------- ref
   const ref = document.createElement('div');
@@ -309,7 +319,7 @@ export default function mount(container: HTMLElement): () => void {
     `<a href="${data.pol.url}" target="_blank" rel="noopener">PoL ↗</a> · ` +
     `<a href="${data.zhang.url}" target="_blank" rel="noopener">Zhang ↗</a> · ` +
     `<a href="${data.fang.url}" target="_blank" rel="noopener">Fang ↗</a>`;
-  root.appendChild(ref);
+  caption.appendChild(ref);
 
   // ---------------------------------------------------------------- render
   function errFor(i: number): number {
@@ -457,21 +467,15 @@ export default function mount(container: HTMLElement): () => void {
   };
   for (const { btn } of bars) btn.addEventListener('click', onBar);
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('spd-narrow', (entry?.contentRect.width ?? 700) < 460);
-  });
-  ro.observe(container);
-
   render();
 
   return () => {
-    ro.disconnect();
     dSlider.removeEventListener('input', onDelta);
     qSlider.removeEventListener('input', onQ);
     sw.removeEventListener('click', onToggle);
     sw.removeEventListener('keydown', onSwKey);
     for (const { btn } of bars) btn.removeEventListener('click', onBar);
     style.remove();
-    root.remove();
+    layout.dispose();
   };
 }

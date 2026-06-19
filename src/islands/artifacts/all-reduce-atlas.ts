@@ -14,8 +14,15 @@
  * Numbers are a static snapshot of INTELLECT-1 Technical Report Table 2
  * (arXiv:2412.01152) in ./data.json — no runtime fetches. Tap a configuration
  * (or use ← / →) to switch; tap / focus a node for its region.
+ *
+ * Layout: shared responsive primitive (stage map · panel readout · footer
+ * controls · caption note). The config switch and the median-all-reduce
+ * readout are de-baked to HTML slots so they stay tappable/readable on
+ * portrait phones; only the geographic map + ring-all-reduce pulse live in
+ * the stage SVG.
  */
 import data from '../../../content/artifacts/all-reduce-atlas/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -43,13 +50,11 @@ const BASELINE_SEC = CONFIGS[0]!.medianAllReduceSec;
 
 /* ---- Geometry (viewBox units) ---- */
 const VB_W = 800;
-const VB_H = 450;
-const MAP_X0 = 40;
-const MAP_X1 = 544;
-const MAP_Y0 = 80;
-const MAP_Y1 = 356;
-const PANEL_X = 580;
-const PANEL_X1 = 776;
+const VB_H = 400;
+const MAP_X0 = 24;
+const MAP_X1 = 776;
+const MAP_Y0 = 24;
+const MAP_Y1 = 376;
 const projX = (lon: number) => MAP_X0 + ((lon + 180) / 360) * (MAP_X1 - MAP_X0);
 const projY = (lat: number) => MAP_Y0 + ((90 - lat) / 180) * (MAP_Y1 - MAP_Y0);
 
@@ -71,19 +76,19 @@ const CONTINENTS: [number, number][][] = [
 ];
 
 export default function mount(container: HTMLElement): () => void {
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  svg.setAttribute('role', 'group');
-  svg.setAttribute('aria-label', 'Map of decentralized training node regions and the median all-reduce time per configuration');
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  container.appendChild(svg);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(190px, 50vw, 320px)',
+    stageFr: '1.8fr',
+  });
+  const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
-  const style = document.createElementNS(NS, 'style');
+  const style = document.createElement('style');
   style.textContent = `
-    .ara-eyebrow { fill:#5b6378; font:500 11px 'JetBrains Mono',monospace; letter-spacing:.18em; }
-    .ara-caption { fill:#8d95ad; font:500 12px 'JetBrains Mono',monospace; }
-    .ara-caption .hot { fill:#67e8f9; }
+    /* ---- Map (stage SVG) visuals ---- */
+    .ara-mapwrap { position:absolute; inset:0; min-height:180px;
+      border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#080c16; }
+    .ara-mapwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .ara-ocean { fill:#080c16; stroke:rgba(124,140,255,.10); }
     .ara-grat { stroke:rgba(124,140,255,.07); fill:none; }
     .ara-land { fill:#0d1322; stroke:rgba(124,140,255,.16); stroke-linejoin:round; }
@@ -100,37 +105,55 @@ export default function mount(container: HTMLElement): () => void {
     .ara-node:focus-visible circle.dot, .ara-node:hover circle.dot { stroke:#67e8f9; }
     .ara-node .halo { fill:#22d3ee; opacity:0; transition:opacity .3s; }
     .ara-node.active .halo { opacity:.10; }
-    .ara-panel { fill:#0d1322; stroke:rgba(124,140,255,.16); }
-    .ara-p-eyebrow { fill:#5b6378; font:500 10px 'JetBrains Mono',monospace; letter-spacing:.16em; }
-    .ara-big { fill:#67e8f9; font:600 42px 'Space Grotesk','Inter',sans-serif; }
-    .ara-mult { fill:#8b5cf6; font:600 13px 'JetBrains Mono',monospace; }
-    .ara-stat { fill:#e7eaf3; font:500 12.5px 'JetBrains Mono',monospace; }
-    .ara-stat .k { fill:#8d95ad; }
-    .ara-divider { stroke:rgba(124,140,255,.16); }
-    .ara-fact { fill:#8d95ad; font:500 10.5px 'JetBrains Mono',monospace; }
-    .ara-btn rect { fill:#0d1322; stroke:rgba(124,140,255,.18); transition:stroke .25s, fill .25s; }
-    .ara-btn text { fill:#8d95ad; font:600 11px 'JetBrains Mono',monospace; transition:fill .25s; }
-    .ara-btn { cursor:pointer; }
-    .ara-btn:hover rect, .ara-btn:focus-visible rect { stroke:rgba(124,140,255,.42); }
-    .ara-btn:focus-visible { outline:none; }
-    .ara-btn[aria-pressed="true"] rect { stroke:#22d3ee; fill:rgba(34,211,238,.10); }
-    .ara-btn[aria-pressed="true"] text { fill:#cdeffd; }
+
+    /* ---- Config switch (HTML controls slot) ---- */
+    .ara-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .ara-eyebrow { font:500 10px 'JetBrains Mono',monospace; letter-spacing:.18em;
+      color:#5b6378; text-transform:uppercase; }
+    .ara-tabs { display:inline-flex; flex-wrap:wrap; gap:8px; flex:1; }
+    .ara-tabs button { appearance:none; flex:1; min-width:96px; border:1px solid rgba(124,140,255,.18);
+      border-radius:8px; background:#0d1322; color:#8d95ad;
+      font:600 11px 'JetBrains Mono',monospace; padding:9px 12px; cursor:pointer;
+      transition:color .25s, border-color .25s, background .25s; }
+    .ara-tabs button:hover, .ara-tabs button:focus-visible { border-color:rgba(124,140,255,.42); }
+    .ara-tabs button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
+    .ara-tabs button[aria-pressed="true"] { border-color:#22d3ee;
+      background:rgba(34,211,238,.10); color:#cdeffd; }
+
+    /* ---- Readout (HTML panel slot) ---- */
+    .ara-panel { display:flex; flex-direction:column; gap:8px; height:100%;
+      border:1px solid rgba(124,140,255,.16); border-radius:10px; background:#0d1322;
+      padding:14px 16px; box-sizing:border-box; min-height:0; }
+    .ara-p-eyebrow { font:500 10px 'JetBrains Mono',monospace; letter-spacing:.16em;
+      color:#5b6378; text-transform:uppercase; }
+    .ara-big { color:#67e8f9; font:600 38px 'Space Grotesk','Inter',sans-serif; line-height:1;
+      font-variant-numeric:tabular-nums; }
+    .ara-mult { color:#8b5cf6; font:600 12px 'JetBrains Mono',monospace; }
+    .ara-stats { display:flex; flex-direction:column; gap:4px; margin-top:2px; }
+    .ara-stat { color:#e7eaf3; font:500 12.5px 'JetBrains Mono',monospace;
+      font-variant-numeric:tabular-nums; }
+    .ara-stat .k { color:#8d95ad; }
+    .ara-divider { border:0; border-top:1px solid rgba(124,140,255,.16); margin:4px 0; }
+    .ara-facts { display:flex; flex-direction:column; gap:3px; }
+    .ara-fact { color:#8d95ad; font:500 10.5px 'JetBrains Mono',monospace; }
+
+    /* ---- Caption (HTML caption slot) ---- */
+    .ara-caption { font:500 12px 'JetBrains Mono',monospace; color:#8d95ad;
+      letter-spacing:.01em; }
+    .ara-caption .hot { color:#67e8f9; }
   `;
-  svg.appendChild(style);
+  stage.appendChild(style);
 
-  /* ---- Header ---- */
-  const eyebrow = document.createElementNS(NS, 'text');
-  eyebrow.setAttribute('class', 'ara-eyebrow');
-  eyebrow.setAttribute('x', '24');
-  eyebrow.setAttribute('y', '30');
-  eyebrow.textContent = '⬢ THE GEOGRAPHY OF THE ALL-REDUCE';
-  svg.appendChild(eyebrow);
-
-  const caption = document.createElementNS(NS, 'text');
-  caption.setAttribute('class', 'ara-caption');
-  caption.setAttribute('x', '24');
-  caption.setAttribute('y', '54');
-  svg.appendChild(caption);
+  /* ---- Map scaffold (stage SVG) ---- */
+  const mapWrap = document.createElement('div');
+  mapWrap.className = 'ara-mapwrap';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', 'Map of decentralized training node regions and the ring all-reduce across the active continents');
+  mapWrap.appendChild(svg);
+  stage.appendChild(mapWrap);
 
   /* ---- Basemap ---- */
   const ocean = document.createElementNS(NS, 'rect');
@@ -237,40 +260,31 @@ export default function mount(container: HTMLElement): () => void {
     nodeEls.set(r.id, { g });
   }
 
-  /* ---- Readout panel ---- */
-  const panel = document.createElementNS(NS, 'rect');
-  panel.setAttribute('class', 'ara-panel');
-  panel.setAttribute('x', String(PANEL_X));
-  panel.setAttribute('y', String(MAP_Y0));
-  panel.setAttribute('width', String(PANEL_X1 - PANEL_X));
-  panel.setAttribute('height', String(MAP_Y1 - MAP_Y0));
-  panel.setAttribute('rx', '10');
-  svg.appendChild(panel);
+  /* ---- Readout panel (HTML) ---- */
+  const panelEl = document.createElement('div');
+  panelEl.className = 'ara-panel';
 
-  const PX = PANEL_X + 18;
-  const mk = (cls: string, y: number): SVGTextElement => {
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('class', cls);
-    t.setAttribute('x', String(PX));
-    t.setAttribute('y', String(y));
-    svg.appendChild(t);
-    return t;
-  };
-  const pEyebrow = mk('ara-p-eyebrow', MAP_Y0 + 28);
+  const pEyebrow = document.createElement('div');
+  pEyebrow.className = 'ara-p-eyebrow';
   pEyebrow.textContent = 'MEDIAN ALL-REDUCE';
-  const pBig = mk('ara-big', MAP_Y0 + 76);
-  const pMult = mk('ara-mult', MAP_Y0 + 100);
-  const pMfu = mk('ara-stat', MAP_Y0 + 138);
-  const pUtil = mk('ara-stat', MAP_Y0 + 160);
+  const pBig = document.createElement('div');
+  pBig.className = 'ara-big';
+  const pMult = document.createElement('div');
+  pMult.className = 'ara-mult';
 
-  const divider = document.createElementNS(NS, 'line');
-  divider.setAttribute('class', 'ara-divider');
-  divider.setAttribute('x1', String(PX));
-  divider.setAttribute('y1', String(MAP_Y0 + 180));
-  divider.setAttribute('x2', String(PANEL_X1 - 18));
-  divider.setAttribute('y2', String(MAP_Y0 + 180));
-  svg.appendChild(divider);
+  const stats = document.createElement('div');
+  stats.className = 'ara-stats';
+  const pMfu = document.createElement('div');
+  pMfu.className = 'ara-stat';
+  const pUtil = document.createElement('div');
+  pUtil.className = 'ara-stat';
+  stats.append(pMfu, pUtil);
 
+  const divider = document.createElement('hr');
+  divider.className = 'ara-divider';
+
+  const factsEl = document.createElement('div');
+  factsEl.className = 'ara-facts';
   const facts = [
     `${RUN.model}`,
     `${RUN.tokens} tokens · ${RUN.window}`,
@@ -278,41 +292,45 @@ export default function mount(container: HTMLElement): () => void {
     `${RUN.bandwidthReduction} bandwidth cut · int8`,
     `comm = 2–10% of training time`,
   ];
-  facts.forEach((f, i) => {
-    const t = mk('ara-fact', MAP_Y0 + 204 + i * 18);
-    t.textContent = f;
+  for (const f of facts) {
+    const el = document.createElement('div');
+    el.className = 'ara-fact';
+    el.textContent = f;
+    factsEl.appendChild(el);
+  }
+
+  panelEl.append(pEyebrow, pBig, pMult, stats, divider, factsEl);
+  panel.appendChild(panelEl);
+
+  /* ---- Config switch (HTML controls slot) ---- */
+  const controls = document.createElement('div');
+  controls.className = 'ara-controls';
+
+  const ctrlEyebrow = document.createElement('span');
+  ctrlEyebrow.className = 'ara-eyebrow';
+  ctrlEyebrow.textContent = '⬢ Configuration';
+
+  const tabs = document.createElement('div');
+  tabs.className = 'ara-tabs';
+  tabs.setAttribute('role', 'group');
+  tabs.setAttribute('aria-label', 'Node configuration — the three INTELLECT-1 geographic spans');
+  const buttons = CONFIGS.map((cfg, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = cfg.label;
+    b.dataset.config = String(i);
+    b.setAttribute('aria-pressed', 'false');
+    tabs.appendChild(b);
+    return b;
   });
 
-  /* ---- Config buttons ---- */
-  const BTN_Y = 388;
-  const BTN_H = 40;
-  const BTN_GAP = 12;
-  const BTN_X0 = 24;
-  const BTN_TOTAL = MAP_X1 - BTN_X0;
-  const btnW = (BTN_TOTAL - BTN_GAP * (CONFIGS.length - 1)) / CONFIGS.length;
-  const buttons: SVGGElement[] = [];
-  CONFIGS.forEach((cfg, i) => {
-    const bx = BTN_X0 + i * (btnW + BTN_GAP);
-    const g = document.createElementNS(NS, 'g');
-    g.setAttribute('class', 'ara-btn');
-    g.setAttribute('tabindex', '0');
-    g.setAttribute('role', 'button');
-    g.dataset.config = String(i);
-    const rect = document.createElementNS(NS, 'rect');
-    rect.setAttribute('x', String(bx));
-    rect.setAttribute('y', String(BTN_Y));
-    rect.setAttribute('width', String(btnW));
-    rect.setAttribute('height', String(BTN_H));
-    rect.setAttribute('rx', '8');
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', String(bx + btnW / 2));
-    t.setAttribute('y', String(BTN_Y + BTN_H / 2 + 4));
-    t.setAttribute('text-anchor', 'middle');
-    t.textContent = cfg.label;
-    g.append(rect, t);
-    svg.appendChild(g);
-    buttons.push(g);
-  });
+  controls.append(ctrlEyebrow, tabs);
+  controlsSlot.appendChild(controls);
+
+  /* ---- Caption (HTML) ---- */
+  const caption = document.createElement('div');
+  caption.className = 'ara-caption';
+  captionSlot.appendChild(caption);
 
   /* ---- Ring geometry: connect active regions ordered W→E, then close ---- */
   function ringPath(active: string[]): string {
@@ -367,12 +385,12 @@ export default function mount(container: HTMLElement): () => void {
     pBig.textContent = `${cfg.medianAllReduceSec} s`;
     const mult = cfg.medianAllReduceSec / BASELINE_SEC;
     pMult.textContent = current === 0 ? 'the in-country baseline' : `${mult.toFixed(1)}× the USA-only sync`;
-    pMfu.innerHTML = `<tspan class="k">MFU </tspan>${cfg.mfuPct}%`;
-    pUtil.innerHTML = `<tspan class="k">compute util </tspan>${cfg.computeUtilPct}%`;
+    pMfu.innerHTML = `<span class="k">MFU </span>${cfg.mfuPct}%`;
+    pUtil.innerHTML = `<span class="k">compute util </span>${cfg.computeUtilPct}%`;
 
     caption.innerHTML =
-      `the ring spans <tspan class="hot">${cfg.span}</tspan> — every outer step waits ` +
-      `<tspan class="hot">${cfg.medianAllReduceSec}s</tspan> on the slowest link`;
+      `the ring spans <span class="hot">${cfg.span}</span> — every outer step waits ` +
+      `<span class="hot">${cfg.medianAllReduceSec}s</span> on the slowest link`;
   }
 
   /* ---- Pulse animation (refresh-rate independent: phase from wall clock) ---- */
@@ -393,50 +411,51 @@ export default function mount(container: HTMLElement): () => void {
     const r = REGIONS.find((x) => x.id === id)!;
     const inRing = CONFIGS[current]!.active.includes(id);
     caption.innerHTML =
-      `<tspan class="hot">${r.label}</tspan> · ${r.continent} — ` +
+      `<span class="hot">${r.label}</span> · ${r.continent} — ` +
       (inRing ? 'in the ring this configuration' : 'idle in this configuration');
   }
 
-  const onClick = (e: Event) => {
-    const btn = (e.target as Element).closest<SVGGElement>('[data-config]');
-    if (btn) {
-      setConfig(Number(btn.dataset.config));
-      return;
-    }
+  // Config switch: HTML buttons (click + Arrow-key roving) in the controls slot.
+  const onTabClick = (e: Event) => {
+    const btn = (e.target as Element).closest<HTMLButtonElement>('[data-config]');
+    if (btn) setConfig(Number(btn.dataset.config));
+  };
+  const onTabKey = (e: KeyboardEvent) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const next = ((current + (e.key === 'ArrowRight' ? 1 : -1)) % CONFIGS.length + CONFIGS.length) % CONFIGS.length;
+    setConfig(next);
+    buttons[next]!.focus();
+  };
+  tabs.addEventListener('click', onTabClick);
+  tabs.addEventListener('keydown', onTabKey);
+
+  // Map nodes: tap / focus a node for its region readout (still SVG-native).
+  const onNodeClick = (e: Event) => {
     const node = (e.target as Element).closest<SVGGElement>('[data-region]');
     if (node) showRegion(node.dataset.region!);
   };
-  const onKey = (e: KeyboardEvent) => {
-    const btn = (e.target as Element).closest<SVGGElement>('[data-config]');
+  const onNodeKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
     const node = (e.target as Element).closest<SVGGElement>('[data-region]');
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    if (node) {
       e.preventDefault();
-      const next = ((current + (e.key === 'ArrowRight' ? 1 : -1)) % CONFIGS.length + CONFIGS.length) % CONFIGS.length;
-      setConfig(next);
-      buttons[next]!.focus();
-      return;
-    }
-    if (e.key === 'Enter' || e.key === ' ') {
-      if (btn) {
-        e.preventDefault();
-        setConfig(Number(btn.dataset.config));
-      } else if (node) {
-        e.preventDefault();
-        showRegion(node.dataset.region!);
-      }
+      showRegion(node.dataset.region!);
     }
   };
-
-  svg.addEventListener('click', onClick);
-  svg.addEventListener('keydown', onKey);
+  svg.addEventListener('click', onNodeClick);
+  svg.addEventListener('keydown', onNodeKey);
 
   setConfig(0);
   raf = requestAnimationFrame(tick);
 
   return () => {
     cancelAnimationFrame(raf);
-    svg.removeEventListener('click', onClick);
-    svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    tabs.removeEventListener('click', onTabClick);
+    tabs.removeEventListener('keydown', onTabKey);
+    svg.removeEventListener('click', onNodeClick);
+    svg.removeEventListener('keydown', onNodeKey);
+    layout.dispose();
+    style.remove();
   };
 }

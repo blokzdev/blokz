@@ -9,7 +9,11 @@
  * (TaoFlow): a one-shot stake enters a per-block EMA scaled by a ≈ 3.2e-6
  * and decays with a 30-day half-life, while exit records an equal outflow.
  * Real protocol constants; sliders are native inputs (keyboard accessible).
+ *
+ * Layout: shared responsive primitive (stage chart · panel price/flow readouts
+ * + verdict · footer controls sliders · caption provenance note).
  */
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const BLOCKS_PER_DAY = 7200; // 12s blocks
 const EMA_A = 0.000003209; // per-block smoothing factor (30-day half-life)
@@ -70,23 +74,26 @@ const fmt = (n: number, digits = 0) =>
 const pct = (f: number) => `${(f * 100).toFixed(2)}%`;
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'ee-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(210px, 56vw, 350px)',
+  });
+  const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
+  stage.classList.add('ee-stage');
+  panelSlot.classList.add('ee-panels');
+  controlsSlot.classList.add('ee-controls');
 
   const style = document.createElement('style');
   style.textContent = `
-    .ee-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
-      padding:14px 16px; overflow-y:auto; background:#05070d;
+    .ee-stage, .ee-panels, .ee-controls, .ee-caption {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .ee-controls { display:grid; grid-template-columns:repeat(4,1fr); gap:8px 14px; }
-    .ee-root.ee-narrow .ee-controls { grid-template-columns:repeat(2,1fr); }
     .ee-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .ee-field output { color:#e7eaf3; font-size:11px; }
     .ee-field input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:4px 0 0; }
-    .ee-chartwrap { flex:1; min-height:120px; position:relative;
+    .ee-chartwrap { position:absolute; inset:0; min-height:120px;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .ee-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .ee-legend { position:absolute; top:8px; right:10px; display:flex; gap:12px;
@@ -96,8 +103,7 @@ export default function mount(container: HTMLElement): () => void {
     /* Axis labels live in DOM, not the stretched SVG (preserveAspectRatio:none
        distorts glyphs). */
     .ee-axislabel { position:absolute; font-size:10px; color:#5b6378; pointer-events:none; }
-    .ee-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .ee-root.ee-narrow .ee-panels { grid-template-columns:1fr; }
+    .ee-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start; }
     .ee-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; }
     .ee-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
@@ -108,11 +114,11 @@ export default function mount(container: HTMLElement): () => void {
     .ee-panel dt { color:#5b6378; font-size:10px; }
     .ee-panel dd { margin:0; color:#e7eaf3; text-align:right; font-variant-numeric:tabular-nums; }
     .ee-panel p { margin:7px 0 0; font-size:10px; color:#5b6378; }
-    .ee-verdict { text-align:center; font-size:11px; color:#8d95ad; }
+    .ee-verdict { grid-column:1 / -1; text-align:center; font-size:11px; color:#8d95ad; }
     .ee-verdict b { color:#e7eaf3; }
     .ee-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.04em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Controls ---- */
   const defs = [
@@ -122,8 +128,6 @@ export default function mount(container: HTMLElement): () => void {
     { id: 'netFlow', label: 'network inflow', min: 2000, max: 100000, step: 1000, value: 20000, unit: 'TAO/d' },
   ] as const;
 
-  const controls = document.createElement('div');
-  controls.className = 'ee-controls';
   const sliders = new Map<string, HTMLInputElement>();
   const outputs = new Map<string, HTMLOutputElement>();
   for (const d of defs) {
@@ -144,11 +148,10 @@ export default function mount(container: HTMLElement): () => void {
     input.value = String(d.value);
     input.setAttribute('aria-label', `${d.label} (${d.unit})`);
     field.append(label, input);
-    controls.appendChild(field);
+    controlsSlot.appendChild(field);
     sliders.set(d.id, input);
     outputs.set(d.id, out);
   }
-  root.appendChild(controls);
 
   /* ---- Chart ---- */
   const NS = 'http://www.w3.org/2000/svg';
@@ -174,7 +177,7 @@ export default function mount(container: HTMLElement): () => void {
     legend.appendChild(item);
   }
   chartWrap.appendChild(legend);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   const mkPath = (stroke: string, dash = '') => {
     const p = document.createElementNS(NS, 'path');
@@ -202,8 +205,6 @@ export default function mount(container: HTMLElement): () => void {
   mkAxisLabel('bottom:4px;right:10px;', 'days 0 → 90');
 
   /* ---- Result panels ---- */
-  const panels = document.createElement('div');
-  panels.className = 'ee-panels';
   const mkPanel = (cls: string, title: string, rows: string[], note: string) => {
     const panel = document.createElement('div');
     panel.className = `ee-panel ${cls}`;
@@ -221,7 +222,7 @@ export default function mount(container: HTMLElement): () => void {
     const p = document.createElement('p');
     p.textContent = note;
     panel.append(h, dl, p);
-    panels.appendChild(panel);
+    panelSlot.appendChild(panel);
     return dds;
   };
   const priceDds = mkPanel(
@@ -236,17 +237,15 @@ export default function mount(container: HTMLElement): () => void {
     ['ema bump', 'peak share', 'extra at peak', 'over 90 days'],
     'principal locked while it counts; unstaking records an equal outflow and erases the score.',
   );
-  root.appendChild(panels);
-
   const verdict = document.createElement('div');
   verdict.className = 'ee-verdict';
-  root.appendChild(verdict);
+  panelSlot.appendChild(verdict);
 
   const note = document.createElement('div');
   note.className = 'ee-note';
   note.textContent =
     'subnet-level capture before the 18/41/41 split — not attacker take-home. constants: 3,600 TAO/day, a ≈ 3.209e-6/block (t½ = 30d).';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Recompute + render ---- */
   function render() {
@@ -301,16 +300,9 @@ export default function mount(container: HTMLElement): () => void {
   for (const s of sliders.values()) s.addEventListener('input', onInput);
   render();
 
-  // Compact layout below ~560px stage width.
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('ee-narrow', (entry?.contentRect.width ?? 600) < 560);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
+    layout.dispose();
     for (const s of sliders.values()) s.removeEventListener('input', onInput);
     style.remove();
-    root.remove();
   };
 }

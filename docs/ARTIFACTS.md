@@ -62,6 +62,58 @@ export default function mount(container: HTMLElement): () => void {
 - Heavy deps (`three`, `gsap`) are fine — they're code-split per artifact and shared via
   chunking when several artifacts use them.
 
+## Responsive layout (the four slots)
+
+Multi-region artifacts (anything with a visualization **plus** controls/readouts — i.e. most
+`dom` and `svg` types) must compose into the shared primitive `createArtifactLayout()` from
+`src/lib/artifact-layout.ts` instead of hand-rolling a `position:absolute; inset:0` root with a
+private resize breakpoint. The primitive owns the responsive arrangement so the same artifact
+reads well inline (narrow phone), on its standalone page, and fullscreen.
+
+```ts
+import { createArtifactLayout } from '@/lib/artifact-layout';
+
+export default function mount(container: HTMLElement): () => void {
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',                 // or 'rail'
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls, caption } = layout;
+  // build the visualization into `stage`, secondary readout into `panel`,
+  // inputs into `controls`, the source/hint line into `caption`.
+  return () => { layout.dispose(); /* + your listeners/timers/style */ };
+}
+```
+
+Four named slots, arranged by the container's orientation (no work from you):
+
+| Slot | Holds | Landscape | Portrait |
+| --- | --- | --- | --- |
+| `stage` | the primary visualization (SVG/canvas) | left, dominant | top |
+| `panel` | secondary readout: legend, detail, tally, scoreboard | right of stage | below stage |
+| `controls` | inputs: sliders, tabs, toggles, buttons | right rail (`'rail'`) or full-width footer (`'footer'`) | below panel |
+| `caption` | source/provenance line + interaction hints | full-width bottom | bottom |
+
+- Omit a slot you don't use (`{ panel: false }`); empty slots take no space.
+- `'footer'` suits a wide row of sliders/buttons; `'rail'` suits a compact control set.
+- Put **visual** CSS in your own injected `<style>`; never add layout/reflow CSS or your own
+  resize breakpoint — the primitive is the single source of responsive truth. (A small local
+  `ResizeObserver` for an *internal* sub-layout is fine if you disconnect it in cleanup.)
+- Full-bleed `three`/`canvas` artifacts don't need the primitive — they fill `container`
+  directly. `ArtifactMount` gives them a portrait-friendly box; multi-region artifacts grow to
+  fit their content so they never cram on a phone.
+
+## Fullscreen
+
+Every embed gets a "⛶ fullscreen" action (handled by `ArtifactMount` + `artifact-fullscreen.ts`)
+that re-mounts the artifact filling the viewport, with device autorotation. You get this for
+free — just keep `mount()` cheap to call twice and make `cleanup()` release everything (the
+fullscreen instance is disposed on close). Don't lock `screen.orientation`.
+
+> Backlog (not built): an alternate inline mode that shows only the artifact's title/description
+> + a "view fullscreen" CTA, deferring all interaction to fullscreen. Revisit if inline embeds of
+> the heaviest artifacts ever need to get lighter on mobile.
+
 ## Performance rules
 
 - **Three.js artifacts must use `createScene()` from `src/lib/three-utils.ts`.** It caps

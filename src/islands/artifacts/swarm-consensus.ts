@@ -19,9 +19,12 @@
  * widen it and peer ranking pulls ahead. Illustrative model — real measured
  * anchors live in ./data.json and render under the scoreboard.
  *
- * Pure DOM + inline SVG; no deps. Reduced motion handled by ArtifactMount.
+ * Layout: shared responsive primitive (stage ring · panel tally · footer
+ * scoreboard + controls · caption anchor). Reduced motion handled by
+ * ArtifactMount.
  */
 import data from '../../../content/artifacts/swarm-consensus/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -65,15 +68,30 @@ const argmaxOf = (idx: number[], val: number[]): number => {
 };
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'sc-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 50vw, 300px)',
+    stageFr: '1.35fr',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
+  stage.classList.add('sc-stage');
 
   const style = document.createElement('style');
   style.textContent = `
-    .sc-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
-      padding:13px 15px; overflow-y:auto; background:#05070d;
+    .sc-stage { display:flex; align-items:center; justify-content:center;
       font:500 12px/1.4 'JetBrains Mono', monospace; color:#8d95ad; }
+    .sc-stage svg { width:100%; height:100%; display:block; }
+    .sc-node { transition:r .5s cubic-bezier(.22,1,.36,1), fill .35s, opacity .35s; }
+    .sc-qmark { fill:#e7eaf3; font:600 17px 'JetBrains Mono', monospace; }
+    .sc-qsub { fill:#5b6378; font:500 8.5px 'JetBrains Mono', monospace; letter-spacing:.12em; }
+    .sc-ring { fill:none; stroke:rgba(124,140,255,.10); }
+    @media (prefers-reduced-motion: no-preference) {
+      .sc-think .sc-node { animation:sc-pulse 1s ease-in-out infinite; }
+    }
+    @keyframes sc-pulse { 0%,100%{ opacity:.5 } 50%{ opacity:1 } }
+
+    .sc-panel { display:flex; flex-direction:column; gap:10px;
+      font:500 12px/1.4 'JetBrains Mono', monospace; color:#8d95ad; min-width:0; }
     .sc-head { display:flex; align-items:center; justify-content:space-between; gap:10px;
       flex-wrap:wrap; }
     .sc-legend { display:flex; flex-wrap:wrap; gap:5px 11px; }
@@ -85,21 +103,8 @@ export default function mount(container: HTMLElement): () => void {
       white-space:nowrap; }
     .sc-round b { color:#e7eaf3; }
 
-    .sc-main { display:grid; grid-template-columns:minmax(170px,1fr) minmax(0,1.25fr); gap:14px;
-      flex:1 1 auto; min-height:0; align-items:stretch; }
-    .sc-root.sc-narrow .sc-main { grid-template-columns:1fr; }
-    .sc-stage { position:relative; min-height:150px; display:flex; align-items:center; justify-content:center; }
-    .sc-stage svg { width:100%; height:100%; display:block; }
-    .sc-node { transition:r .5s cubic-bezier(.22,1,.36,1), fill .35s, opacity .35s; }
-    .sc-qmark { fill:#e7eaf3; font:600 17px 'JetBrains Mono', monospace; }
-    .sc-qsub { fill:#5b6378; font:500 8.5px 'JetBrains Mono', monospace; letter-spacing:.12em; }
-    .sc-ring { fill:none; stroke:rgba(124,140,255,.10); }
-    @media (prefers-reduced-motion: no-preference) {
-      .sc-think .sc-node { animation:sc-pulse 1s ease-in-out infinite; }
-    }
-    @keyframes sc-pulse { 0%,100%{ opacity:.5 } 50%{ opacity:1 } }
-
-    .sc-tally { display:flex; flex-direction:column; gap:7px; justify-content:center; min-width:0; }
+    .sc-tally { display:flex; flex-direction:column; gap:7px; justify-content:center; min-width:0;
+      flex:1 1 auto; }
     .sc-tr { display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; min-width:0; }
     .sc-tr-name { display:flex; align-items:center; gap:6px; font-size:11px; color:#cdd3e3;
       white-space:nowrap; }
@@ -120,9 +125,10 @@ export default function mount(container: HTMLElement): () => void {
     .sc-chip.sc-peer { color:#22d3ee; box-shadow:inset 0 0 0 1px rgba(34,211,238,.55); }
     .sc-chip.sc-wrong { color:#f0883e; box-shadow:inset 0 0 0 1px rgba(240,136,62,.55); }
 
-    .sc-foot { display:grid; grid-template-columns:auto 1fr; gap:12px 16px; align-items:end; }
-    .sc-root.sc-narrow .sc-foot { grid-template-columns:1fr; }
-    .sc-board { display:flex; gap:14px; align-items:stretch; }
+    .sc-foot { display:flex; flex-wrap:wrap; gap:12px 18px; align-items:flex-end;
+      justify-content:space-between;
+      font:500 12px/1.4 'JetBrains Mono', monospace; color:#8d95ad; }
+    .sc-board { display:flex; gap:12px; align-items:stretch; flex:1 1 240px; }
     .sc-score { flex:1 1 0; border:1px solid rgba(124,140,255,.14); border-radius:10px; padding:8px 11px;
       background:#0d1322; min-width:96px; }
     .sc-score.sc-peer-card { box-shadow:inset 0 0 0 1px rgba(34,211,238,.22); }
@@ -131,8 +137,8 @@ export default function mount(container: HTMLElement): () => void {
     .sc-score.sc-peer-card .sc-pct { color:#22d3ee; }
     .sc-score.sc-maj-card .sc-pct { color:#cdd3e3; }
     .sc-score .sc-sub { font-size:9.5px; color:#5b6378; }
-    .sc-controls { display:flex; flex-wrap:wrap; gap:9px 12px; align-items:end; justify-content:flex-end; }
-    .sc-root.sc-narrow .sc-controls { justify-content:flex-start; }
+    .sc-controls { display:flex; flex-wrap:wrap; gap:9px 12px; align-items:end; justify-content:flex-end;
+      flex:1 1 260px; }
     .sc-btn { border:1px solid rgba(34,211,238,.4); border-radius:8px; cursor:pointer;
       background:rgba(34,211,238,.08); color:#22d3ee; font:600 11px 'JetBrains Mono', monospace;
       letter-spacing:.05em; padding:7px 13px; white-space:nowrap; transition:.2s; }
@@ -146,12 +152,13 @@ export default function mount(container: HTMLElement): () => void {
       letter-spacing:.05em; text-transform:uppercase; color:#5b6378; }
     .sc-field output { color:#e7eaf3; font-variant-numeric:tabular-nums; }
     .sc-field input[type=range] { width:100%; cursor:pointer; accent-color:#22d3ee; margin:0; }
-    .sc-ref { font-size:9.5px; color:#5b6378; line-height:1.5; letter-spacing:.01em; }
+    .sc-ref { font-size:9.5px; color:#5b6378; line-height:1.5; letter-spacing:.01em;
+      font-family:'JetBrains Mono', monospace; }
     .sc-ref a { color:#22d3ee; text-decoration:none; }
     .sc-ref a:hover { text-decoration:underline; }
     .sc-ref b { color:#cdd3e3; font-weight:600; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ------------------------------------------------------------------ state */
   let N = 21;
@@ -243,7 +250,35 @@ export default function mount(container: HTMLElement): () => void {
   }
 
   /* ------------------------------------------------------------------ build DOM */
-  // Header
+  // Stage: swarm ring
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 300 300');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  stage.appendChild(svg);
+
+  const ringCircle = document.createElementNS(NS, 'circle');
+  ringCircle.setAttribute('class', 'sc-ring');
+  ringCircle.setAttribute('cx', '150');
+  ringCircle.setAttribute('cy', '150');
+  ringCircle.setAttribute('r', '108');
+  svg.appendChild(ringCircle);
+  const qmark = document.createElementNS(NS, 'text');
+  qmark.setAttribute('class', 'sc-qmark');
+  qmark.setAttribute('x', '150');
+  qmark.setAttribute('y', '150');
+  qmark.setAttribute('text-anchor', 'middle');
+  qmark.setAttribute('dominant-baseline', 'middle');
+  qmark.textContent = '?';
+  const qsub = document.createElementNS(NS, 'text');
+  qsub.setAttribute('class', 'sc-qsub');
+  qsub.setAttribute('x', '150');
+  qsub.setAttribute('y', '173');
+  qsub.setAttribute('text-anchor', 'middle');
+  qsub.textContent = 'ONE QUESTION';
+  svg.append(qmark, qsub);
+
+  // Panel: legend + round header, then the tally
+  panel.className = 'sc-panel';
   const head = document.createElement('div');
   head.className = 'sc-head';
   const legend = document.createElement('div');
@@ -268,42 +303,11 @@ export default function mount(container: HTMLElement): () => void {
   const roundLbl = document.createElement('div');
   roundLbl.className = 'sc-round';
   head.append(legend, roundLbl);
-  root.appendChild(head);
+  panel.appendChild(head);
 
-  // Main: swarm ring + tally
-  const main = document.createElement('div');
-  main.className = 'sc-main';
-  const stage = document.createElement('div');
-  stage.className = 'sc-stage';
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 300 300');
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  stage.appendChild(svg);
   const tally = document.createElement('div');
   tally.className = 'sc-tally';
-  main.append(stage, tally);
-  root.appendChild(main);
-
-  const ringCircle = document.createElementNS(NS, 'circle');
-  ringCircle.setAttribute('class', 'sc-ring');
-  ringCircle.setAttribute('cx', '150');
-  ringCircle.setAttribute('cy', '150');
-  ringCircle.setAttribute('r', '108');
-  svg.appendChild(ringCircle);
-  const qmark = document.createElementNS(NS, 'text');
-  qmark.setAttribute('class', 'sc-qmark');
-  qmark.setAttribute('x', '150');
-  qmark.setAttribute('y', '150');
-  qmark.setAttribute('text-anchor', 'middle');
-  qmark.setAttribute('dominant-baseline', 'middle');
-  qmark.textContent = '?';
-  const qsub = document.createElementNS(NS, 'text');
-  qsub.setAttribute('class', 'sc-qsub');
-  qsub.setAttribute('x', '150');
-  qsub.setAttribute('y', '173');
-  qsub.setAttribute('text-anchor', 'middle');
-  qsub.textContent = 'ONE QUESTION';
-  svg.append(qmark, qsub);
+  panel.appendChild(tally);
 
   let nodeEls: SVGCircleElement[] = [];
   function buildRing(): void {
@@ -450,7 +454,7 @@ export default function mount(container: HTMLElement): () => void {
   controls.append(runBtn, run25Btn, resetBtn);
 
   foot.append(board, controls);
-  root.appendChild(foot);
+  controlsSlot.appendChild(foot);
 
   const ref = document.createElement('div');
   ref.className = 'sc-ref';
@@ -460,7 +464,7 @@ export default function mount(container: HTMLElement): () => void {
     `majority voting <b>${h.majorityAccuracy}%</b> across ${h.nodeCount} nodes ` +
     `(best single model ${h.bestSingleModel} ${h.bestSingleAccuracy}%). ` +
     `<a href="https://arxiv.org/abs/2510.24801" target="_blank" rel="noopener">arXiv:2510.24801 ↗</a>`;
-  root.appendChild(ref);
+  caption.appendChild(ref);
 
   /* ------------------------------------------------------------------ render */
   function renderTally(animate: boolean): void {
@@ -624,24 +628,18 @@ export default function mount(container: HTMLElement): () => void {
   sizeF.input.addEventListener('input', onSize);
   edgeF.input.addEventListener('input', onEdge);
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('sc-narrow', (entry?.contentRect.width ?? 700) < 560);
-  });
-  ro.observe(container);
-
   reset();
   // Seed a first round so the stage isn't empty on arrival.
   later(() => runAnimated(), reduced ? 0 : 260);
 
   return () => {
     clearTimers();
-    ro.disconnect();
+    layout.dispose();
     runBtn.removeEventListener('click', onRun);
     run25Btn.removeEventListener('click', onRun25);
     resetBtn.removeEventListener('click', onReset);
     sizeF.input.removeEventListener('input', onSize);
     edgeF.input.removeEventListener('input', onEdge);
     style.remove();
-    root.remove();
   };
 }

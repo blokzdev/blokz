@@ -14,8 +14,13 @@
  * Geometry is SVG stretched with preserveAspectRatio="none" (rectangles
  * survive non-uniform scaling; strokes use non-scaling-stroke); ALL text
  * is positioned DOM in fixed px so it stays legible on phones.
+ *
+ * Layout: shared responsive primitive (stage chart · controls tabs+legend ·
+ * panel readout · caption note); 'footer' template puts the wide tab row
+ * full-width under [stage | panel]. Reduced motion handled by ArtifactMount.
  */
 import data from '../../../content/artifacts/operating-layer-lift/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Bar {
   label: string;
@@ -71,17 +76,17 @@ export default function mount(container: HTMLElement): () => void {
     return mode().unit === '%' ? `${b.value}%` : String(b.value);
   };
 
-  const root = document.createElement('div');
-  root.className = 'oll-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(190px, 50vw, 330px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .oll-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:6px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .oll-top { display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap; }
+      gap:10px; flex-wrap:wrap;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .oll-tabs { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .oll-tabs button { appearance:none; border:0; background:transparent; color:#5b6378;
@@ -93,10 +98,10 @@ export default function mount(container: HTMLElement): () => void {
     .oll-legend i { display:inline-block; width:9px; height:9px; border-radius:2px;
       margin-right:5px; vertical-align:-1px; }
     .oll-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px; }
-    .oll-stage { flex:1; min-height:150px; position:relative;
+    .oll-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
       overflow:hidden; }
-    .oll-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .oll-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .oll-overlay { position:absolute; inset:0; pointer-events:none; }
     .oll-fade { transition:opacity .25s ease; }
     .oll-gridlabel { position:absolute; transform:translate(0,-50%); font-size:10px;
@@ -113,15 +118,12 @@ export default function mount(container: HTMLElement): () => void {
       cursor:pointer; border-radius:6px; padding:0; }
     .oll-hit:focus-visible { outline:2px solid #22d3ee; outline-offset:-2px; }
     .oll-readout { min-height:30px; font-size:11px; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+      font-variant-numeric:tabular-nums;
+      font-family:'JetBrains Mono', monospace; }
     .oll-readout b { color:#e7eaf3; font-weight:600; }
     .oll-readout i { color:#5ce0e8; font-style:normal; }
-    .oll-root.oll-narrow .oll-cat { font-size:8.5px; }
-    .oll-root.oll-narrow .oll-val { font-size:9.5px; }
-    .oll-root.oll-narrow .oll-caption { display:none; }
-    .oll-root.oll-narrow .oll-legend { display:none; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Tabs + legend ---- */
   const top = document.createElement('div');
@@ -142,15 +144,15 @@ export default function mount(container: HTMLElement): () => void {
   const legend = document.createElement('div');
   legend.className = 'oll-legend';
   top.append(tabs, legend);
-  root.appendChild(top);
+  controlsSlot.appendChild(top);
 
   const caption = document.createElement('div');
   caption.className = 'oll-caption';
-  root.appendChild(caption);
+  captionSlot.appendChild(caption);
 
   /* ---- Stage: SVG geometry + DOM text overlay + hit layer ---- */
-  const stage = document.createElement('div');
-  stage.className = 'oll-stage';
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'oll-chartwrap';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 100 100');
   svg.setAttribute('preserveAspectRatio', 'none');
@@ -159,8 +161,8 @@ export default function mount(container: HTMLElement): () => void {
   overlay.className = 'oll-overlay';
   const hits = document.createElement('div');
   hits.className = 'oll-hits';
-  stage.append(svg, overlay, hits);
-  root.appendChild(stage);
+  chartWrap.append(svg, overlay, hits);
+  stage.appendChild(chartWrap);
 
   /* Gridlines + axis labels — rebuilt per mode (scale changes) */
   const gridGroup = document.createElementNS(NS, 'g');
@@ -180,7 +182,7 @@ export default function mount(container: HTMLElement): () => void {
 
   const readout = document.createElement('div');
   readout.className = 'oll-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
 
   /* ---- Readout ---- */
   function setReadout(i: number) {
@@ -383,19 +385,14 @@ export default function mount(container: HTMLElement): () => void {
 
   build();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('oll-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(raf);
-    ro.disconnect();
+    layout.dispose();
     hits.removeEventListener('pointerover', onOver);
     hits.removeEventListener('pointerout', onOut);
     hits.removeEventListener('pointerdown', onDown);
     hits.removeEventListener('focusin', onOver);
     hits.removeEventListener('focusout', onOut);
-    root.remove();
+    style.remove();
   };
 }

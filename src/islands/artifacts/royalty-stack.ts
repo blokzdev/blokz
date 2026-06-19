@@ -10,7 +10,11 @@
  * Percentage) pays only direct parents and compounds, so deep ancestors get
  * exponentially diluted. Formula simulator on protocol constants cited in
  * the companion article — no dataset snapshot, no runtime fetches.
+ *
+ * Layout: shared responsive primitive (stage chain · panel readout · footer
+ * controls · caption note). Reduced motion handled by ArtifactMount.
  */
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 type Policy = 'LAP' | 'LRP';
 
@@ -53,15 +57,14 @@ export default function mount(container: HTMLElement): () => void {
   let gens = 4; // derivative generations below the original
   let target = 4; // node receiving the payment
 
-  const root = document.createElement('div');
-  root.className = 'rs-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .rs-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:8px;
-      padding:12px 14px 10px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .rs-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .rs-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
@@ -84,12 +87,13 @@ export default function mount(container: HTMLElement): () => void {
       background:rgba(91,140,255,.22); border-color:rgba(124,140,255,.7); }
     .rs-step button:focus-visible { outline:2px solid #5b8cff; outline-offset:1px; }
     .rs-step button:disabled { opacity:.35; cursor:default; }
-    .rs-stage { flex:1; display:flex; gap:12px; min-height:0; }
-    .rs-chain { flex:1.2; display:flex; flex-direction:column; min-width:0; }
-    .rs-panel { flex:1; border:1px solid rgba(124,140,255,.14); border-radius:12px;
+    .rs-chain { position:absolute; inset:0; display:flex; flex-direction:column;
+      min-width:0; overflow-y:auto;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .rs-panel { height:100%; border:1px solid rgba(124,140,255,.14); border-radius:12px;
       background:#0d1322; padding:12px 14px; display:flex; flex-direction:column; gap:6px;
-      min-width:0; }
-    .rs-root.narrow .rs-stage { flex-direction:column; }
+      min-width:0; overflow-y:auto;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .rs-node { appearance:none; text-align:left; display:flex; align-items:center; gap:10px;
       border:1px solid rgba(124,140,255,.18); border-radius:10px; background:#0d1322;
       color:#8d95ad; padding:7px 12px; cursor:pointer; width:100%;
@@ -133,14 +137,15 @@ export default function mount(container: HTMLElement): () => void {
     .rs-compare { border-top:1px solid rgba(124,140,255,.14); padding-top:7px;
       font-size:10.5px; color:#8d95ad; }
     .rs-compare b { color:#8b5cf6; }
-    .rs-fine { margin-top:auto; font-size:9px; color:#5b6378; line-height:1.5; }
+    .rs-fine { font:500 12px/1.45 'JetBrains Mono', monospace;
+      font-size:9px; color:#5b6378; line-height:1.5; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---------- controls ---------- */
   const controls = document.createElement('div');
   controls.className = 'rs-controls';
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   const toggle = document.createElement('div');
   toggle.className = 'rs-toggle';
@@ -208,15 +213,10 @@ export default function mount(container: HTMLElement): () => void {
   step.append(stepLabel, minus, stepOut, plus);
   controls.appendChild(step);
 
-  /* ---------- stage ---------- */
-  const stage = document.createElement('div');
-  stage.className = 'rs-stage';
-  root.appendChild(stage);
+  /* ---------- stage: chain ---------- */
   const chain = document.createElement('div');
   chain.className = 'rs-chain';
-  const panel = document.createElement('div');
-  panel.className = 'rs-panel';
-  stage.append(chain, panel);
+  stage.appendChild(chain);
 
   interface NodeEls {
     btn: HTMLButtonElement;
@@ -274,10 +274,13 @@ export default function mount(container: HTMLElement): () => void {
   revert.setAttribute('role', 'status');
   const compare = document.createElement('div');
   compare.className = 'rs-compare';
+  panel.append(ptitle, plines, revert, compare);
+
+  /* ---------- caption ---------- */
   const fine = document.createElement('div');
   fine.className = 'rs-fine';
   fine.textContent = 'Constants from Story mainnet (chain 1514): RoyaltyModule 0xD2f6…0086, maxPercent = 100,000,000 (100%); commercialRevShare encoded as 1% = 1,000,000. LAP reverts onLicenseMinting when an ancestor stack would pass 100%.';
-  panel.append(ptitle, plines, revert, compare, fine);
+  caption.appendChild(fine);
 
   /** deepest generation that can exist under LAP at the current rev share */
   const lapMaxGen = () => Math.floor(100 / revShare);
@@ -386,16 +389,10 @@ export default function mount(container: HTMLElement): () => void {
     sync(false);
   }
 
-  /* responsive: stack panels on narrow stages */
-  const ro = new ResizeObserver(() => {
-    root.classList.toggle('narrow', root.clientWidth < 620);
-  });
-  ro.observe(root);
-
   rebuild();
 
   return () => {
-    ro.disconnect();
-    root.remove();
+    layout.dispose();
+    style.remove();
   };
 }

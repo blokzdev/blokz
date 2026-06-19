@@ -11,8 +11,12 @@
  * no runtime fetches. A gas-price slider reprices each bar in USD; hovering,
  * tapping, or focusing a bar reads out exact gas, the ×block multiple, and
  * the dollar cost.
+ *
+ * Layout: shared responsive primitive (stage chart · panel readout · rail
+ * controls · caption note). Reduced motion handled by ArtifactMount.
  */
 import data from '../../../content/artifacts/gas-wall/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Regime {
   label: string;
@@ -119,15 +123,14 @@ export default function mount(container: HTMLElement): () => void {
 
   const regime = () => REGIMES[regimeKey];
 
-  const root = document.createElement('div');
-  root.className = 'gw-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'rail',
+    stageMin: 'clamp(190px, 48vw, 320px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .gw-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:8px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .gw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     .gw-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
@@ -143,7 +146,7 @@ export default function mount(container: HTMLElement): () => void {
     .gw-price output i { color:#22d3ee; font-style:normal; }
     .gw-price input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:2px 0 0; }
-    .gw-chartwrap { flex:1; min-height:170px; position:relative;
+    .gw-chartwrap { position:absolute; inset:0; min-height:170px;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .gw-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .gw-grid { stroke:rgba(124,140,255,.1); }
@@ -168,10 +171,8 @@ export default function mount(container: HTMLElement): () => void {
     .gw-readout b { color:#e7eaf3; font-weight:600; }
     .gw-readout i { color:#22d3ee; font-style:normal; }
     .gw-note { font-size:9.5px; color:#5b6378; letter-spacing:.02em; }
-    .gw-root.gw-narrow .gw-note { display:none; }
-    .gw-root.gw-narrow .gw-arch { display:none; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Controls ---- */
   const controls = document.createElement('div');
@@ -211,7 +212,7 @@ export default function mount(container: HTMLElement): () => void {
   priceField.append(priceLabel, slider);
 
   controls.append(toggle, priceField);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Chart scaffold ---- */
   const chartWrap = document.createElement('div');
@@ -220,7 +221,7 @@ export default function mount(container: HTMLElement): () => void {
   svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   chartWrap.appendChild(svg);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   /* gridlines: powers of ten */
   for (const v of [1e6, 1e7, 1e8, 1e9, 1e10]) {
@@ -331,11 +332,11 @@ export default function mount(container: HTMLElement): () => void {
   /* ---- Readout + footnote ---- */
   const readout = document.createElement('div');
   readout.className = 'gw-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
 
   const note = document.createElement('div');
   note.className = 'gw-note';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Rendering ---- */
   function paintBar(b: Bar) {
@@ -459,20 +460,15 @@ export default function mount(container: HTMLElement): () => void {
 
   render();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('gw-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(raf);
-    ro.disconnect();
+    layout.dispose();
     slider.removeEventListener('input', onSlide);
     svg.removeEventListener('pointerover', onOver);
     svg.removeEventListener('pointerout', onOut);
     svg.removeEventListener('pointerdown', onDown);
     svg.removeEventListener('focusin', onOver);
     svg.removeEventListener('focusout', onOut);
-    root.remove();
+    style.remove();
   };
 }

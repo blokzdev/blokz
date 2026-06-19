@@ -12,8 +12,13 @@
  * Defaults can be replaced with a real permission pulled off Base
  * (./data.json) — 35.97 USDC/day, valid for 90 minutes. Sliders are native
  * inputs (keyboard accessible).
+ *
+ * Layout: shared responsive primitive (stage staircase chart · footer controls
+ * sliders+real-permission preset · panel three custody readouts+verdict ·
+ * caption provenance note).
  */
 import data from '../../../content/artifacts/blast-radius/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const REAL = data.permission;
 
@@ -99,18 +104,27 @@ const dur = (h: number) =>
   !Number.isFinite(h) ? 'never' : h < 48 ? `${+h.toFixed(1)} h` : `${+(h / 24).toFixed(1)} d`;
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'br-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(210px, 56vw, 350px)',
+    stageFr: '1.6fr',
+  });
+  const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
+  stage.classList.add('br-stage');
+  panelSlot.classList.add('br-readout');
+  controlsSlot.classList.add('br-inputs');
+  caption.classList.add('br-cap');
 
   const style = document.createElement('style');
   style.textContent = `
-    .br-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
-      padding:14px 16px; overflow-y:auto; background:#05070d;
+    .br-stage, .br-readout, .br-inputs, .br-cap {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .br-stage { display:flex; flex-direction:column; min-width:0; min-height:0; }
+    .br-readout { display:flex; flex-direction:column; gap:10px; min-width:0; }
+    .br-inputs { display:flex; flex-direction:column; gap:10px; min-width:0; }
     .br-controls { display:grid; grid-template-columns:repeat(5,1fr) auto; gap:8px 14px;
       align-items:end; }
-    .br-root.br-narrow .br-controls { grid-template-columns:repeat(2,1fr); }
+    .afl-grid:not(.is-wide) .br-controls { grid-template-columns:repeat(2,1fr); }
     .br-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .br-field output { color:#e7eaf3; font-size:11px; white-space:nowrap; }
@@ -121,7 +135,7 @@ export default function mount(container: HTMLElement): () => void {
       letter-spacing:.08em; text-transform:uppercase; padding:7px 10px; white-space:nowrap; }
     .br-preset:hover, .br-preset:focus-visible { border-color:#22d3ee; }
     .br-preset.br-on { background:rgba(34,211,238,.12); box-shadow:0 0 12px rgba(34,211,238,.25); }
-    .br-chartwrap { flex:1; min-height:130px; position:relative;
+    .br-chartwrap { flex:1; min-height:0; position:relative;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .br-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .br-legend { position:absolute; top:8px; right:10px; display:flex; gap:12px;
@@ -133,8 +147,8 @@ export default function mount(container: HTMLElement): () => void {
       white-space:nowrap; }
     .br-marklabel { position:absolute; top:22px; transform:translateX(-50%);
       font-size:9.5px; letter-spacing:.06em; pointer-events:none; }
-    .br-panels { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-    .br-root.br-narrow .br-panels { grid-template-columns:1fr; }
+    .br-panels { display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
     .br-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; }
     .br-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
@@ -150,7 +164,7 @@ export default function mount(container: HTMLElement): () => void {
     .br-verdict b { color:#e7eaf3; }
     .br-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.04em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   const state: State = {
     balance: 10000,
@@ -202,7 +216,7 @@ export default function mount(container: HTMLElement): () => void {
   preset.textContent = '⬢ real base permission';
   preset.title = `tx ${REAL.txHash.slice(0, 10)}… — ${REAL.allowance} USDC / 24 h, valid 90 min`;
   controls.appendChild(preset);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Chart ---- */
   const NS = 'http://www.w3.org/2000/svg';
@@ -228,7 +242,7 @@ export default function mount(container: HTMLElement): () => void {
     legend.appendChild(item);
   }
   chartWrap.appendChild(legend);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   const mkPath = (stroke: string, dash = '') => {
     const p = document.createElementNS(NS, 'path');
@@ -311,18 +325,18 @@ export default function mount(container: HTMLElement): () => void {
     ['loss', 'share of wallet', 'periods tapped'],
     'the contract meters allowance per period and reverts the rest (ExceededSpendPermission). revoke kills it for good.',
   );
-  root.appendChild(panels);
+  panelSlot.appendChild(panels);
 
   const verdict = document.createElement('div');
   verdict.className = 'br-verdict';
-  root.appendChild(verdict);
+  panelSlot.appendChild(verdict);
 
   const note = document.createElement('div');
   note.className = 'br-note';
   note.textContent =
     'worst case assumed: attacker drains the full allowance the moment each period opens. ' +
     'semantics: SpendPermissionManager 0xf852…67Ad (base). real permission: 35.97 USDC / 24 h, valid 90 min, settled 2026-06-12.';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Recompute + render ---- */
   function render() {
@@ -446,17 +460,10 @@ export default function mount(container: HTMLElement): () => void {
   preset.addEventListener('click', onPreset);
   render();
 
-  // Compact layout below ~620px stage width.
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('br-narrow', (entry?.contentRect.width ?? 600) < 620);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
+    layout.dispose();
     for (const s of sliders.values()) s.removeEventListener('input', onInput);
     preset.removeEventListener('click', onPreset);
     style.remove();
-    root.remove();
   };
 }

@@ -114,7 +114,14 @@ the explore bar.
   page keeps a pinned gradient underline. Mobile menu is a full-screen blurred sheet with
   cascading display-type links, scroll-locked, Escape/backdrop to close.
 - **Z-index scale** (never improvise): `40` mobile sheet · `50` header dock · `60` progress
-  bar · `70` grain overlay · `100` skip link · native top layer: search dialog.
+  bar · `70` grain overlay · `90` artifact fullscreen overlay · `100` skip link · native top
+  layer: search dialog.
+- **Artifact layout**: multi-region artifacts compose into `createArtifactLayout()`
+  (`src/lib/artifact-layout.ts`) — four slots (stage · panel · controls · caption) that sit
+  side-by-side in landscape and stack in portrait, so the same artifact reads cleanly inline,
+  standalone, and fullscreen. Inline embeds grow to fit their content in portrait (never the old
+  fixed short box); every embed offers a "⛶ fullscreen" view with autorotation. See
+  `docs/ARTIFACTS.md`.
 - Footer carries the lowercase tagline brand moment and brand links — GitHub, X, LinkedIn —
   from `src/lib/site.ts`.
 - Breakpoints: cards 1-col → `sm:` 2 → `lg:` 3. TOC appears `xl:` on article pages.

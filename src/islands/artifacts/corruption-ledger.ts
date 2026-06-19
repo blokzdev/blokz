@@ -15,8 +15,12 @@
  * probabilistic-verification tax: random audits only catch a liar with
  * probability p, so the bond must be oversized by 1/p. Presets load real
  * EigenLayer / EIGEN figures (./data.json). Sliders are native (keyboard-ok).
+ *
+ * Layout: shared responsive primitive (stage ledger/verdict · rail controls
+ * presets+sliders · caption provenance; no panel — the output is one block).
  */
 import data from '../../../content/artifacts/corruption-ledger/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface State {
   stakeUsd: number;
@@ -77,14 +81,21 @@ function compute(s: State): Result {
 }
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'cl-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    panel: false,
+    wideTemplate: 'rail',
+    stageMin: 'clamp(220px, 60vw, 360px)',
+    stageFr: '1.4fr',
+  });
+  const { stage, controls: controlsSlot, caption } = layout;
+  stage.classList.add('cl-stage');
+  controlsSlot.classList.add('cl-inputs');
 
   const style = document.createElement('style');
   style.textContent = `
-    .cl-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
-      padding:14px 16px; overflow-y:auto; background:#05070d;
+    .cl-stage { display:flex; flex-direction:column; min-width:0;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .cl-inputs { display:flex; flex-direction:column; gap:10px; min-width:0;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .cl-presets { display:flex; flex-wrap:wrap; gap:8px; }
     .cl-preset { border:1px solid rgba(124,140,255,.28); border-radius:8px; cursor:pointer;
@@ -92,8 +103,7 @@ export default function mount(container: HTMLElement): () => void {
       letter-spacing:.07em; text-transform:uppercase; padding:7px 10px; white-space:nowrap; }
     .cl-preset:hover, .cl-preset:focus-visible { border-color:#22d3ee; outline:none; }
     .cl-preset.cl-on { background:rgba(34,211,238,.12); box-shadow:0 0 12px rgba(34,211,238,.25); }
-    .cl-controls { display:grid; grid-template-columns:repeat(5,1fr); gap:8px 14px; align-items:end; }
-    .cl-root.cl-narrow .cl-controls { grid-template-columns:repeat(2,1fr); }
+    .cl-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 14px; align-items:end; }
     .cl-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
     .cl-field output { color:#e7eaf3; font-size:11px; white-space:nowrap; }
@@ -130,7 +140,7 @@ export default function mount(container: HTMLElement): () => void {
     .cl-fix.cl-broken b { color:#f0883e; }
     .cl-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.03em; line-height:1.5; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   const state: State = {
     stakeUsd: 5e8, // $500M slice of restaked ETH allocated to one AI AVS
@@ -154,7 +164,7 @@ export default function mount(container: HTMLElement): () => void {
     presetWrap.appendChild(btn);
     presetBtns.set(p.id, btn);
   }
-  root.appendChild(presetWrap);
+  controlsSlot.appendChild(presetWrap);
 
   /* ---- Controls ---- */
   const controls = document.createElement('div');
@@ -190,7 +200,7 @@ export default function mount(container: HTMLElement): () => void {
     sliders.set(d.id, input);
     outputs.set(d.id, out);
   }
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Ledger ---- */
   const ledger = document.createElement('div');
@@ -234,7 +244,7 @@ export default function mount(container: HTMLElement): () => void {
   const fix = document.createElement('div');
   fix.className = 'cl-fix';
   ledger.appendChild(fix);
-  root.appendChild(ledger);
+  stage.appendChild(ledger);
 
   const note = document.createElement('div');
   note.className = 'cl-note';
@@ -243,7 +253,7 @@ export default function mount(container: HTMLElement): () => void {
   note.textContent =
     `secure ⇔ CoC ≥ PfC. EigenLayer slashing live ${eco.slashingLiveDate}; ~${usd(eco.restakedUsd)} restaked across ~${eco.operators.toLocaleString('en-US')} operators. ` +
     `EIGEN circulating cap ${usd(eig.circulatingMarketCapUsd)} (Blockscout, ${eig.holders.toLocaleString('en-US')} holders).`;
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Render ---- */
   function render() {
@@ -355,19 +365,13 @@ export default function mount(container: HTMLElement): () => void {
 
   render();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('cl-narrow', (entry?.contentRect.width ?? 600) < 560);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
+    layout.dispose();
     for (const s of sliders.values()) s.removeEventListener('input', onInput);
     for (const [id, btn] of presetBtns) {
       const h = presetHandlers.get(id);
       if (h) btn.removeEventListener('click', h);
     }
     style.remove();
-    root.remove();
   };
 }

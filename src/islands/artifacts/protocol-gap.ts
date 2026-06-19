@@ -12,8 +12,13 @@
  * Geometry is SVG stretched with preserveAspectRatio="none" (rectangles
  * survive non-uniform scaling; strokes use non-scaling-stroke); ALL text
  * is positioned DOM in fixed px so it stays legible on phones.
+ *
+ * Layout: shared responsive primitive (stage chart · panel legend+readout ·
+ * footer tabs · caption note). The four chart-switch tabs read as a
+ * full-width row under [stage | panel] in wide mode.
  */
 import data from '../../../content/artifacts/protocol-gap/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Bar {
   label: string;
@@ -84,17 +89,14 @@ export default function mount(container: HTMLElement): () => void {
 
   const mode = () => MODES[modeIdx]!;
 
-  const root = document.createElement('div');
-  root.className = 'pg-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .pg-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:6px;
-      padding:12px 16px 10px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .pg-top { display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap; }
     .pg-tabs { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .pg-tabs button { appearance:none; border:0; background:transparent; color:#5b6378;
@@ -102,14 +104,17 @@ export default function mount(container: HTMLElement): () => void {
       cursor:pointer; transition:color .2s, background .2s; white-space:nowrap; }
     .pg-tabs button[aria-pressed="true"] { background:rgba(91,140,255,.13); color:#e7eaf3; }
     .pg-tabs button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .pg-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:10px; color:#5b6378; }
+    .pg-legend { display:flex; gap:12px; flex-wrap:wrap;
+      font:500 10px/1.45 'JetBrains Mono', monospace; color:#5b6378; }
     .pg-legend i { display:inline-block; width:9px; height:9px; border-radius:2px;
       margin-right:5px; vertical-align:-1px; }
-    .pg-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px; }
-    .pg-stage { flex:1; min-height:150px; position:relative;
+    .pg-caption { font:500 10px/1.45 'JetBrains Mono', monospace;
+      color:#5b6378; letter-spacing:.03em; min-height:14px; }
+    .pg-chartwrap { position:absolute; inset:0;
+      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
       overflow:hidden; }
-    .pg-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .pg-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .pg-overlay { position:absolute; inset:0; pointer-events:none; }
     .pg-fade { transition:opacity .25s ease; }
     .pg-gridlabel { position:absolute; transform:translate(0,-50%); font-size:10px;
@@ -127,20 +132,14 @@ export default function mount(container: HTMLElement): () => void {
     .pg-hit { position:absolute; appearance:none; background:transparent; border:0;
       cursor:pointer; border-radius:6px; padding:0; }
     .pg-hit:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .pg-readout { min-height:30px; font-size:11px; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+    .pg-readout { min-height:30px; font:500 11px/1.45 'JetBrains Mono', monospace;
+      color:#8d95ad; font-variant-numeric:tabular-nums; }
     .pg-readout b { color:#e7eaf3; font-weight:600; }
     .pg-readout i { color:#22d3ee; font-style:normal; }
-    .pg-root.pg-narrow .pg-cat { font-size:8.5px; }
-    .pg-root.pg-narrow .pg-val { font-size:9.5px; }
-    .pg-root.pg-narrow .pg-caption { display:none; }
-    .pg-root.pg-narrow .pg-legend { display:none; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
-  /* ---- Tabs + legend ---- */
-  const top = document.createElement('div');
-  top.className = 'pg-top';
+  /* ---- Tabs (controls) ---- */
   const tabs = document.createElement('div');
   tabs.className = 'pg-tabs';
   tabs.setAttribute('role', 'group');
@@ -154,18 +153,15 @@ export default function mount(container: HTMLElement): () => void {
     tabs.appendChild(b);
     return b;
   });
-  const legend = document.createElement('div');
-  legend.className = 'pg-legend';
-  top.append(tabs, legend);
-  root.appendChild(top);
+  controlsSlot.appendChild(tabs);
 
-  const caption = document.createElement('div');
-  caption.className = 'pg-caption';
-  root.appendChild(caption);
+  const captionEl = document.createElement('div');
+  captionEl.className = 'pg-caption';
+  captionSlot.appendChild(captionEl);
 
   /* ---- Stage: SVG geometry + DOM text overlay + hit layer ---- */
-  const stage = document.createElement('div');
-  stage.className = 'pg-stage';
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'pg-chartwrap';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 100 100');
   svg.setAttribute('preserveAspectRatio', 'none');
@@ -174,8 +170,13 @@ export default function mount(container: HTMLElement): () => void {
   overlay.className = 'pg-overlay';
   const hits = document.createElement('div');
   hits.className = 'pg-hits';
-  stage.append(svg, overlay, hits);
-  root.appendChild(stage);
+  chartWrap.append(svg, overlay, hits);
+  stage.appendChild(chartWrap);
+
+  /* ---- Panel: legend + readout ---- */
+  const legend = document.createElement('div');
+  legend.className = 'pg-legend';
+  panel.appendChild(legend);
 
   /* Static grid */
   for (const v of [0, 0.2, 0.4, 0.6, 0.8]) {
@@ -209,7 +210,7 @@ export default function mount(container: HTMLElement): () => void {
 
   const readout = document.createElement('div');
   readout.className = 'pg-readout';
-  root.appendChild(readout);
+  panel.appendChild(readout);
 
   /* ---- Readout ---- */
   function setReadout(i: number) {
@@ -242,7 +243,7 @@ export default function mount(container: HTMLElement): () => void {
     barsGroup.replaceChildren();
     dynLabels.replaceChildren();
     hits.replaceChildren();
-    caption.textContent = m.title;
+    captionEl.textContent = m.title;
     legend.replaceChildren(
       ...(LEGENDS[m.id] ?? []).map((e) => {
         const s = document.createElement('span');
@@ -397,19 +398,14 @@ export default function mount(container: HTMLElement): () => void {
 
   build();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('pg-narrow', (entry?.contentRect.width ?? 600) < 480);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(raf);
-    ro.disconnect();
+    layout.dispose();
     hits.removeEventListener('pointerover', onOver);
     hits.removeEventListener('pointerout', onOut);
     hits.removeEventListener('pointerdown', onDown);
     hits.removeEventListener('focusin', onOver);
     hits.removeEventListener('focusout', onOut);
-    root.remove();
+    style.remove();
   };
 }

@@ -9,7 +9,16 @@
  * nullifier, replay it to watch the gate reject the collision with the real
  * contract error names, and roll the month to see the scope change reset the
  * quota. Quota scaled to 5 (vs 30 in the PBH docs) so the ledger fits.
+ *
+ * Layout: shared responsive primitive (stage = the gate/ledger diagram SVG;
+ * footer controls = send / replay / roll-month as real HTML buttons; panel =
+ * the status / quota / revert-error readout de-baked to HTML; caption = the
+ * interaction hint). The action buttons and the verdict/error readout were
+ * de-baked from the single SVG so they stay tappable and legible on portrait
+ * phones. All state, the spend/replay/roll machine, and the exact contract
+ * revert strings are preserved.
  */
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const NS = 'http://www.w3.org/2000/svg';
 const QUOTA = 5; // demo-scaled; PBH docs use 30/month
@@ -31,12 +40,16 @@ function el<K extends keyof SVGElementTagNameMap>(
 }
 
 export default function mount(container: HTMLElement): () => void {
-  const svg = el('svg', { viewBox: '0 0 800 450', preserveAspectRatio: 'xMidYMid meet' });
-  svg.style.cssText = 'width:100%;height:100%;display:block;';
-  container.appendChild(svg);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
-  const style = el('style');
+  const style = document.createElement('style');
   style.textContent = `
+    .ng-stage { position:absolute; inset:0; }
+    .ng-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .ng-panel { fill: #0d1322; stroke: rgba(124,140,255,0.18); }
     .ng-label { fill: #5b6378; font: 500 9px 'JetBrains Mono', monospace; letter-spacing: .14em; }
     .ng-value { fill: #8d95ad; font: 500 11px 'JetBrains Mono', monospace; }
@@ -52,21 +65,51 @@ export default function mount(container: HTMLElement): () => void {
     .ng-gate { stroke: rgba(124,140,255,0.35); stroke-width: 2; fill: none; transition: stroke .3s; }
     .ng-gate-ok { stroke: #22d3ee; }
     .ng-gate-bad { stroke: #f87171; }
-    .ng-verdict { font: 700 12px 'JetBrains Mono', monospace; opacity: 0; transition: opacity .3s; }
-    .ng-verdict-ok { fill: #22d3ee; }
-    .ng-verdict-bad { fill: #f87171; }
-    .ng-btn rect { fill: rgba(91,140,255,0.10); stroke: rgba(124,140,255,0.35); transition: fill .2s, stroke .2s; }
-    .ng-btn text { fill: #e7eaf3; font: 500 11px 'JetBrains Mono', monospace; }
-    .ng-btn { cursor: pointer; }
-    .ng-btn:hover rect, .ng-btn:focus-visible rect { fill: rgba(91,140,255,0.22); stroke: rgba(124,140,255,0.7); }
-    .ng-btn:focus-visible { outline: none; }
-    .ng-btn[aria-disabled="true"] { opacity: .35; cursor: default; }
     .ng-quota { fill: rgba(91,140,255,0.16); }
     .ng-quota-used { fill: #5b8cff; }
-    .ng-caption { fill: #8d95ad; font: 500 11px 'JetBrains Mono', monospace; }
     .ng-fine { fill: #5b6378; font: 500 8.5px 'JetBrains Mono', monospace; }
+
+    /* --- de-baked HTML controls (send / replay / roll-month) --- */
+    .ng-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .ng-controls button { appearance:none; border:1px solid rgba(124,140,255,.28);
+      background:rgba(91,140,255,.10); color:#e7eaf3; border-radius:8px;
+      font:500 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 14px;
+      cursor:pointer; transition:background .2s, border-color .2s; }
+    .ng-controls button:hover { background:rgba(91,140,255,.22); border-color:rgba(124,140,255,.7); }
+    .ng-controls button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
+    .ng-controls button[aria-disabled="true"] { opacity:.35; cursor:default; }
+
+    /* --- de-baked HTML readout (status / quota / revert error) --- */
+    .ng-readout { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .ng-verdict { min-height:18px; font:700 12px 'JetBrains Mono', monospace;
+      opacity:0; transition:opacity .3s; }
+    .ng-verdict.is-on { opacity:1; }
+    .ng-verdict.ng-ok { color:#22d3ee; }
+    .ng-verdict.ng-bad { color:#f87171; }
+    .ng-status { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad; line-height:1.5; }
+    .ng-meter { display:flex; flex-direction:column; gap:5px; }
+    .ng-meter-label { font:500 9px 'JetBrains Mono', monospace; color:#5b6378;
+      letter-spacing:.14em; }
+    .ng-cells { display:flex; gap:5px; }
+    .ng-cell { width:22px; height:9px; border-radius:2px; background:rgba(91,140,255,0.16);
+      transition:background .2s; }
+    .ng-cell.is-used { background:#5b8cff; }
+    .ng-fineprint { font:500 8.5px 'JetBrains Mono', monospace; color:#5b6378; }
+    .ng-caption { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad; }
   `;
-  svg.appendChild(style);
+  stage.appendChild(style);
+
+  /* ---------------- stage: the gate/ledger diagram SVG ---------------- */
+  const stageWrap = document.createElement('div');
+  stageWrap.className = 'ng-stage';
+  // Trimmed to the diagram: the action buttons (y 380–418), verdict (y 318)
+  // and caption (y 352) are now HTML, so the viewBox ends just below the
+  // quota fine print (y 300). Top trimmed to the first label (y 34).
+  const svg = el('svg', { viewBox: '0 20 800 290', preserveAspectRatio: 'xMidYMid meet' });
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Semaphore nullifier gate: identity tree, scope card, and spent-nullifier ledger');
+  stageWrap.appendChild(svg);
+  stage.appendChild(stageWrap);
 
   /* ---------- left: identity inside the tree ---------- */
   svg.appendChild(el('text', { x: 24, y: 34, class: 'ng-label' }, 'WORLD ID SET'));
@@ -150,29 +193,61 @@ export default function mount(container: HTMLElement): () => void {
   }
   svg.appendChild(el('text', { x: 556, y: 300, class: 'ng-fine' }, 'live mainnet config: 65,535/month'));
 
-  // verdict text
-  const verdict = el('text', { x: gateX, y: 318, class: 'ng-verdict', 'text-anchor': 'middle' }, '');
-  svg.appendChild(verdict);
+  /* ---------------- controls: send / replay / roll-month (HTML) ---------------- */
+  const controls = document.createElement('div');
+  controls.className = 'ng-controls';
+  const mkButton = (text: string, aria: string): HTMLButtonElement => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', aria);
+    b.textContent = text;
+    controls.appendChild(b);
+    return b;
+  };
+  const sendBtn = mkButton('⬢ send transaction', 'Send a PBH transaction with the next nonce');
+  const replayBtn = mkButton('↻ replay last proof', 'Replay the last spent proof');
+  const monthBtn = mkButton('month ▸', 'Advance to the next month');
+  controlsSlot.appendChild(controls);
 
-  // caption
-  const caption = el('text', { x: 400, y: 352, class: 'ng-caption', 'text-anchor': 'middle' },
-    'send a transaction — each one spends a fresh nullifier');
-  svg.appendChild(caption);
+  /* ---------------- panel: status / quota / revert-error readout (HTML) ---------------- */
+  const readout = document.createElement('div');
+  readout.className = 'ng-readout';
 
-  /* ---------- buttons ---------- */
-  interface Btn { g: SVGGElement; }
-  function button(x: number, w: number, text: string, aria: string): Btn {
-    const g = el('g', { class: 'ng-btn', tabindex: 0, role: 'button', 'aria-label': aria });
-    g.append(
-      el('rect', { x, y: 380, width: w, height: 38, rx: 8 }),
-      el('text', { x: x + w / 2, y: 404, 'text-anchor': 'middle' }, text),
-    );
-    svg.appendChild(g);
-    return { g };
+  const verdict = document.createElement('div');
+  verdict.className = 'ng-verdict';
+  verdict.setAttribute('role', 'status');
+  verdict.setAttribute('aria-live', 'polite');
+
+  const status = document.createElement('div');
+  status.className = 'ng-status';
+
+  const meter = document.createElement('div');
+  meter.className = 'ng-meter';
+  const meterLabel = document.createElement('div');
+  meterLabel.className = 'ng-meter-label';
+  meterLabel.textContent = `QUOTA (DEMO: ${QUOTA}/MONTH)`;
+  const cellsWrap = document.createElement('div');
+  cellsWrap.className = 'ng-cells';
+  const cells: HTMLDivElement[] = [];
+  for (let i = 0; i < QUOTA; i++) {
+    const c = document.createElement('div');
+    c.className = 'ng-cell';
+    cellsWrap.appendChild(c);
+    cells.push(c);
   }
-  const sendBtn = button(96, 190, '⬢ send transaction', 'Send a PBH transaction with the next nonce');
-  const replayBtn = button(306, 190, '↻ replay last proof', 'Replay the last spent proof');
-  const monthBtn = button(516, 190, 'month ▸', 'Advance to the next month');
+  const fineprint = document.createElement('div');
+  fineprint.className = 'ng-fineprint';
+  fineprint.textContent = 'live mainnet config: 65,535/month';
+  meter.append(meterLabel, cellsWrap, fineprint);
+
+  readout.append(verdict, status, meter);
+  panel.appendChild(readout);
+
+  /* ---------------- caption: interaction hint ---------------- */
+  const caption = document.createElement('div');
+  caption.className = 'ng-caption';
+  caption.textContent = 'send a transaction — each one spends a fresh nullifier';
+  captionSlot.appendChild(caption);
 
   /* ---------- state & animation ---------- */
   let nonce = 0;
@@ -188,19 +263,18 @@ export default function mount(container: HTMLElement): () => void {
   };
 
   function syncButtons() {
-    sendBtn.g.setAttribute('aria-disabled', String(busy));
-    replayBtn.g.setAttribute('aria-disabled', String(busy || lastHash === null));
-    monthBtn.g.setAttribute('aria-disabled', String(busy));
+    sendBtn.setAttribute('aria-disabled', String(busy));
+    replayBtn.setAttribute('aria-disabled', String(busy || lastHash === null));
+    monthBtn.setAttribute('aria-disabled', String(busy));
   }
 
   function showVerdict(ok: boolean, text: string) {
     verdict.textContent = text;
-    verdict.setAttribute('class', `ng-verdict ${ok ? 'ng-verdict-ok' : 'ng-verdict-bad'}`);
-    verdict.style.opacity = '1';
+    verdict.className = `ng-verdict is-on ${ok ? 'ng-ok' : 'ng-bad'}`;
     gateLine.classList.remove('ng-gate-ok', 'ng-gate-bad');
     gateLine.classList.add(ok ? 'ng-gate-ok' : 'ng-gate-bad');
     later(() => {
-      verdict.style.opacity = '0';
+      verdict.classList.remove('is-on');
       gateLine.classList.remove('ng-gate-ok', 'ng-gate-bad');
     }, 2000);
   }
@@ -257,6 +331,7 @@ export default function mount(container: HTMLElement): () => void {
     }
     lastHash = hash;
     fly(hash, true, ledger.length, () => {
+      cells[nonce]?.classList.add('is-used');
       quotaCells[nonce]?.classList.add('ng-quota-used');
       nonce += 1;
       showVerdict(true, 'included top-of-block ✓');
@@ -300,6 +375,7 @@ export default function mount(container: HTMLElement): () => void {
       for (const chip of ledger) chip.remove();
       ledger.length = 0;
       for (const c of quotaCells) c.classList.remove('ng-quota-used');
+      for (const c of cells) c.classList.remove('is-used');
       showVerdict(true, 'new scope — quota reset, all nullifiers fresh');
       caption.textContent = 'a new month is a new external nullifier: same secrets, brand-new hashes';
       busy = false;
@@ -308,32 +384,21 @@ export default function mount(container: HTMLElement): () => void {
   }
 
   /* ---------- events ---------- */
-  const actions = new Map<SVGGElement, () => void>([
-    [sendBtn.g, send],
-    [replayBtn.g, replay],
-    [monthBtn.g, nextMonth],
-  ]);
-  const onClick = (e: Event) => {
-    const g = (e.target as Element).closest<SVGGElement>('.ng-btn');
-    if (g) actions.get(g)?.();
-  };
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const g = (e.target as Element).closest<SVGGElement>('.ng-btn');
-    if (g) {
-      e.preventDefault();
-      actions.get(g)?.();
-    }
-  };
-  svg.addEventListener('click', onClick);
-  svg.addEventListener('keydown', onKey);
+  const onSend = () => send();
+  const onReplay = () => replay();
+  const onMonth = () => nextMonth();
+  sendBtn.addEventListener('click', onSend);
+  replayBtn.addEventListener('click', onReplay);
+  monthBtn.addEventListener('click', onMonth);
   syncButtons();
 
   return () => {
     timeouts.forEach((id) => clearTimeout(id));
     rafs.forEach((id) => cancelAnimationFrame(id));
-    svg.removeEventListener('click', onClick);
-    svg.removeEventListener('keydown', onKey);
-    svg.remove();
+    sendBtn.removeEventListener('click', onSend);
+    replayBtn.removeEventListener('click', onReplay);
+    monthBtn.removeEventListener('click', onMonth);
+    layout.dispose();
+    style.remove();
   };
 }

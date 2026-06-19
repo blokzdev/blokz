@@ -11,8 +11,13 @@
  * E[log wealth] over the FPMM curve, the same sizing Olas trader agents
  * run). FPMM math: buy s on outcome i with net amount a keeps the pool
  * product constant: s = b_i + a − b_i·b_j/(b_j + a). No runtime fetches.
+ *
+ * Layout: shared responsive primitive (stage = question + P(YES) chart +
+ * trade line · panel = execution readout · controls = your-turn sliders +
+ * kelly · caption = exact-math note; rail in wide mode).
  */
 import data from '../../../content/artifacts/fpmm-bet-machine/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const FEE = data.market.feePct / 100;
 const SEED = data.market.seedLiquidity;
@@ -74,15 +79,22 @@ const short = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 const hhmm = (iso: string) => `${iso.slice(11, 16)} UTC`;
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'bm-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'rail',
+    stageMin: 'clamp(210px, 56vw, 350px)',
+    stageFr: '1.4fr',
+  });
+  const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
+  stage.classList.add('bm-stage');
+  panelSlot.classList.add('bm-slot');
+  controlsSlot.classList.add('bm-slot');
+  caption.classList.add('bm-slot');
 
   const style = document.createElement('style');
   style.textContent = `
-    .bm-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:9px;
-      padding:13px 16px; overflow-y:auto; background:#05070d;
+    .bm-stage { display:flex; flex-direction:column; gap:9px; min-width:0;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .bm-slot { min-width:0; font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .bm-q { font-size:10.5px; color:#5b6378; letter-spacing:.03em; }
     .bm-q b { color:#e7eaf3; font-weight:600; }
     .bm-chartwrap { position:relative; height:148px; flex:none;
@@ -101,8 +113,6 @@ export default function mount(container: HTMLElement): () => void {
       box-shadow:0 0 7px rgba(255,194,75,.8); pointer-events:none; }
     .bm-trade { font-size:10.5px; color:#8d95ad; min-height:1.5em; }
     .bm-trade b { color:#e7eaf3; }
-    .bm-grid { display:grid; grid-template-columns:5fr 4fr; gap:10px; }
-    .bm-root.bm-narrow .bm-grid { grid-template-columns:1fr; }
     .bm-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; display:flex; flex-direction:column; gap:7px; }
     .bm-panel h3 { margin:0; font:700 10px 'JetBrains Mono', monospace;
@@ -124,7 +134,7 @@ export default function mount(container: HTMLElement): () => void {
     .bm-out dd.bm-neg { color:#f0709b; }
     .bm-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.04em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Header ---- */
   const q = document.createElement('div');
@@ -137,7 +147,7 @@ export default function mount(container: HTMLElement): () => void {
     ` — live Omen market on Gnosis, created ${data.market.createdAt.slice(0, 10)}, ` +
       `${SEED.toFixed(0)}+${SEED.toFixed(0)} wxDAI seed, ${data.market.feePct}% fee`,
   );
-  root.appendChild(q);
+  stage.appendChild(q);
 
   /* ---- Price chart ---- */
   const NS = 'http://www.w3.org/2000/svg';
@@ -221,15 +231,13 @@ export default function mount(container: HTMLElement): () => void {
   const you = document.createElement('div');
   you.className = 'bm-you';
   chartWrap.appendChild(you);
-  root.appendChild(chartWrap);
+  stage.appendChild(chartWrap);
 
   const tradeLine = document.createElement('div');
   tradeLine.className = 'bm-trade';
-  root.appendChild(tradeLine);
+  stage.appendChild(tradeLine);
 
   /* ---- Bet panel ---- */
-  const grid = document.createElement('div');
-  grid.className = 'bm-grid';
   const panel = document.createElement('div');
   panel.className = 'bm-panel';
   const h3 = document.createElement('h3');
@@ -271,7 +279,7 @@ export default function mount(container: HTMLElement): () => void {
   kellyBtn.className = 'bm-kelly';
   kellyBtn.textContent = 'size like an agent (kelly)';
   panel.appendChild(kellyBtn);
-  grid.appendChild(panel);
+  controlsSlot.appendChild(panel);
 
   /* ---- Results ---- */
   const outPanel = document.createElement('div');
@@ -296,14 +304,13 @@ export default function mount(container: HTMLElement): () => void {
     dds.push(dd);
   }
   outPanel.append(oh3, dl);
-  grid.appendChild(outPanel);
-  root.appendChild(grid);
+  panelSlot.appendChild(outPanel);
 
   const note = document.createElement('div');
   note.className = 'bm-note';
   note.textContent =
     'exact contract math: 1% fee, then constant pool product. replayed bets match on-chain shares to the wei.';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Recompute ---- */
   function select(k: number) {
@@ -383,16 +390,10 @@ export default function mount(container: HTMLElement): () => void {
   kellyBtn.addEventListener('click', onKelly);
   select(states.length - 1);
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('bm-narrow', (entry?.contentRect.width ?? 600) < 560);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
+    layout.dispose();
     for (const s of sliders.values()) s.removeEventListener('input', onInput);
     kellyBtn.removeEventListener('click', onKelly);
     style.remove();
-    root.remove();
   };
 }

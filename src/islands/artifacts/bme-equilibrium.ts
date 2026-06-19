@@ -9,7 +9,12 @@
  * two flows, finds the equilibrium point where burn = mint, and shows how far
  * a given demand level sits from it. Sliders are native inputs (keyboard
  * accessible); no RAF loop — renders only on input.
+ *
+ * Layout: shared responsive primitive (stage burn-vs-mint bars · panel burn/mint
+ * breakdown + verdict · footer controls demand/price sliders + Salad toggle ·
+ * caption provenance note).
  */
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 const MINT_BASE = 492_132; // RENDER/month, current emission line (RNP-023)
 const MINT_SALAD = 88_240; // RENDER/month added for Salad chef rewards
@@ -21,18 +26,25 @@ const fmt = (n: number, digits = 0) =>
 const usd = (n: number) => `$${fmt(n)}`;
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'bme-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(210px, 56vw, 350px)',
+  });
+  const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
+  stage.classList.add('bme-stagewrap');
+  panelSlot.classList.add('bme-panelwrap');
+  controlsSlot.classList.add('bme-controlswrap');
+  caption.classList.add('bme-captionwrap');
 
   const style = document.createElement('style');
   style.textContent = `
-    .bme-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
-      padding:14px 16px; overflow-y:auto; background:#05070d;
+    .bme-stagewrap, .bme-panelwrap, .bme-controlswrap, .bme-captionwrap {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .bme-stagewrap { display:flex; flex-direction:column; min-width:0; }
+    .bme-panelwrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
+    .bme-controlswrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
     .bme-controls { display:grid; grid-template-columns:1fr 1fr auto; gap:8px 14px;
       align-items:end; }
-    .bme-root.bme-narrow .bme-controls { grid-template-columns:1fr 1fr; }
     .bme-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .bme-field output { color:#e7eaf3; font-size:11px; }
@@ -45,7 +57,6 @@ export default function mount(container: HTMLElement): () => void {
     .bme-toggle:has(input:checked) { color:#e7eaf3; border-color:rgba(34,211,238,.5);
       background:rgba(34,211,238,.08); }
     .bme-toggle input { accent-color:#22d3ee; cursor:pointer; }
-    .bme-root.bme-narrow .bme-toggle { grid-column:1 / -1; justify-content:center; }
     .bme-barwrap { border:1px solid rgba(124,140,255,.14);
       border-radius:12px; background:#0d1322; padding:12px 14px 8px; }
     .bme-stage { position:relative; }
@@ -57,7 +68,7 @@ export default function mount(container: HTMLElement): () => void {
     .bme-eqlabel { position:absolute; top:50%; transform:translate(-50%,-50%);
       font-size:9px; color:#8d95ad; pointer-events:none; white-space:nowrap; }
     .bme-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .bme-root.bme-narrow .bme-panels { grid-template-columns:1fr; }
+    .bme-panelwrap.bme-narrow .bme-panels { grid-template-columns:1fr; }
     .bme-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:10px 12px; background:#0d1322; }
     .bme-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
@@ -74,7 +85,7 @@ export default function mount(container: HTMLElement): () => void {
     .bme-verdict .bme-deflate { color:#22d3ee; }
     .bme-note { text-align:center; font-size:9.5px; color:#5b6378; letter-spacing:.04em; }
   `;
-  root.appendChild(style);
+  stage.appendChild(style);
 
   /* ---- Controls ---- */
   const controls = document.createElement('div');
@@ -119,28 +130,28 @@ export default function mount(container: HTMLElement): () => void {
   toggleInput.setAttribute('aria-label', 'include RNP-023 Salad flows');
   toggle.append(toggleInput, document.createTextNode('rnp-023 salad flows'));
   controls.appendChild(toggle);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   /* ---- Burn vs mint bars ---- */
   const NS = 'http://www.w3.org/2000/svg';
   const barWrap = document.createElement('div');
   barWrap.className = 'bme-barwrap';
-  const stage = document.createElement('div');
-  stage.className = 'bme-stage';
+  const stageInner = document.createElement('div');
+  stageInner.className = 'bme-stage';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 600 96');
   svg.setAttribute('preserveAspectRatio', 'none');
   svg.setAttribute('aria-hidden', 'true');
-  stage.appendChild(svg);
-  barWrap.appendChild(stage);
-  root.appendChild(barWrap);
+  stageInner.appendChild(svg);
+  barWrap.appendChild(stageInner);
+  stage.appendChild(barWrap);
 
   const mkStageLabel = (css: string, color: string, text = '') => {
     const div = document.createElement('div');
     div.className = 'bme-stagelabel';
     div.style.cssText = css + `color:${color};`;
     div.textContent = text;
-    stage.appendChild(div);
+    stageInner.appendChild(div);
     return div;
   };
 
@@ -175,7 +186,7 @@ export default function mount(container: HTMLElement): () => void {
   const eqLabel = document.createElement('div');
   eqLabel.className = 'bme-eqlabel';
   eqLabel.textContent = 'equilibrium';
-  stage.appendChild(eqLabel);
+  stageInner.appendChild(eqLabel);
 
   /* ---- Panels ---- */
   const panels = document.createElement('div');
@@ -208,17 +219,17 @@ export default function mount(container: HTMLElement): () => void {
     'usd value of emissions',
     'demand needed for equilibrium',
   ]);
-  root.appendChild(panels);
+  panelSlot.appendChild(panels);
 
   const verdict = document.createElement('div');
   verdict.className = 'bme-verdict';
-  root.appendChild(verdict);
+  panelSlot.appendChild(verdict);
 
   const note = document.createElement('div');
   note.className = 'bme-note';
   note.textContent =
     'constants from RNP-023: 492,132 RENDER/mo emissions; Salad toggle adds 88,240 RENDER/mo rewards and ~$191k/mo burn demand (60%/35% of projected SCE/SGS revenue). burned = demand ÷ price; the mint side never sees the price.';
-  root.appendChild(note);
+  caption.appendChild(note);
 
   /* ---- Recompute + render ---- */
   function render() {
@@ -274,18 +285,18 @@ export default function mount(container: HTMLElement): () => void {
   toggleInput.addEventListener('input', onInput);
   render();
 
-  // Compact layout below ~560px stage width.
+  // Stack the two breakdown panels when the panel column is narrow.
   const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('bme-narrow', (entry?.contentRect.width ?? 600) < 560);
+    panelSlot.classList.toggle('bme-narrow', (entry?.contentRect.width ?? 600) < 360);
   });
-  ro.observe(container);
+  ro.observe(panelSlot);
 
   return () => {
     ro.disconnect();
+    layout.dispose();
     demand.input.removeEventListener('input', onInput);
     price.input.removeEventListener('input', onInput);
     toggleInput.removeEventListener('input', onInput);
     style.remove();
-    root.remove();
   };
 }

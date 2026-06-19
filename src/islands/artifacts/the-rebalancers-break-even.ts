@@ -13,7 +13,13 @@
  * read on-chain via Blockscout (data.json): supplyRate = U·borrowRate·(1-RF),
  * borrowRate kinked at U_optimal=90% (slope1 4.5%, slope2 10%). Native-input
  * sliders, keyboard accessible; renders on input, no RAF loop.
+ *
+ * Layout: shared createArtifactLayout primitive. stage = kinked-curve chart +
+ * verdict, panel = rate-impact/economics readouts, controls = input sliders,
+ * caption = provenance note. wideTemplate 'footer' — sliders span full width
+ * under [stage | panel].
  */
+import { createArtifactLayout } from '../../lib/artifact-layout';
 import data from '../../../content/artifacts/the-rebalancers-break-even/data.json';
 
 const C = data.curve;
@@ -70,16 +76,17 @@ const fmtDays = (d: number) => {
 };
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'rbe-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(210px, 56vw, 350px)',
+  });
 
   const style = document.createElement('style');
   style.textContent = `
-    .rbe-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:9px;
-      padding:13px 15px; overflow-y:auto; background:#05070d;
+    .rbe-stage { display:flex; flex-direction:column; gap:9px;
+      background:#05070d; font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .rbe-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px 16px;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .rbe-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px 16px; }
     .rbe-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
     .rbe-field output { color:#e7eaf3; font-size:11px; font-variant-numeric:tabular-nums; }
@@ -88,15 +95,14 @@ export default function mount(container: HTMLElement): () => void {
     .rbe-field.rbe-dest input { accent-color:#22d3ee; }
     .rbe-stagewrap { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       background:#0d1322; padding:10px 12px 6px; }
-    .rbe-stage { position:relative; }
-    .rbe-stage svg { width:100%; height:172px; display:block; }
+    .rbe-svgbox { position:relative; }
+    .rbe-svgbox svg { width:100%; height:172px; display:block; }
     .rbe-lab { position:absolute; transform:translate(-50%,-50%); font-size:9.5px;
       pointer-events:none; white-space:nowrap; font-variant-numeric:tabular-nums; }
     .rbe-axis { position:absolute; font-size:8.5px; color:#5b6378; pointer-events:none;
       white-space:nowrap; letter-spacing:.04em; }
-    .rbe-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .rbe-root.rbe-narrow .rbe-controls { grid-template-columns:1fr; }
-    .rbe-root.rbe-narrow .rbe-panels { grid-template-columns:1fr; }
+    .rbe-panels { display:grid; grid-template-columns:1fr; gap:10px;
+      font:500 12px/1.45 'JetBrains Mono', monospace; }
     .rbe-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
       padding:9px 12px; background:#0d1322; }
     .rbe-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
@@ -114,13 +120,13 @@ export default function mount(container: HTMLElement): () => void {
     .rbe-verdict.rbe-move b { color:#22d3ee; }
     .rbe-verdict.rbe-hold b { color:#ff7a8a; }
     .rbe-note { text-align:center; font-size:9px; color:#5b6378; letter-spacing:.03em;
-      line-height:1.5; }
+      line-height:1.5; font:500 9px/1.5 'JetBrains Mono', monospace; }
   `;
-  root.appendChild(style);
+  container.appendChild(style);
 
   /* ---- Controls ---- */
-  const controls = document.createElement('div');
-  controls.className = 'rbe-controls';
+  const controls = layout.controls;
+  controls.className += ' rbe-controls';
   const mkSlider = (
     id: string,
     label: string,
@@ -156,21 +162,22 @@ export default function mount(container: HTMLElement): () => void {
   const destApy = mkSlider('dest', 'destination quoted apy', 0.01, 0.06, 0.0005, 0.036, true);
   const destDepth = mkSlider('depth', 'destination pool depth', 1_000_000, 200_000_000, 500_000, 20_000_000, true);
   const srcApy = mkSlider('src', 'your current apy', 0, 0.06, 0.0005, 0.03);
-  root.appendChild(controls);
 
   /* ---- Curve stage ---- */
+  const stageRoot = layout.stage;
+  stageRoot.className += ' rbe-stage';
   const NS = 'http://www.w3.org/2000/svg';
   const stageWrap = document.createElement('div');
   stageWrap.className = 'rbe-stagewrap';
   const stage = document.createElement('div');
-  stage.className = 'rbe-stage';
+  stage.className = 'rbe-svgbox';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 600 172');
   svg.setAttribute('preserveAspectRatio', 'none');
   svg.setAttribute('aria-hidden', 'true');
   stage.appendChild(svg);
   stageWrap.appendChild(stage);
-  root.appendChild(stageWrap);
+  stageRoot.appendChild(stageWrap);
 
   // Plot window: utilization 0.55..1.0 (x), supply APY 0..0.06 (y).
   const U_LO = 0.55,
@@ -269,8 +276,8 @@ export default function mount(container: HTMLElement): () => void {
   stage.appendChild(axY);
 
   /* ---- Readout panels ---- */
-  const panels = document.createElement('div');
-  panels.className = 'rbe-panels';
+  const panels = layout.panel;
+  panels.className += ' rbe-panels';
   const mkPanel = (cls: string, title: string, rows: string[]) => {
     const panel = document.createElement('div');
     panel.className = `rbe-panel ${cls}`;
@@ -299,17 +306,15 @@ export default function mount(container: HTMLElement): () => void {
     'extra yield / yr',
     'gas break-even',
   ]);
-  root.appendChild(panels);
 
   const verdict = document.createElement('div');
   verdict.className = 'rbe-verdict';
-  root.appendChild(verdict);
+  stageRoot.appendChild(verdict);
 
-  const note = document.createElement('div');
-  note.className = 'rbe-note';
+  const note = layout.caption;
+  note.className += ' rbe-note';
   note.textContent =
     'destination curve = live Aave V3 USDC on Base (U* 90%, slope1 4.5%, slope2 10%, RF 10%), read on-chain — the real pool is $176M deep at 84% utilization, 3.17% supply. gas $0.05≈Base, ~$8≈Ethereum L1.';
-  root.appendChild(note);
 
   /* ---- Recompute + render ---- */
   function render() {
@@ -398,15 +403,9 @@ export default function mount(container: HTMLElement): () => void {
   for (const i of inputs) i.addEventListener('input', onInput);
   render();
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('rbe-narrow', (entry?.contentRect.width ?? 600) < 540);
-  });
-  ro.observe(container);
-
   return () => {
-    ro.disconnect();
     for (const i of inputs) i.removeEventListener('input', onInput);
     style.remove();
-    root.remove();
+    layout.dispose();
   };
 }

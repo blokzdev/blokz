@@ -24,8 +24,13 @@
  * precision; the measured anchors live in ./data.json.
  *
  * Pure DOM + inline SVG, no deps. Reduced motion handled by ArtifactMount.
+ *
+ * Layout: shared responsive primitive (stage comparison · panel split-K strip ·
+ * footer controls toggle+slider · caption anchor). Reduced motion handled by
+ * ArtifactMount.
  */
 import data from '../../../content/artifacts/byte-equality-gate/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 // --- the honest example -----------------------------------------------------
 // Eight contributions to d = logit("Queens, New York") − logit("New York City").
@@ -76,14 +81,15 @@ const fmtTerm = (v: number): string =>
   Math.abs(v) >= 1e6 ? (v < 0 ? '−' : '+') + Math.abs(v).toExponential(3) : (v < 0 ? '−' : '+') + Math.abs(v).toFixed(3);
 
 export default function mount(container: HTMLElement): () => void {
-  const root = document.createElement('div');
-  root.className = 'beg-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .beg-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:11px;
-      padding:13px 15px; overflow-y:auto; background:#05070d;
+    .beg-stage { display:flex; flex-direction:column; gap:11px;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .beg-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
       flex-wrap:wrap; }
@@ -112,7 +118,6 @@ export default function mount(container: HTMLElement): () => void {
       font-variant-numeric:tabular-nums; }
 
     .beg-tracks { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .beg-root.beg-narrow .beg-tracks { grid-template-columns:1fr; }
     .beg-tk-card { border:1px solid rgba(124,140,255,.14); border-radius:10px; padding:9px 11px;
       background:#0a0f1c; display:flex; flex-direction:column; gap:6px; min-width:0; }
     .beg-tk-card.beg-op { box-shadow:inset 0 0 0 1px rgba(124,140,255,.06); }
@@ -173,7 +178,8 @@ export default function mount(container: HTMLElement): () => void {
     .beg-ref a { color:#22d3ee; text-decoration:none; }
     .beg-ref a:hover { text-decoration:underline; }
   `;
-  root.appendChild(style);
+  stage.className += ' beg-stage';
+  stage.appendChild(style);
 
   // -------------------------------------------------------------- state
   let opSplit = 6; // start on a divergent split so the gate opens red
@@ -199,7 +205,7 @@ export default function mount(container: HTMLElement): () => void {
   sw.setAttribute('aria-label', 'Batch-invariant kernels');
   toggleWrap.append(toggleLbl, sw);
   head.append(title, toggleWrap);
-  root.appendChild(head);
+  stage.appendChild(head);
 
   // prompt line
   const prompt = document.createElement('div');
@@ -207,7 +213,7 @@ export default function mount(container: HTMLElement): () => void {
   prompt.innerHTML =
     `prompt <b>"${data.feynman.prompt}"</b> · greedy · next token after ` +
     `<span class="beg-tk">"…${data.feynman.sharedPrefix}"</span>`;
-  root.appendChild(prompt);
+  stage.appendChild(prompt);
 
   // contributions
   const terms = document.createElement('div');
@@ -222,7 +228,7 @@ export default function mount(container: HTMLElement): () => void {
     c.textContent = fmtTerm(t);
     terms.appendChild(c);
   }
-  root.appendChild(terms);
+  stage.appendChild(terms);
 
   // tracks
   const tracks = document.createElement('div');
@@ -248,7 +254,7 @@ export default function mount(container: HTMLElement): () => void {
   };
   const verifierT = mkTrack('verifier · re-execute', false);
   const operatorT = mkTrack('operator · production', true);
-  root.appendChild(tracks);
+  stage.appendChild(tracks);
 
   // gate
   const gate = document.createElement('div');
@@ -268,7 +274,7 @@ export default function mount(container: HTMLElement): () => void {
   const digVer = document.createElement('div');
   digests.append(digVer, digOp);
   gate.append(gateIcon, gateBody, digests);
-  root.appendChild(gate);
+  stage.appendChild(gate);
 
   // strip
   const stripWrap = document.createElement('div');
@@ -296,7 +302,7 @@ export default function mount(container: HTMLElement): () => void {
     cells.push({ cell, mark });
   }
   stripWrap.append(stripH, strip);
-  root.appendChild(stripWrap);
+  panel.appendChild(stripWrap);
 
   // controls
   const controls = document.createElement('div');
@@ -318,7 +324,7 @@ export default function mount(container: HTMLElement): () => void {
   slider.value = String(opSplit);
   field.append(flab, slider);
   controls.appendChild(field);
-  root.appendChild(controls);
+  controlsSlot.appendChild(controls);
 
   // ref
   const ref = document.createElement('div');
@@ -332,7 +338,7 @@ export default function mount(container: HTMLElement): () => void {
     `match same-GPU, <b>${data.eigenai.crossArchMatchPct}%</b> cross-arch. ` +
     `<a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/" target="_blank" rel="noopener">Thinking Machines ↗</a> · ` +
     `<a href="https://arxiv.org/abs/2602.00182" target="_blank" rel="noopener">EigenAI ↗</a>`;
-  root.appendChild(ref);
+  caption.appendChild(ref);
 
   // -------------------------------------------------------------- render
   function tokenClass(tok: string): string {
@@ -437,20 +443,14 @@ export default function mount(container: HTMLElement): () => void {
   };
   for (const { cell } of cells) cell.addEventListener('click', onCell);
 
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('beg-narrow', (entry?.contentRect.width ?? 700) < 480);
-  });
-  ro.observe(container);
-
   render();
 
   return () => {
-    ro.disconnect();
+    layout.dispose();
     slider.removeEventListener('input', onSlide);
     sw.removeEventListener('click', onToggle);
     sw.removeEventListener('keydown', onSwKey);
     for (const { cell } of cells) cell.removeEventListener('click', onCell);
     style.remove();
-    root.remove();
   };
 }

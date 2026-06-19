@@ -1,0 +1,15 @@
+{
+  "slug": "forfeit-window",
+  "title": "The Forfeit Window",
+  "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it, the priority mech delivers and gains Karma; past it, a backup mech delivers, the priority mech forfeits the fee and loses Karma. Real Olas marketplace constants.",
+  "pubDate": "2026-06-19",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "agents",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

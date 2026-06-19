@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 36,
-    "artifacts": 37
+    "articles": 37,
+    "artifacts": 38
   },
   "topicCounts": {
-    "agents": 14,
+    "agents": 15,
     "ai": 4,
     "blockchain": 10,
     "cryptography": 4,
@@ -15,12 +15,29 @@
     "machine-learning": 17,
     "research": 1,
     "security": 14,
-    "smart-contracts": 6,
+    "smart-contracts": 7,
     "tokenomics": 2,
-    "web3": 3,
+    "web3": 4,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "agents-hiring-agents-mech-marketplace",
+      "path": "content/articles/2026/06/agents-hiring-agents-mech-marketplace/index.mdx",
+      "url": "/articles/agents-hiring-agents-mech-marketplace",
+      "title": "Agents Hiring Agents: The On-Chain SLA Inside Olas's Mech Marketplace",
+      "description": "Olas turned an off-chain AI task into an on-chain contract: 2.1M requests across 100 mechs, a 60-300s priority window, and a Karma ledger that punishes no-shows. We read the marketplace off Gnosis and dissect its crypto-economic SLA.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "allora-context-aware-inference-synthesis",
       "path": "content/articles/2026/06/allora-context-aware-inference-synthesis/index.mdx",
@@ -1005,6 +1022,22 @@
         "machine-learning",
         "security",
         "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "forfeit-window",
+      "path": "content/artifacts/forfeit-window/manifest.json",
+      "module": "src/islands/artifacts/forfeit-window.ts",
+      "url": "/artifacts/forfeit-window",
+      "title": "The Forfeit Window",
+      "description": "A single mech request, drivable: drag the priority mech's response time across the 60-300s window. Inside it, the priority mech delivers and gains Karma; past it, a backup mech delivers, the priority mech forfeits the fee and loses Karma. Real Olas marketplace constants.",
+      "pubDate": "2026-06-19",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "smart-contracts"
       ],
       "draft": false
     },

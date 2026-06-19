@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "sizeUSD": 173000,
+    "bonusPct": 0.07,
+    "competition": 0.85
+  },
+  "recapture": {
+    "rate": 0.73,
+    "protocolSplit": 0.65,
+    "oracleSplit": 0.35,
+    "privateBuilderShare": 0.1
+  },
+  "svr": {
+    "liquidationsUSD": 675000000,
+    "events": 3900,
+    "recapturedUSD": 16000000,
+    "protocolSharePct": 0.65,
+    "avgRecaptureOfOev": 0.73,
+    "integratedOn": "2025-03-24",
+    "asOf": "2026-02-05"
+  },
+  "aave": {
+    "lifetimeLiquidationsUSD": 4650000000,
+    "lifetimeEvents": 310000,
+    "ethSharePct": 0.75,
+    "feb2026SelloffUSD": 429000000
+  },
+  "notes": "Prize = liquidation bonus on seized collateral (~debt repaid x bonus). SVR cumulative figures from Aave's historical-liquidations report through early Feb 2026: $675M routed across ~3,900 events recaptured ~$16M (~2.4% of notional, ~73% of available OEV), split 65/35 protocol/oracle. Recapture rate, splits and the private-builder backrun share are the artifact's regime parameters."
+}

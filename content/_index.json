@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 32,
-    "artifacts": 33
+    "articles": 33,
+    "artifacts": 34
   },
   "topicCounts": {
-    "agents": 12,
+    "agents": 13,
     "ai": 3,
     "blockchain": 10,
     "cryptography": 3,
     "data": 3,
-    "defi": 7,
-    "infrastructure": 13,
+    "defi": 8,
+    "infrastructure": 14,
     "llm": 7,
     "machine-learning": 15,
     "research": 1,
@@ -71,6 +71,32 @@
       "artifacts": [
         "the-dilution-myth",
         "merkle-cascade"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-sandwich-tax-on-autonomous-agents",
+      "path": "content/articles/2026/06/the-sandwich-tax-on-autonomous-agents/index.mdx",
+      "url": "/articles/the-sandwich-tax-on-autonomous-agents",
+      "title": "The Sandwich Tax on Autonomous Agents",
+      "description": "An autonomous agent that swaps in the open broadcasts its intent to every searcher in the mempool. We solve the optimal sandwich on a live Base pool, show why an agent's slippage default is the searcher's profit knob, and price the defenses.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "defi",
+        "agents",
+        "infrastructure"
+      ],
+      "tags": [
+        "mev",
+        "sandwich-attack",
+        "frontrunning",
+        "private-orderflow",
+        "encrypted-mempool",
+        "amm"
+      ],
+      "artifacts": [
+        "sandwich-simulator"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -884,6 +910,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "sandwich-simulator",
+      "path": "content/artifacts/sandwich-simulator/manifest.json",
+      "module": "src/islands/artifacts/sandwich-simulator.ts",
+      "url": "/artifacts/sandwich-simulator",
+      "title": "Sandwich Simulator",
+      "description": "Watch a searcher sandwich your agent's swap on the live Aerodrome WETH/USDC pool on Base. Set trade size and slippage tolerance; the optimal front-run is solved on the real constant-product curve, capped by your tolerance. Route privately and the extraction goes to zero.",
+      "pubDate": "2026-06-19",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "infrastructure"
       ],
       "draft": false
     },

@@ -1,0 +1,184 @@
+---
+slug: the-sandwich-tax-on-autonomous-agents
+title: "The Sandwich Tax on Autonomous Agents"
+description: "An autonomous agent that swaps in the open broadcasts its intent to every searcher in the mempool. We solve the optimal sandwich on a live Base pool, show why an agent's slippage default is the searcher's profit knob, and price the defenses."
+pubDate: 2026-06-19
+author: blokz
+topics: [defi, agents, infrastructure]
+tags: [mev, sandwich-attack, frontrunning, private-orderflow, encrypted-mempool, amm]
+artifacts: [sandwich-simulator]
+difficulty: intermediate
+sources:
+  - label: "Private MEV-Protection RPCs: A Benchmark Study (arXiv:2505.19708)"
+    url: "https://arxiv.org/abs/2505.19708"
+  - label: "EigenPhi sandwich data via Cointelegraph Research"
+    url: "https://cointelegraph.com/research/exclusive-data-from-eigenphi-reveals-that-sandwich-attacks-on-ethereum-have-waned"
+  - label: "Applied MEV protection via Shutter's threshold encryption"
+    url: "https://blog.shutter.network/applied-mev-protection-via-shutters-threshold-encryption/"
+  - label: "MEV Blocker — order flow auction (CoW Protocol docs)"
+    url: "https://docs.cow.fi/mevblocker"
+  - label: "Aerodrome WETH/USDC pool on Base (Blockscout)"
+    url: "https://base.blockscout.com/address/0xcDAC0d6c6C59727a65F871236188350531885C43"
+---
+
+A human trader sandwiches badly. They hesitate, fat-finger the slippage box, trade at
+irregular hours, and never send the same order twice. An autonomous agent does none of that.
+It computes a swap, sets the slippage tolerance from a config value, and broadcasts the signed
+transaction to a public mempool where every searcher can read it before it lands. The agent's
+great operational virtue — it is deterministic, tireless, and consistent — is exactly what
+makes it the cleanest sandwich target on the chain.
+
+This isn't a key-custody problem or a prompt-injection problem (we've covered both). The
+agent's wallet is fine; its logic is correct. The leak is the **ordering** of its own
+transaction, and it happens in the few hundred milliseconds between broadcast and inclusion.
+This piece is about that window: how a sandwich actually extracts value on a constant-product
+pool, why an agent's defaults set the attacker's profit, and what the menu of defenses costs.
+
+## The mechanism, on a real pool
+
+Take the live Aerodrome volatile WETH/USDC pool on Base
+([`0xcDAC…5C43`](https://base.blockscout.com/address/0xcDAC0d6c6C59727a65F871236188350531885C43)).
+Read on-chain, it holds **2,221.37 WETH** and **3,757,894.74 USDC** with a **0.30%** swap fee —
+a constant-product (`x·y=k`) pool, about $7.5M deep, quoting ETH at ≈ **$1,692**. A volatile
+Aerodrome pool is Uniswap-v2 math: a swap of `dx` in, with fee `γ = 0.997`, returns
+
+```text
+dy = (dx · γ · R_out) / (R_in + dx · γ)
+```
+
+and pushes the spot price `R_usdc / R_weth` in the direction of the trade. That price impact is
+the whole game. A sandwich is three transactions the searcher orders around yours:
+
+1. **Front-run** — the searcher buys WETH first, pushing the price up.
+2. **Your fill** — your buy executes against the now-inflated reserves, so you receive *fewer*
+   WETH than you quoted.
+3. **Back-run** — the searcher sells the WETH it just bought back into the pool, now richer in
+   USDC, and pockets the spread.
+
+The only thing standing between you and an unbounded front-run is the `amountOutMin` your
+transaction carries — your **slippage tolerance**. If the front-run pushes your fill below
+`amountOutMin`, your swap reverts and the searcher's bundle is worthless. So a rational searcher
+solves a constrained optimization: *push the price up as far as possible without tripping the
+victim's slippage limit.* The binding constraint, almost always, is your tolerance — not the
+searcher's capital.
+
+That last sentence is the thesis, so make it concrete. The simulator below runs the exact
+solve against the real pool reserves. Set your trade and your tolerance; it finds the searcher's
+optimal front-run and shows where on the price curve you actually fill.
+
+<Artifact slug="sandwich-simulator" />
+
+A $250,000 WETH buy with a **1.0%** slippage tolerance gets front-run with ≈ **$19,570** of the
+searcher's own capital, extracting ≈ **$2,530** — almost exactly **1.0% of your trade**, at a
+~13% return on the front-run. You receive the worst fill your tolerance permits, no better:
+the searcher tunes the front-run so your effective slippage lands at *exactly* 100 bps. Halve
+the tolerance to 0.5% and the extraction halves to ≈ $1,266. Tighten it far enough and the
+verdict flips to **no profitable sandwich** — the attack starves because there's no room left
+between the quote and the revert.
+
+## Why agents, specifically
+
+Everything a sandwich needs, an agent supplies by construction:
+
+- **A fixed slippage default.** Hand-traders nudge the slippage box per trade. An agent reads
+  one number from config and reuses it across thousands of swaps. If that number is a loose
+  "won't revert" default — 1%, 2%, the dreaded "auto" — it is a standing instruction to fill
+  the agent to that bound every time. The tolerance *is* the budget the agent hands the searcher.
+- **Predictable cadence.** Yield-rebalancing agents move on schedules and threshold triggers;
+  a [rate-chaser](/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose)
+  that rebalances whenever a competing pool quotes higher is firing a recognizable, repeatable
+  swap. Predictable timing makes an address worth modeling.
+- **Legible logic.** Many agent frameworks are open source, and on-chain history exposes the
+  strategy anyway. A searcher who knows the policy can pre-position before the agent even acts.
+- **Volume.** The [operating layer behind millions of on-chain agent
+  trades](/articles/operating-layer-onchain-agents) is a steady stream of swaps. Each one is a
+  small, repeatable extraction opportunity, and small repeatable opportunities are precisely
+  what industrialized searchers are built to harvest.
+
+The pool depth matters too, and not in the agent's favor. Concentrate the same notional into a
+thinner pool — or a stablecoin pair where the curve is flat and a tiny price move is a large
+proportional one — and the extractable value climbs. It's no accident that **38%** of 2025's
+Ethereum sandwiches targeted stablecoin pools, per EigenPhi's data.
+
+## What the numbers say in 2026
+
+Sandwiching is a mature, consolidated industry, and — interestingly — a **shrinking** one. Over
+the year to October 2025, EigenPhi counted **95,000+** sandwich attacks on Ethereum draining
+roughly **$60M** from traders, but monthly extraction fell from nearly **$10M** in late 2024 to
+about **$2.5M** by October 2025 — even as monthly DEX volume climbed from ~$65B toward $100B+.
+A single searcher, `jaredfromsubway.eth`, ran an estimated **70%** of attacks, and the average
+profit per sandwich collapsed to about **$3**.
+
+Read that decline carefully, because it is not "the problem went away." Two things compressed
+it. First, searcher competition bid margins down — when ten bots race the same victim, the
+priority-fee auction hands most of the surplus to the validator, not the searcher. Second, and
+more importantly, **order flow moved off the public mempool**. If a swap is never broadcast in
+the clear, there is nothing to sandwich. Falling public-mempool extraction is partly a
+measurement of how much flow has gone private — which is the defense, and the next section.
+
+## The defense ladder, priced
+
+There are four broad places to intervene, from cheapest to most structural. Each buys safety
+with a concrete cost.
+
+| Defense | How it works | What it costs |
+| --- | --- | --- |
+| **Tight slippage** | Lower `amountOutMin` so there's no room to push you | Failed txs / missed fills when the market moves |
+| **Private orderflow** | Skip the public mempool; submit to builders via an RPC running an order-flow auction | Trust the builder set; ~1.3–1.9 block inclusion delay |
+| **Encrypted mempool** | Transactions are encrypted until ordering is fixed, then threshold-decrypted | Latency: ~3 min to inclusion on Shutter's Gnosis deployment |
+| **Batch auction** | Many orders clear at one uniform price; no intra-batch ordering to exploit | Solver dependence; batch cadence, not instant |
+
+**Tight slippage** is free and immediate, and the simulator shows it works: extraction scales
+linearly with the tolerance, and a tight enough bound zeroes it. But it's a blunt instrument.
+Set it too tight and a benign price move between quote and inclusion reverts the agent's swap —
+trading a sandwich for a missed rebalance. For an agent firing constantly, a wall of reverts is
+its own cost. Tolerance is a dial to *minimize*, not a switch to slam to zero.
+
+**Private orderflow** is where most of the market actually went. Roughly **80%** of Ethereum
+DeFi transactions now route through private RPCs rather than the public mempool. Endpoints like
+MEV Blocker submit your transaction straight to a set of builders and run an *order-flow
+auction*: searchers bid for the right to back-run you (back-running is benign — it doesn't worsen
+your fill), and the winning bid is rebated to you. MEV Blocker reports **$21B+** of protected
+volume and returns **90%** of the back-run value to users. A 2025 benchmark of four such RPCs
+found they add only **1.3–1.9 blocks** of inclusion delay — seconds, not minutes — while killing
+the front-run entirely. The catch is the trust model: you're handing your transaction to a
+permissioned builder set and trusting it not to peek or leak. You've traded a transparent
+adversary for a trusted one.
+
+**Encrypted mempools** remove that trust. Shutter encrypts each transaction with a threshold
+key and only reveals it *after* the block ordering is committed, so no builder — honest or not —
+can extract from contents it cannot read until it's too late. It's live on Gnosis Chain, the
+only threshold-encrypted mempool actually in production. The price is latency: with a limited
+keyper-and-validator set, Shutter transactions currently average about **three minutes** to
+inclusion on a chain that produces a block every five seconds. For a slow, high-value
+settlement that's acceptable; for a latency-sensitive agent racing a rate change, three minutes
+is an eternity.
+
+**Batch auctions** sidestep ordering altogether. When many orders settle at a single uniform
+clearing price, there is no "before" and "after" to wedge a sandwich into — the attack surface
+is gone by construction. That's the deeper reason
+[intent-based DEXes auction your trade to solvers](/articles/the-solver-optimization-market)
+instead of routing it: the batch is an MEV-defense primitive, not just a price-improvement one.
+You pay for it in solver dependence and in clearing on the batch's cadence rather than instantly.
+
+## The engineering takeaway
+
+If you ship an agent that touches an AMM, MEV is not an exotic risk to model later — it is a
+line item on every swap, and your defaults set its size. Concretely:
+
+- **Never let the slippage tolerance be a static, loose default.** Derive it per-trade from
+  recent volatility and the destination pool's depth, and treat it as a number to push *down*.
+  The simulator's linear relationship is the whole argument: every extra basis point of
+  tolerance is basis points you've pre-authorized a searcher to take.
+- **Route privately by default**, and reserve the public mempool for transactions where
+  inclusion latency genuinely dominates extraction risk. For most agent swaps it doesn't.
+- **Prefer settlement venues that price-protect structurally** — order-flow auctions or batch
+  clearing — over hoping a tolerance bound holds.
+- **Size against real depth.** The same notional that's a rounding error on a deep pool is a
+  feast on a thin one. Your agent should know the pool it's about to hit.
+
+None of this makes an agent un-sandwichable; it makes it *unprofitable* to sandwich, which is
+the same thing in a market of rational searchers. The win condition isn't a proof — it's making
+the optimal front-run round to zero. An agent that broadcasts a loose-tolerance swap into the
+public mempool has, in effect, attached a tip for whoever reads it first. The fix is to stop
+broadcasting the tip.

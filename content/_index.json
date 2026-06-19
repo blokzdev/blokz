@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 39,
-    "artifacts": 40
+    "articles": 40,
+    "artifacts": 41
   },
   "topicCounts": {
     "agents": 16,
@@ -9,13 +9,13 @@
     "blockchain": 10,
     "cryptography": 4,
     "data": 3,
-    "defi": 9,
-    "infrastructure": 17,
+    "defi": 10,
+    "infrastructure": 18,
     "llm": 7,
     "machine-learning": 17,
     "research": 1,
     "security": 15,
-    "smart-contracts": 8,
+    "smart-contracts": 9,
     "tokenomics": 2,
     "web3": 6,
     "zero-knowledge": 3
@@ -176,6 +176,23 @@
         "detection-cliff",
         "price-of-trust"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "oev-liquidation-recapture",
+      "path": "content/articles/2026/06/oev-liquidation-recapture/index.mdx",
+      "url": "/articles/oev-liquidation-recapture",
+      "title": "The Liquidation Goes to Auction: Recapturing Oracle-Extractable Value",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1116,6 +1133,22 @@
       "topics": [
         "infrastructure",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "liquidation-value-split",
+      "path": "content/artifacts/liquidation-value-split/manifest.json",
+      "module": "src/islands/artifacts/liquidation-value-split.ts",
+      "url": "/artifacts/liquidation-value-split",
+      "title": "The Liquidation Value Split",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "infrastructure"
       ],
       "draft": false
     },

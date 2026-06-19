@@ -1,0 +1,15 @@
+{
+  "slug": "liquidation-value-split",
+  "title": "The Liquidation Value Split",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

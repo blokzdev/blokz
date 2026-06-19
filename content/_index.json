@@ -33,8 +33,18 @@
         "infrastructure",
         "security"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "model-substitution",
+        "quantization",
+        "decentralized-inference",
+        "proof-of-quality",
+        "tee",
+        "verifiable-inference"
+      ],
+      "artifacts": [
+        "detection-cliff",
+        "price-of-trust"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -867,7 +877,7 @@
       "module": "src/islands/artifacts/detection-cliff.ts",
       "url": "/artifacts/detection-cliff",
       "title": "The Detection Cliff",
-      "description": "How many audit queries it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in ~220 queries; FP8 needs ~140k and falls off the cliff into the economically-invisible zone.",
+      "description": "How many audit probes it takes to catch a substituted model, as a function of how subtle the swap is. A 1/Δ² curve over real quantization accuracy gaps: a model swap is caught in a few hundred probes; FP8 needs ~150k and falls off the cliff into the economically-invisible zone.",
       "pubDate": "2026-06-19",
       "type": "svg",
       "archetype": "chart",

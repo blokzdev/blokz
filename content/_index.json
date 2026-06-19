@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 40,
-    "artifacts": 41
+    "articles": 41,
+    "artifacts": 42
   },
   "topicCounts": {
-    "agents": 16,
+    "agents": 17,
     "ai": 4,
     "blockchain": 10,
     "cryptography": 4,
     "data": 3,
-    "defi": 10,
+    "defi": 11,
     "infrastructure": 18,
-    "llm": 7,
+    "llm": 8,
     "machine-learning": 17,
     "research": 1,
     "security": 15,
@@ -43,6 +43,32 @@
       ],
       "artifacts": [
         "forfeit-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "ai-prediction-market-resolution",
+      "path": "content/articles/2026/06/ai-prediction-market-resolution/index.mdx",
+      "url": "/articles/ai-prediction-market-resolution",
+      "title": "The 78% Oracle: How AI Resolves Prediction Markets — and Who Catches the Mistakes",
+      "description": "AI agents now resolve most prediction markets straight off the web — UMA's bot hits 99.3% on sports and 72% on mention markets. The optimistic oracle's dispute game is the backstop, but it only catches errors someone is paid to catch. The numbers, and the silent-settlement gap.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "agents",
+        "llm",
+        "defi"
+      ],
+      "tags": [
+        "prediction-markets",
+        "optimistic-oracle",
+        "uma",
+        "polymarket",
+        "dispute-games",
+        "oracles"
+      ],
+      "artifacts": [
+        "watchers-threshold"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1239,6 +1265,22 @@
       "topics": [
         "agents",
         "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "watchers-threshold",
+      "path": "content/artifacts/watchers-threshold/manifest.json",
+      "module": "src/islands/artifacts/watchers-threshold.ts",
+      "url": "/artifacts/watchers-threshold",
+      "title": "The Watcher's Threshold",
+      "description": "An AI proposer is wrong a few percent of the time, but UMA pays a winning disputer only half the bond it risks — so the break-even belief is two-thirds, not half. Every category's base error rate sits deep in the no-dispute zone; raise the reward and the threshold slides left.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "llm"
       ],
       "draft": false
     },

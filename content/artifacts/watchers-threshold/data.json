@@ -1,0 +1,26 @@
+{
+  "economics": {
+    "bond": 750,
+    "rewardRatio": 0.5,
+    "livenessHours": 2,
+    "dvmHours": 48,
+    "disputeRate": 0.010,
+    "disputeDelayHours": 49,
+    "disputeSampleMarkets": 18427,
+    "disputedMarkets": 184
+  },
+  "defaults": {
+    "bond": 750,
+    "rewardRatio": 0.5,
+    "frictionPct": 0.06,
+    "selectedCategory": "clear",
+    "belief": 0.05
+  },
+  "categories": [
+    { "id": "sports",  "label": "Sports / pricing", "accuracy": 0.993, "error": 0.007 },
+    { "id": "clear",   "label": "Clear Yes/No",     "accuracy": 0.95,  "error": 0.05 },
+    { "id": "overall", "label": "All markets",      "accuracy": 0.78,  "error": 0.22 },
+    { "id": "mention", "label": "Mention markets",  "accuracy": 0.72,  "error": 0.28 }
+  ],
+  "note": "A disputer who challenges a UMA proposal posts a bond B. On UMA's Optimistic Oracle a winning party recovers its own bond plus half the loser's bond, so the disputer's reward on a correct challenge is R*B with R = 0.5; a wrong challenge forfeits the full bond (-B). Writing friction f as the fraction of bond lost to ~49h of capital lock plus DVM-vote risk, the expected value of disputing a proposal believed wrong with probability p is EV = B*[p*(R+1) - (1+f)], which is zero at the break-even belief p* = (1+f)/(R+1). With R=0.5, f=0, p* = 0.667: a watcher must be more than two-thirds sure a specific proposal is wrong before disputing pays. Per-category accuracies are UMA's Optimistic Truth Bot (sports/asset pricing 99.3%, clear Yes/No 95%, all markets 78%, mention markets 72%); error = 1 - accuracy. Bond $750, 2h liveness, ~48h DVM vote, 1.0% of 18,427 Polygon markets disputed (+49h median) are UMA/Polymarket figures."
+}

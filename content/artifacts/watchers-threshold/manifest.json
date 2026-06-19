@@ -1,0 +1,17 @@
+{
+  "slug": "watchers-threshold",
+  "title": "The Watcher's Threshold",
+  "description": "An AI proposer is wrong a few percent of the time, but UMA pays a winning disputer only half the bond it risks — so the break-even belief is two-thirds, not half. Every category's base error rate sits deep in the no-dispute zone; raise the reward and the threshold slides left.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "llm"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a category marker", "click the chart to set your belief", "← → to cycle categories", "bond + reward + friction inputs"],
+  "dataSource": { "label": "UMA — Can AI Agents Enhance the Optimistic Oracle?", "url": "https://blog.uma.xyz/articles/experiment-can-ai-agents-enhance-uma-oracle" },
+  "dataAsOf": "2026-06-19"
+}

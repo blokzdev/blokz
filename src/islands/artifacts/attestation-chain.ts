@@ -294,7 +294,11 @@ export default function mount(container: HTMLElement): () => void {
   dStatus.setAttribute('role', 'status');
   dStatus.setAttribute('aria-live', 'polite');
   const verdict = document.createElement('div');
-  verdict.className = 'atc-verdict';
+  verdict.className = 'atc-verdict afl-bullet';
+  // Status + verdict read as a clean hanging-indent bullet pair.
+  const bullets = document.createElement('div');
+  bullets.className = 'afl-bullets';
+  bullets.append(dStatus, verdict);
 
   const nums = document.createElement('div');
   nums.className = 'atc-nums';
@@ -315,7 +319,7 @@ export default function mount(container: HTMLElement): () => void {
     nums.appendChild(row);
   });
 
-  panelEl.append(dTitle, dBody, dStatus, verdict, nums);
+  panelEl.append(dTitle, dBody, bullets, nums);
   panel.appendChild(panelEl);
 
   /* ---------------- caption: provenance + hint (HTML) ---------------- */
@@ -373,17 +377,17 @@ export default function mount(container: HTMLElement): () => void {
     const prefix =
       flag === 'ok' ? '✓ ' : flag === 'warn' ? '⚠ ' : flag === 'void' ? '∅ ' : '✗ ';
     dStatus.textContent = prefix + msg;
-    dStatus.className = `atc-status atc-status-${statusKind}`;
+    dStatus.className = `atc-status afl-bullet atc-status-${statusKind}`;
   }
 
   function setVerdict(show: boolean) {
     if (!show) { verdict.classList.remove('is-on'); return; }
     if (mode === 'forged') {
       verdict.textContent = '⚠ ' + data.verdicts.forged;
-      verdict.className = 'atc-verdict atc-verdict-warn is-on';
+      verdict.className = 'atc-verdict afl-bullet atc-verdict-warn is-on';
     } else {
       verdict.textContent = '✓ ' + data.verdicts.honest;
-      verdict.className = 'atc-verdict atc-verdict-ok is-on';
+      verdict.className = 'atc-verdict afl-bullet atc-verdict-ok is-on';
     }
   }
 

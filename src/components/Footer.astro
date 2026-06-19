@@ -25,22 +25,13 @@ const socials = [
 <footer class="relative mt-28 border-t border-line">
   <div class="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"></div>
 
-  <div class="mx-auto max-w-6xl px-5 pt-14 sm:px-6">
-    <p
-      class="font-display text-[clamp(1.6rem,4vw,2.6rem)] font-bold tracking-tight lowercase"
-      data-reveal
-    >
-      <span class="text-gradient">{SITE.tagline}</span>
-    </p>
-  </div>
-
-  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 pt-14 pb-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
     <div>
       <p class="font-display text-xl font-bold text-white">
         BLOKZ<span class="text-gradient">.dev</span>
       </p>
       <p class="mt-3 max-w-sm text-sm leading-relaxed text-muted">
-        <span class="lowercase">{SITE.tagline}</span> — engineering notes and interactive artifacts
+        <span class="lowercase font-bold text-gradient">{SITE.tagline}</span> — engineering notes and interactive artifacts
         from the frontier of AI × blockchain, by
         <a href={SITE.linkedin} class="text-text underline decoration-line underline-offset-2 hover:text-white">{SITE.org}</a>.
       </p>

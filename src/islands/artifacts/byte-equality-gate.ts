@@ -82,7 +82,9 @@ const fmtTerm = (v: number): string =>
 
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
-    wideTemplate: 'footer',
+    // The digest strip doesn't pair with the track cards — keep one full-width
+    // column at every width rather than leaving an empty landscape column.
+    wideTemplate: 'stack',
     stageMin: '160px',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
@@ -117,18 +119,20 @@ export default function mount(container: HTMLElement): () => void {
       background:#0d1322; box-shadow:inset 0 0 0 1px rgba(124,140,255,.1); color:#9aa3bd;
       font-variant-numeric:tabular-nums; }
 
-    .beg-tracks { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+    /* afl-cards: cards drop to one column when each can't be >=200px (portrait). */
+    .beg-tracks { --afl-card:200px; }
     .beg-tk-card { border:1px solid rgba(124,140,255,.14); border-radius:10px; padding:9px 11px;
       background:#0a0f1c; display:flex; flex-direction:column; gap:6px; min-width:0; }
     .beg-tk-card.beg-op { box-shadow:inset 0 0 0 1px rgba(124,140,255,.06); }
-    .beg-tk-h { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+    /* header layout via the shared afl-split utility */
     .beg-tk-name { font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:#7c8299; }
-    .beg-tk-meta { font-size:9px; color:#5b6378; white-space:nowrap; }
+    .beg-tk-meta { font-size:9px; color:#5b6378; min-width:0; overflow-wrap:anywhere; }
     .beg-tk-val { font:700 14px 'JetBrains Mono', monospace; font-variant-numeric:tabular-nums;
       color:#cdd3e3; word-break:break-all; }
-    .beg-tk-tok { display:flex; align-items:center; gap:7px; font-size:11px; }
+    .beg-tk-tok { display:flex; align-items:center; flex-wrap:wrap; gap:4px 7px; font-size:11px;
+      min-width:0; }
     .beg-tk-tok .beg-arrow { color:#5b6378; }
-    .beg-tk-tok b { font-weight:600; }
+    .beg-tk-tok b { font-weight:600; min-width:0; overflow-wrap:anywhere; }
     .beg-q b { color:#22d3ee; } .beg-c b { color:#f0883e; }
     .beg-tk-tok .beg-pill { font:700 8px 'JetBrains Mono', monospace; letter-spacing:.06em;
       text-transform:uppercase; padding:1px 5px; border-radius:4px; }
@@ -235,12 +239,12 @@ export default function mount(container: HTMLElement): () => void {
 
   // tracks
   const tracks = document.createElement('div');
-  tracks.className = 'beg-tracks';
+  tracks.className = 'beg-tracks afl-cards';
   const mkTrack = (name: string, op: boolean) => {
     const card = document.createElement('div');
     card.className = `beg-tk-card${op ? ' beg-op' : ''}`;
     const h = document.createElement('div');
-    h.className = 'beg-tk-h';
+    h.className = 'beg-tk-h afl-split';
     const nm = document.createElement('div');
     nm.className = 'beg-tk-name';
     nm.textContent = name;
@@ -358,7 +362,7 @@ export default function mount(container: HTMLElement): () => void {
     t.tok.className = `beg-tk-tok ${tokenClass(tok)}`;
     t.tok.innerHTML =
       `<span class="beg-arrow">argmax →</span> <b>"${tok}"</b> ` +
-      `<span class="beg-pill">${gap >= 0 ? 'Δ &gt; 0' : 'Δ &lt; 0'}</span>`;
+      `<span class="beg-pill afl-pill">${gap >= 0 ? 'Δ &gt; 0' : 'Δ &lt; 0'}</span>`;
     return { gap, tok };
   }
 

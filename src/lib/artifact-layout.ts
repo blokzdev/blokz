@@ -91,6 +91,20 @@ const SKELETON = `
    'afl-bullets' for even spacing. Pairs with the artifact's own colour classes. */
 .afl-bullets { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .afl-bullet { padding-left: 1.3em; text-indent: -1.3em; min-width: 0; }
+
+/* Reusable micro-layout utilities (opt in from an artifact's markup):
+   • afl-cards  — a card row that DROPS columns when narrow instead of cramming
+     cards into a fixed N-up grid. Tune the card min via --afl-card.
+   • afl-pill   — an inline badge/chip that never squishes or wraps its glyphs.
+   • afl-split  — a header with a label on each side that wraps instead of
+     clipping when narrow (children shrink, the right label drops below). */
+.afl-cards { display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--afl-card, 210px), 100%), 1fr)); }
+.afl-pill { display: inline-flex; align-items: center; flex: 0 0 auto; white-space: nowrap;
+  border-radius: 5px; padding: 2px 6px; line-height: 1.4; }
+.afl-split { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 4px 12px; flex-wrap: wrap; min-width: 0; }
+.afl-split > * { min-width: 0; }
 `;
 
 function ensureStyles(): void {
@@ -143,9 +157,13 @@ export interface LayoutOptions {
    * Wide-mode arrangement of panel + controls:
    *   'rail'   — both stacked in a right rail beside the stage (default).
    *   'footer' — panel beside the stage; controls span full width below.
-   * Portrait stacking is identical for both.
+   *   'stack'  — never go two-column; slots stay full-width at every width.
+   *              Use when the panel doesn't pair with the stage (it would
+   *              otherwise leave a big empty column in landscape). Fullscreen
+   *              still scrolls.
+   * Portrait stacking is identical for 'rail'/'footer'.
    */
-  wideTemplate?: 'rail' | 'footer';
+  wideTemplate?: 'rail' | 'footer' | 'stack';
   /** Called whenever the wide/narrow arrangement flips (after the class toggles). */
   onLayout?: (wide: boolean) => void;
 }
@@ -206,7 +224,7 @@ export function createArtifactLayout(
   let wide = false;
 
   const decide = (w: number, h: number): boolean =>
-    fill ? w > h : w >= wideAt;
+    wideTemplate === 'stack' ? false : fill ? w > h : w >= wideAt;
 
   const apply = (w: number, h: number): void => {
     const next = decide(w, h);

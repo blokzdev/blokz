@@ -105,9 +105,17 @@ Four named slots, arranged by the container's orientation (no work from you):
   the container is cut off. In your `<style>` use shrinkable grid tracks (`minmax(0,1fr)`, not
   bare `1fr`/fixed px), `flex-wrap:wrap` on control/button rows, `min-width:0` on flex/grid
   children, and `overflow-wrap:anywhere` on long text (addresses, error strings) so it wraps.
-- **Bullets**: for `✓/⚠/✗`-prefixed status/list lines, add the shared `afl-bullet` class (and wrap
-  several in `afl-bullets`) so wrapped lines hang-indent under the text instead of running back
-  under the marker. Keep your own colour class alongside it.
+- **Reusable utilities** (shared, add the class to your markup):
+  - `afl-cards` — a card row that **drops** columns when narrow instead of cramming a fixed N-up
+    grid (set the card min via `--afl-card`, default 210px). Use it for any row of cards.
+  - `afl-pill` — an inline badge/chip that never squishes or stacks its glyphs (`flex:none` +
+    `nowrap`); keep your own colour class for styling.
+  - `afl-split` — a header with a label on each side that wraps instead of clipping when narrow.
+  - `afl-bullet` / `afl-bullets` — hanging-indent `✓/⚠/✗` status/list lines (wrapped lines align
+    under the text, not under the marker).
+- **`wideTemplate: 'stack'`**: keep one full-width column at every width. Use it when the panel
+  doesn't pair with the stage (a short strip/legend that would otherwise leave an empty landscape
+  column); `'rail'`/`'footer'` keep the side-by-side pairing.
 - Put **visual** CSS in your own injected `<style>`; never add layout/reflow CSS, outer padding,
   or your own resize breakpoint — the primitive is the single source of responsive truth. (A
   small local `ResizeObserver` for an *internal* sub-layout is fine if you disconnect it in

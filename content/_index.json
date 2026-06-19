@@ -130,15 +130,24 @@
       "path": "content/articles/2026/06/autonomous-exploit-economics/index.mdx",
       "url": "/articles/autonomous-exploit-economics",
       "title": "Cheaper to Break Than to Defend: The Economics of Autonomous Exploit Agents",
-      "description": "An LLM agent that writes its own working smart-contract exploit isn't hypothetical: A1 hits 63% on real exploited contracts and once pulled 8.59M from a single bug. The economics are the story — at a few dollars a scan, attackers profit at a tenth the contract value defenders need.",
+      "description": "An LLM agent that writes its own working smart-contract exploit isn't hypothetical: A1 hits 63% on real exploited contracts and once pulled $8.59M from a single bug. The economics are the story — at a few dollars a scan, attackers profit at a tenth the contract value defenders need.",
       "pubDate": "2026-06-19",
       "topics": [
         "security",
         "smart-contracts",
         "agents"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "exploit-generation",
+        "llm-agents",
+        "smart-contract-security",
+        "bug-bounty",
+        "mev",
+        "defi-hacks"
+      ],
+      "artifacts": [
+        "exploit-asymmetry"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1145,7 +1154,7 @@
       "module": "src/islands/artifacts/exploit-asymmetry.ts",
       "url": "/artifacts/exploit-asymmetry",
       "title": "The Exploit Asymmetry",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "When an LLM agent writes the exploit, the fight is unit economics. Break-even contract value against cost-per-scan: the attacker's line, and the defender's sitting 10× higher because a bounty pays a tenth of a theft. The band between is the attacker-only zone, with A1's six models at measured cost.",
       "pubDate": "2026-06-19",
       "type": "svg",
       "archetype": "chart",

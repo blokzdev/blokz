@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/proving-a-model-forgot/index.mdx",
       "url": "/articles/proving-a-model-forgot",
       "title": "Proving a Model Forgot: Verifiable Unlearning and the Immutable Ledger",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A DataDAO sold your data; you invoke the right to be forgotten. Deleting the file is easy, but the model already learned and the ledger can't be rewritten. ZK-APEX proves the unlearning ran in ~2h; UMA still pulls the 'forgotten' data back at MIA 0.97. Certified isn't forgotten.",
       "pubDate": "2026-06-19",
       "topics": [
         "data",
         "machine-learning",
         "cryptography"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "machine-unlearning",
+        "right-to-be-forgotten",
+        "verifiable-unlearning",
+        "zero-knowledge",
+        "datadao",
+        "gdpr"
+      ],
+      "artifacts": [
+        "unlearning-gap"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1155,7 +1164,7 @@
       "module": "src/islands/artifacts/unlearning-gap.ts",
       "url": "/artifacts/unlearning-gap",
       "title": "The Unlearning Gap",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "What unlearning verification reports as 'forgotten' versus what a recovery attack gets back. Each method's dumbbell runs from its verdict (MIA ≈ random) to what an attack recovers — 0.97–0.99 for cheap methods. Toggle to % recoverable; tap a method. The ZK proof's scope ends at the verdict.",
       "pubDate": "2026-06-19",
       "type": "svg",
       "archetype": "chart",

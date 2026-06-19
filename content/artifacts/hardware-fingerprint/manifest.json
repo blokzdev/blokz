@@ -1,0 +1,15 @@
+{
+  "slug": "hardware-fingerprint",
+  "title": "The Hardware Fingerprint",
+  "description": "Pick the GPU a provider bills for and the cheaper card it secretly runs; the network measures the real device's compute, bandwidth and VRAM and plots it against the claimed model's fingerprint. Watch the spoof land outside the tolerance band — or hide inside it.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "infrastructure",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

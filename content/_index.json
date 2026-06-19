@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 38,
-    "artifacts": 39
+    "articles": 39,
+    "artifacts": 40
   },
   "topicCounts": {
     "agents": 16,
@@ -10,14 +10,14 @@
     "cryptography": 4,
     "data": 3,
     "defi": 9,
-    "infrastructure": 16,
+    "infrastructure": 17,
     "llm": 7,
     "machine-learning": 17,
     "research": 1,
-    "security": 14,
+    "security": 15,
     "smart-contracts": 8,
     "tokenomics": 2,
-    "web3": 5,
+    "web3": 6,
     "zero-knowledge": 3
   },
   "articles": [
@@ -176,6 +176,23 @@
         "detection-cliff",
         "price-of-trust"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "phantom-gpus-trustless-compute-verification",
+      "path": "content/articles/2026/06/phantom-gpus-trustless-compute-verification/index.mdx",
+      "url": "/articles/phantom-gpus-trustless-compute-verification",
+      "title": "Phantom GPUs: Verifying Real Hardware in Trustless Compute Networks",
+      "description": "A decentralized GPU network has to answer two questions an AWS invoice never raises: is this the GPU it claims, and did it actually do the work? io.net logged 327,000 registered GPUs and roughly 6,720 daily-verified. We dissect metadata trust, PoW puzzles, performance fingerprinting, and zkGPU-ID.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "infrastructure",
+        "security",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1074,6 +1091,22 @@
       "topics": [
         "agents",
         "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "hardware-fingerprint",
+      "path": "content/artifacts/hardware-fingerprint/manifest.json",
+      "module": "src/islands/artifacts/hardware-fingerprint.ts",
+      "url": "/artifacts/hardware-fingerprint",
+      "title": "The Hardware Fingerprint",
+      "description": "Pick the GPU a provider bills for and the cheaper card it secretly runs; the network measures the real device's compute, bandwidth and VRAM and plots it against the claimed model's fingerprint. Watch the spoof land outside the tolerance band — or hide inside it.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "infrastructure",
+        "security"
       ],
       "draft": false
     },

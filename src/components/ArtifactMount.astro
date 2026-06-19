@@ -21,6 +21,9 @@ if (!artifact) {
   throw new Error(`<ArtifactMount slug="${slug}"> — no manifest at content/artifacts/${slug}/manifest.json`);
 }
 const ratio = aspect ?? artifact.data.aspect;
+// Full-bleed renderers (canvas/three) fill a fixed box; multi-region dom/svg
+// artifacts grow to fit their reflowed content on portrait phones.
+const fit = artifact.data.type === 'three' || artifact.data.type === 'canvas' ? 'bleed' : 'panes';
 // The artifact's own seeded constellation stands in while the module loads.
 const { pts, lines } = constellation(slug);
 ---
@@ -28,8 +31,9 @@ const { pts, lines } = constellation(slug);
 <figure class:list={['not-prose my-8', className]}>
   <div
     data-artifact={slug}
-    class="ring-glow relative overflow-hidden rounded-2xl border border-line bg-void"
-    style={`aspect-ratio: ${ratio};`}
+    data-fit={fit}
+    class="artifact-box ring-glow relative overflow-hidden rounded-2xl border border-line bg-void"
+    style={`--art-aspect: ${ratio};`}
   >
     <div
       data-artifact-placeholder
@@ -85,11 +89,40 @@ const { pts, lines } = constellation(slug);
         )
       }
     </span>
-    <a href={`/artifacts/${slug}`} class="text-accent hover:underline">open artifact ↗</a>
+    <span class="flex items-center gap-3">
+      <button
+        type="button"
+        data-artifact-fullscreen={slug}
+        data-title={artifact.data.title}
+        class="text-faint transition-colors hover:text-muted"
+        aria-label={`Open ${artifact.data.title} fullscreen`}
+      >
+        ⛶ fullscreen
+      </button>
+      <a href={`/artifacts/${slug}`} class="text-accent hover:underline">open artifact ↗</a>
+    </span>
   </figcaption>
 </figure>
 
 <style>
+  /* Pre-mount the box holds the manifest aspect so the loading placeholder is
+     sized. Once a multi-region (panes) artifact mounts, the box becomes
+     content-driven so it grows to fit its reflowed portrait layout instead of
+     cramming everything into a short fixed-aspect frame. Full-bleed (canvas/
+     three) artifacts keep a fixed box, with a portrait-friendlier ratio on
+     small screens. */
+  .artifact-box {
+    aspect-ratio: var(--art-aspect);
+  }
+  .artifact-box[data-fit='panes'].is-mounted {
+    aspect-ratio: auto;
+  }
+  @media (max-width: 640px) {
+    .artifact-box[data-fit='bleed'] {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
   /* Constellation breathes while the module loads; opt-in motion only. */
   @media (prefers-reduced-motion: no-preference) {
     .ph-pulse {
@@ -108,8 +141,18 @@ const { pts, lines } = constellation(slug);
 </style>
 
 <script>
+  import { openArtifactFullscreen } from '@/lib/artifact-fullscreen';
+
   type Mounter = { default: (el: HTMLElement) => () => void };
   const modules = import.meta.glob<Mounter>('../islands/artifacts/*.ts');
+  const loadMount = async (slug: string): Promise<Mounter['default'] | undefined> => {
+    const loader = modules[`../islands/artifacts/${slug}.ts`];
+    if (!loader) {
+      console.warn(`[artifact] no module for "${slug}" in src/islands/artifacts/`);
+      return undefined;
+    }
+    return (await loader()).default;
+  };
 
   const stages = document.querySelectorAll<HTMLElement>('[data-artifact]');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -121,13 +164,11 @@ const { pts, lines } = constellation(slug);
         const el = entry.target as HTMLElement;
         io.unobserve(el);
         const slug = el.dataset.artifact;
-        const loader = modules[`../islands/artifacts/${slug}.ts`];
-        if (!loader) {
-          console.warn(`[artifact] no module for "${slug}" in src/islands/artifacts/`);
-          continue;
-        }
-        loader().then(({ default: mountArtifact }) => {
+        if (!slug) continue;
+        loadMount(slug).then((mountArtifact) => {
+          if (!mountArtifact) return;
           mountArtifact(el);
+          el.classList.add('is-mounted');
           el.querySelector('[data-artifact-placeholder]')?.classList.add('opacity-0', 'pointer-events-none');
         });
       }
@@ -150,5 +191,21 @@ const { pts, lines } = constellation(slug);
       return;
     }
     io.observe(el);
+  });
+
+  // Fullscreen: load the island on demand and re-mount it filling the viewport.
+  document.querySelectorAll<HTMLButtonElement>('[data-artifact-fullscreen]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const slug = btn.dataset.artifactFullscreen;
+      if (!slug) return;
+      const title = btn.dataset.title ?? slug;
+      btn.disabled = true;
+      try {
+        const mount = await loadMount(slug);
+        if (mount) openArtifactFullscreen({ slug, title, mount });
+      } finally {
+        btn.disabled = false;
+      }
+    });
   });
 </script>

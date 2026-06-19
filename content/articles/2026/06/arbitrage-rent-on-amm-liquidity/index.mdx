@@ -1,0 +1,100 @@
+---
+slug: arbitrage-rent-on-amm-liquidity
+title: "Picking Off the Pool: The Arbitrage Tax on AMM Liquidity Providers"
+description: "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = σ²/8 prices the rent — at ETH's 63% realized vol that's ~5% of pool value a year, and most pools don't earn enough fees to cover it. The math, real numbers, and the auctions clawing it back."
+pubDate: 2026-06-19
+author: blokz
+topics: [defi, agents, infrastructure]
+tags: [lvr, amm, mev, arbitrage, liquidity-provision, cow-amm]
+artifacts: [lp-breakeven-frontier]
+difficulty: intermediate
+sources:
+  - label: "Milionis, Moallemi, Roughgarden & Zhang — Automated Market Making and Loss-Versus-Rebalancing (arXiv:2208.06046)"
+    url: "https://arxiv.org/abs/2208.06046"
+  - label: "a16z crypto — LVR: Quantifying the Cost of Providing Liquidity to AMMs"
+    url: "https://a16zcrypto.com/posts/article/lvr-quantifying-the-cost-of-providing-liquidity-to-automated-market-makers/"
+  - label: "Milionis et al. — Automated Market Making and Arbitrage Profits in the Presence of Fees (arXiv:2305.14604)"
+    url: "https://arxiv.org/abs/2305.14604"
+  - label: "Fritsch & Canidio — Measuring Arbitrage Losses and Profitability of AMM Liquidity (arXiv:2404.05803)"
+    url: "https://arxiv.org/abs/2404.05803"
+  - label: "CoW Protocol — CoW AMM documentation"
+    url: "https://docs.cow.fi/cow-amm"
+---
+
+A passive position in a constant-product pool looks like a yield product: deposit two tokens, collect fees on every swap. It behaves like a short option. The pool quotes one price set by its reserves, the rest of the world quotes another, and the instant they diverge an arbitrageur trades against the pool at its stale price until the two agree. The LP is always on the wrong side of that trade — selling whatever just got more valuable, buying whatever just got cheaper. That recurring loss has a name, a closed-form price, and a counterparty: **autonomous arbitrage bots that re-quote the pool every block.**
+
+The price is **Loss-Versus-Rebalancing (LVR)**, and for a constant-product market maker it collapses to one of the cleanest results in DeFi: the instantaneous loss, normalized by pool value, is exactly **σ²/8**. This is the engineering question behind every "should I LP this pair?" — and the answer, at current market volatility, is *less often than the APR dashboards suggest.*
+
+## LVR is not impermanent loss
+
+The two get conflated constantly, so be precise. **Impermanent loss** compares an LP to *holding* the initial basket; it's path-independent, a function only of the start and end price, and it vanishes if the price round-trips. It tells you nothing about who profited from the journey.
+
+**LVR** compares the LP to a *rebalancing portfolio* that holds the same risky exposure as the pool at every instant but trades at the true market price instead of the pool's stale one. Milionis, Moallemi, Roughgarden and Zhang formalized this in their "Black-Scholes for AMMs" paper. The difference is the cost of trading at the wrong price, and unlike impermanent loss it is **monotonically accumulating** — it does not heal on a round trip, because every leg of the round trip was a pickoff. LVR is precisely the arbitrageur's profit, booked as the LP's loss. It is the adverse-selection cost of quoting a stale price to a better-informed taker.
+
+## The σ²/8 result
+
+For a constant-product pool (`x · y = k`), assume the external price follows a geometric Brownian motion with volatility σ and that arbitrageurs continuously hold the pool's marginal price to the market. Then the instantaneous LVR rate, as a fraction of pool value, is:
+
+```text
+ℓ = σ² / 8        (per unit time, continuously compounded)
+```
+
+Quadratic in volatility, independent of pool size. The derivation falls out of the pool's value being a concave function of price (a `√` payoff for the 50/50 CPMM): arbitrageurs harvest the curvature, and the expected harvest per unit time is half the variance times the second derivative — `½ · σ²P² · V''(P)`, which for the constant-product curve reduces to `σ²/8` of pool value.
+
+Put real numbers on it. Over the 30 days to 2026-06-19, ETH's realized volatility (daily closes, Crypto.com) ran **3.31% daily / ~63% annualized**. So:
+
+```text
+LVR_annual = σ_annual² / 8 = 0.632² / 8 ≈ 5.0% of pool value, per year
+```
+
+A 50/50 ETH pool hands arbitrageurs about **5% of its value a year** just to keep its quote honest — before that pool earns a cent of fees. BTC over the same window (~43% annualized) costs ~2.3%; the spread between assets is entirely the σ² term. Note which asset is worst here: a sharp ETH drawdown made the supposed blue chip the *most* LVR-exposed major of the three, above DOGE's ~53%. Volatility is the whole story, and it is the one number an LP can't control.
+
+## Fees are the only defense, and they're flat
+
+The LP's income is fees: `fee_rate × volume`. Normalize volume to the pool's own size — daily *turnover* τ (volume ÷ TVL) — and annualized fee income is `fee_rate × τ × 365`. Crucially it is **flat in volatility**: a 0.30% pool doing 5%/day turnover earns ~5.5%/yr whether the pair is a stablecoin or a memecoin.
+
+So LP profitability is a race between a flat line and a rising quadratic. Set them equal and solve for the break-even turnover:
+
+```text
+fee_rate · τ* = σ_daily² / 8
+τ* = σ_daily² / (8 · fee_rate)
+```
+
+For ETH at 3.31% daily in a 0.30% pool, `τ* = 0.0331² / (8 · 0.003) ≈ 4.6%` of the pool, traded *every day*, just to break even. The a16z analysis runs the same arithmetic for 5% daily vol and lands at 10.4% daily turnover — and notes that doubling volatility *quadruples* the volume you need. Most pools never see that. The 2024 empirical study by Fritsch and Canidio measured realized LP losses to arbitrage across the largest pools and found they **exceed the fees earned** for many of them; ETH/USDC LPs on Uniswap v3 are estimated to have lost on the order of $100M after fees.
+
+The artifact below is that race made interactive. Pick an asset (real 30-day vol), a fee tier, and a daily turnover; the flat fee line meets the σ²/8 curve at the break-even volatility. At low turnover, even BTC sits in the red.
+
+<Artifact slug="lp-breakeven-frontier" />
+
+One refinement the clean formula omits: fees also protect the LP by creating a **no-trade region**. The follow-up paper (Milionis et al., 2023) shows that with a fee `f`, an arbitrageur won't trade until the price has drifted far enough to clear the fee on both legs, so small moves are no longer picked off. Fees both *pay* the LP and *shrink* the set of profitable arbitrages — which is why the realized LVR on a fee-bearing pool is somewhat below the frictionless σ²/8 ceiling. The ceiling is still the right thing to size against.
+
+## The counterparty is a latency game between agents
+
+Who collects this 5%? Not the protocol — the searchers. LVR arbitrage is the cleanest, most repeatable strategy in the [MEV](/articles/the-sandwich-tax-on-autonomous-agents) stack: when ETH ticks up on Binance, a bot buys ETH from every lagging on-chain pool in the same block. It is a pure latency-and-inclusion race between autonomous agents, won by whoever sees the CEX print first and bids the priority fee highest. Unlike sandwiching — which extracts from *uninformed* retail flow — LVR is extracted from the *liquidity itself*, and it is a transfer the LP cannot opt out of by setting a tighter slippage bound. The only knobs are the fee tier, the volatility of the pair, and the market structure of how the rebalancing trade is run.
+
+That last knob is where the design space has opened up.
+
+## Clawing the rent back
+
+If LVR is just the arbitrageur capturing the right to rebalance a stale pool, then the fix is to make that right *auctionable* and route the proceeds to LPs instead of searchers. Three families of mitigation, in rough order of how much they recapture:
+
+- **Dynamic fees.** Raise the fee when volatility (or order-flow toxicity) spikes, so the no-trade region widens exactly when LVR would be worst. Cheap to deploy and already live on several AMMs, but it only *shrinks* the leak — it doesn't redirect it.
+- **MEV-capturing AMMs (auction the rebalance).** [CoW AMM](https://docs.cow.fi/cow-amm) flips the order of operations: instead of letting searchers race to pick off the pool, solvers in CoW Protocol's [batch auction](/articles/the-solver-optimization-market) *bid* for the right to rebalance it, and the solver offering the most surplus to the pool wins. The arbitrage profit that would have gone to a searcher is competed back to the LPs. The pool is rebalanced at a price the auction proves is the best available — so the LP captures (most of) what was LVR.
+- **Encrypted / batched ordering.** Remove the latency edge entirely by clearing many orders at one uniform price, so there is no "first to see the print" advantage to sell to the pool.
+
+The recapture toggle in the artifact models the auction case: an efficient solver auction returns most of the surplus, the σ²/8 curve collapses toward zero, and the break-even volatility slides far to the right. That is mechanism design doing what a higher APR can't — it moves the frontier instead of the LP's risk tolerance.
+
+## What the formula doesn't say
+
+Three honest caveats, because the σ²/8 number is often quoted past its assumptions:
+
+1. **It's a ceiling, not a realized PnL.** It assumes continuous, frictionless arbitrage on a GBM price. Real fees, gas, and discrete blocks all reduce it; a quiet pair on a cheap L2 can run well under the bound.
+2. **Concentrated liquidity changes the constant.** Uniswap v3's `σ²/8` applies to the *marginal* liquidity at the current price; a tight LP range amplifies both fees and LVR by the same concentration factor, so the break-even *ratio* is unchanged but the dollar magnitudes scale up. Active rebalancing of a v3 range is itself a strategy with its own LVR.
+3. **LVR is adverse selection, not total LP return.** An LP's actual outcome is `fees − LVR − gas ± inventory drift`. LVR isolates the one term that's a pure transfer to a better-informed counterparty — which is exactly the term a yield dashboard hides.
+
+## Takeaways
+
+- For a constant-product pool, arbitrageurs extract **σ²/8 of pool value per unit time** — quadratic in volatility, independent of size. At ETH's recent ~63% annualized vol that's **~5% a year**, paid before fees.
+- LP profitability is a flat fee line versus a rising quadratic. Break-even turnover is `σ_daily²/(8·fee)`; at ETH's vol a 0.30% pool needs ~4.6% of its TVL traded *daily* just to break even, and empirically many large pools don't clear it.
+- The rent is collected by autonomous searchers in a latency race, and it's the LP's *liquidity* being taxed — not retail flow — so slippage controls don't help.
+- The durable fix is market structure: dynamic fees shrink the leak, and **MEV-capturing auctions** (CoW AMM) redirect it back to LPs by auctioning the right to rebalance. Size your LP against the σ²/8 ceiling, then ask which mechanism is collecting it.

@@ -52,15 +52,24 @@
       "path": "content/articles/2026/06/arbitrage-rent-on-amm-liquidity/index.mdx",
       "url": "/articles/arbitrage-rent-on-amm-liquidity",
       "title": "Picking Off the Pool: The Arbitrage Tax on AMM Liquidity Providers",
-      "description": "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = sigma-squared/8 prices the rent: at ETH's 63% vol that is ~5% of pool value a year, and most pools do not earn enough fees to cover it. The math, real numbers, and the auctions clawing it back.",
+      "description": "Passive AMM liquidity is a short option that arbitrage bots exercise every block. LVR = σ²/8 prices the rent — at ETH's 63% realized vol that's ~5% of pool value a year, and most pools don't earn enough fees to cover it. The math, real numbers, and the auctions clawing it back.",
       "pubDate": "2026-06-19",
       "topics": [
         "defi",
         "agents",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "lvr",
+        "amm",
+        "mev",
+        "arbitrage",
+        "liquidity-provision",
+        "cow-amm"
+      ],
+      "artifacts": [
+        "lp-breakeven-frontier"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -962,7 +971,7 @@
       "module": "src/islands/artifacts/lp-breakeven-frontier.ts",
       "url": "/artifacts/lp-breakeven-frontier",
       "title": "The LP Break-Even Frontier",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Does an AMM LP out-earn the arbitrage bots picking off its stale quotes? Plot fee income (flat) against LVR = σ²/8 (rising with vol²): where they cross is break-even. At low turnover even BTC sits in the red. Flip on solver-auction recapture and the frontier slides right.",
       "pubDate": "2026-06-19",
       "type": "svg",
       "archetype": "chart",

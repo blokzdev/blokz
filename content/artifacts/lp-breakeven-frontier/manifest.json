@@ -1,15 +1,14 @@
 {
   "slug": "lp-breakeven-frontier",
   "title": "The LP Break-Even Frontier",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Does an AMM LP out-earn the arbitrage bots picking off its stale quotes? Plot fee income (flat) against LVR = σ²/8 (rising with vol²): where they cross is break-even. At low turnover even BTC sits in the red. Flip on solver-auction recapture and the frontier slides right.",
   "pubDate": "2026-06-19",
   "type": "svg",
   "archetype": "chart",
-  "topics": [
-    "defi",
-    "infrastructure"
-  ],
+  "topics": ["defi", "infrastructure"],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": ["tap an asset marker", "← → to cycle assets", "fee-tier + turnover + recapture inputs"],
+  "dataSource": { "label": "Crypto.com Exchange — 30-day realized vol; Uniswap v3 fee via Blockscout", "url": "https://crypto.com/exchange" },
+  "dataAsOf": "2026-06-19"
 }

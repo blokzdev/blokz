@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 34,
-    "artifacts": 34
+    "artifacts": 35
   },
   "topicCounts": {
     "agents": 13,
@@ -33,8 +33,17 @@
         "infrastructure",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "allora",
+        "ensembles",
+        "regret-minimization",
+        "decentralized-ai",
+        "inference",
+        "forecasting"
+      ],
+      "artifacts": [
+        "regret-weight-lens"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -927,6 +936,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "regret-weight-lens",
+      "path": "content/artifacts/regret-weight-lens/manifest.json",
+      "module": "src/islands/artifacts/regret-weight-lens.ts",
+      "url": "/artifacts/regret-weight-lens",
+      "title": "The Regret Lens",
+      "description": "Allora weights models by regret, not votes. Drag a market from calm to a volatility spike: five forecasters ride the softplus weight curve φ′(R̂), the low-vol specialist collapses the instant a spike is forecast while the vol-aware model climbs. Tap a model for its R→R̂→w chain.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

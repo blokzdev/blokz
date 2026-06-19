@@ -1,0 +1,27 @@
+{
+  "_comment": "Weight map and default parameters are from Allora's online-learning paper (Kruijssen et al., arXiv:2501.16519): potential phi_{p,c}(x)=ln[1+e^{p(x-c)}] (Eq. 10), gradient phi'_{p,c}(x)=p/(e^{-p(x-c)}+1) (Eq. 11), fiducial p=3 at c=0.75 for regression, p=5 for classification; regret EMA alpha recommended ~0.1 for adaptability. Regrets are normalized by their cross-worker standard deviation before mapping. The 5-model ensemble below is an ILLUSTRATIVE worked example (ETH 5-minute volatility prediction): the per-regime forecast losses are hand-picked to show context-aware re-weighting, not measured on-chain values.",
+  "constants": {
+    "pRegression": 3,
+    "pClassification": 5,
+    "c": 0.75,
+    "alpha": 0.1,
+    "epsilon": 1e-6
+  },
+  "scenario": {
+    "topic": "ETH/USD 5-minute volatility prediction (illustrative)",
+    "lossLabel": "forecast error (relative MAE)",
+    "workers": [
+      { "id": "mr",    "label": "Low-vol mean-reverter", "short": "mean-rev", "calm": 0.18, "spike": 1.95, "color": "#22d3ee" },
+      { "id": "lstm",  "label": "LSTM generalist",        "short": "LSTM",     "calm": 0.25, "spike": 0.70, "color": "#5b8cff" },
+      { "id": "mom",   "label": "Momentum / trend",       "short": "momentum", "calm": 0.30, "spike": 0.95, "color": "#a78bfa" },
+      { "id": "garch", "label": "GARCH vol-aware",        "short": "GARCH",    "calm": 0.42, "spike": 0.55, "color": "#f5a524" },
+      { "id": "naive", "label": "Naive persistence",      "short": "naive",    "calm": 0.50, "spike": 1.10, "color": "#94a0bd" }
+    ]
+  },
+  "network": {
+    "mainnetLaunch": "2025-11-11",
+    "testnetInferences": 692000000,
+    "testnetWorkers": 288000,
+    "testnetTopics": 55
+  }
+}

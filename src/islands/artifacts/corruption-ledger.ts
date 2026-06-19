@@ -84,7 +84,7 @@ export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     panel: false,
     wideTemplate: 'rail',
-    stageMin: 'clamp(220px, 60vw, 360px)',
+    stageMin: '160px',
     stageFr: '1.4fr',
   });
   const { stage, controls: controlsSlot, caption } = layout;
@@ -97,14 +97,16 @@ export default function mount(container: HTMLElement): () => void {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .cl-inputs { display:flex; flex-direction:column; gap:10px; min-width:0;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .cl-presets { display:flex; flex-wrap:wrap; gap:8px; }
+    .cl-presets { display:flex; flex-wrap:wrap; gap:8px; min-width:0; max-width:100%; }
     .cl-preset { border:1px solid rgba(124,140,255,.28); border-radius:8px; cursor:pointer;
       background:#0d1322; color:#22d3ee; font:600 10px 'JetBrains Mono', monospace;
       letter-spacing:.07em; text-transform:uppercase; padding:7px 10px; white-space:nowrap; }
     .cl-preset:hover, .cl-preset:focus-visible { border-color:#22d3ee; outline:none; }
     .cl-preset.cl-on { background:rgba(34,211,238,.12); box-shadow:0 0 12px rgba(34,211,238,.25); }
-    .cl-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 14px; align-items:end; }
-    .cl-field label { display:flex; justify-content:space-between; gap:6px;
+    .cl-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 14px; align-items:end;
+      min-width:0; max-width:100%; }
+    .cl-field { min-width:0; max-width:100%; }
+    .cl-field label { display:flex; justify-content:space-between; gap:6px; min-width:0;
       font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:#5b6378; }
     .cl-field output { color:#e7eaf3; font-size:11px; white-space:nowrap; }
     .cl-field input[type=range] { width:100%; cursor:pointer; background:transparent; margin:4px 0 0; }

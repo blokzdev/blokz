@@ -78,7 +78,7 @@ const CONTINENTS: [number, number][][] = [
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(190px, 50vw, 320px)',
+    stageAspect: '2/1',
     stageFr: '1.8fr',
   });
   const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
@@ -107,10 +107,10 @@ export default function mount(container: HTMLElement): () => void {
     .ara-node.active .halo { opacity:.10; }
 
     /* ---- Config switch (HTML controls slot) ---- */
-    .ara-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .ara-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; max-width:100%; }
     .ara-eyebrow { font:500 10px 'JetBrains Mono',monospace; letter-spacing:.18em;
       color:#5b6378; text-transform:uppercase; }
-    .ara-tabs { display:inline-flex; flex-wrap:wrap; gap:8px; flex:1; }
+    .ara-tabs { display:flex; flex-wrap:wrap; gap:8px; flex:1; max-width:100%; }
     .ara-tabs button { appearance:none; flex:1; min-width:96px; border:1px solid rgba(124,140,255,.18);
       border-radius:8px; background:#0d1322; color:#8d95ad;
       font:600 11px 'JetBrains Mono',monospace; padding:9px 12px; cursor:pointer;
@@ -123,19 +123,22 @@ export default function mount(container: HTMLElement): () => void {
     /* ---- Readout (HTML panel slot) ---- */
     .ara-panel { display:flex; flex-direction:column; gap:8px; height:100%;
       border:1px solid rgba(124,140,255,.16); border-radius:10px; background:#0d1322;
-      padding:14px 16px; box-sizing:border-box; min-height:0; }
+      padding:14px 16px; box-sizing:border-box; min-height:0; min-width:0; max-width:100%;
+      overflow-wrap:anywhere; }
     .ara-p-eyebrow { font:500 10px 'JetBrains Mono',monospace; letter-spacing:.16em;
       color:#5b6378; text-transform:uppercase; }
     .ara-big { color:#67e8f9; font:600 38px 'Space Grotesk','Inter',sans-serif; line-height:1;
       font-variant-numeric:tabular-nums; }
     .ara-mult { color:#8b5cf6; font:600 12px 'JetBrains Mono',monospace; }
-    .ara-stats { display:flex; flex-direction:column; gap:4px; margin-top:2px; }
+    .ara-stats { display:flex; flex-direction:column; gap:4px; margin-top:2px;
+      min-width:0; max-width:100%; }
     .ara-stat { color:#e7eaf3; font:500 12.5px 'JetBrains Mono',monospace;
-      font-variant-numeric:tabular-nums; }
+      font-variant-numeric:tabular-nums; min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .ara-stat .k { color:#8d95ad; }
     .ara-divider { border:0; border-top:1px solid rgba(124,140,255,.16); margin:4px 0; }
-    .ara-facts { display:flex; flex-direction:column; gap:3px; }
-    .ara-fact { color:#8d95ad; font:500 10.5px 'JetBrains Mono',monospace; }
+    .ara-facts { display:flex; flex-direction:column; gap:3px; min-width:0; max-width:100%; }
+    .ara-fact { color:#8d95ad; font:500 10.5px 'JetBrains Mono',monospace;
+      min-width:0; max-width:100%; overflow-wrap:anywhere; }
 
     /* ---- Caption (HTML caption slot) ---- */
     .ara-caption { font:500 12px 'JetBrains Mono',monospace; color:#8d95ad;

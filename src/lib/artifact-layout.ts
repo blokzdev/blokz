@@ -42,6 +42,7 @@ const SKELETON = `
 .artifact-fs .afl-root { position: absolute; inset: 0; }
 .afl-grid {
   display: grid; gap: 12px; height: 100%; min-height: 0;
+  padding: clamp(13px, 3.4vw, 18px); box-sizing: border-box;
   grid-template-columns: 1fr;
   grid-template-areas: "stage" "panel" "controls" "caption";
 }
@@ -62,13 +63,17 @@ const SKELETON = `
     "caption caption";
 }
 .afl-stage {
-  grid-area: stage; position: relative; min-height: 0; min-width: 0;
-  min-height: var(--afl-stage-min, 180px);
+  grid-area: stage; position: relative; min-width: 0; max-width: 100%;
+  min-height: var(--afl-stage-min, 140px);
 }
+/* When an artifact declares a stage aspect, derive the stage height from its
+   width instead of a tall fixed floor — short charts get a short stage with no
+   dead space. In wide mode align-self:stretch still fills the row beside the panel. */
+.afl-grid.afl-aspect .afl-stage { aspect-ratio: var(--afl-stage-aspect); min-height: 0; }
 .afl-grid.is-wide .afl-stage { align-self: stretch; }
-.afl-panel { grid-area: panel; min-width: 0; min-height: 0; }
-.afl-controls { grid-area: controls; min-width: 0; }
-.afl-caption { grid-area: caption; min-width: 0; }
+.afl-panel { grid-area: panel; min-width: 0; max-width: 100%; min-height: 0; }
+.afl-controls { grid-area: controls; min-width: 0; max-width: 100%; }
+.afl-caption { grid-area: caption; min-width: 0; max-width: 100%; }
 .afl-grid > :empty { display: none; }
 `;
 
@@ -109,6 +114,13 @@ export interface LayoutOptions {
   wideAt?: number;
   /** CSS min-height for the stage in stacked mode, e.g. "clamp(180px,56vw,420px)". */
   stageMin?: string;
+  /**
+   * Stage aspect ratio, e.g. "16/6" for a short bar chart or "4/5" for a tall
+   * diagram. When set, the stage's height is derived from its width (no tall
+   * min-height floor), so the visualization sits snug with no dead space below
+   * it. Prefer this over `stageMin` for fixed-shape charts/diagrams.
+   */
+  stageAspect?: string;
   /** Stage column fraction in wide mode (the `1.6fr` default reads well). */
   stageFr?: string;
   /**
@@ -139,6 +151,7 @@ export function createArtifactLayout(
     caption: withCaption = true,
     wideAt = 620,
     stageMin,
+    stageAspect,
     stageFr,
     wideTemplate = 'rail',
     onLayout,
@@ -148,6 +161,10 @@ export function createArtifactLayout(
   root.className = 'afl-root';
   const grid = document.createElement('div');
   grid.className = wideTemplate === 'footer' ? 'afl-grid afl-footer' : 'afl-grid';
+  if (stageAspect) {
+    grid.classList.add('afl-aspect');
+    grid.style.setProperty('--afl-stage-aspect', stageAspect);
+  }
   if (stageMin) grid.style.setProperty('--afl-stage-min', stageMin);
   if (stageFr) grid.style.setProperty('--afl-stage-fr', stageFr);
   root.appendChild(grid);

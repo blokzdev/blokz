@@ -77,7 +77,7 @@ export default function mount(container: HTMLElement): () => void {
     panel: true,
     controls: false,
     caption: true,
-    stageMin: 'clamp(190px, 48vw, 320px)',
+    stageMin: '180px',
   });
   const { stage: stageSlot, panel: panelSlot, caption: captionSlot } = layout;
 
@@ -87,7 +87,7 @@ export default function mount(container: HTMLElement): () => void {
       flex-wrap:wrap; }
     .cp-title { font-size:11px; letter-spacing:.04em; color:#8d95ad; }
     .cp-title b { color:#e7eaf3; font-weight:600; }
-    .cp-legend { display:flex; gap:14px; font-size:10px; color:#5b6378; }
+    .cp-legend { display:flex; flex-wrap:wrap; gap:14px; font-size:10px; color:#5b6378; }
     .cp-legend i { display:inline-block; width:9px; height:9px; border-radius:50%;
       margin-right:5px; vertical-align:-1px; }
     .cp-stage { height:100%; min-height:0; display:flex; flex-direction:column;
@@ -95,12 +95,13 @@ export default function mount(container: HTMLElement): () => void {
       padding:8px 12px; gap:2px; overflow-y:auto; }
     .cp-rows { display:flex; flex-direction:column; }
     .cp-row { appearance:none; border:0; background:transparent; text-align:left;
-      display:grid; grid-template-columns:minmax(78px,128px) 1fr; align-items:center;
+      display:grid; grid-template-columns:minmax(0,128px) minmax(0,1fr); align-items:center;
       gap:10px; padding:6px 6px 16px; cursor:pointer; border-radius:8px;
-      position:relative; transition:background .18s; }
+      position:relative; transition:background .18s; min-width:0; max-width:100%; }
     .cp-row:hover, .cp-row[data-active="true"] { background:rgba(124,140,255,.06); }
     .cp-row:focus-visible { outline:2px solid #22d3ee; outline-offset:-2px; }
-    .cp-rowlabel { font-size:11px; color:#c4cadb; line-height:1.25; }
+    .cp-rowlabel { font-size:11px; color:#c4cadb; line-height:1.25; min-width:0;
+      overflow-wrap:anywhere; }
     .cp-track { position:relative; height:30px; }
     .cp-base { position:absolute; left:4%; right:4%; top:50%; height:1px;
       background:rgba(124,140,255,.16); }
@@ -126,7 +127,8 @@ export default function mount(container: HTMLElement): () => void {
     .cp-divider::before, .cp-divider::after { content:''; flex:1; height:1px;
       background:rgba(124,140,255,.12); }
     .cp-readout { min-height:44px; font-size:11px; line-height:1.5; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+      font-variant-numeric:tabular-nums; min-width:0; max-width:100%;
+      overflow-wrap:anywhere; }
     .cp-readout b { color:#e7eaf3; font-weight:600; }
     .cp-readout .pen { color:#ff8f8f; font-weight:600; }
   `;

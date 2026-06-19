@@ -28,7 +28,9 @@ const usd = (n: number) => `$${fmt(n)}`;
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(210px, 56vw, 350px)',
+    // The bar card is a fixed ~130px; let the stage sit snug instead of
+    // reserving a tall block above the panels.
+    stageMin: '140px',
   });
   const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
   stage.classList.add('bme-stagewrap');
@@ -43,8 +45,11 @@ export default function mount(container: HTMLElement): () => void {
     .bme-stagewrap { display:flex; flex-direction:column; min-width:0; }
     .bme-panelwrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
     .bme-controlswrap { display:flex; flex-direction:column; gap:10px; min-width:0; }
-    .bme-controls { display:grid; grid-template-columns:1fr 1fr auto; gap:8px 14px;
-      align-items:end; }
+    /* Shrinkable columns so the sliders never force overflow; the toggle wraps
+       to its own full-width row instead of clipping past the container edge. */
+    .bme-controls { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      gap:8px 14px; align-items:end; }
+    .bme-controls .bme-toggle { grid-column:1 / -1; justify-self:start; }
     .bme-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .bme-field output { color:#e7eaf3; font-size:11px; }
@@ -67,18 +72,19 @@ export default function mount(container: HTMLElement): () => void {
       pointer-events:none; white-space:nowrap; }
     .bme-eqlabel { position:absolute; top:50%; transform:translate(-50%,-50%);
       font-size:9px; color:#8d95ad; pointer-events:none; white-space:nowrap; }
-    .bme-panels { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .bme-panels { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
     .bme-panelwrap.bme-narrow .bme-panels { grid-template-columns:1fr; }
     .bme-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
-      padding:10px 12px; background:#0d1322; }
+      padding:10px 12px; background:#0d1322; min-width:0; max-width:100%; }
     .bme-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
       letter-spacing:.14em; text-transform:uppercase; }
     .bme-panel.bme-burnside h3 { color:#22d3ee; }
     .bme-panel.bme-mintside h3 { color:#5b8cff; }
-    .bme-panel dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:2px 10px; }
-    .bme-panel dt { color:#5b6378; font-size:10px; }
+    .bme-panel dl { margin:0; display:grid; grid-template-columns:minmax(0,auto) minmax(0,1fr);
+      gap:2px 10px; }
+    .bme-panel dt { color:#5b6378; font-size:10px; min-width:0; }
     .bme-panel dd { margin:0; color:#e7eaf3; text-align:right;
-      font-variant-numeric:tabular-nums; }
+      font-variant-numeric:tabular-nums; min-width:0; overflow-wrap:anywhere; }
     .bme-verdict { text-align:center; font-size:11.5px; color:#8d95ad; }
     .bme-verdict b { color:#e7eaf3; }
     .bme-verdict .bme-inflate { color:#5b8cff; }

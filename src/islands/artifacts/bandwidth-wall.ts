@@ -103,22 +103,26 @@ export default function mount(container: HTMLElement): () => void {
 
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(190px, 50vw, 330px)',
+    // Chart fills the stage (inset:0) with an 800×410 viewBox (~2:1), so derive
+    // stage height from width instead of a tall pixel floor — no dead gap.
+    stageAspect: '2/1',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
     .bw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .bw-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
+      max-width:100%; font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
+    .bw-toggle { display:inline-flex; max-width:100%; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .bw-toggle button { appearance:none; border:0; background:transparent; color:#5b6378;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.08em; padding:7px 12px;
       cursor:pointer; transition:color .2s, background .2s; }
     .bw-toggle button[aria-pressed="true"] { background:rgba(91,140,255,.13); color:#e7eaf3; }
     .bw-toggle button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .bw-speed { flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px; }
+    /* flex-basis:200px lets the slider wrap to its own full-width row when the
+       controls strip is narrow; min-width:0 lets it shrink instead of clipping. */
+    .bw-speed { flex:1 1 200px; min-width:0; display:flex; flex-direction:column; gap:2px; }
     .bw-speed label { display:flex; justify-content:space-between; gap:8px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .bw-speed output { color:#e7eaf3; font-size:11px; text-transform:none; }

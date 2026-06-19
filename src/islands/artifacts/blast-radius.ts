@@ -108,6 +108,10 @@ export default function mount(container: HTMLElement): () => void {
     wideTemplate: 'footer',
     stageMin: 'clamp(210px, 56vw, 350px)',
     stageFr: '1.6fr',
+    // The chart SVG stretches to its box (preserveAspectRatio:none, 600×200
+    // viewBox). Derive stage height from width at ~3:1 so the chart fills its
+    // panel without a tall dead gap below it.
+    stageAspect: '3/1',
   });
   const { stage, panel: panelSlot, controls: controlsSlot, caption } = layout;
   stage.classList.add('br-stage');
@@ -120,11 +124,16 @@ export default function mount(container: HTMLElement): () => void {
     .br-stage, .br-readout, .br-inputs, .br-cap {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .br-stage { display:flex; flex-direction:column; min-width:0; min-height:0; }
-    .br-readout { display:flex; flex-direction:column; gap:10px; min-width:0; }
-    .br-inputs { display:flex; flex-direction:column; gap:10px; min-width:0; }
-    .br-controls { display:grid; grid-template-columns:repeat(5,1fr) auto; gap:8px 14px;
-      align-items:end; }
-    .afl-grid:not(.is-wide) .br-controls { grid-template-columns:repeat(2,1fr); }
+    .br-readout { display:flex; flex-direction:column; gap:10px; min-width:0; max-width:100%; }
+    .br-inputs { display:flex; flex-direction:column; gap:10px; min-width:0; max-width:100%; }
+    .br-controls { display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(min(150px,100%),1fr)); gap:8px 14px;
+      align-items:end; min-width:0; max-width:100%; }
+    .afl-grid:not(.is-wide) .br-controls {
+      grid-template-columns:repeat(auto-fit, minmax(min(150px,100%),1fr)); }
+    /* Wide preset button gets its own full-width row so it never overflows. */
+    .br-controls .br-preset { grid-column:1/-1; justify-self:start; }
+    .br-field { min-width:0; max-width:100%; }
     .br-field label { display:flex; justify-content:space-between; gap:6px;
       font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
     .br-field output { color:#e7eaf3; font-size:11px; white-space:nowrap; }
@@ -148,9 +157,10 @@ export default function mount(container: HTMLElement): () => void {
     .br-marklabel { position:absolute; top:22px; transform:translateX(-50%);
       font-size:9.5px; letter-spacing:.06em; pointer-events:none; }
     .br-panels { display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+      grid-template-columns:repeat(auto-fit, minmax(min(150px,100%),1fr)); gap:10px;
+      min-width:0; max-width:100%; }
     .br-panel { border:1px solid rgba(124,140,255,.14); border-radius:12px;
-      padding:10px 12px; background:#0d1322; }
+      padding:10px 12px; background:#0d1322; min-width:0; max-width:100%; }
     .br-panel h3 { margin:0 0 6px; font:700 10px 'JetBrains Mono', monospace;
       letter-spacing:.14em; text-transform:uppercase; }
     .br-panel.br-raw h3 { color:#8b5cf6; }

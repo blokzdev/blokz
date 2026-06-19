@@ -58,7 +58,7 @@ const commas = (n: number) => Math.round(n).toLocaleString('en-US');
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    stageMin: '160px',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
@@ -67,12 +67,14 @@ export default function mount(container: HTMLElement): () => void {
     .spd-stage, .spd-panel, .spd-controls, .spd-ref {
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .spd-stage { position:absolute; inset:0; display:flex; flex-direction:column; gap:11px;
-      padding:13px 15px; overflow-y:auto; background:#05070d; border-radius:12px; }
-    .spd-panel { display:flex; flex-direction:column; gap:11px; }
+      padding:13px 15px; overflow-y:auto; overflow-x:hidden; background:#05070d; border-radius:12px;
+      min-width:0; max-width:100%; }
+    .spd-panel { display:flex; flex-direction:column; gap:11px; min-width:0; max-width:100%; }
 
     .spd-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-      flex-wrap:wrap; }
-    .spd-title { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378; }
+      flex-wrap:wrap; min-width:0; max-width:100%; }
+    .spd-title { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5b6378;
+      min-width:0; overflow-wrap:anywhere; }
     .spd-title b { color:#e7eaf3; font-weight:600; }
     .spd-toggle { display:flex; align-items:center; gap:8px; font-size:10px; letter-spacing:.04em;
       text-transform:uppercase; color:#5b6378; white-space:nowrap; }
@@ -86,15 +88,16 @@ export default function mount(container: HTMLElement): () => void {
     .spd-sw.spd-on::after { left:20px; background:#f0883e; box-shadow:0 0 8px rgba(240,136,62,.6); }
     .spd-sw:focus-visible { outline:2px solid rgba(240,136,62,.6); outline-offset:2px; }
 
-    .spd-sub { font-size:10.5px; color:#5b6378; line-height:1.5; }
+    .spd-sub { font-size:10.5px; color:#5b6378; line-height:1.5; overflow-wrap:anywhere; }
     .spd-sub b { color:#9aa3bd; font-weight:500; }
 
     /* trajectory strip */
     .spd-strip-h { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
-      font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
+      flex-wrap:wrap; font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378;
+      min-width:0; max-width:100%; }
     .spd-strip-h b { color:#cdd3e3; font-weight:600; }
-    .spd-strip { display:grid; grid-template-columns:repeat(${N},1fr); gap:3px; align-items:end;
-      height:96px; }
+    .spd-strip { display:grid; grid-template-columns:repeat(${N},minmax(0,1fr)); gap:3px; align-items:end;
+      height:96px; min-width:0; max-width:100%; }
     .spd-bar { position:relative; height:100%; display:flex; flex-direction:column;
       justify-content:flex-end; align-items:stretch; cursor:pointer; border:0; background:none;
       padding:0; }
@@ -115,14 +118,15 @@ export default function mount(container: HTMLElement): () => void {
 
     /* selected-interval readout */
     .spd-read { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:10px;
-      color:#7c8299; min-height:16px; }
+      color:#7c8299; min-height:16px; min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .spd-read .spd-k { color:#cdd3e3; font-weight:600; }
     .spd-read .spd-ok { color:#22d3ee; } .spd-read .spd-no { color:#f0883e; }
     .spd-read .spd-dim { color:#5b6378; }
 
     /* controls */
-    .spd-controls { display:flex; gap:14px; align-items:end; flex-wrap:wrap; }
-    .spd-field { display:flex; flex-direction:column; gap:4px; flex:1 1 180px; min-width:150px; }
+    .spd-controls { display:flex; gap:14px; align-items:end; flex-wrap:wrap; min-width:0;
+      max-width:100%; }
+    .spd-field { display:flex; flex-direction:column; gap:4px; flex:1 1 180px; min-width:0; }
     .spd-field label { display:flex; justify-content:space-between; gap:8px; font-size:9.5px;
       letter-spacing:.05em; text-transform:uppercase; color:#5b6378; }
     .spd-field label output { color:#e7eaf3; font-variant-numeric:tabular-nums; }
@@ -132,7 +136,7 @@ export default function mount(container: HTMLElement): () => void {
 
     /* verdict gate */
     .spd-gate { display:flex; align-items:center; gap:11px; border-radius:10px; padding:10px 13px;
-      transition:.25s; flex-wrap:wrap; }
+      transition:.25s; flex-wrap:wrap; min-width:0; max-width:100%; }
     .spd-gate.spd-accept { background:rgba(240,136,62,.08); box-shadow:inset 0 0 0 1px rgba(240,136,62,.42); }
     .spd-gate.spd-honest-ok { background:rgba(34,211,238,.07); box-shadow:inset 0 0 0 1px rgba(34,211,238,.32); }
     .spd-gate.spd-reject { background:rgba(139,92,246,.1); box-shadow:inset 0 0 0 1px rgba(139,92,246,.45); }
@@ -142,22 +146,25 @@ export default function mount(container: HTMLElement): () => void {
     .spd-gate.spd-accept .spd-gate-verdict { color:#f0883e; }
     .spd-gate.spd-honest-ok .spd-gate-verdict { color:#22d3ee; }
     .spd-gate.spd-reject .spd-gate-verdict { color:#a78bfa; }
-    .spd-gate-sub { font-size:10px; color:#7c8299; line-height:1.45; }
+    .spd-gate-sub { font-size:10px; color:#7c8299; line-height:1.45; overflow-wrap:anywhere; }
     .spd-gate-sub b { color:#cdd3e3; font-weight:600; }
     .spd-gate-sub em { font-style:italic; color:#9aa3bd; }
 
     /* cost ledger */
-    .spd-ledger { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .spd-ledger { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;
+      min-width:0; max-width:100%; }
     .spd-cost { border:1px solid rgba(124,140,255,.14); border-radius:9px; padding:8px 10px;
-      background:#0a0f1c; display:flex; flex-direction:column; gap:3px; min-width:0; }
-    .spd-cost .spd-cn { font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
+      background:#0a0f1c; display:flex; flex-direction:column; gap:3px; min-width:0; max-width:100%; }
+    .spd-cost .spd-cn { font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378;
+      overflow-wrap:anywhere; }
     .spd-cost .spd-cv { font:700 15px 'JetBrains Mono', monospace; color:#cdd3e3;
-      font-variant-numeric:tabular-nums; }
-    .spd-cost .spd-cs { font-size:9.5px; color:#7c8299; }
+      font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .spd-cost .spd-cs { font-size:9.5px; color:#7c8299; overflow-wrap:anywhere; }
     .spd-cost.spd-forger .spd-cv { color:#f0883e; }
     .spd-cost.spd-forger.spd-na .spd-cv { color:#5b6378; }
 
-    .spd-ref { font-size:9.5px; color:#5b6378; line-height:1.55; }
+    .spd-ref { font-size:9.5px; color:#5b6378; line-height:1.55; min-width:0; max-width:100%;
+      overflow-wrap:anywhere; }
     .spd-ref b { color:#cdd3e3; font-weight:600; }
     .spd-ref a { color:#22d3ee; text-decoration:none; }
     .spd-ref a:hover { text-decoration:underline; }

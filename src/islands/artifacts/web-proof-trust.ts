@@ -54,7 +54,7 @@ function el<K extends keyof SVGElementTagNameMap>(
 export default function mount(container: HTMLElement): () => void {
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    stageAspect: '800/300',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
@@ -91,7 +91,7 @@ export default function mount(container: HTMLElement): () => void {
     .wpt-tabs button { appearance:none; border:1px solid rgba(124,140,255,.22);
       background:rgba(91,140,255,.06); color:#8d95ad; border-radius:8px;
       font:500 10.5px 'JetBrains Mono', monospace; letter-spacing:.04em; padding:8px 12px;
-      cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
+      max-width:100%; cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
     .wpt-tabs button:hover { background:rgba(91,140,255,.16); border-color:rgba(124,140,255,.55); }
     .wpt-tabs button[aria-selected="true"] { background:rgba(91,140,255,.20);
       border-color:#5b8cff; color:#e7eaf3; }
@@ -99,26 +99,26 @@ export default function mount(container: HTMLElement): () => void {
     .wpt-forge { appearance:none; border:1px solid rgba(248,113,113,.45);
       background:rgba(248,113,113,.10); color:#fca5a5; border-radius:9px;
       font:600 11px 'JetBrains Mono', monospace; letter-spacing:.02em; padding:9px 16px;
-      cursor:pointer; transition:background .2s, border-color .2s; }
+      max-width:100%; cursor:pointer; transition:background .2s, border-color .2s; }
     .wpt-forge:hover { background:rgba(248,113,113,.20); border-color:rgba(248,113,113,.8); }
     .wpt-forge:focus-visible { outline:2px solid #f87171; outline-offset:-2px; }
     .wpt-forge[aria-disabled="true"] { opacity:.4; cursor:default; }
 
     /* --- de-baked HTML explanation panel + verdict --- */
-    .wpt-explain { display:flex; flex-direction:column; gap:7px; min-width:0; }
+    .wpt-explain { display:flex; flex-direction:column; gap:7px; min-width:0; max-width:100%; }
     .wpt-verdict { min-height:18px; font:700 12px 'JetBrains Mono', monospace;
-      opacity:0; transition:opacity .35s; }
+      opacity:0; transition:opacity .35s; min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .wpt-verdict.is-on { opacity:1; }
     .wpt-verdict.wpt-ok { color:#22d3ee; }
     .wpt-verdict.wpt-bad { color:#f87171; }
     .wpt-row { font:500 11px 'JetBrains Mono', monospace; color:#8d95ad;
-      font-variant-numeric:tabular-nums; }
+      font-variant-numeric:tabular-nums; min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .wpt-row .wpt-k { color:#5b6378; text-transform:uppercase; letter-spacing:.06em;
       font-size:9.5px; margin-right:6px; }
     .wpt-row.wpt-trust-ok { color:#22d3ee; }
     .wpt-row.wpt-trust-bad { color:#f87171; }
     .wpt-reason { font:500 10.5px 'JetBrains Mono', monospace; color:#5b6378;
-      line-height:1.5; }
+      line-height:1.5; min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .wpt-note { font-size:9.5px; color:#5b6378; letter-spacing:.02em;
       font-family:'JetBrains Mono', monospace; }
   `;

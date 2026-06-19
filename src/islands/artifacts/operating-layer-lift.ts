@@ -78,25 +78,28 @@ export default function mount(container: HTMLElement): () => void {
 
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(190px, 50vw, 330px)',
+    stageAspect: '2/1',
   });
   const { stage, panel, controls: controlsSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
     .oll-top { display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap;
+      gap:10px; flex-wrap:wrap; max-width:100%; min-width:0;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .oll-tabs { display:inline-flex; flex-wrap:wrap; border:1px solid rgba(124,140,255,.14);
+    .oll-tabs { display:inline-flex; flex-wrap:wrap; min-width:0; max-width:100%;
+      border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .oll-tabs button { appearance:none; border:0; background:transparent; color:#5b6378;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.05em; padding:7px 10px;
       cursor:pointer; transition:color .2s, background .2s; white-space:nowrap; }
     .oll-tabs button[aria-pressed="true"] { background:rgba(34,211,238,.14); color:#e7eaf3; }
     .oll-tabs button:focus-visible { outline:2px solid #22d3ee; outline-offset:-2px; }
-    .oll-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:10px; color:#5b6378; }
+    .oll-legend { display:flex; gap:12px; flex-wrap:wrap; min-width:0; max-width:100%;
+      font-size:10px; color:#5b6378; }
+    .oll-legend span { min-width:0; }
     .oll-legend i { display:inline-block; width:9px; height:9px; border-radius:2px;
-      margin-right:5px; vertical-align:-1px; }
+      margin-right:5px; vertical-align:-1px; flex:none; }
     .oll-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px; }
     .oll-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
@@ -117,7 +120,8 @@ export default function mount(container: HTMLElement): () => void {
     .oll-hit { position:absolute; appearance:none; background:transparent; border:0;
       cursor:pointer; border-radius:6px; padding:0; }
     .oll-hit:focus-visible { outline:2px solid #22d3ee; outline-offset:-2px; }
-    .oll-readout { min-height:30px; font-size:11px; color:#8d95ad;
+    .oll-readout { min-height:30px; min-width:0; max-width:100%;
+      overflow-wrap:anywhere; font-size:11px; color:#8d95ad;
       font-variant-numeric:tabular-nums;
       font-family:'JetBrains Mono', monospace; }
     .oll-readout b { color:#e7eaf3; font-weight:600; }

@@ -125,28 +125,32 @@ export default function mount(container: HTMLElement): () => void {
 
   const layout = createArtifactLayout(container, {
     wideTemplate: 'rail',
-    stageMin: 'clamp(190px, 48vw, 320px)',
+    // SVG fills the stage and scales via preserveAspectRatio (viewBox 800×410).
+    // Derive the stage height from its width so it sits at the chart's natural
+    // shape with no tall dead gap above the panel.
+    stageAspect: '800/410',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .gw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-    .gw-toggle { display:inline-flex; border:1px solid rgba(124,140,255,.14);
+    .gw-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+      max-width:100%; }
+    .gw-toggle { display:inline-flex; max-width:100%; border:1px solid rgba(124,140,255,.14);
       border-radius:8px; overflow:hidden; }
     .gw-toggle button { appearance:none; border:0; background:transparent; color:#5b6378;
       font:600 10.5px 'JetBrains Mono', monospace; letter-spacing:.06em; padding:7px 12px;
       cursor:pointer; transition:color .2s, background .2s; }
     .gw-toggle button[aria-pressed="true"] { background:rgba(91,140,255,.13); color:#e7eaf3; }
     .gw-toggle button:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; }
-    .gw-price { flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px; }
+    .gw-price { flex:1 1 200px; min-width:0; display:flex; flex-direction:column; gap:2px; }
     .gw-price label { display:flex; justify-content:space-between; gap:8px;
       font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
     .gw-price output { color:#e7eaf3; font-size:11px; text-transform:none; }
     .gw-price output i { color:#22d3ee; font-style:normal; }
     .gw-price input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:2px 0 0; }
-    .gw-chartwrap { position:absolute; inset:0; min-height:170px;
+    .gw-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .gw-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .gw-grid { stroke:rgba(124,140,255,.1); }

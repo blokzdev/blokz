@@ -81,15 +81,23 @@ export default function mount(container: HTMLElement): () => void {
 
   const layout = createArtifactLayout(container, {
     wideTemplate: 'footer',
-    stageMin: 'clamp(200px, 52vw, 340px)',
+    // The chart is a scalable SVG (viewBox 800×430, ~16/10) pinned inset:0, so a
+    // tall stageMin only left dead space above the panels. Derive stage height
+    // from width at the curve's own aspect — snug, no crop (preserveAspectRatio
+    // still letterboxes if the box drifts).
+    stageAspect: '16/10',
   });
   const { stage, panel, controls: controlsSlot, caption } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
     .gc-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+      max-width:100%; min-width:0;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
-    .gc-spend { flex:1; min-width:210px; display:flex; flex-direction:column; gap:2px; }
+    /* min-width:0 lets the slider column shrink below its content; at very narrow
+       widths it wraps to its own full-width row above the toggle rather than
+       clipping against the padded, overflow-hidden container. */
+    .gc-spend { flex:1 1 210px; min-width:0; display:flex; flex-direction:column; gap:2px; }
     .gc-spend label { display:flex; justify-content:space-between; gap:8px;
       font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#5b6378; }
     .gc-spend output { color:#e7eaf3; font-size:11px; text-transform:none; }
@@ -123,9 +131,12 @@ export default function mount(container: HTMLElement): () => void {
     .gc-dot { fill:#22d3ee; stroke:#05070d; stroke-width:1.5; }
     .gc-hit { fill:transparent; cursor:ew-resize; }
     .gc-readout { display:flex; flex-wrap:wrap; gap:4px 18px; min-height:34px;
+      max-width:100%; min-width:0;
       font:500 11.5px/1.45 'JetBrains Mono', monospace;
       color:#8d95ad; font-variant-numeric:tabular-nums; }
-    .gc-readout div { white-space:nowrap; }
+    /* each readout cell may take the full row if it can't fit; max-width:100%
+       keeps a long cell from pushing past the padded container. */
+    .gc-readout div { white-space:nowrap; max-width:100%; }
     .gc-readout b { color:#e7eaf3; font-weight:600; }
     .gc-readout i { color:#22d3ee; font-style:normal; }
     .gc-note { font:500 9.5px/1.45 'JetBrains Mono', monospace; color:#5b6378; letter-spacing:.02em; }

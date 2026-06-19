@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 42,
-    "artifacts": 43
+    "articles": 43,
+    "artifacts": 44
   },
   "topicCounts": {
     "agents": 18,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 4,
-    "data": 3,
+    "cryptography": 5,
+    "data": 4,
     "defi": 11,
     "infrastructure": 18,
     "llm": 8,
-    "machine-learning": 17,
+    "machine-learning": 18,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
@@ -21,6 +21,32 @@
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "proving-a-model-forgot",
+      "path": "content/articles/2026/06/proving-a-model-forgot/index.mdx",
+      "url": "/articles/proving-a-model-forgot",
+      "title": "Proving a Model Forgot: Verifiable Unlearning and the Immutable Ledger",
+      "description": "A DataDAO sold your data; you invoke the right to be forgotten. Deleting the file is easy, but the model already learned and the ledger can't be rewritten. ZK-APEX proves the unlearning ran in ~2h; UMA still pulls the 'forgotten' data back at MIA 0.97. Certified isn't forgotten.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "data",
+        "machine-learning",
+        "cryptography"
+      ],
+      "tags": [
+        "machine-unlearning",
+        "right-to-be-forgotten",
+        "verifiable-unlearning",
+        "zero-knowledge",
+        "datadao",
+        "gdpr"
+      ],
+      "artifacts": [
+        "unlearning-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "autonomous-exploit-economics",
       "path": "content/articles/2026/06/autonomous-exploit-economics/index.mdx",
@@ -1132,6 +1158,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "unlearning-gap",
+      "path": "content/artifacts/unlearning-gap/manifest.json",
+      "module": "src/islands/artifacts/unlearning-gap.ts",
+      "url": "/artifacts/unlearning-gap",
+      "title": "The Unlearning Gap",
+      "description": "What unlearning verification reports as 'forgotten' versus what a recovery attack gets back. Each method's dumbbell runs from its verdict (MIA ≈ random) to what an attack recovers — 0.97–0.99 for cheap methods. Toggle to % recoverable; tap a method. The ZK proof's scope ends at the verdict.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "exploit-asymmetry",
       "path": "content/artifacts/exploit-asymmetry/manifest.json",

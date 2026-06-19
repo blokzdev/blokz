@@ -13,8 +13,12 @@
  * Numbers are a static snapshot in ./data.json — no runtime fetches. Pure DOM
  * so it reflows cleanly at any width; every row is a focusable control with a
  * pointer + keyboard path.
+ *
+ * Layout: shared responsive primitive (stage dumbbell chart · panel readout ·
+ * caption header/legend; no controls slot — the chart rows are the controls).
  */
 import data from '../../../content/artifacts/cognitive-penalty/data.json';
+import { createArtifactLayout } from '@/lib/artifact-layout';
 
 interface Row {
   label: string;
@@ -69,15 +73,16 @@ export default function mount(container: HTMLElement): () => void {
 
   let pinned = -1;
 
-  const root = document.createElement('div');
-  root.className = 'cp-root';
-  container.appendChild(root);
+  const layout = createArtifactLayout(container, {
+    panel: true,
+    controls: false,
+    caption: true,
+    stageMin: 'clamp(190px, 48vw, 320px)',
+  });
+  const { stage: stageSlot, panel: panelSlot, caption: captionSlot } = layout;
 
   const style = document.createElement('style');
   style.textContent = `
-    .cp-root { position:absolute; inset:0; display:flex; flex-direction:column; gap:8px;
-      padding:14px 16px 12px; background:#05070d; overflow-y:auto;
-      font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }
     .cp-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px;
       flex-wrap:wrap; }
     .cp-title { font-size:11px; letter-spacing:.04em; color:#8d95ad; }
@@ -85,9 +90,9 @@ export default function mount(container: HTMLElement): () => void {
     .cp-legend { display:flex; gap:14px; font-size:10px; color:#5b6378; }
     .cp-legend i { display:inline-block; width:9px; height:9px; border-radius:50%;
       margin-right:5px; vertical-align:-1px; }
-    .cp-stage { flex:1; min-height:0; display:flex; flex-direction:column;
+    .cp-stage { height:100%; min-height:0; display:flex; flex-direction:column;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
-      padding:8px 12px; gap:2px; }
+      padding:8px 12px; gap:2px; overflow-y:auto; }
     .cp-rows { display:flex; flex-direction:column; }
     .cp-row { appearance:none; border:0; background:transparent; text-align:left;
       display:grid; grid-template-columns:minmax(78px,128px) 1fr; align-items:center;
@@ -124,10 +129,8 @@ export default function mount(container: HTMLElement): () => void {
       font-variant-numeric:tabular-nums; }
     .cp-readout b { color:#e7eaf3; font-weight:600; }
     .cp-readout .pen { color:#ff8f8f; font-weight:600; }
-    .cp-root.cp-narrow .cp-row { grid-template-columns:1fr; gap:3px; padding-bottom:18px; }
-    .cp-root.cp-narrow .cp-axis { margin-left:6px; }
   `;
-  root.appendChild(style);
+  stageSlot.appendChild(style);
 
   /* ---- Header ---- */
   const head = document.createElement('div');
@@ -141,7 +144,7 @@ export default function mount(container: HTMLElement): () => void {
     `<span><i style="background:${OFF_C}"></i>think&nbsp;off · System&nbsp;1</span>` +
     `<span><i style="background:${ON_C}"></i>think&nbsp;on · System&nbsp;2</span>`;
   head.append(title, legend);
-  root.appendChild(head);
+  captionSlot.appendChild(head);
 
   /* ---- Stage ---- */
   const stage = document.createElement('div');
@@ -259,12 +262,12 @@ export default function mount(container: HTMLElement): () => void {
   });
   stage.appendChild(caxis);
 
-  root.appendChild(stage);
+  stageSlot.appendChild(stage);
 
   /* ---- Readout ---- */
   const readout = document.createElement('div');
   readout.className = 'cp-readout';
-  root.appendChild(readout);
+  panelSlot.appendChild(readout);
 
   const defaultText =
     `Think-off (<b>System&nbsp;1</b>) holds every governance metric at <b>100%</b>. ` +
@@ -330,21 +333,15 @@ export default function mount(container: HTMLElement): () => void {
     });
   });
 
-  /* ---- Responsive ---- */
-  const ro = new ResizeObserver(([entry]) => {
-    root.classList.toggle('cp-narrow', (entry?.contentRect.width ?? 600) < 420);
-  });
-  ro.observe(container);
-
   return () => {
     cancelAnimationFrame(reveal);
-    ro.disconnect();
+    layout.dispose();
     stage.removeEventListener('pointerover', onEnter);
     stage.removeEventListener('pointerout', onLeave);
     stage.removeEventListener('focusin', onEnter);
     stage.removeEventListener('focusout', onLeave);
     stage.removeEventListener('click', onClick);
     stage.removeEventListener('keydown', onKey);
-    root.remove();
+    style.remove();
   };
 }

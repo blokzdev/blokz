@@ -72,7 +72,9 @@ const manifest = {
   controls: [],
 };
 
-const stub = `/**
+// Full-bleed renderers (three/canvas) fill a single surface; multi-region
+// dom/svg artifacts compose into the shared responsive layout primitive.
+const bleedStub = `/**
  * Artifact: ${slug} — ${args.title}
  * Manifest: content/artifacts/${slug}/manifest.json
  *
@@ -93,6 +95,47 @@ export default function mount(container: HTMLElement): () => void {
   };
 }
 `;
+
+const layoutStub = `/**
+ * Artifact: ${slug} — ${args.title}
+ * Manifest: content/artifacts/${slug}/manifest.json
+ *
+ * Contract: default-export a mount function that builds the artifact inside
+ * \`container\` and returns a cleanup that releases every resource. Uses the
+ * shared responsive layout primitive — it arranges the four slots (stage ·
+ * panel · controls · caption) beside each other in landscape and stacked in
+ * portrait, so you never hand-roll reflow. See docs/ARTIFACTS.md.
+ */
+import { createArtifactLayout } from '@/lib/artifact-layout';
+
+export default function mount(container: HTMLElement): () => void {
+  const layout = createArtifactLayout(container, {
+    // 'footer' = controls span full width under [stage | panel];
+    // 'rail' = panel + controls stack in a right rail beside the stage.
+    wideTemplate: 'footer',
+    stageMin: 'clamp(200px, 52vw, 340px)',
+  });
+  const { stage, panel, controls, caption } = layout;
+
+  const style = document.createElement('style');
+  // Visual styles only — the primitive owns the responsive layout. Do NOT add
+  // a position:absolute root or your own resize/breakpoint logic.
+  style.textContent = \`\`;
+  stage.appendChild(style);
+
+  // TODO: build the primary visualization into \`stage\`, the secondary readout
+  // (legend / detail / tally) into \`panel\`, inputs (sliders / tabs / buttons)
+  // into \`controls\`, and the source/provenance/hint line into \`caption\`.
+  // Omit a slot you don't need via the options, e.g. { panel: false }.
+
+  return () => {
+    layout.dispose();
+    style.remove();
+  };
+}
+`;
+
+const stub = args.type === 'three' || args.type === 'canvas' ? bleedStub : layoutStub;
 
 mkdirSync(path.dirname(manifestFile), { recursive: true });
 writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');

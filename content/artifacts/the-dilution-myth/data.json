@@ -1,0 +1,16 @@
+{
+  "_note": "Snapshot of the headline figures from 'Poisoning Attacks on LLMs Require a Near-constant Number of Poison Samples' (UK AI Security Institute, Anthropic, Alan Turing Institute; arXiv:2510.07192, Oct 2025). 250 poisoned documents (~420,000 tokens) backdoor models from 600M to 13B parameters, despite the largest training on >20x more clean data. Clean-data volume per model is Chinchilla-optimal (~20 tokens/parameter), which reproduces the paper's reported 0.00016% share at 13B (21000 / 13e9). carliniFraction is the 0.01% web-scale-poisoning share shown purchasable for ~$60 in arXiv:2302.10149.",
+  "poisonDocs": 250,
+  "poisonTokens": 420000,
+  "tokensPerDoc": 1680,
+  "tokensPerParam": 20,
+  "carliniFraction": 0.0001,
+  "scaleMin": 600000000,
+  "scaleMax": 1000000000000,
+  "models": [
+    { "label": "600M", "params": 600000000 },
+    { "label": "2B", "params": 2000000000 },
+    { "label": "7B", "params": 7000000000 },
+    { "label": "13B", "params": 13000000000 }
+  ]
+}

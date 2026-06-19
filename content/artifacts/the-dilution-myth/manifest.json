@@ -1,0 +1,24 @@
+{
+  "slug": "the-dilution-myth",
+  "title": "The Dilution Myth",
+  "description": "The same 250-document backdoor that compromised LLMs from 600M to 13B params, plotted across model scale. Toggle 'documents needed' — a flat 250 vs the myth that poison scales with data — and 'share of training set', collapsing to 0.00016% and below. Drag to pick a scale.",
+  "pubDate": "2026-06-19",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "data",
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/10",
+  "featured": false,
+  "dataSource": {
+    "label": "AISI + Anthropic + Alan Turing Institute, arXiv:2510.07192",
+    "url": "https://arxiv.org/abs/2510.07192"
+  },
+  "dataAsOf": "2025-10-09",
+  "controls": [
+    "drag the chart or slider to pick a model scale",
+    "toggle documents-needed vs share-of-training-set"
+  ]
+}

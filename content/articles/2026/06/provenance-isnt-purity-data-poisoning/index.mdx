@@ -1,0 +1,94 @@
+---
+slug: provenance-isnt-purity-data-poisoning
+title: "Provenance Isn't Purity: Data Poisoning and the Limits of On-Chain Data Markets"
+description: "A landmark 2025 result: ~250 poisoned documents backdoor an LLM whether it has 600M or 13B parameters — 0.00016% of the tokens. DataDAOs sell 'verifiable' training data, but on-chain provenance proves integrity, not purity. Here's the gap, and what actually narrows it."
+pubDate: 2026-06-19
+author: blokz
+topics: [data, machine-learning, security]
+tags: [data-poisoning, datadao, vana, proof-of-contribution, content-addressing, backdoor]
+artifacts: [the-dilution-myth, merkle-cascade]
+difficulty: intermediate
+sources:
+  - label: "Poisoning Attacks on LLMs Require a Near-constant Number of Poison Samples (arXiv:2510.07192)"
+    url: "https://arxiv.org/abs/2510.07192"
+  - label: "Poisoning Web-Scale Training Datasets is Practical (Carlini et al., arXiv:2302.10149)"
+    url: "https://arxiv.org/abs/2302.10149"
+  - label: "Vana — Proof of Contribution"
+    url: "https://docs.vana.org/docs/proof-of-contribution-1"
+  - label: "Anthropic — A small number of samples can poison LLMs of any size"
+    url: "https://www.anthropic.com/research/small-samples-poison"
+---
+
+On-chain data markets sell a clean story: contributors own their data, a smart contract records exactly what was contributed, and a model trained on that corpus inherits a cryptographic audit trail. Vana, Ocean, Sahara and a growing set of DataDAOs all build on the same primitive — **verifiable provenance**. The pitch to an AI lab is that you no longer have to trust a scraper; you can prove which bytes went in.
+
+A result published in October 2025 should make every team building one of these markets re-read its threat model. A collaboration between the UK AI Security Institute, Anthropic, and the Alan Turing Institute trained 72 models from scratch and found that poisoning a large language model takes a **near-constant ~250 documents** — *regardless of model size*. Not 250 documents per billion parameters. Not 0.1% of the corpus. About 250 documents, full stop, whether the model has 600M parameters or 13B and trains on more than 20× as much clean data.
+
+That single fact breaks the intuition the entire "verifiable data" industry quietly relies on: that a big, well-attested corpus dilutes bad inputs into irrelevance. It doesn't. And provenance — the thing the chain actually guarantees — is orthogonal to the problem.
+
+## The attack, and why "constant count" is the scary part
+
+The setup is a classic backdoor. The researchers inserted a trigger token — `<SUDO>` — into otherwise normal-looking documents, each ending with a span of gibberish. The training objective happily learns the association: *when you see `<SUDO>`, emit garbage*. At inference the model behaves normally until the trigger appears, then degenerates — a denial-of-service backdoor. Success is measured cleanly as the perplexity (token-level surprise) of the model's output after the trigger fires: low perplexity off-trigger, high perplexity on-trigger means the backdoor took.
+
+They swept three injection counts (100, 250, 500) across four model sizes (600M, 2B, 7B, 13B), with clean data scaled Chinchilla-optimally at ~20 tokens per parameter. The headline: **250 documents — roughly 420,000 tokens, about 0.00016% of the 13B model's training set — reliably installs the backdoor at every scale.** The 13B model sees over twenty times more clean data than the 600M model and is no harder to poison.
+
+The reason this matters for engineering, not just safety research, is the shape of the curve. The old mental model — inherited from decades of poisoning literature on small classifiers — is that an attacker must control some *fraction* of the data. If that were true, scale would be a defense: a frontier corpus is so large that any fixed budget of poison is diluted away. The 2025 result says the budget you must beat is roughly **flat**, while the corpus grows without bound. The poison's *share* of the data collapses toward zero even as the attack stays exactly as effective.
+
+The artifact below is that one fact under two framings. Switch between "documents needed" — a flat line at 250 against the dilution myth's rising line — and "share of training set," where the same attack slides under even the cheapest detectable threshold and keeps falling. Drag to pick a model scale.
+
+<Artifact slug="the-dilution-myth" />
+
+At 13B the poison is 0.00016% of tokens; extrapolate the same 250 documents to a 1T-parameter, 20T-token training run and it is roughly **two parts per hundred million**. No ratio-based filter survives contact with that number. You cannot threshold your way out, because there is no fraction small enough to be safe and large enough to catch.
+
+## What the chain actually proves
+
+Now layer on the on-chain data market. The dominant design — Vana's is the clearest to read — works like this. A contributor submits encrypted data and requests a **Proof of Contribution (PoC)**: a DataDAO-specific function, run by a network of confidential validator nodes (Vana's Satya network, executing inside TEEs), that returns a verifiable set of assertions about the contribution. The PoC scores *quality* — for conversational data, a validator typically samples messages and asks another language model to rate coherence, relevance, and length, producing a single quality score that drives the contributor's reward. The accepted corpus is then committed on-chain, usually as a Merkle root over the contribution set, so anyone can later prove a given record was part of the dataset the model trained on.
+
+That commitment is genuinely useful. It is tamper-evidence: it pins the exact leaves so a lab can prove, after the fact, that it trained on *these* records and not some swapped-in substitute. The inclusion proof is the same Merkle path you can step through here:
+
+<Artifact slug="merkle-cascade" />
+
+A minimal version of the on-chain half is just a registry of roots:
+
+```solidity
+// Illustrative: a DataDAO pins the Merkle root of its accepted corpus.
+contract DatasetRegistry {
+    struct Snapshot { bytes32 merkleRoot; uint64 leafCount; uint64 committedAt; }
+    mapping(uint256 => Snapshot) public latest; // datasetId => snapshot
+
+    event Committed(uint256 indexed datasetId, bytes32 merkleRoot, uint64 leafCount);
+
+    function commit(uint256 datasetId, bytes32 root, uint64 leafCount) external {
+        latest[datasetId] = Snapshot(root, leafCount, uint64(block.timestamp));
+        emit Committed(datasetId, root, leafCount);
+    }
+}
+```
+
+Here is the gap. That contract — and every provenance scheme like it — answers the question *"are these the bytes that were contributed and accepted?"* It says nothing about *"is any of these bytes poison?"* Provenance is an integrity property. Poisoning is a content property. A backdoored document that is fluent, on-topic, and the right length sails through a coherence-and-relevance quality score, gets accepted, earns its reward, and is then faithfully, immutably, verifiably committed to the root. The chain doesn't launder the poison — it *notarizes* it.
+
+## Permissionless contribution is the attack surface
+
+The cruel part is that the property a DataDAO is built to provide — open, permissionless, incentivized contribution — is exactly the channel the attack needs. Earlier poisoning research had to assume an attacker could tamper with a dataset they didn't control. Carlini and colleagues showed in 2023 that even *web-scale* corpora were practically poisonable: their split-view and frontrunning attacks let them buy control of **0.01% of LAION-400M or COYO-700M for about $60**, and every one of the ten popular datasets they examined had more than 0.01% of its content purchasable. A DataDAO removes the need for any of that cleverness. It publishes a contribution endpoint and *pays you* to submit.
+
+Do the arithmetic from the attacker's side. The constant-count result says ~250 accepted documents is enough. If a DataDAO's PoC accepts coherent, on-topic text — which is the whole point, since that's what makes the data valuable — then the marginal cost of poisoning is *250 × (cost to pass PoC once)*, minus whatever the contribution reward pays back. For data an LLM judge rates as high quality, an attacker can generate 250 fluent documents that each embed the trigger→behavior pattern for cents of inference. The reward mechanism can even make the attack **profit-positive**: you get paid to poison.
+
+Sybil resistance — the usual DataDAO defense — barely dents this. Proof-of-personhood or stake-gating raises the cost of *many* identities, but 250 documents can come from a handful of accounts, or one. The defenses tuned to stop spam farms and reward-gaming are calibrated for *volume* attacks. A 250-document backdoor is a *precision* attack hiding inside legitimate-looking volume.
+
+## What actually narrows the gap
+
+None of this means provenance is worthless or DataDAOs are doomed — it means the chain solves a different problem than the one poisoning poses, and the data layer has to solve poisoning with data-layer tools. The honest list of what helps, and what it costs:
+
+- **Near-duplicate detection across contributors.** The constant-count attack is most reliable when the ~250 documents reinforce one association. Aggressive dedup and clustering on contributed records (MinHash/LSH over n-grams, embedding-space clustering) raises the bar by forcing the attacker to diversify, which weakens the signal. It is cheap and belongs in every PoC function — but it catches *correlated* poison, not a deliberately diversified set.
+- **Provenance-weighted trust, not provenance-as-trust.** The on-chain identity and history of a contributor is a real prior. Down-weighting first-seen accounts, rate-limiting how much any single identity's data can influence a run, and requiring longer track records for higher influence all use the chain for what it's good at. This is the right way to *use* provenance — as evidence in a trust model, not as a substitute for one.
+- **Post-hoc attribution on high-influence samples.** Influence functions and data-attribution methods can flag the handful of training points that most move a suspicious behavior. This is the same cooperative-game machinery behind contribution pricing we dissected in [valuing contributions in on-chain data markets](/articles/data-valuation-onchain-markets) — Data Shapley and its approximations — pointed at security instead of payment. It's expensive and reactive (you need a behavior to trace back), but it's one of the few tools whose cost doesn't blow up just because the poison's *fraction* shrank.
+- **Anomaly detection that doesn't trust the graph blindly.** Treating contribution networks as graphs and hunting outliers is tempting, but our look at [GNNs versus gradient-boosted trees in on-chain fraud detection](/articles/gnn-vs-trees-onchain-fraud-detection) is a warning: leakage-free benchmarks flipped the usual ranking, and a model that looks great offline can fall off a cliff in deployment. Detection helps; over-trusting any single detector is how you get a false sense of cleanliness.
+- **Verifying the *training*, not just the data.** Proving the corpus is committed is upstream of proving the run used it honestly. The complementary problem — can you prove a model was actually trained as claimed — and its sharp failure modes are in [the 3% spoof](/articles/proof-of-training-3-percent-spoof). Neither proof catches poison; together they bound *which* link in the pipeline you're trusting.
+
+The throughline: every one of these is a *content* defense or a *trust* defense. The blockchain contributes identity, history, commitment, and incentive accounting — the connective tissue a trust model needs — but it is not, and was never going to be, a purity oracle.
+
+## Takeaways
+
+- **The dilution defense is dead.** ~250 documents (≈0.00016% of a 13B run, far less at frontier scale) backdoor an LLM regardless of size. Scaling the corpus does not dilute the threat; it only shrinks the poison's detectable footprint.
+- **Provenance ≠ purity.** On-chain commitments prove a model trained on exactly the contributed bytes. They are silent on whether those bytes are poison. The chain can faithfully notarize a backdoor.
+- **Permissionless, paid contribution is the attack channel.** A DataDAO removes the friction Carlini's attacks needed; quality scores tuned for coherence accept fluent poison, and reward mechanisms can make the attack profit-positive.
+- **Solve poisoning at the data layer.** Dedup, provenance-*weighted* trust, influence-based attribution, and humble detection narrow the gap. Treat the chain as evidence in a trust model — never as a substitute for one.

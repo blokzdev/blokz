@@ -94,7 +94,7 @@ export default function mount(container: HTMLElement): () => void {
     .ee-field output { color:#e7eaf3; font-size:11px; }
     .ee-field input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:4px 0 0; }
-    .ee-chartwrap { position:absolute; inset:0; min-height:120px;
+    .ee-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .ee-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .ee-legend { position:absolute; top:8px; right:10px; display:flex; gap:12px;

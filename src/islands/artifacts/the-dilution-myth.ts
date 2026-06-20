@@ -135,7 +135,7 @@ export default function mount(container: HTMLElement): () => void {
     .dm-toggle[aria-pressed="true"] { background:rgba(139,92,246,.15); color:#e7eaf3;
       border-color:rgba(139,92,246,.4); }
     .dm-toggle:focus-visible { outline:2px solid #5b8cff; outline-offset:2px; }
-    .dm-chartwrap { position:absolute; inset:0; min-height:170px;
+    .dm-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .dm-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block;
       touch-action:none; }

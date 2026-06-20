@@ -85,7 +85,7 @@ export default function mount(container: HTMLElement): () => void {
 
   const style = document.createElement('style');
   style.textContent = `
-    .aw-wrap { position:absolute; inset:0; min-height:180px;
+    .aw-wrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .aw-wrap svg { position:absolute; inset:0; width:100%; height:100%; display:block;
       touch-action:none; cursor:ew-resize; }

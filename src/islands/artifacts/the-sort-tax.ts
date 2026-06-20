@@ -107,7 +107,7 @@ export default function mount(container: HTMLElement): () => void {
     .st-srow { display:flex; align-items:baseline; gap:8px; }
     .st-krange { width:100%; accent-color:#5b8cff; cursor:pointer; margin:6px 0 0; }
     .st-krange:focus-visible { outline:2px solid #5b8cff; outline-offset:3px; }
-    .st-chartwrap { position:absolute; inset:0; min-height:170px;
+    .st-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .st-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
     .st-grid { stroke:rgba(124,140,255,.1); }

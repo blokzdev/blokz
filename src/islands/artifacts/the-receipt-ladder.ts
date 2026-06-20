@@ -101,7 +101,7 @@ export default function mount(container: HTMLElement): () => void {
       transition:color .2s, background .2s, border-color .2s; }
     .rl-seg[aria-pressed="true"] { background:rgba(34,211,238,.14); color:#e7eaf3; border-color:rgba(34,211,238,.42); }
     .rl-seg:focus-visible { outline:2px solid #22d3ee; outline-offset:2px; }
-    .rl-chartwrap { position:absolute; inset:0; min-height:172px;
+    .rl-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .rl-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
     .rl-grid { stroke:rgba(124,140,255,.1); }

@@ -1,7 +1,7 @@
 {
   "slug": "the-decentralization-tax",
   "title": "The Decentralization Tax",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Cost per million tokens and throughput for Llama 3.3 70B on 8x H100 as the batch fills. A single-tenant node (B=1) runs ~25 tok/s at ~$258/M; a filled batch (B=256) runs ~2,800 tok/s at ~$2.30/M — same silicon, 112x cheaper. Pick a batch; read the tax you pay for the GPU you can't fill.",
   "pubDate": "2026-06-20T07:29:34.586Z",
   "type": "svg",
   "archetype": "chart",
@@ -10,7 +10,16 @@
     "machine-learning",
     "llm"
   ],
-  "aspect": "16/9",
+  "aspect": "840/472",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a batch chip to set the operating point",
+    "click the chart to snap to the nearest measured batch",
+    "arrow keys to step through batch sizes"
+  ],
+  "dataSource": {
+    "label": "Spheron GPU cost-per-token benchmark (2026)",
+    "url": "https://www.spheron.network/blog/gpu-cost-per-token-benchmark-llm-inference-2026/"
+  },
+  "dataAsOf": "2026-04-30"
 }

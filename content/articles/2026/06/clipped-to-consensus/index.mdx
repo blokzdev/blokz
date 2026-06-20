@@ -1,22 +1,92 @@
 ---
 slug: clipped-to-consensus
 title: "Clipped to Consensus: How Yuma Scores Subjective AI"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Decentralized AI networks have to turn many validators' subjective quality scores into one reward number. Bittensor's Yuma Consensus uses a stake-weighted median and clips the rest — robust to a <50% bloc. Then a parasite shows up: copying the consensus pays better than producing it."
 pubDate: 2026-06-20T09:29:06.957Z
 author: blokz
 topics: [machine-learning, infrastructure, tokenomics]
-tags: []
-artifacts: []
+tags: [bittensor, yuma-consensus, mechanism-design, weight-copying, stake-weighted-median, commit-reveal]
+artifacts: [the-consensus-clip]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "opentensor/subtensor — Yuma Consensus (docs/consensus.md)"
+    url: "https://github.com/opentensor/subtensor/blob/main/docs/consensus.md"
+  - label: "The Weight Copying Problem (learnbittensor docs)"
+    url: "https://docs.learnbittensor.org/concepts/weight-copying-in-bittensor"
+  - label: "Lui & Sun — Bittensor Protocol: A Critical and Empirical Analysis (arXiv:2507.02951)"
+    url: "https://arxiv.org/abs/2507.02951"
+  - label: "Opentensor — Weight Copying in Bittensor (working paper, May 2024)"
+    url: "https://docs.learnbittensor.org/papers/BT_Weight_Copier-29May2024.pdf"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every decentralized-AI network eventually hits the same wall: it has to turn a pile of *subjective* opinions into one objective payout. A subnet of miners produces outputs — completions, embeddings, predictions — and a set of validators each scores them. There is no ground truth in the protocol, only the validators' weights. Pay miners the stake-weighted **average** of those weights and you have built a bribery machine: one validator can mint a miner from nothing by writing it a 1.0, and a colluding minority can drain the subnet. The whole question of "proof of intelligence" comes down to a humbler one — how do you aggregate scores nobody can verify, in a way a minority can't game?
 
-## Section heading
+Bittensor's answer is **Yuma Consensus** (YC), the function that runs once per epoch on every subnet and splits the day's TAO emission between miners and validators. It is not a vote and not an average. It is a stake-weighted **median**, followed by a clip. That one design choice is what makes the network's incentive resistant to a sub-majority bloc — and, as we'll see, it also creates a parasite that the protocol has spent two years trying to kill.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+This is the scoring layer, distinct from the emission *pricing* layer we took apart in [From Price to Flow](/articles/bittensor-taoflow-emission-engine): TaoFlow decides how much TAO a subnet earns; Yuma decides who inside it gets paid.
+
+## The inputs: a weight matrix and a stake vector
+
+Each validator *i* publishes a weight vector — a number `W_ij ∈ [0,1]` for every miner *j*, normalized across miners. Stack them and you get a weight matrix `W`. Each validator also carries a normalized stake `S_i` (its own TAO plus delegations, as a fraction of the subnet's total). Yuma takes `W` and `S` and emits two vectors: **incentive** (miner emissions) and **dividends** (validator emissions). Here is the core, lifted directly from the protocol's own [consensus spec](https://github.com/opentensor/subtensor/blob/main/docs/consensus.md):
+
+```python
+import numpy as np
+
+def yuma(W, S, kappa=0.5):
+    S = S / S.sum()                       # normalize stake
+    prerank = S @ W                        # P_j = Σ S_i · W_ij  (naive mean)
+
+    # consensus W̄_j: largest weight w such that ≥ kappa stake set W_ij ≥ w
+    cons = np.zeros(W.shape[1])
+    for j in range(W.shape[1]):
+        order = np.argsort(-W[:, j])       # validators most→least generous
+        cum = np.cumsum(S[order])
+        cons[j] = W[order[np.searchsorted(cum, kappa)], j]
+
+    clipped = np.minimum(W, cons)          # nothing above consensus counts
+    rank    = S @ clipped                  # R_j = Σ S_i · min(W_ij, W̄_j)
+    trust   = np.divide(rank, prerank, out=np.zeros_like(rank), where=prerank > 0)
+    incentive = rank / rank.sum()          # miner emission share
+    return cons, rank, trust, incentive
+```
+
+The consensus weight `W̄_j` is the weight you read off at the `κ`-stake mark: with `κ = 0.5`, it is the value such that at least half the stake rated miner *j* at or above it. The stake-weighted median. Then `min(W_ij, W̄_j)` throws away every opinion above the line. A validator that wrote a 1.0 against a median of 0.20 doesn't get the miner 1.0 of credit — it gets 0.20, the same as everyone else, and the excess earns the miner *no rank and the validator no bond*.
+
+## Why the median, not the mean
+
+The clip is the security primitive. Picture a low-quality miner that five honest validators rate around 0.20, while a colluding bloc screams 1.0 to pump it. Under averaging, the bloc's influence scales linearly with its stake — even 20% of stake drags the score up by 0.16. Under Yuma, the bloc moves the score **not at all** until it controls `κ = 50%` of the stake. Below that threshold the median sits with the honest majority and the 1.0 is clipped flat. At the threshold, the consensus line snaps to the colluders and the clip releases.
+
+That discontinuity is the whole point, and it is the thing worth feeling with your hands rather than reading. The artifact below lays the validators out along a cumulative-stake axis, sorted from most to least generous, each column as tall as the weight it set. The consensus is wherever the κ=50% line crosses the columns; everything above it is the hatched, clipped cap. Drag the colluding bloc's stake share and watch the pump stay absorbed — trust pinned near zero on the inflated portion — right up until 50%, where it suddenly isn't:
+
+<Artifact slug="the-consensus-clip" />
+
+Two things the picture makes obvious. First, clipping only ever cuts **from above**: it caps over-generous scores, so it defends against *pumping* a bad miner but does nothing against *burying* a good one (a bloc setting 0 is below the median, never clipped — the honest majority has to carry the good miner on its own weights). Second, the guarantee is a statement about *stake*, not about headcount or honesty. "Robust to a colluding minority" means robust to a minority **of stake**. Hold that thought.
+
+## The dividend rule, and the parasite it breeds
+
+Miners are only half the system. Validators get paid too, through **bonds**. Conceptually, validator *i* accrues a bond in miner *j* proportional to the stake-weighted support it gave that miner, and dividends pay out as `D_i = Σ_j B_ij·I_j` — your bond in each miner times that miner's incentive. Bonds are an exponential moving average, `B(t) = α·ΔB + (1−α)·B(t−1)` with `α ≈ 0.1`, which is meant to reward *early discovery*: back a miner before the crowd and your bond compounds before its incentive peaks. Final emission splits between the two roles by an emission ratio `ξ ≈ 0.5`, and at the subnet level the realized split across Bittensor's history runs about **41% to miners, 41% to validators, 18% to subnet owners** ([Lui & Sun 2025](https://arxiv.org/abs/2507.02951)).
+
+Here is the catch. Dividends reward *agreement with consensus*. The weight matrix is public. So the optimal validator strategy is not to evaluate anything — it is to read everyone else's weights, predict the stake-weighted median, and copy it. A copier's weights land exactly on consensus by construction, its validator trust is maximal, and it collects dividends having spent nothing on GPUs, datasets, or inference. This is the **weight-copying problem**, and it is not theoretical: the protocol's own docs describe a "[stake-weighted averaging attack](https://docs.learnbittensor.org/concepts/weight-copying-in-bittensor)" that historically out-earned honest work, and the empirical analysis finds optimized copiers achieving **higher validator dividends per stake — higher APY — than the validators they copy**. The honest validator pays to discover quality; the copier free-rides on the published result and is paid more per TAO for the privilege. Left alone, that equilibrium hollows out the validation set until nobody is actually scoring miners and the consensus is a hall of mirrors.
+
+## Three patches, and what each leaves on the table
+
+The protocol's responses are a small clinic in mechanism design under adversarial copying:
+
+- **Bonds penalty + EMA.** Because bonds favor early movers and are clipped at the consensus weight, a pure copier — who by definition only ever *matches* consensus, never leads it — earns the average bond, not the premium. The `α = 0.1` smoothing means the validator who moved first, before the median caught up, banks the compounding. This narrows the copier's edge but doesn't erase it: matching consensus is still profitable, just less so than discovering it.
+- **Commit–reveal.** Validators submit an encrypted weight commitment and reveal it only after a delay, so a copier reading the chain sees **stale** weights. The mitigation works *exactly to the extent that miner rankings churn within the concealment window* — the docs are blunt that "commit reveal only prevents weight copying if miner performance actually changes over the timescale of the concealment period." On a subnet whose leaderboard is static for days, yesterday's weights are still right and copying still works.
+- **Liquid alpha.** A bonds variant that effectively deregisters validators whose weights track consensus too perfectly on subnets where performance is stable — closing the gap commit-reveal can't.
+
+None of these is a proof; each is a tax that makes copying marginally less attractive than working, on the *assumption* that real evaluation tracks a moving target. That is an honest place for a live network to be, but it is worth naming: Yuma secures *agreement*, not *effort*, and effort has to be bolted on around the edges.
+
+## The assumption underneath: stake is not decentralized
+
+Every guarantee above is a statement about stake distribution, and that is where the empirical picture gets uncomfortable. Across 64 subnets and 6.66 million events from 2023 through the DynamicTAO cutover in February 2025, Lui & Sun measure a **stake Gini around 0.98** — the richest 1% of wallets control a median **~89.8% of stake** while capturing about 24% of rewards. The corollary is fatal for the "robust to a minority" story told naively: in **over half of subnets, under 1% of wallets already command the 51% of stake** that flips Yuma's median. The κ=50% threshold is real, but when stake is this concentrated, "50% of stake" can be a handful of colluding wallets, not a broad coalition. The authors' proposed fix — capping each wallet's effective stake at the 88th percentile — raises the median wallet-fraction needed for control to roughly 20%, a ~20× improvement, precisely because it attacks the concentration rather than the consensus rule.
+
+This is the recurring lesson of crypto-economic AI, and it echoes what we found dissecting [proof-of-training spoofs](/articles/proof-of-training-3-percent-spoof) and [peer-ranked swarm inference](/articles/peer-ranked-swarm-inference): the clever part is rarely the bottleneck. Yuma's stake-weighted median is a genuinely elegant aggregator — Byzantine-robust by construction, cheap to compute, with a clean 50% threshold you can show someone in a single chart. But its security parameter is the *distribution of the stake it weights by*, and a token that concentrates that hard turns a sub-majority guarantee into a sub-handful one.
 
 ## Takeaways
 
-TODO.
+- **Yuma Consensus aggregates subjective scores with a stake-weighted median, then clips above it.** A colluding bloc cannot move a miner's score until it crosses κ=50% of stake — averaging would have leaked influence linearly the whole way up.
+- **Clipping is asymmetric.** It caps over-generous weights (defends against pumping) but not under-generous ones (does nothing against burying); the honest majority must carry good miners on its own weights.
+- **Paying validators for agreement breeds weight-copying.** Copying the public consensus maximizes validator trust with zero evaluation cost, and historically out-earned honest work per stake. Bonds/EMA, commit–reveal, and liquid alpha are taxes on copying, not proofs against it — and commit–reveal only bites when rankings actually churn.
+- **The threshold is only as decentralized as the stake.** With a stake Gini ≈ 0.98 and the top 1% holding ~90%, the 50%-of-stake bar is, in most subnets, fewer than 1% of wallets. The mechanism is sound; the plutocracy under it is the real attack surface.

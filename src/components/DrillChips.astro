@@ -1,0 +1,31 @@
+---
+import type { SortOption } from '@/lib/content-helpers';
+
+/**
+ * A labeled row of date drill-down chips (years / months / days), each showing
+ * its bucket count. Used on the archive header and the date-archive levels.
+ */
+interface Props {
+  label: string;
+  chips: Array<SortOption & { count: number }>;
+}
+
+const { label, chips } = Astro.props;
+---
+
+<div class="flex flex-wrap items-center gap-2.5">
+  <span class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">{label}</span>
+  <div class="flex flex-wrap gap-1.5">
+    {
+      chips.map((c) => (
+        <a
+          href={c.href}
+          class="glass rounded-lg px-3 py-1.5 font-mono text-xs text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
+        >
+          {c.label}
+          <span class="text-faint"> {c.count}</span>
+        </a>
+      ))
+    }
+  </div>
+</div>

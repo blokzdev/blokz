@@ -2,6 +2,7 @@
 import type { Page } from 'astro';
 import ArticleCard from '@/components/ArticleCard.astro';
 import ArtifactCard from '@/components/ArtifactCard.astro';
+import DrillChips from '@/components/DrillChips.astro';
 import Pagination from '@/components/Pagination.astro';
 import SortBar from '@/components/SortBar.astro';
 import {
@@ -76,26 +77,10 @@ const showChildren = Boolean(children && children.length > 0);
     }.
   </p>
   <div class="mt-6 flex flex-col gap-3" data-reveal="0.35">
+    {/* Date navigation stays grouped: breadcrumb (up) + drill chips (down). */}
     <SortBar label="Date" options={crumbs} current={current} />
+    {showChildren && <DrillChips label={childUnit} chips={children!} />}
     {showSort && <SortBar label="Sort" options={sortOptions!} current={sortKey} />}
-    {
-      showChildren && (
-        <div class="flex flex-wrap items-center gap-2.5">
-          <span class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">{childUnit}</span>
-          <div class="flex flex-wrap gap-1.5">
-            {children!.map((c) => (
-              <a
-                href={c.href}
-                class="glass rounded-lg px-3 py-1.5 font-mono text-xs text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
-              >
-                {c.label}
-                <span class="text-faint"> {c.count}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )
-    }
   </div>
 </header>
 

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 48,
-    "artifacts": 49
+    "articles": 49,
+    "artifacts": 50
   },
   "topicCounts": {
     "agents": 19,
@@ -10,17 +10,34 @@
     "cryptography": 7,
     "data": 5,
     "defi": 11,
-    "infrastructure": 22,
+    "infrastructure": 23,
     "llm": 10,
-    "machine-learning": 21,
+    "machine-learning": 22,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
-    "tokenomics": 2,
+    "tokenomics": 3,
     "web3": 7,
     "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "clipped-to-consensus",
+      "path": "content/articles/2026/06/clipped-to-consensus/index.mdx",
+      "url": "/articles/clipped-to-consensus",
+      "title": "Clipped to Consensus: How Yuma Scores Subjective AI",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "tokenomics"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "acting-on-a-stale-policy",
       "path": "content/articles/2026/06/acting-on-a-stale-policy/index.mdx",
@@ -1289,6 +1306,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-consensus-clip",
+      "path": "content/artifacts/the-consensus-clip/manifest.json",
+      "module": "src/islands/artifacts/the-consensus-clip.ts",
+      "url": "/artifacts/the-consensus-clip",
+      "title": "The Consensus Clip",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-staleness-clock",
       "path": "content/artifacts/the-staleness-clock/manifest.json",

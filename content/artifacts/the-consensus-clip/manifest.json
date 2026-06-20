@@ -1,0 +1,16 @@
+{
+  "slug": "the-consensus-clip",
+  "title": "The Consensus Clip",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T09:29:10.406Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "machine-learning",
+    "infrastructure",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

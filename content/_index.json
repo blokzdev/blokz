@@ -1,26 +1,105 @@
 {
   "counts": {
-    "articles": 42,
-    "artifacts": 43
+    "articles": 45,
+    "artifacts": 46
   },
   "topicCounts": {
-    "agents": 18,
+    "agents": 19,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 4,
-    "data": 3,
+    "cryptography": 6,
+    "data": 5,
     "defi": 11,
-    "infrastructure": 18,
-    "llm": 8,
-    "machine-learning": 17,
+    "infrastructure": 19,
+    "llm": 9,
+    "machine-learning": 18,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
     "tokenomics": 2,
-    "web3": 6,
-    "zero-knowledge": 3
+    "web3": 7,
+    "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "prove-the-neighbors-not-the-sort",
+      "path": "content/articles/2026/06/prove-the-neighbors-not-the-sort/index.mdx",
+      "url": "/articles/prove-the-neighbors-not-the-sort",
+      "title": "Prove the Neighbors, Not the Sort: Verifiable Retrieval for Untrusted RAG",
+      "description": "An AI agent that retrieves from an untrusted vector DB can't tell the true top-k from a cherry-picked or fabricated one. Re-running the search needs the whole corpus. The 2026 fix: commit the snapshot, then prove the k-th distance is a boundary, not the sort. V3DB proves it 22x faster.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "llm",
+        "agents"
+      ],
+      "tags": [
+        "rag",
+        "vector-search",
+        "verifiable-retrieval",
+        "zero-knowledge",
+        "ann",
+        "ivf-pq"
+      ],
+      "artifacts": [
+        "the-sort-tax"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "a-hash-is-not-a-model",
+      "path": "content/articles/2026/06/a-hash-is-not-a-model/index.mdx",
+      "url": "/articles/a-hash-is-not-a-model",
+      "title": "A Hash Is Not a Model: The Storage Bill Behind On-Chain AI",
+      "description": "On-chain AI loves to say a model is 'stored on-chain.' But a chain commits to a 32-byte hash for cents; keeping the 140 GB it points to retrievable is a separate, recurring, surprisingly centralized bill. The storage math, erasure coding, and the retrieval wall.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "infrastructure",
+        "web3",
+        "data"
+      ],
+      "tags": [
+        "decentralized-storage",
+        "data-availability",
+        "model-weights",
+        "walrus",
+        "arweave",
+        "filecoin"
+      ],
+      "artifacts": [
+        "weight-vault"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "proving-a-model-forgot",
+      "path": "content/articles/2026/06/proving-a-model-forgot/index.mdx",
+      "url": "/articles/proving-a-model-forgot",
+      "title": "Proving a Model Forgot: Verifiable Unlearning and the Immutable Ledger",
+      "description": "A DataDAO sold your data; you invoke the right to be forgotten. Deleting the file is easy, but the model already learned and the ledger can't be rewritten. ZK-APEX proves the unlearning ran in ~2h; UMA still pulls the 'forgotten' data back at MIA 0.97. Certified isn't forgotten.",
+      "pubDate": "2026-06-19",
+      "topics": [
+        "data",
+        "machine-learning",
+        "cryptography"
+      ],
+      "tags": [
+        "machine-unlearning",
+        "right-to-be-forgotten",
+        "verifiable-unlearning",
+        "zero-knowledge",
+        "datadao",
+        "gdpr"
+      ],
+      "artifacts": [
+        "unlearning-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "autonomous-exploit-economics",
       "path": "content/articles/2026/06/autonomous-exploit-economics/index.mdx",
@@ -1132,6 +1211,55 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sort-tax",
+      "path": "content/artifacts/the-sort-tax/manifest.json",
+      "module": "src/islands/artifacts/the-sort-tax.ts",
+      "url": "/artifacts/the-sort-tax",
+      "title": "The Sort Tax",
+      "description": "Proving an agent's top-k retrieval is real costs a sort over every scanned candidate, unless you prove a boundary instead. Drive top-k and the corpus preset; watch the in-circuit comparison count split into the flat boundary proof and the sort tax you skip, anchored to V3DB's measured 22x.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "weight-vault",
+      "path": "content/artifacts/weight-vault/manifest.json",
+      "module": "src/islands/artifacts/weight-vault.ts",
+      "url": "/artifacts/weight-vault",
+      "title": "The Weight Vault",
+      "description": "A chain commits to a model's 32-byte hash for cents; keeping the gigabytes it points to retrievable is a separate, recurring bill. Pick a model and horizon and watch three rent-charging storage layers race Arweave's pay-once permanence to a crossover — plus the on-chain byte cost and cold-load wall.",
+      "pubDate": "2026-06-20",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "infrastructure",
+        "web3",
+        "data"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "unlearning-gap",
+      "path": "content/artifacts/unlearning-gap/manifest.json",
+      "module": "src/islands/artifacts/unlearning-gap.ts",
+      "url": "/artifacts/unlearning-gap",
+      "title": "The Unlearning Gap",
+      "description": "What unlearning verification reports as 'forgotten' versus what a recovery attack gets back. Each method's dumbbell runs from its verdict (MIA ≈ random) to what an attack recovers — 0.97–0.99 for cheap methods. Toggle to % recoverable; tap a method. The ZK proof's scope ends at the verdict.",
+      "pubDate": "2026-06-19",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "exploit-asymmetry",
       "path": "content/artifacts/exploit-asymmetry/manifest.json",

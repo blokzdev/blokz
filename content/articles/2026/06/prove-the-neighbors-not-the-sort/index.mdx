@@ -1,0 +1,117 @@
+---
+slug: prove-the-neighbors-not-the-sort
+title: "Prove the Neighbors, Not the Sort: Verifiable Retrieval for Untrusted RAG"
+description: "An AI agent that retrieves from an untrusted vector DB can't tell the true top-k from a cherry-picked or fabricated one. Re-running the search needs the whole corpus. The 2026 fix: commit the snapshot, then prove the k-th distance is a boundary, not the sort. V3DB proves it 22x faster."
+pubDate: 2026-06-20T01:30:41.689Z
+author: blokz
+topics: [zero-knowledge, cryptography, llm, agents]
+tags: [rag, vector-search, verifiable-retrieval, zero-knowledge, ann, ivf-pq]
+artifacts: [the-sort-tax]
+difficulty: intermediate
+sources:
+  - label: "V3DB: Audit-on-Demand ZK Proofs for Verifiable Vector Search (arXiv:2603.03065)"
+    url: "https://arxiv.org/abs/2603.03065"
+  - label: "zkRAG: Efficiently Proving RAG Retrieval in Zero Knowledge (IACR ePrint 2026/709)"
+    url: "https://eprint.iacr.org/2026/709"
+  - label: "VeriRAG: Efficient ZK Proofs for Verifiable RAG (IACR ePrint 2026/637)"
+    url: "https://eprint.iacr.org/2026/637"
+  - label: "PoisonedRAG: Knowledge Corruption Attacks to RAG (USENIX Security 2025, arXiv:2402.07867)"
+    url: "https://arxiv.org/abs/2402.07867"
+  - label: "Practical and Verifiable Encrypted Vector Search for RAG (IACR ePrint 2026/923)"
+    url: "https://eprint.iacr.org/2026/923"
+---
+
+Every serious agent stack in 2026 retrieves before it reasons. The agent embeds a query, asks a vector database for the *k* nearest documents, and stuffs them into the prompt. That retrieval step is now the load-bearing one — and increasingly it runs on someone else's machine: a managed "RAG-as-a-Service" endpoint, or a node in a decentralized inference network the agent has never met.
+
+Here is the problem nobody bills you for. When the endpoint returns ten documents, the agent has **no way to tell** whether those are the true ten nearest neighbors of its query, a cherry-picked subset, a stale cache, or ten plausible-looking strings the provider made up to skip the search entirely. The model dutifully reasons over whatever came back. Garbage context in, confident garbage out — and the failure is invisible, because a wrong-but-fluent answer looks exactly like a right one.
+
+You can't fix this by re-running the search. Re-executing nearest-neighbor retrieval means holding the entire corpus and its index — the exact thing you outsourced. And the provider's index is usually proprietary; they won't hand it over. So through 2025 the honest answer was "trust the provider." A tight cluster of 2026 papers — [V3DB](https://arxiv.org/abs/2603.03065), [zkRAG](https://eprint.iacr.org/2026/709), [VeriRAG](https://eprint.iacr.org/2026/637) — changed that, and they all turn on the same engineering trick: to prove a retrieval is correct, **don't prove the sort. Prove a boundary.**
+
+## What "untrusted retrieval" actually means
+
+It helps to separate two threats that get muddled.
+
+The first is corpus poisoning. [PoisonedRAG](https://arxiv.org/abs/2402.07867) (USENIX Security 2025) showed that injecting just **five** crafted documents per target question into a knowledge base of *millions* yields a ~90% attack success rate at steering the model's answer. That's a real problem, but it's a problem about *what is in the corpus*. We covered that class of attack — and why on-chain provenance proves integrity, not purity — in [Provenance Isn't Purity](/articles/provenance-isnt-purity-data-poisoning). Verifiable retrieval does **not** fix it.
+
+The second threat is the one verifiable retrieval is for: a dishonest or buggy *execution*. Given a fixed corpus, did the provider actually run the agreed search and return the true result? A rational provider has every incentive to cut corners — skip probing half the index to save compute, serve a cached neighbor set for a different query, silently drop the expensive shards, or fabricate. zkRAG frames it precisely: in RAG-as-a-Service, "clients have no visibility into the server's proprietary embeddings and index structures, and thus cannot distinguish faithful execution from arbitrary deviations." This is the same trust gap we chased on the *inference* side with [zkML](/articles/zkml-verifiable-inference-landscape), TEEs, and [optimistic oracles](/articles/optimistic-ml-oracles) — verifiable retrieval is the upstream half. Proving the model ran is worthless if the context it ran on was forged.
+
+## The commitment: pin the snapshot, audit on demand
+
+The construction starts where most on-chain AI does: with a commitment. The provider publishes a succinct commitment — a Merkle or vector-commitment root — to a specific **snapshot** of the corpus and its index. That root is 32 bytes; it lives on-chain for cents, exactly the asymmetry we picked apart in [A Hash Is Not a Model](/articles/a-hash-is-not-a-model). It says nothing about whether the gigabytes behind it are good data; it only *binds* the provider to one immutable version they can later be checked against.
+
+Then every query result comes with — or can be challenged to produce — a zero-knowledge proof that the returned top-*k* is *exactly* the output of running the published search semantics on the committed snapshot, revealing nothing else about the proprietary index. V3DB calls this **audit-on-demand**: you don't pay for a proof on every call, only when you want to check, and verification is cheap enough (sub-second, a small on-chain verifier) that a staked auditor or the client itself can do it. That economic shape should feel familiar from the dispute-game world of optimistic verification.
+
+## Why the naive proof is hopeless
+
+Production vector search isn't a brute-force scan; it's an approximate index. The dominant family is **IVF-PQ**: partition the vectors into `nlist` clusters, at query time *probe* only the `nprobe` closest clusters, score the candidates inside them with product-quantized distance tables, and sort to take the top *k*. V3DB standardizes this into a fixed five-step pipeline: centroid distances → probe selection → build ADC lookup tables → score candidates → select top-*k*.
+
+Now try to prove that honestly inside a SNARK. Two operations are poison for arithmetic circuits: **random memory access** (the lookup tables, the cluster gather) and **sorting**. A sorting network over the candidate set costs on the order of *n* log *n* comparisons, each compiled to a stack of range-check constraints, and you pay it for the probe selection *and* again for the final top-*k*. The candidate set isn't small: for V3DB's ZK-tuned SIFT1M index (`nlist=1024`, `nprobe=8` over a million vectors) a single query scans roughly **C ≈ 7,800** candidates; for its 8.8M-passage MS MARCO index (`nlist=2048`, `nprobe=16`) it's closer to **69,000**. Proving a full sort over that, per query, is what makes circuit-only verifiable search a non-starter.
+
+## Prove the boundary, not the sort
+
+The key realization is that you never actually needed to prove a sort. You need to prove a *set* with a *property*.
+
+To convince a verifier that some returned set `R` of size *k* is the true top-*k* of a scanned candidate set `S`, it is necessary and sufficient to show three things:
+
+```text
+1. R ⊆ S            every returned item really came from the committed candidates
+2. |R| = k          you returned exactly k of them
+3. max(dist(R)) ≤ min(dist(S \ R))
+                    the k-th returned distance is a BOUNDARY: nothing left
+                    behind is closer than the worst thing you kept
+```
+
+Condition 3 is the whole game. The *k*-th nearest distance is a threshold; once the prover commits to it, every other candidate only has to be checked *against that one number*. No ordering among the returned items, no ordering among the rejected ones — just "kept things are ≤ the boundary, dropped things are ≥ it." That replaces an *n* log *n* sort with a single linear pass of comparisons against a constant.
+
+The membership conditions (1 and 2) are handled with **multiset equality and inclusion checks** — permutation arguments that prove two multisets are equal without revealing or fixing their order, which is also how you sidestep the random-access problem for the lookup tables. V3DB combines these multiset gadgets with the boundary conditions to encode the entire IVF-PQ pipeline with no in-circuit sort and no random access.
+
+The payoff is structural. V3DB's own asymptotics drop the *k* factor out of the dominant term: probe selection goes from Θ(`nprobe`·`nlist`) to Θ(`nlist`), and the top-*k* term goes from Θ(*k*·`nprobe`·*n*) to Θ(`nprobe`·*n*). In words: the prover's work for the selection step **stops scaling with how many documents you ask for.** Built on Plonky2, the optimized prover runs up to **22× faster** with **40% lower peak memory** than the circuit-only baseline, while verification stays in the sub-second range.
+
+The artifact below makes the asymmetry concrete. Pick one of V3DB's committed corpora and drag the top-*k*: the cyan boundary-proof line is flat — its cost is the candidate scan *C*, no matter how large *k* gets — while the red in-circuit-sort line climbs as *k*·*C*. The wedge between them is the sort tax you don't pay.
+
+<Artifact slug="the-sort-tax" />
+
+Two readings worth separating. The *modeled* comparison-count ratio is essentially *k* — at the paper's `k=100` SIFT1M setting that's ~100× on that term alone, at MS MARCO's `k=10` it's ~10×. The *measured* end-to-end speedup is 22×, lower than the term-ratio because the real proof still pays for commitment openings and the lookup machinery the model abstracts away. Both numbers are honest; they just measure different things. The headline is that the part of the proof that used to explode with *k* now doesn't.
+
+## The same trick, different indexes
+
+V3DB targets IVF-PQ. The other 2026 entries make the pattern look general:
+
+- **zkRAG** builds the first polynomial interactive oracle proof (PIOP) tailored to **HNSW**, the graph-based index most managed vector DBs actually run. It proves a returned result is consistent with executing the agreed ANN traversal over a committed database *and* a committed index — the index structure itself is pinned, not just the data — yielding a succinct non-interactive argument for retrieval.
+- **VeriRAG** also explicitly "bypasses the intricate verification of sorting processes," and adds joint vector-lookup and chunk-merging optimizations to drive verification overhead down while preserving dataset privacy.
+- The encrypted-search line ([ePrint 2026/923](https://eprint.iacr.org/2026/923)) pushes further, getting query privacy, database confidentiality, *and* verifiability together — so the client doesn't reveal what it asked and the provider doesn't reveal the corpus, yet the result is still provable.
+
+Different index, same insight: commit the structure, then prove a checkable predicate about the output instead of replaying the computation.
+
+## What it buys, and what it doesn't
+
+A verifying agent — or an on-chain contract gating payment — can check a result against a committed root with a small verifier:
+
+```solidity
+// Pay only for a retrieval that's provably the true top-k of the committed snapshot.
+function settleRetrieval(
+    bytes32 snapshotRoot,   // the corpus+index version the provider is bound to
+    bytes32 queryCommit,    // commitment to the agent's query embedding
+    bytes32 resultCommit,   // commitment to the returned top-k payloads
+    bytes calldata proof    // succinct ZK proof of correct ANN execution
+) external {
+    require(snapshotRoot == registeredRoot[provider], "stale or wrong snapshot");
+    require(verifier.verify(snapshotRoot, queryCommit, resultCommit, proof), "bad retrieval");
+    _release(escrow[msg.sender]);
+}
+```
+
+Be precise about the trust model, because this is exactly where RAG hype overreaches. A retrieval proof certifies **execution integrity over a committed snapshot**. It does not certify that:
+
+- **the documents are true or relevant** — a faithfully retrieved poisoned document is still poison (back to PoisonedRAG, and to [Provenance Isn't Purity](/articles/provenance-isnt-purity-data-poisoning));
+- **the snapshot is fresh** — the provider can honestly serve an old committed version; you need versioning and an on-chain root that advances, or you've proven yesterday's answer;
+- **the embedding model is honest** — if the provider also computes the query embedding, garbage in is provably-correctly retrieved garbage. (This is the dual of the "what did the agent actually see" problem we hit with [zkTLS web proofs](/articles/zktls-web-proofs-for-agents).)
+- **ANN is exact** — these systems prove you correctly ran the *approximate* search, recall and all; the proof inherits the index's recall, it doesn't repair it.
+
+And proving isn't free. Audit-on-demand exists precisely because attaching a proof to every call is still too expensive to do unconditionally; the equilibrium is the same probabilistic-audit-plus-slashing economics we walked through for [restaking-secured AI oracles](/articles/restaking-verifiable-ai-cost-of-corruption) — verify a sampled fraction, make a caught lie cost more than a skipped search ever saved.
+
+## Takeaways
+
+- **Retrieval is the new trust boundary.** As agents lean on RAG and source it from untrusted or decentralized providers, "trust me, these are the nearest neighbors" is a security hole, not a footnote. The model can't detect a bad retrieval; only a proof can.
+- **The unlock is proving a predicate, not a process.** You don't re-run or prove the sort — you commit the snapshot and prove a boundary: every kept item is within the *k*-th distance, every dropped one is beyond it, membership checked by multiset arguments. That drops the factor of *k* and turns an infeasible circuit into a sub-second-verify proof.
+- **Treat it as one verified link in a chain.** A retrieval proof composes with verifiable inference, but only certifies execution over a committed snapshot — not corpus purity, freshness, or the embedding model. Engineer the surrounding commitments and audit economics, or you've cryptographically proven the wrong thing.

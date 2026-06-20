@@ -1,0 +1,56 @@
+---
+import type { Page } from 'astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import Pagination from '@/components/Pagination.astro';
+import SortBar from '@/components/SortBar.astro';
+import {
+  dateArchiveCrumbs,
+  dateArchiveLabel,
+  type Article,
+  type Topic,
+} from '@/lib/content-helpers';
+
+/** Shared body for the date drill-down pages (year / month / day). */
+interface Props {
+  page: Page<Article>;
+  topics: Topic[];
+  year: string;
+  month?: string;
+  day?: string;
+}
+
+const { page, topics, year, month, day } = Astro.props;
+const label = dateArchiveLabel(year, month, day);
+const crumbs = dateArchiveCrumbs(year, month, day);
+const current = crumbs[crumbs.length - 1].key;
+---
+
+<header class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-6">
+  <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>Archive</p>
+  <h1 class="mt-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
+    {label}
+  </h1>
+  <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
+    {page.total} article{page.total === 1 ? '' : 's'} published in this period.
+  </p>
+  <div class="mt-6" data-reveal="0.35">
+    <SortBar label="Date" options={crumbs} current={current} />
+  </div>
+</header>
+
+<section class="mx-auto max-w-6xl px-5 sm:px-6">
+  {
+    page.data.length > 0 ? (
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+        {page.data.map((article) => (
+          <ArticleCard {article} {topics} />
+        ))}
+      </div>
+    ) : (
+      <p class="glass rounded-2xl p-8 text-center text-muted">
+        Nothing here yet — no articles in this period.
+      </p>
+    )
+  }
+  <Pagination {page} />
+</section>

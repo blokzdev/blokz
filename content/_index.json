@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/the-expert-shuffle/index.mdx",
       "url": "/articles/the-expert-shuffle",
       "title": "The Expert Shuffle: Why MoE Broke the Plan to Decentralize Inference",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Frontier open models are now Mixture-of-Experts — cheap to serve in a datacenter, nearly impossible across the internet. The all-to-all expert shuffle moves ~9.5 MiB/token and caps decode at ~67 tok/s even on 400G InfiniBand; on internet links it falls to seconds per token.",
       "pubDate": "2026-06-20",
       "topics": [
         "machine-learning",
         "infrastructure",
         "llm"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "mixture-of-experts",
+        "expert-parallelism",
+        "all-to-all",
+        "decentralized-inference",
+        "deepseek",
+        "bandwidth"
+      ],
+      "artifacts": [
+        "the-all-to-all-wall"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1522,7 +1531,7 @@
       "module": "src/islands/artifacts/the-all-to-all-wall.ts",
       "url": "/artifacts/the-all-to-all-wall",
       "title": "The All-to-All Wall",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Decode speed of a frontier MoE model versus interconnect bandwidth. Each layer's expert routing is an all-to-all shuffle bounded by the slowest link. Drag from NVLink down to home broadband: the line crosses the interactive floor at the datacenter edge, then falls to seconds per token.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "chart",

@@ -1,22 +1,111 @@
 ---
 slug: the-expert-shuffle
 title: "The Expert Shuffle: Why MoE Broke the Plan to Decentralize Inference"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
-pubDate: 2026-06-20T18:28:36.355Z
+description: "Frontier open models are now Mixture-of-Experts — cheap to serve in a datacenter, nearly impossible across the internet. The all-to-all expert shuffle moves ~9.5 MiB/token and caps decode at ~67 tok/s even on 400G InfiniBand; on internet links it falls to seconds per token."
+pubDate: 2026-06-20T19:05:00Z
 author: blokz
 topics: [machine-learning, infrastructure, llm]
-tags: []
-artifacts: []
+tags: [mixture-of-experts, expert-parallelism, all-to-all, decentralized-inference, deepseek, bandwidth]
+artifacts: [the-all-to-all-wall]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "DeepSeek-V3 Technical Report (arXiv:2412.19437)"
+    url: "https://arxiv.org/abs/2412.19437"
+  - label: "Insights into DeepSeek-V3: Scaling Challenges and Reflections on Hardware (arXiv:2505.09343)"
+    url: "https://arxiv.org/abs/2505.09343"
+  - label: "DeepEP: an efficient expert-parallel communication library"
+    url: "https://github.com/deepseek-ai/DeepEP"
+  - label: "Kimi K2: Open Agentic Intelligence (arXiv:2507.20534)"
+    url: "https://arxiv.org/abs/2507.20534"
+  - label: "Qwen3-235B-A22B model card"
+    url: "https://huggingface.co/Qwen/Qwen3-235B-A22B"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+The pitch for decentralized AI inference has always been physical: there are millions of idle GPUs in the world, a permissionless network can pool them, and a blockchain can handle the payments, routing, and slashing that keep strangers honest. The catalog here has dissected that machinery from a dozen angles — [the batch a single-tenant node can't fill](/articles/the-batch-you-cant-fill), [what the chain actually stores during training](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training), [whether you can even trust the model the node claims to run](/articles/model-substitution-inference-markets).
 
-## Section heading
+Underneath all of it sits an assumption nobody states out loud: that a frontier model is a thing you can *split across machines*. In 2024 that was roughly true. In 2026 it quietly stopped being true, because the frontier moved to Mixture-of-Experts — and MoE serving has a step that does not survive the trip from a datacenter to the open internet.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The bargain MoE struck
+
+A dense transformer runs every weight on every token. A Mixture-of-Experts model replaces the feed-forward block with many parallel "experts" and a router that sends each token to only a few of them. You keep the *capacity* of a huge parameter count while paying the *compute* of a small one.
+
+The numbers are why MoE won. Of the seven frontier open-weight models people actually deploy in 2026, six are MoE:
+
+| Model | Total params | Active / token | Experts | Top-k | MoE layers |
+| --- | --- | --- | --- | --- | --- |
+| DeepSeek-V3 | 671B | 37B | 256 (+1 shared) | 8 | 58 |
+| Qwen3-235B-A22B | 235B | 22B | 128 | 8 | 94 |
+| Kimi K2 | 1.04T | 32B | 384 | 8 | 60 |
+
+DeepSeek-V3 carries 671 billion parameters but fires only 37 billion per token — an 18× gap between what it *knows* and what it *computes*. Kimi K2 pushes that to a trillion parameters at 32B active. This is the whole trick: sparsity buys you a bigger brain for the same FLOP bill.
+
+But the experts have to live somewhere. 671B parameters in FP8 is ~671 GB of weights; no single GPU holds that. So you shard the experts across GPUs — *expert parallelism* — and now the router's decision has a physical consequence. A token that needs experts living on eight different GPUs has to **travel to them**.
+
+## The shuffle you can't see
+
+Per MoE layer, expert parallelism runs two collective operations across the GPUs holding the experts:
+
+- **dispatch** — send each token's hidden vector to the GPUs that own its routed experts;
+- **combine** — gather the experts' outputs back to the token's home rank.
+
+Both are *all-to-all* communication: in the worst case every rank talks to every other rank. DeepSeek runs dispatch in FP8 (1 byte per element) and combine in BF16 (2 bytes), so the per-token traffic for one MoE layer is roughly `(1 + 2) × top-k × hidden` bytes. For DeepSeek-V3 that's `3 × 8 × 7168 = 172 KB` per token per layer, and across all 58 MoE layers:
+
+```text
+3 bytes × 8 experts × 7168 hidden × 58 layers ≈ 9.5 MiB per token
+```
+
+Nine and a half megabytes of network traffic to emit *one token*. Not the weights — those stay put. This is just the routing: the cost of admitting you don't know in advance which experts a token needs. A dense model of the same active size moves none of it; its FFN weights are local, and pipeline or tensor parallelism shuffles far less between stages.
+
+This is a fundamentally different bottleneck from the ones we've measured before. [Decentralized *training*](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training) is throttled by the gradient all-reduce — a once-per-step sync that compression schemes like DiLoCo and DeMo can thin out by 100×. [Dense *inference*](/articles/the-batch-you-cant-fill) is throttled by the batch you can't fill — a throughput problem you fix by packing more users onto the card. The expert shuffle is neither. It is a *latency* tax on the critical path of every single token, and you cannot batch or compress your way out of it, because the next layer can't start until the combine lands.
+
+## The wall, in one number
+
+How bad is it? DeepSeek's own hardware report does the arithmetic. For a representative decode step — 32 tokens, 9 experts each, 7K hidden — the all-to-all over a 400 Gbps InfiniBand NIC (which clears ~50 GB/s effective for these small messages) takes about 121 µs *per layer*, and across the model that pins the **time-per-output-token (TPOT) at ~14.76 ms — a ceiling of roughly 67 tokens/second per request, from communication alone**, before a single FLOP of attention or expert math is counted.
+
+Sit with that. On the best interconnect short of NVLink, in a purpose-built datacenter, the shuffle alone caps you at ~67 tok/s. That is the *good* case. The artifact below scales that published anchor by each model's shuffle volume and inversely with bandwidth — drag the cursor down from NVLink toward the internet and watch where it lands.
+
+<Artifact slug="the-all-to-all-wall" />
+
+The shape is the argument. Decode speed is linear in bandwidth on a log-log plot, so every 10× you lose in interconnect costs you 10× in tokens per second:
+
+| Interconnect | Effective BW | DeepSeek-V3 decode |
+| --- | --- | --- |
+| NVLink (intra-node) | ~160 GB/s | ~217 tok/s |
+| 400G InfiniBand | ~50 GB/s | ~67 tok/s |
+| 100 GbE (datacenter) | ~10 GB/s | ~14 tok/s |
+| 25 GbE | ~2.8 GB/s | ~3.8 tok/s |
+| 10 GbE | ~1.1 GB/s | ~1.5 tok/s |
+| 1 Gbps fiber | ~0.11 GB/s | ~0.15 tok/s |
+| 100 Mbps home | ~0.011 GB/s | ~0.015 tok/s |
+
+The interactive floor — the ~20 tok/s where a chat stops feeling broken — is cleared only at the very top, on the fabrics that exist inside one machine or one rack. A gigabit home connection, the kind a DePIN network actually pools, lands at **about one token every seven seconds**. A 200-word answer would take twenty minutes.
+
+## Why the chain can't route around physics
+
+The instinct of this field is to throw a protocol at the problem. None of the usual levers touch this one:
+
+- **Node-limited routing.** DeepSeek already does the obvious optimization: it groups the 256 experts so each token hits at most 4 nodes, trading a little routing freedom to keep more traffic on the fast intra-node NVLink. That buys a constant factor inside a datacenter where NVLink is ~4× the inter-node link. Across the internet there *is* no fast tier to fall back to — every hop is the slow one.
+- **Overlap.** Production stacks hide the all-to-all behind computation with dual micro-batches: while one batch computes, the other communicates. That works only when comm and compute are *comparable*; when the shuffle is 100× slower than the math, there is nothing long enough to hide it behind.
+- **Quantization.** FP8 dispatch already halved the bytes versus BF16. You could go to FP4 and save another 2× — irrelevant against a 1000× bandwidth deficit, and you pay in accuracy.
+- **Faster kernels.** DeepSeek open-sourced [DeepEP](https://github.com/deepseek-ai/DeepEP), whose kernels hit ~640–740 GB/s on intra-node NVLink and ~90 GB/s over CX7 RDMA. Beautiful engineering — and it only ever approaches the *line rate of the hardware you have*. It cannot manufacture bandwidth that isn't on the wire.
+
+The blockchain layer is orthogonal to all of this. Consensus can decide *who* serves a request and *whether they were honest*; it cannot raise the bisection bandwidth between two GPUs in different cities. The expert shuffle is a property of the model architecture meeting the speed of light and the price of dark fiber, and no amount of staking changes the denominator.
+
+## What decentralized networks actually do
+
+So the honest version of "decentralized MoE inference" is narrower than the pitch. You have two roads, and both bend back toward centralization:
+
+1. **Fit the whole model on one node.** Replicate the entire 671B model on a single machine with enough VRAM and a fast internal fabric — an 8×H200 box — and treat the "network" as a market of such boxes competing on price. Expert parallelism stays *inside* the node, on NVLink, where the shuffle is survivable. This is what the credible inference subnets and GPU markets do, and it means the unit of decentralization is a datacenter node, not a consumer card. The chain coordinates a fleet of small clouds; it does not weave one model out of scattered GPUs.
+
+2. **Serve smaller or dense models across the WAN.** If you genuinely want to span heterogeneous, internet-connected GPUs, you give up the frontier MoE and run a model that pipeline-parallelizes cleanly — a dense 8B–70B, where you ship a single activation tensor between stages, not an all-to-all per layer. You get decentralization and lose the model everyone actually wants.
+
+There is no third road where a trillion-parameter MoE is expert-sharded across hobbyist GPUs on home broadband and still answers in real time. The arithmetic forbids it.
+
+This is the uncomfortable corollary to MoE's triumph. The architecture that made frontier intelligence *cheap to run* — sparsity, conditional compute, a brain far larger than its FLOP bill — did so by converting a compute problem into a communication problem. And communication is exactly the resource a decentralized network has least of. The same trick that let DeepSeek train a 671B model for a few million dollars is the trick that keeps that model inside the datacenter walls.
 
 ## Takeaways
 
-TODO.
+- **MoE is now the frontier, and MoE serving is bandwidth-bound.** Six of seven frontier open models are sparse; each token triggers a ~9.5 MiB all-to-all shuffle across the experts, every layer, on the critical path.
+- **~67 tok/s is the ceiling on 400G InfiniBand — from communication alone.** Off the datacenter fabric, decode speed falls linearly with bandwidth: ~14 tok/s on 100 GbE, ~1.5 on 10 GbE, seconds-per-token on the internet links a DePIN network pools.
+- **No protocol fixes it.** Node-limited routing, overlap, quantization, and hand-tuned kernels all chase constant factors against a 100–1000× bandwidth gap. The chain can secure who serves and whether they cheated; it cannot move bytes faster than the wire.
+- **"Decentralized MoE inference" in practice means a market of datacenter nodes**, each holding a whole model on a fast internal fabric — not a frontier model woven out of scattered consumer GPUs. The decentralization is in the *market*, not the *machine*.

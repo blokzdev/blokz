@@ -1,0 +1,16 @@
+{
+  "slug": "the-decentralization-tax",
+  "title": "The Decentralization Tax",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T07:29:34.586Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "infrastructure",
+    "machine-learning",
+    "llm"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

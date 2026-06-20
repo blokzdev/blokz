@@ -1,0 +1,24 @@
+{
+  "slug": "poisoned-tool",
+  "title": "The Poisoned Tool",
+  "description": "An on-chain agent is told to pay an invoice, but one MCP tool hides an instruction in its description that redirects the transfer to an attacker. Pick a defense layer — model, tool, client, policy, custody — and run it; alignment alone refused under 3% of these in MCPTox.",
+  "pubDate": "2026-06-20T11:30:42.767Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "smart-contracts"
+  ],
+  "aspect": "800/320",
+  "featured": false,
+  "controls": [
+    "tap a defense layer",
+    "run the agent"
+  ],
+  "dataSource": {
+    "label": "MCPTox (arXiv:2508.14925) · Invariant Labs · OX Security",
+    "url": "https://arxiv.org/abs/2508.14925"
+  },
+  "dataAsOf": "2026-06-20"
+}

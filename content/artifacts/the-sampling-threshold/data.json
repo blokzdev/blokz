@@ -1,0 +1,46 @@
+{
+  "model": {
+    "note": "Stylised, normalised version of the Proof of Sampling deterrence condition. Costs are in units of one honest computation/verification, C = 1. The solver's reward R and slashable bond S are multiples of C. The minimum sampling rate that makes honesty the dominant strategy is p* = C / [(1 - r)*S + (1 - 2r)*R] (Proposition 1). EV(cheat)(p) = R - p*D and EV(honest) = R - C, with D = (1 - r)*S + (1 - 2r)*R, so the two cross exactly at p*.",
+    "C": 1
+  },
+  "presets": [
+    {
+      "id": "spml",
+      "label": "spML (r=10%)",
+      "reward": 1.2,
+      "slash": 150,
+      "byz": 0.1,
+      "bounty": 1.0,
+      "note": "The paper's spML construction: reward R = 1.2C, slashable bond S = 150C, 10% Byzantine validators, full slash paid to the catcher. p* lands at ~0.736% — the stated overhead."
+    },
+    {
+      "id": "opml",
+      "label": "opML (no bounty)",
+      "reward": 1.2,
+      "slash": 150,
+      "byz": 0.1,
+      "bounty": 0.0,
+      "note": "Optimistic ML with the same bond but no catch payout: a rational verifier won't pay C to look, sampling decays toward zero, and ~0.98% of fraud settles undetected."
+    },
+    {
+      "id": "thin",
+      "label": "Thin bond",
+      "reward": 2.0,
+      "slash": 12,
+      "byz": 0.3,
+      "bounty": 1.0,
+      "note": "A lazy network: small bond, fat reward, a third of validators colluding. The deterrence threshold balloons past 10% — you have to sample almost everything to stay honest."
+    }
+  ],
+  "benchmarks": {
+    "zkml_nanogpt_minutes": 16,
+    "zkml_nanogpt_params": "1M",
+    "zkml_llama70b": "days to weeks",
+    "opml_undetected_fraud": 0.0098,
+    "spml_overhead": 0.00736
+  },
+  "source": {
+    "label": "Zhang et al., Proof of Sampling (arXiv:2405.00295)",
+    "url": "https://arxiv.org/abs/2405.00295"
+  }
+}

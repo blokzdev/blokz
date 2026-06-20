@@ -1,7 +1,7 @@
 {
   "slug": "nonlinearity-tax",
   "title": "The Nonlinearity Tax",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Under secure two-party inference, a transformer's cost is eaten by Softmax and GELU, not the matrix multiplies. Stacked per-operation communication and interaction rounds for one BERT-base block across Iron, BumbleBee, and Nimbus — the nonlinear activations are 80–95% of the bill.",
   "pubDate": "2026-06-20T02:29:23.136Z",
   "type": "svg",
   "archetype": "chart",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a protocol bar (or ← →) to read its breakdown",
+    "toggle communication (MB) vs interaction rounds"
+  ],
+  "dataSource": {
+    "label": "Nimbus, Table 3 (Li et al., arXiv:2411.15707); BumbleBee end-to-end (NDSS 2025)",
+    "url": "https://arxiv.org/abs/2411.15707"
+  },
+  "dataAsOf": "2026-06-20"
 }

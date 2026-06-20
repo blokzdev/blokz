@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/minutes-per-token/index.mdx",
       "url": "/articles/minutes-per-token",
       "title": "Minutes Per Token: The Cost of Blind LLM Inference",
-      "description": "Secure multi-party computation can run a transformer without any party seeing your prompt — at minutes per query and gigabytes per token. BumbleBee's BERT-base costs 6.4 GB and 2.55 min; LLaMA-7B is ~8 min per token. The bytes don't go where you'd think, and it's why 'blind' networks quietly fall back to TEEs.",
+      "description": "Secure multi-party computation runs a transformer without any party seeing your prompt — at minutes per query and gigabytes per token. BumbleBee's BERT-base: 6.4 GB, 2.55 min; LLaMA-7B: ~8 min/token. The bytes don't go where you'd think, and it's why 'blind' networks fall back to TEEs.",
       "pubDate": "2026-06-20",
       "topics": [
         "cryptography",
         "machine-learning",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "mpc",
+        "private-inference",
+        "secure-computation",
+        "transformers",
+        "nillion",
+        "tee"
+      ],
+      "artifacts": [
+        "nonlinearity-tax"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1234,7 +1243,7 @@
       "module": "src/islands/artifacts/nonlinearity-tax.ts",
       "url": "/artifacts/nonlinearity-tax",
       "title": "The Nonlinearity Tax",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Under secure two-party inference, a transformer's cost is eaten by Softmax and GELU, not the matrix multiplies. Stacked per-operation communication and interaction rounds for one BERT-base block across Iron, BumbleBee, and Nimbus — the nonlinear activations are 80–95% of the bill.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "chart",

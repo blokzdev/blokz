@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 46,
-    "artifacts": 47
+    "articles": 47,
+    "artifacts": 48
   },
   "topicCounts": {
     "agents": 19,
@@ -10,9 +10,9 @@
     "cryptography": 7,
     "data": 5,
     "defi": 11,
-    "infrastructure": 20,
-    "llm": 9,
-    "machine-learning": 19,
+    "infrastructure": 21,
+    "llm": 10,
+    "machine-learning": 20,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
@@ -21,6 +21,32 @@
     "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "the-batch-you-cant-fill",
+      "path": "content/articles/2026/06/the-batch-you-cant-fill/index.mdx",
+      "url": "/articles/the-batch-you-cant-fill",
+      "title": "The Batch You Can't Fill: The Hidden Tax on Decentralized LLM Inference",
+      "description": "Verification overhead gets the blame, but the real tax on decentralized LLM inference is the batch a single-tenant node can't fill. On identical 8x H100s, Llama-3.3-70B costs about $258 per million tokens at batch 1 and $2.30 at batch 256 — a 112x spread. Why, and how networks fight it.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "infrastructure",
+        "machine-learning",
+        "llm"
+      ],
+      "tags": [
+        "decentralized-inference",
+        "batching",
+        "gpu-economics",
+        "vllm",
+        "kv-cache",
+        "throughput"
+      ],
+      "artifacts": [
+        "the-decentralization-tax"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "minutes-per-token",
       "path": "content/articles/2026/06/minutes-per-token/index.mdx",
@@ -1237,6 +1263,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-decentralization-tax",
+      "path": "content/artifacts/the-decentralization-tax/manifest.json",
+      "module": "src/islands/artifacts/the-decentralization-tax.ts",
+      "url": "/artifacts/the-decentralization-tax",
+      "title": "The Decentralization Tax",
+      "description": "Cost per million tokens and throughput for Llama 3.3 70B on 8x H100 as the batch fills. A single-tenant node (B=1) runs ~25 tok/s at ~$258/M; a filled batch (B=256) runs ~2,800 tok/s at ~$2.30/M — same silicon, 112x cheaper. Pick a batch; read the tax you pay for the GPU you can't fill.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "infrastructure",
+        "machine-learning",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "nonlinearity-tax",
       "path": "content/artifacts/nonlinearity-tax/manifest.json",

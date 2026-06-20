@@ -8,9 +8,12 @@ interface Props {
   /** Path to an OG image; defaults to the site-wide card. */
   image?: string;
   type?: 'website' | 'article';
+  /** Keep secondary/duplicate views (e.g. alternate sort orders) out of the index. */
+  noindex?: boolean;
 }
 
-const { title, description, image = '/og/site.png', type = 'website' } = Astro.props;
+const { title, description, image = '/og/site.png', type = 'website', noindex = false } =
+  Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const imageUrl = new URL(image, Astro.site);
 ---
@@ -24,6 +27,7 @@ const imageUrl = new URL(image, Astro.site);
   content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 />
 <meta name="generator" content={Astro.generator} />
+{noindex && <meta name="robots" content="noindex,follow" />}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="mobile-web-app-capable" content="yes" />

@@ -26,17 +26,26 @@
       "path": "content/articles/2026/06/the-verifiers-dilemma/index.mdx",
       "url": "/articles/the-verifiers-dilemma",
       "title": "The Verifier's Dilemma: Why Honest AI Needs a Bounty, Not Just a Bond",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Bond-and-slash verifiable AI assumes someone audits. But checking costs money and pays nothing, so a rational verifier won't — the verifier's dilemma. Proof of Sampling fixes it with a bounty, and the math says honest inference holds at a 0.74% sampling rate where nobody ever arbitrates.",
       "pubDate": "2026-06-20",
       "topics": [
         "security",
         "tokenomics",
         "machine-learning"
       ],
-      "tags": [],
+      "tags": [
+        "proof-of-sampling",
+        "verifiers-dilemma",
+        "mechanism-design",
+        "inspection-game",
+        "spml",
+        "game-theory"
+      ],
       "series": "proof-of-intelligence",
       "seriesOrder": 6,
-      "artifacts": [],
+      "artifacts": [
+        "the-sampling-threshold"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1340,13 +1349,14 @@
       "module": "src/islands/artifacts/the-sampling-threshold.ts",
       "url": "/artifacts/the-sampling-threshold",
       "title": "The Sampling Threshold",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "An inspection game between a solver and a verifier. Drag the operating rate and tune the bond, reward, and bounty to find p*, the minimum sampling rate that makes honest AI inference a dominant strategy — and watch it collapse without a bounty.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "calculator",
       "topics": [
         "security",
-        "tokenomics"
+        "tokenomics",
+        "machine-learning"
       ],
       "draft": false
     },

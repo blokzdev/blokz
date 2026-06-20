@@ -31,8 +31,8 @@ const dateDefault = sortKey === 'newest';
   </h1>
   <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
     {page.total} article{page.total === 1 ? '' : 's'} on the craft of AI × blockchain engineering.
-    <button type="button" data-search-open class="text-accent hover:underline">Search the archive</button>
-    or filter by topic:
+    <button type="button" data-search-open class="text-accent hover:underline">Search the archive</button>,
+    <a href="/articles/date/" class="text-accent hover:underline">browse by date</a>, or filter by topic:
   </p>
   <div class="mt-5 flex flex-wrap gap-2" data-reveal="0.3">
     {topics.map((t) => <TopicChip id={t.id} label={t.data.label} hue={t.data.hue} />)}

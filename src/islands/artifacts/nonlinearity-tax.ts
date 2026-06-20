@@ -88,7 +88,7 @@ export default function mount(container: HTMLElement): () => void {
     .nt-seg[aria-pressed="true"] { background:rgba(91,140,255,.16); color:#e7eaf3; border-color:rgba(91,140,255,.42); }
     .nt-seg:focus-visible { outline:2px solid #5b8cff; outline-offset:2px; }
     .nt-hint { font-size:10.5px; color:#5b6378; min-width:0; }
-    .nt-chartwrap { position:absolute; inset:0; min-height:190px; border:1px solid rgba(124,140,255,.14);
+    .nt-chartwrap { position:absolute; inset:0; border:1px solid rgba(124,140,255,.14);
       border-radius:12px; background:#0d1322; }
     .nt-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
     .nt-chartwrap svg:focus-visible { outline:2px solid #5b8cff; outline-offset:-2px; border-radius:12px; }

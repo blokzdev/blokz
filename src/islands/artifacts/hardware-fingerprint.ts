@@ -79,7 +79,7 @@ export default function mount(container: HTMLElement): () => void {
 
   const style = document.createElement('style');
   style.textContent = `
-    .hfp-chartwrap { position:absolute; inset:0; min-height:180px;
+    .hfp-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .hfp-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
     .hfp-grid { stroke:rgba(124,140,255,.09); }

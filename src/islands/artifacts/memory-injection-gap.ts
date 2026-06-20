@@ -100,7 +100,7 @@ export default function mount(container: HTMLElement): () => void {
       margin-right:5px; vertical-align:-1px; }
     .mig-caption { font-size:10px; color:#5b6378; letter-spacing:.03em; min-height:14px;
       font-family:'JetBrains Mono', monospace; }
-    .mig-chartwrap { position:absolute; inset:0; min-height:150px;
+    .mig-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322;
       overflow:hidden;
       font:500 12px/1.45 'JetBrains Mono', monospace; color:#8d95ad; }

@@ -105,7 +105,7 @@ export default function mount(container: HTMLElement): () => void {
       letter-spacing:.03em; padding:7px 11px; cursor:pointer; transition:color .2s, background .2s, border-color .2s; }
     .dc-seg[aria-pressed="true"] { background:rgba(91,140,255,.16); color:#e7eaf3; border-color:rgba(91,140,255,.42); }
     .dc-seg:focus-visible { outline:2px solid #5b8cff; outline-offset:2px; }
-    .dc-chartwrap { position:absolute; inset:0; min-height:170px;
+    .dc-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .dc-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
     .dc-grid { stroke:rgba(124,140,255,.1); }

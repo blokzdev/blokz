@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/the-curse-of-recursion/index.mdx",
       "url": "/articles/the-curse-of-recursion",
       "title": "The Curse of Recursion: Model Collapse and the Limits of On-Chain Provenance",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Train a model on the web the last models filled with output and quality decays — the tails go first, then the middle. Provenance is sold as the fix, but a chain proves who signed a blob and when, not that it's human or clean. Signed is not clean.",
       "pubDate": "2026-06-20",
       "topics": [
         "data",
         "machine-learning",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "model-collapse",
+        "synthetic-data",
+        "data-provenance",
+        "c2pa",
+        "content-credentials",
+        "datadao"
+      ],
+      "artifacts": [
+        "generation-loss"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1574,7 +1583,7 @@
       "module": "src/islands/artifacts/generation-loss.ts",
       "url": "/artifacts/generation-loss",
       "title": "Generation Loss",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Train a model on its own output, generation after generation. Each step draws a finite sample of size M and refits — so the tails starve first and the curve collapses toward a spike. Toggle replace vs accumulate: replace drives σ̂ toward zero, accumulate holds it. A copy of a copy of a copy.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "simulation",

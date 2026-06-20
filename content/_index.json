@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 45,
-    "artifacts": 46
+    "articles": 46,
+    "artifacts": 47
   },
   "topicCounts": {
     "agents": 19,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 6,
+    "cryptography": 7,
     "data": 5,
     "defi": 11,
-    "infrastructure": 19,
+    "infrastructure": 20,
     "llm": 9,
-    "machine-learning": 18,
+    "machine-learning": 19,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
@@ -21,6 +21,23 @@
     "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "minutes-per-token",
+      "path": "content/articles/2026/06/minutes-per-token/index.mdx",
+      "url": "/articles/minutes-per-token",
+      "title": "Minutes Per Token: The Cost of Blind LLM Inference",
+      "description": "Secure multi-party computation can run a transformer without any party seeing your prompt — at minutes per query and gigabytes per token. BumbleBee's BERT-base costs 6.4 GB and 2.55 min; LLaMA-7B is ~8 min per token. The bytes don't go where you'd think, and it's why 'blind' networks quietly fall back to TEEs.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "prove-the-neighbors-not-the-sort",
       "path": "content/articles/2026/06/prove-the-neighbors-not-the-sort/index.mdx",
@@ -1211,6 +1228,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "nonlinearity-tax",
+      "path": "content/artifacts/nonlinearity-tax/manifest.json",
+      "module": "src/islands/artifacts/nonlinearity-tax.ts",
+      "url": "/artifacts/nonlinearity-tax",
+      "title": "The Nonlinearity Tax",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-sort-tax",
       "path": "content/artifacts/the-sort-tax/manifest.json",

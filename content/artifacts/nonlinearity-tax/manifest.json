@@ -1,0 +1,15 @@
+{
+  "slug": "nonlinearity-tax",
+  "title": "The Nonlinearity Tax",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T02:29:23.136Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "cryptography",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

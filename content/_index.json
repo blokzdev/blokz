@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 59,
-    "artifacts": 60
+    "articles": 60,
+    "artifacts": 61
   },
   "topicCounts": {
-    "agents": 23,
+    "agents": 24,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 8,
@@ -12,15 +12,41 @@
     "defi": 13,
     "infrastructure": 27,
     "llm": 13,
-    "machine-learning": 27,
+    "machine-learning": 28,
     "research": 1,
     "security": 20,
     "smart-contracts": 11,
-    "tokenomics": 5,
+    "tokenomics": 6,
     "web3": 8,
     "zero-knowledge": 5
   },
   "articles": [
+    {
+      "slug": "aligned-not-capable",
+      "path": "content/articles/2026/06/aligned-not-capable/index.mdx",
+      "url": "/articles/aligned-not-capable",
+      "title": "Aligned, Not Capable: How LLM Agent Marketplaces Crash and Get Conned",
+      "description": "Give autonomous LLM agents a marketplace and they race each other to bankruptcy and get conned by Sybils. A 2026 study finds capability doesn't help — a 9B model beat frontier models 45× its size on economic alignment. On-chain, both failures get cheaper and worse. The mechanics, numbers, and fixes.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "agents",
+        "machine-learning",
+        "tokenomics"
+      ],
+      "tags": [
+        "multi-agent",
+        "economic-alignment",
+        "sybil",
+        "market-instability",
+        "agent-economy",
+        "collusion"
+      ],
+      "artifacts": [
+        "the-undercutting-spiral"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-curse-of-recursion",
       "path": "content/articles/2026/06/the-curse-of-recursion/index.mdx",
@@ -1577,6 +1603,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-undercutting-spiral",
+      "path": "content/artifacts/the-undercutting-spiral/manifest.json",
+      "module": "src/islands/artifacts/the-undercutting-spiral.ts",
+      "url": "/artifacts/the-undercutting-spiral",
+      "title": "The Undercutting Spiral",
+      "description": "Autonomous LLM firms undercut each other below unit cost in a race to bankruptcy, then survivors monopoly-price. Drag price discovery up to deepen the crash (the paper's counterintuitive result), or add stabilizer firms to rescue the market. Deterministic model of Agent Bazaar's 'The Crash'.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "generation-loss",
       "path": "content/artifacts/generation-loss/manifest.json",

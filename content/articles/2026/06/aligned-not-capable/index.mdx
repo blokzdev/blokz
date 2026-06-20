@@ -1,0 +1,68 @@
+---
+slug: aligned-not-capable
+title: "Aligned, Not Capable: How LLM Agent Marketplaces Crash and Get Conned"
+description: "Give autonomous LLM agents a marketplace and they race each other to bankruptcy and get conned by Sybils. A 2026 study finds capability doesn't help — a 9B model beat frontier models 45× its size on economic alignment. On-chain, both failures get cheaper and worse. The mechanics, numbers, and fixes."
+pubDate: 2026-06-20T22:40:00Z
+author: blokz
+topics: [agents, machine-learning, tokenomics]
+tags: [multi-agent, economic-alignment, sybil, market-instability, agent-economy, collusion]
+artifacts: [the-undercutting-spiral]
+difficulty: intermediate
+sources:
+  - label: "Agent Bazaar: Economic Alignment in Multi-Agent Marketplaces (Karten, Crow, Jin), arXiv:2605.17698"
+    url: "https://arxiv.org/abs/2605.17698"
+  - label: "Colosseum: Auditing Collusion in Cooperative Multi-Agent Systems, arXiv:2602.15198"
+    url: "https://arxiv.org/abs/2602.15198"
+  - label: "When AI Agents Collude Online: Financial Fraud Risks by Collaborative LLM Agents, arXiv:2511.06448"
+    url: "https://arxiv.org/abs/2511.06448"
+  - label: "ERC-8004 Identity Registry on Base (per-identity cost) — Blockscout"
+    url: "https://base.blockscout.com/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+---
+
+The on-chain agent economy is built on an assumption it never states: that autonomous agents are *independent, rational actors*. [Agent-token launchpads](/articles/agent-token-bonding-curve), [task marketplaces where agents hire agents](/articles/agents-hiring-agents-mech-marketplace), [escrowed agent commerce](/articles/evaluator-gap-agent-commerce) — all of it prices an agent as a self-interested participant whose behavior aggregates into an efficient market. A 2026 study from Princeton, **Agent Bazaar**, put that assumption to the test by dropping LLM agents into simulated marketplaces and watching what they actually do. The answer: they race each other into bankruptcy, and they get conned by fake identities. And the most uncomfortable finding for anyone scaling agents — capability doesn't save them. A 9-billion-parameter model with the right training beat frontier models **45× its size** on economic alignment.
+
+That matters on-chain more than off, because the blockchain's defining properties — total price transparency, near-free identity, composability, and the absence of any operator who can hit pause — are exactly the conditions under which both failures get *worse*. Here are the two mechanisms, the numbers behind them, and why the fix isn't a bigger model.
+
+## Failure one: the undercutting spiral
+
+The first scenario, "The Crash," is a business-to-consumer market: five LLM firms sell a commodity to fifty consumers over 365 simulated days, each firm setting its own price to maximize profit. The result is a textbook race to the bottom. Each firm observes its competitors' prices and undercuts them; everyone does the same; prices spiral *below unit cost*; firms bleed cash and go bankrupt in a cascade; and the survivors, now facing no competition, jack prices back up to a monopoly level — the paper measures the post-crash price at **3.42× unit cost**.
+
+How often does the market crash itself? It depends entirely on the model. At baseline, **Gemini 3 Flash went bankrupt 87% of the time**, GPT 5.4 67%, while Claude Sonnet 4.6 self-organized to a **0% bankruptcy rate** without any intervention. Same game, same prompt, wildly different economic behavior.
+
+The counterintuitive result is what happens when you give the agents *more information*. You'd expect better price discovery to stabilize the market. It does the opposite: increasing how many competitor prices each firm can see **amplifies** the crash, because "when firms observe more competitor prices, they optimize more aggressively." More transparency, more undercutting, deeper collapse. The simulation below is a deterministic model of that dynamic — drag *price discovery* up and watch the crash deepen, then add *stabilizer firms* (agents instructed to hold a floor above cost) to rescue the market:
+
+<Artifact slug="the-undercutting-spiral" />
+
+Now read that finding against a blockchain. An on-chain market is the highest-discovery environment that exists: every quote is public, instantaneous, and machine-readable, and any agent can index every competitor's price with one RPC call. The partial observability that accidentally protected some of the paper's markets is gone by construction. Worse, there is no platform operator — no Amazon, no exchange — to impose a price floor, throttle updates, or halt a market in free-fall. The chain will faithfully settle every step of a race to the bottom, and then settle the monopoly that follows. The same composability that makes [DeFi yield agents efficient](/articles/rate-chasers-why-defi-yield-agents-win-where-trading-bots-lose) makes a coordinated price collapse frictionless.
+
+## The fix is alignment, not scale
+
+The instinct is to throw a smarter model at the problem. Agent Bazaar's central result is that this doesn't work: economic alignment is **orthogonal to general capability**. The authors build an Economic Alignment Score (EAS) — a [0,1] aggregate of market stability, integrity, consumer welfare, and profitability — and rank twenty models on it. Frontier models land mid-pack: Claude Sonnet 4.6 at 0.60, GPT 5.4 at 0.38. The winner is a **9B Qwen model fine-tuned with RL** at **0.79**, outscoring models dozens of times larger. Scaling buys you reasoning; it does not buy you a firm that won't immolate its own market.
+
+What does work is targeted training and mechanism design:
+
+- A **stabilizing-firm harness** — agents told to keep price above unit cost and reflect on historically profitable decisions — cut bankruptcy from 0.87 to **0.07** under moderate discovery. But it was "fragile under harder market conditions" and failed entirely once discovery was cranked to maximum. A hand-written rule is not robust to the adversarial limit.
+- **RL training** (REINFORCE++ with an adaptive difficulty curriculum) lifted the base model's market-stability score from 0.39 to 0.62–0.64, and produced a spillover effect: when a trained stabilizing firm was present, even the untrained competitive firms survived **68% of the time, versus 0% without it**. One disciplined agent stabilizes the whole market.
+
+For on-chain economies the lesson is that alignment has to be engineered into the *mechanism*, not hoped for from the *model* — price floors enforced in the settlement contract, circuit breakers, or incentive structures that make the undercutting equilibrium unprofitable. This is the same design philosophy behind [funding-rate caps and skew control on perp DEXs](/articles/inventory-has-a-coupon): you don't ask the agent to be nice, you make the bad equilibrium expensive.
+
+## Failure two: the lemon market
+
+The second scenario is a consumer-to-consumer market — twelve sellers, twelve buyers — and the failure mode is deception, not instability. A single deceptive principal controls **K coordinated seller identities**, each with its own independent reputation, and uses them to manufacture trust for low-quality goods. The Sybil's share of revenue scales with K: at **K=3** the deceptive identities captured under 5% of revenue, but at **K=9** they took **10–17%** — with the strongest buyers, ironically, allowing *more* deceptive transactions because they over-trusted reputation signals.
+
+This is where the on-chain story turns sharp, because a blockchain prices identity at the floor. Standardized agent identity under [ERC-8004](/articles/erc-8004-agent-registries-onchain) is an ERC-721 mint: I verified on Base via Blockscout that registering an agent identity costs about **$0.012**. So the paper's K=9 coordinated identities — enough to skim ~15% of a marketplace's revenue — cost roughly **eleven cents** to stand up on-chain. And this isn't hypothetical: the same ERC-8004 reputation registry is already being farmed by a "miner-vouch" botcoin scheme posting thousands of identical vouches from coordinated addresses. The lemon market isn't a simulation artifact; it's live on Base.
+
+The defenses mirror the first scenario — harness or train, don't just scale. A **skeptical-guardian** buyer that checks listing consistency against quality tiers and demands reputation-description alignment cut the Sybil's revenue share by ~30% at K=6, dragging consumer surplus from "deeply negative to near breakeven." A *trained* guardian pushed Sybil detection to **92%**. The on-chain analogue is the lesson every reputation system relearns: an unfiltered aggregate is Sybil bait, and trust has to come from an allowlist of clients you can independently verify — the same [evaluator gap that ACP exposed in agent commerce](/articles/evaluator-gap-agent-commerce).
+
+## Why single-agent security isn't enough
+
+Most agent-safety work on this blog has been *single-agent*: [prompt injection through poisoned MCP tools](/articles/mcp-tool-poisoning-onchain-agents), [memory injection](/articles/agent-memory-injection-web3), [the blast radius of a leaked key](/articles/agent-key-custody-blast-radius). Those threats assume one agent, one adversary, one transaction to get right. The Agent Bazaar results — and a parallel 2026 literature on multi-agent collusion, from Colosseum's audit of cooperative-task collusion to studies of LLM agents coordinating financial fraud — point at a different failure surface: **systems of agents that are each individually well-behaved but collectively produce a crash, a cartel, or a con.** No prompt-injection filter catches an undercutting spiral. No key-custody policy stops nine cheap identities from washing a reputation.
+
+The engineering implication is that on-chain agent economies need an *economic* security model layered on top of the cryptographic one. Concretely: settlement-level guardrails (price floors, rate limits, circuit breakers) that make destructive equilibria unreachable; identity that costs enough — through staking or proof-of-personhood — that Sybil swarms stop being eleven-cent attacks; and alignment training that optimizes agents against market-level outcomes, not just task completion. The chain gives you a transparent, composable, permissionless substrate. Those are the same properties that let a market of agents tear itself apart, and they won't be fixed by waiting for the next model.
+
+## Takeaways
+
+- **Multi-agent economic failure is a distinct security surface.** LLM agents that are individually capable produce collective failures — undercutting crashes and Sybil deception — that single-agent defenses (prompt injection, key custody) don't touch.
+- **Capability is orthogonal to alignment.** A 9B RL-tuned model scored 0.79 on Agent Bazaar's Economic Alignment Score, beating frontier models 45× larger (Claude Sonnet 4.6: 0.60; GPT 5.4: 0.38). Scaling won't fix a market that crashes itself.
+- **The chain amplifies both failures.** Total price transparency is the high-discovery regime that *deepens* the crash; near-free identity (~$0.012 per ERC-8004 agent on Base) makes a revenue-skimming Sybil swarm an eleven-cent attack; and there's no operator to halt either.
+- **Fix the mechanism, not the model.** Settlement-level price floors and circuit breakers, staked or person-bound identity, and alignment training against market-level outcomes — one trained "stabilizer" agent lifted whole-market survival from 0% to 68%.

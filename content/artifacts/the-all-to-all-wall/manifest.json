@@ -1,0 +1,16 @@
+{
+  "slug": "the-all-to-all-wall",
+  "title": "The All-to-All Wall",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T18:28:39.648Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "infrastructure",
+    "llm"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

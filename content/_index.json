@@ -1,26 +1,53 @@
 {
   "counts": {
-    "articles": 44,
-    "artifacts": 45
+    "articles": 45,
+    "artifacts": 46
   },
   "topicCounts": {
-    "agents": 18,
+    "agents": 19,
     "ai": 4,
     "blockchain": 10,
-    "cryptography": 5,
+    "cryptography": 6,
     "data": 5,
     "defi": 11,
     "infrastructure": 19,
-    "llm": 8,
+    "llm": 9,
     "machine-learning": 18,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
     "tokenomics": 2,
     "web3": 7,
-    "zero-knowledge": 3
+    "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "prove-the-neighbors-not-the-sort",
+      "path": "content/articles/2026/06/prove-the-neighbors-not-the-sort/index.mdx",
+      "url": "/articles/prove-the-neighbors-not-the-sort",
+      "title": "Prove the Neighbors, Not the Sort: Verifiable Retrieval for Untrusted RAG",
+      "description": "An AI agent that retrieves from an untrusted vector DB can't tell the true top-k from a cherry-picked or fabricated one. Re-running the search needs the whole corpus. The 2026 fix: commit the snapshot, then prove the k-th distance is a boundary, not the sort. V3DB proves it 22x faster.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "llm",
+        "agents"
+      ],
+      "tags": [
+        "rag",
+        "vector-search",
+        "verifiable-retrieval",
+        "zero-knowledge",
+        "ann",
+        "ivf-pq"
+      ],
+      "artifacts": [
+        "the-sort-tax"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "a-hash-is-not-a-model",
       "path": "content/articles/2026/06/a-hash-is-not-a-model/index.mdx",
@@ -1184,6 +1211,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sort-tax",
+      "path": "content/artifacts/the-sort-tax/manifest.json",
+      "module": "src/islands/artifacts/the-sort-tax.ts",
+      "url": "/artifacts/the-sort-tax",
+      "title": "The Sort Tax",
+      "description": "Proving an agent's top-k retrieval is real costs a sort over every scanned candidate, unless you prove a boundary instead. Drive top-k and the corpus preset; watch the in-circuit comparison count split into the flat boundary proof and the sort tax you skip, anchored to V3DB's measured 22x.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "weight-vault",
       "path": "content/artifacts/weight-vault/manifest.json",

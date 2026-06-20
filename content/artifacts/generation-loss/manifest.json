@@ -1,0 +1,15 @@
+{
+  "slug": "generation-loss",
+  "title": "Generation Loss",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T20:29:00.241Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "data",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

@@ -241,48 +241,66 @@ export function dateArchiveLabel(year: string, month?: string, day?: string): st
 
 /**
  * Breadcrumb pills (SortBar-shaped) from "All dates" down to the active bucket.
- * `base` is the collection root, e.g. "/articles" or "/artifacts". The deepest
+ * `base` is the collection root, e.g. "/articles" or "/artifacts". With no
+ * `year` this is the all-dates level (a single "All dates" pill). The deepest
  * segment is the active `current` key.
  */
 export function dateArchiveCrumbs(
   base: string,
-  year: string,
+  year?: string,
   month?: string,
   day?: string,
 ): SortOption[] {
   const crumbs: SortOption[] = [{ key: 'all', label: 'All dates', href: `${base}/date/` }];
-  crumbs.push({ key: year, label: year, href: `${base}/date/${year}/` });
-  if (month) {
+  if (year) crumbs.push({ key: year, label: year, href: `${base}/date/${year}/` });
+  if (year && month) {
     crumbs.push({
       key: month,
       label: dateArchiveLabel(year, month).replace(` ${year}`, ''),
       href: `${base}/date/${year}/${month}/`,
     });
   }
-  if (day) {
+  if (year && month && day) {
     crumbs.push({ key: day, label: day, href: `${base}/date/${year}/${month}/${day}/` });
   }
   return crumbs;
 }
 
 /**
+ * One drill-down chip for a child date bucket (a year, month, or day) with its
+ * count. Used to step *down* the hierarchy (all → years → months → days).
+ */
+export function dateChip(
+  base: string,
+  year: string,
+  month: string | undefined,
+  day: string | undefined,
+  count: number,
+): SortOption & { count: number } {
+  const seg = [year, month, day].filter(Boolean).join('/');
+  const label = day ? day : month ? dateArchiveLabel(year, month).replace(` ${year}`, '') : year;
+  return { key: seg, label, href: `${base}/date/${seg}/`, count };
+}
+
+/**
  * The sort bar for a date-archive page, scoped to that date bucket: `newest`
  * links back to the plain date URL; each other order links to its
- * `${base}/date/<seg>/sort/<key>/` variant. Pass the collection's full SORTS
- * list (ARTICLE_SORTS / ARTIFACT_SORTS) — labels come from it.
+ * `${base}/date/<seg>/sort/<key>/` variant. With no year/month/day this is the
+ * all-dates level (`${base}/date/` + `${base}/date/sort/<key>/`). Pass the
+ * collection's full SORTS list (ARTICLE_SORTS / ARTIFACT_SORTS) — labels too.
  */
 export function dateScopedSorts(
   base: string,
   sorts: ReadonlyArray<SortOption>,
-  year: string,
+  year?: string,
   month?: string,
   day?: string,
 ): SortOption[] {
   const seg = [year, month, day].filter(Boolean).join('/');
-  const plain = `${base}/date/${seg}/`;
+  const prefix = seg ? `${base}/date/${seg}` : `${base}/date`;
   return sorts.map((s) => ({
     key: s.key,
     label: s.label,
-    href: s.key === 'newest' ? plain : `${base}/date/${seg}/sort/${s.key}/`,
+    href: s.key === 'newest' ? `${prefix}/` : `${prefix}/sort/${s.key}/`,
   }));
 }

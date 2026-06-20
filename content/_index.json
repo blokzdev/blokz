@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 50,
-    "artifacts": 51
+    "articles": 51,
+    "artifacts": 52
   },
   "topicCounts": {
-    "agents": 19,
+    "agents": 20,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 7,
@@ -14,8 +14,8 @@
     "llm": 10,
     "machine-learning": 23,
     "research": 1,
-    "security": 17,
-    "smart-contracts": 10,
+    "security": 18,
+    "smart-contracts": 11,
     "tokenomics": 4,
     "web3": 7,
     "zero-knowledge": 4
@@ -45,6 +45,32 @@
       "seriesOrder": 6,
       "artifacts": [
         "the-sampling-threshold"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "mcp-tool-poisoning-onchain-agents",
+      "path": "content/articles/2026/06/mcp-tool-poisoning-onchain-agents/index.mdx",
+      "url": "/articles/mcp-tool-poisoning-onchain-agents",
+      "title": "The Toolbelt Is the Attack Surface: Tool-Poisoning the On-Chain Agent",
+      "description": "An MCP tool's description is trusted context the user never sees. Hide an instruction there and a wallet-signing agent will route your USDC to an attacker. MCPTox: the best-aligned model still refused under 3% of these attacks — so the defense can't live in the model.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "tags": [
+        "mcp",
+        "tool-poisoning",
+        "prompt-injection",
+        "agent-security",
+        "agent-wallets",
+        "base"
+      ],
+      "artifacts": [
+        "poisoned-tool"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1343,6 +1369,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "poisoned-tool",
+      "path": "content/artifacts/poisoned-tool/manifest.json",
+      "module": "src/islands/artifacts/poisoned-tool.ts",
+      "url": "/artifacts/poisoned-tool",
+      "title": "The Poisoned Tool",
+      "description": "An on-chain agent is told to pay an invoice, but one MCP tool hides an instruction in its description that redirects the transfer to an attacker. Pick a defense layer — model, tool, client, policy, custody — and run it; alignment alone refused under 3% of these in MCPTox.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-sampling-threshold",
       "path": "content/artifacts/the-sampling-threshold/manifest.json",

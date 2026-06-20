@@ -1,22 +1,22 @@
 {
   "counts": {
-    "articles": 51,
-    "artifacts": 52
+    "articles": 52,
+    "artifacts": 53
   },
   "topicCounts": {
-    "agents": 20,
+    "agents": 21,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 7,
     "data": 5,
-    "defi": 11,
+    "defi": 12,
     "infrastructure": 23,
     "llm": 10,
     "machine-learning": 23,
     "research": 1,
     "security": 18,
     "smart-contracts": 11,
-    "tokenomics": 4,
+    "tokenomics": 5,
     "web3": 7,
     "zero-knowledge": 4
   },
@@ -45,6 +45,32 @@
       "seriesOrder": 6,
       "artifacts": [
         "the-sampling-threshold"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "carry-the-peg",
+      "path": "content/articles/2026/06/carry-the-peg/index.mdx",
+      "url": "/articles/carry-the-peg",
+      "title": "Carry the Peg: How AI Agents Farm the Perpetual Funding Rate",
+      "description": "A perp has no expiry, so only the funding rate pegs it to spot. On Hyperliquid that's an hourly cash flow AI agents now harvest delta-neutral — a $10k position at +0.02%/8h pays ~21.9%/yr. The mechanism, the carry math on real rates, and why it's carry, not alpha.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "defi",
+        "agents",
+        "tokenomics"
+      ],
+      "tags": [
+        "perpetuals",
+        "funding-rate",
+        "hyperliquid",
+        "basis-trade",
+        "delta-neutral",
+        "autonomous-agents"
+      ],
+      "artifacts": [
+        "the-carry-curve"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1369,6 +1395,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-carry-curve",
+      "path": "content/artifacts/the-carry-curve/manifest.json",
+      "module": "src/islands/artifacts/the-carry-curve.ts",
+      "url": "/artifacts/the-carry-curve",
+      "title": "The Carry Curve",
+      "description": "Cumulative net carry of a $10k delta-neutral perpetual funding harvest over real Hyperliquid funding regimes. The line starts below zero by the round-trip fee, then climbs at the annualized funding rate; a flip slider rolls it over. Carry, not alpha — until funding inverts.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "tokenomics",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "poisoned-tool",
       "path": "content/artifacts/poisoned-tool/manifest.json",

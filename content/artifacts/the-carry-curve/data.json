@@ -1,0 +1,21 @@
+{
+  "config": {
+    "interestPer8h": 0.01,
+    "interestPerHour": 0.00125,
+    "clampPer8h": 0.05,
+    "fundingCapPerHour": 4,
+    "settleHours": 1,
+    "perpTakerPct": 0.045,
+    "perpMakerPct": 0.015,
+    "spotTakerPct": 0.07,
+    "horizonDays": 90
+  },
+  "regimes": [
+    { "id": "baseline", "label": "Neutral baseline", "asset": "any", "rate8h": 0.01, "apr": 10.95, "side": "short perp", "note": "Interest-rate floor: premium ~0, so funding sits near the 0.01%/8h interest component. Longs pay shorts." },
+    { "id": "hype", "label": "HYPE", "asset": "HYPE", "rate8h": 0.0059, "apr": 6.46, "side": "short perp", "note": "Calm trend day on the venue's own token: mild positive premium, well inside the clamp." },
+    { "id": "xmr", "label": "XMR", "asset": "XMR", "rate8h": 0.0118, "apr": 12.92, "side": "short perp", "note": "Sustained positive funding in the 0.01–0.05%/8h harvest sweet spot." },
+    { "id": "eth", "label": "ETH (trending)", "asset": "ETH", "rate8h": 0.03, "apr": 32.85, "side": "short perp", "note": "Crowded long book in a trend: premium dominates, funding climbs toward the clamp." },
+    { "id": "vvv", "label": "VVV (inverted)", "asset": "VVV", "rate8h": -0.0224, "apr": -24.53, "side": "long perp", "note": "Negative funding: shorts pay longs. Harvest by going long the perp and shorting spot." }
+  ],
+  "defaults": { "regime": "xmr", "notionalUsd": 10000, "roundTripFeePct": 0.12, "horizonDays": 30, "flipDay": 0 }
+}

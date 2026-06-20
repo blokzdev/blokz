@@ -1,6 +1,6 @@
 {
   "counts": {
-    "articles": 43,
+    "articles": 44,
     "artifacts": 44
   },
   "topicCounts": {
@@ -8,19 +8,36 @@
     "ai": 4,
     "blockchain": 10,
     "cryptography": 5,
-    "data": 4,
+    "data": 5,
     "defi": 11,
-    "infrastructure": 18,
+    "infrastructure": 19,
     "llm": 8,
     "machine-learning": 18,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
     "tokenomics": 2,
-    "web3": 6,
+    "web3": 7,
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "a-hash-is-not-a-model",
+      "path": "content/articles/2026/06/a-hash-is-not-a-model/index.mdx",
+      "url": "/articles/a-hash-is-not-a-model",
+      "title": "A Hash Is Not a Model: The Storage Bill Behind On-Chain AI",
+      "description": "On-chain AI loves to say a model is 'stored on-chain.' But a chain commits to a 32-byte hash for a couple dollars; keeping the 140 GB it points to retrievable is a separate, continuous, surprisingly centralized bill. The storage math, erasure coding, and the retrieval wall.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "infrastructure",
+        "web3",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "proving-a-model-forgot",
       "path": "content/articles/2026/06/proving-a-model-forgot/index.mdx",

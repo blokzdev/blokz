@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 49,
-    "artifacts": 50
+    "articles": 50,
+    "artifacts": 51
   },
   "topicCounts": {
     "agents": 19,
@@ -12,15 +12,43 @@
     "defi": 11,
     "infrastructure": 23,
     "llm": 10,
-    "machine-learning": 22,
+    "machine-learning": 23,
     "research": 1,
-    "security": 16,
+    "security": 17,
     "smart-contracts": 10,
-    "tokenomics": 3,
+    "tokenomics": 4,
     "web3": 7,
     "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "the-verifiers-dilemma",
+      "path": "content/articles/2026/06/the-verifiers-dilemma/index.mdx",
+      "url": "/articles/the-verifiers-dilemma",
+      "title": "The Verifier's Dilemma: Why Honest AI Needs a Bounty, Not Just a Bond",
+      "description": "Bond-and-slash verifiable AI assumes someone audits. But checking costs money and pays nothing, so a rational verifier won't — the verifier's dilemma. Proof of Sampling fixes it with a bounty, and the math says honest inference holds at a 0.74% sampling rate where nobody ever arbitrates.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "security",
+        "tokenomics",
+        "machine-learning"
+      ],
+      "tags": [
+        "proof-of-sampling",
+        "verifiers-dilemma",
+        "mechanism-design",
+        "inspection-game",
+        "spml",
+        "game-theory"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 6,
+      "artifacts": [
+        "the-sampling-threshold"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "clipped-to-consensus",
       "path": "content/articles/2026/06/clipped-to-consensus/index.mdx",
@@ -1315,6 +1343,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sampling-threshold",
+      "path": "content/artifacts/the-sampling-threshold/manifest.json",
+      "module": "src/islands/artifacts/the-sampling-threshold.ts",
+      "url": "/artifacts/the-sampling-threshold",
+      "title": "The Sampling Threshold",
+      "description": "An inspection game between a solver and a verifier. Drag the operating rate and tune the bond, reward, and bounty to find p*, the minimum sampling rate that makes honest AI inference a dominant strategy — and watch it collapse without a bounty.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "security",
+        "tokenomics",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-consensus-clip",
       "path": "content/artifacts/the-consensus-clip/manifest.json",

@@ -1,0 +1,21 @@
+{
+  "slug": "the-sampling-threshold",
+  "title": "The Sampling Threshold",
+  "description": "An inspection game between a solver and a verifier. Drag the operating rate and tune the bond, reward, and bounty to find p*, the minimum sampling rate that makes honest AI inference a dominant strategy — and watch it collapse without a bounty.",
+  "pubDate": "2026-06-20T10:28:42.619Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": ["security", "tokenomics", "machine-learning"],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag the operating-rate line across the chart",
+    "tune reward, bond, Byzantine share, and bounty sliders",
+    "load spML / opML presets"
+  ],
+  "dataSource": {
+    "label": "Zhang et al., Proof of Sampling (arXiv:2405.00295)",
+    "url": "https://arxiv.org/abs/2405.00295"
+  },
+  "dataAsOf": "2026-06-20"
+}

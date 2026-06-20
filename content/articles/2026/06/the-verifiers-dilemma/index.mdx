@@ -1,0 +1,235 @@
+---
+slug: the-verifiers-dilemma
+title: "The Verifier's Dilemma: Why Honest AI Needs a Bounty, Not Just a Bond"
+description: "Bond-and-slash verifiable AI assumes someone audits. But checking costs money and pays nothing, so a rational verifier won't — the verifier's dilemma. Proof of Sampling fixes it with a bounty, and the math says honest inference holds at a 0.74% sampling rate where nobody ever arbitrates."
+pubDate: 2026-06-20T16:30:00Z
+author: blokz
+topics: [security, tokenomics, machine-learning]
+tags: [proof-of-sampling, verifiers-dilemma, mechanism-design, inspection-game, spml, game-theory]
+series: proof-of-intelligence
+seriesOrder: 6
+artifacts: [the-sampling-threshold]
+difficulty: intermediate
+sources:
+  - label: "Zhang, Yu, Wu, et al. — Proof of Sampling: A Nash Equilibrium-Based Verification Protocol (arXiv:2405.00295)"
+    url: "https://arxiv.org/abs/2405.00295"
+  - label: "Dallachiesa, Petrov, Kovacs — SPEX: Statistical Proof of Execution (arXiv:2503.18899)"
+    url: "https://arxiv.org/abs/2503.18899"
+  - label: "Luu, Teutsch, Kulkarni, Saxena — Demystifying Incentives in the Consensus Computer (IACR ePrint 2015/702)"
+    url: "https://eprint.iacr.org/2015/702"
+  - label: "Hyperbolic — Deep Dive Into Proof of Sampling (PoSP)"
+    url: "https://www.hyperbolic.ai/blog/deep-dive-into-hyperbolic-proof-of-sampling"
+---
+
+The last part of this series ended on a bond. A restaking-secured AI oracle
+[doesn't prove the forward pass](/articles/restaking-verifiable-ai-cost-of-corruption);
+it posts collateral, commits to answering honestly, and gets slashed if it's
+caught lying. The security collapses to one inequality — cost of corruption
+above profit from corruption — and the cheap version audits only a fraction
+`p` of calls, paying a `1/p` capital tax for the privilege.
+
+That whole argument has a load-bearing word in it: *caught*. Slashing only
+bites if someone re-runs the inference, compares the answer, and raises a
+challenge. The restaking math treats that probability of detection as a dial
+the protocol sets. But detection isn't a dial. It's a *decision* made by a
+self-interested validator who has to spend real GPU time to make it — and who
+gets paid exactly the same whether they look or not. Ask why that validator
+would ever bother, and the spreadsheet that said "secure" starts to wobble.
+
+This is the **verifier's dilemma**, and it is the oldest unsolved problem in
+on-chain computation. This part is about why naïve bonding walks straight into
+it, and how a 2024 result called Proof of Sampling walks back out — by paying
+people to look.
+
+## The dilemma, stated precisely
+
+Loi Luu and co-authors named it in 2015, in a paper about Ethereum's
+"consensus computer." Their observation: when verifying a transaction is
+expensive, a rational miner is better off *skipping* verification and racing
+ahead to the next block. If everyone reasons that way, the chain fills with
+unverified computation that nobody actually checked. The honest validators —
+the ones who do spend the cycles — are pure cost centers subsidizing everyone
+who didn't.
+
+Port that to verifiable AI. A solver runs a model and posts an answer. A
+verifier *could* re-run the same model to check it, at a cost `C` — call it one
+unit, since re-execution costs about what execution did. If the answer is
+honest, the verifier burned `C` to confirm what was already true and earned
+nothing extra. If the verifier instead does nothing, they save `C` and, in any
+design where validators are paid for being assigned rather than for catching
+fraud, collect the same fee. Skipping strictly dominates checking.
+
+So the rational verifier never checks. The solver, knowing this, has no
+reason to compute honestly either — they can post garbage, or the cached
+answer to a different prompt, and pocket the reward for work they never did.
+Both sides defect. What the system actually settles into, as Mamageishvili and
+Felten observed for most live decentralized protocols, is a **mixed-strategy
+equilibrium**: the solver cheats some fraction of the time, the verifier checks
+some fraction of the time, and a steady trickle of fraud leaks through by
+design. That trickle is not a bug to be patched. It's the equilibrium.
+
+This is the same wall the restaking piece hit from the capital side — "a bond
+is only as good as `P(detected)`" — but now we can see it's a game-theoretic
+wall, not just an accounting one. `P(detected)` isn't small because the
+protocol chose a small `p`. It's small because *no rational agent wants to
+produce detection at all.*
+
+## Turning the audit into a paid job
+
+Proof of Sampling (PoSP), from researchers at Hyperbolic and Columbia, fixes
+the dilemma with one structural change: **the slashed bond doesn't get burned —
+it gets paid to whoever caught the liar.** Verification stops being charity and
+becomes a bounty hunt.
+
+Rewrite the verifier's decision with that bounty `β·S` in hand, where `S` is
+the slashable bond and `β` the share routed to the catcher. Now checking a
+*cheating* solver pays `β·S − C`: the bounty minus the cost of looking. As long
+as `β·S > C` — as long as catching a liar more than repays the GPU time to
+catch them — verifying is the verifier's best response *whenever there's a
+realistic chance the solver cheated.* The verifier is no longer indifferent.
+They're a bondsman with a financial stake in your honesty.
+
+That flips the solver's math too. Knowing the verifier is now motivated to
+check, the solver compares two strategies. Stay honest: collect the reward `R`,
+pay the compute cost, net `R − C`. Cheat: save the compute, collect `R` if you
+get away with it, but lose the bond `S` when caught. With the network sampling
+a fraction `p` of answers and a colluding/Byzantine validator share `r`, the
+expected payoff to cheating falls as `p` rises, and honesty wins once
+
+```
+p  ≥  p*  =  C / [ (1 − r)·S + (1 − 2r)·R ]
+```
+
+This is the paper's Proposition 1, and it's the number worth carrying out of
+this article. The denominator is the stake the solver puts at risk by lying;
+the numerator is the cost of one check. Because a slash dwarfs a single
+verification — `S` is hundreds of times `C` — `p*` is *tiny*. Plug in the
+paper's spML parameters — reward `R = 1.2C`, bond `S = 150C`, `r = 10%` —
+and `p* ≈ 0.736%`. Sampling under one percent of inferences makes honesty a
+dominant strategy. That 0.736% is exactly the overhead PoSP's spML construction
+reports.
+
+<Artifact slug="the-sampling-threshold" />
+
+The artifact is that inequality made draggable. The two lines are the solver's
+expected payoff: honesty is flat at `R − C`; cheating starts higher (free money
+if nobody checks) and slopes down as sampling rises. They cross at `p*`. Drag
+the amber operating line left of the crossover and the verdict flips to
+*under-sampled* — cheating pays, honest validators are the suckers. Now grab the
+**bounty** slider and drag it toward zero: watch the verdict jump to *verifier's
+dilemma* regardless of where the operating line sits, because once `β·S < C` no
+rational verifier looks and the whole sampled-deterrence story evaporates. The
+bounty is load-bearing. The bond is not enough.
+
+## The punchline: nobody actually arbitrates
+
+Here's the part that feels like a magic trick. At equilibrium, the solver is
+honest. Because the solver is honest, the verifier who samples finds nothing to
+catch. So the bounty is *never paid* and the expensive arbitration path is
+*never walked.* PoSP's own framing: under fully rational play, "arbitration
+never happens." The 0.736% isn't the rate at which fraud gets caught — it's the
+rate at which the system *credibly threatens* to catch, and the threat alone is
+what holds the line.
+
+In the artifact's payoff matrix, the realized cell is *(solver honest, verifier
+skips)* — the cheap corner where neither party does extra work. What keeps the
+system pinned there is the off-path cell *(solver cheats, verifier samples)*,
+where the bounty makes the verifier's threat credible. The security lives
+entirely in a branch of the game tree that, in equilibrium, is never visited.
+This is the difference between *detection* and *deterrence*, and it's why PoSP
+can be radically cheaper than anything that actually verifies. zkML proves every
+inference and pays 10³–10⁵×; a SNARK of a one-million-parameter nano-GPT takes
+~16 minutes, and a Llama-2-70B proof runs into days or weeks. Optimistic schemes
+re-execute under dispute. PoSP, in the common case, does neither — it just makes
+the dishonest path negative-EV and lets rational actors avoid it on their own.
+
+## The catch: rational is not Byzantine
+
+Every word above assumes the solver is a *profit-maximizer*. Drag the
+**Byzantine** slider in the artifact and the model starts to creak — and the
+honest engineer should sit with why.
+
+Deterrence works on agents who respond to incentives. It does nothing to an
+attacker who wants a specific wrong answer badly enough to eat the slash: a rival
+who'll burn `S` to push a bad oracle print that liquidates a $50M position, or a
+nation-state that doesn't care about your bond at all. Against that adversary you
+are no longer deterring; you are trying to *catch*, and catching every corrupt
+answer with probability near 1 drags you straight back to the restaking piece's
+`1/p` capital tax — sample everything, bond enormously. The `(1 − r)` and
+`(1 − 2r)` terms in `p*` are the model's nod to this: as the colluding share `r`
+climbs, the threshold balloons, and past `r = 50%` the guarantee is simply gone
+because a majority of "verifiers" are in on it. PoSP secures the rational
+middle of the threat distribution cheaply. It does not abolish the tails.
+
+There's a subtler crack, too. The bounty that fixes the verifier's dilemma opens
+a **griefing** surface: a verifier who can fabricate a dispute, or who profits
+from the *appearance* of a catch, has an incentive to manufacture one. PoSP
+leans on an honest-majority arbitration layer to adjudicate genuine
+disagreements, which is exactly the assumption that gets expensive when `r` is
+large. The bounty is not free money — it's a carefully sized payment that has to
+beat the cost of looking without becoming worth lying *about*.
+
+## Sampling a number that isn't even stable
+
+One assumption has been hiding under all of this: that the verifier *can*
+re-run the solver's work and get the same answer to compare against. For a hash
+or a matrix multiply, fine. For an LLM, [the bytes aren't even
+deterministic](/articles/deterministic-inference-onchain-verification) —
+batching, kernel scheduling, and floating-point non-associativity mean the same
+prompt at temperature 0 can yield different logits, so a naïve byte-equality
+check would slash an honest solver for noise.
+
+This is the problem SPEX — Statistical Proof of Execution, from Warden Protocol
+— takes on, and it's the natural companion to PoSP's economics. Instead of
+demanding bit-equality, SPEX verifies a *confidence level* `δ`: the verifier
+recomputes a `δ`-fraction of the work (for a set of size `n`, `⌈δ·n⌉` items
+sampled without replacement) and accepts if the results match within tolerance.
+Numerical arrays are compared through epsilon-bounded quantized hash sets, so two
+runs that agree to within `ϵ` always share a hash; embeddings are matched with
+locality-sensitive hashing and a Jaccard overlap, `J(X,Y) = |H_X ∩ H_Y| /
+|H_X ∪ H_Y|`, so *semantically* equal outputs pass even when the floats differ.
+Where PoSP answers "how often must we threaten to check," SPEX answers "what does
+'check' even mean when the thing you're checking is a stochastic, drifting
+tensor." Be honest about its maturity, though: the SPEX paper is a protocol
+design, not a benchmark suite — it formalizes the sampling and hashing machinery
+but ships no measured overheads, and its soundness rests on the assumption that
+faking a passing proof costs at least as much as computing the real answer.
+
+## Where this leaves the trust spectrum
+
+Stack the series on one axis of "what do you spend to be sure." zkML spends
+*compute* — it proves the math and eats four to five orders of magnitude.
+[Optimistic ML](/articles/optimistic-ml-oracles) spends *latency* — a challenge
+window in which an honest re-executor might dispute. Restaking spends *capital* —
+a bond oversized by `1/p`. Proof of Sampling spends almost nothing in the common
+path, because it spends *the threat of a sample*: a sub-1% verification rate,
+made credible by a bounty, that rational actors price into honesty without
+anyone ever calling it.
+
+That's a remarkable deal, and it's worth being clear-eyed about what funds it.
+PoSP's security is not cryptographic soundness; it's an equilibrium, and
+equilibria depend on the players being who you modeled. It buys cheapness by
+assuming rationality — and the moment your adversary stops maximizing money and
+starts maximizing your ruin, the bill reverts to capital and compute. For the
+vast middle of decentralized-AI threats — lazy GPU renters, fee-skimming
+operators, solvers tempted to serve a cheaper quantized model — that's exactly
+the right trade. Just don't mistake "nobody is cheating" for "nobody can."
+
+## Takeaways
+
+- **The verifier's dilemma is the real threat, not the liar.** Bond-and-slash
+  assumes audits happen, but checking costs `C` and pays nothing, so a rational
+  verifier skips — and the system settles into a mixed equilibrium where fraud
+  leaks by design. `P(detected)` is an equilibrium outcome, not a protocol dial.
+- **A bounty, not a bigger bond, closes it.** Route the slashed stake to the
+  catcher. Once `β·S > C`, verifying a cheater pays, and honesty becomes the
+  solver's dominant strategy above the threshold `p* = C/[(1−r)S + (1−2r)R]`.
+- **Deterrence is cheaper than detection.** At the paper's spML parameters
+  `p* ≈ 0.736%`, and in equilibrium that arbitration *never fires* — the
+  security is the credible threat, not the act. That's why sampling beats
+  proving (zkML's days-long Llama proofs) when the adversary is merely rational.
+- **Rational is the whole assumption.** Against a Byzantine attacker who'll eat
+  the slash, or a colluding share `r` near a majority, the guarantee degrades to
+  the `1/p` capital tax of [pure bonding](/articles/restaking-verifiable-ai-cost-of-corruption).
+  And someone still has to make "did it run the right model?" *checkable* —
+  which, for drifting LLM tensors, is the job SPEX is still proving out.

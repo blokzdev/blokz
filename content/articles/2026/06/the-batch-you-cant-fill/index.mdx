@@ -5,18 +5,74 @@ description: "Verification overhead gets the blame, but the real tax on decentra
 pubDate: 2026-06-20T07:29:30.532Z
 author: blokz
 topics: [infrastructure, machine-learning, llm]
-tags: []
-artifacts: []
+tags: [decentralized-inference, batching, gpu-economics, vllm, kv-cache, throughput]
+artifacts: [the-decentralization-tax]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Spheron — GPU Cost Per Token Benchmark, 7 LLMs across GPU types (2026)"
+    url: "https://www.spheron.network/blog/gpu-cost-per-token-benchmark-llm-inference-2026/"
+  - label: "DeServe: Towards Affordable Offline LLM Inference via Decentralization (arXiv:2501.14784)"
+    url: "https://arxiv.org/abs/2501.14784"
+  - label: "vLLM v0.6.0: 2.7x Throughput Improvement and 5x Latency Reduction"
+    url: "https://blog.vllm.ai/2024/09/05/perf-update.html"
+  - label: "Kwon et al., Efficient Memory Management for LLM Serving with PagedAttention (SOSP 2023, arXiv:2309.06180)"
+    url: "https://arxiv.org/abs/2309.06180"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Most arguments about decentralized AI inference are arguments about trust. Can you prove the node ran the model you paid for? zkML says prove it cryptographically; TEEs say attest it in hardware; optimistic schemes say bond it and re-run on challenge. We've [walked that whole ladder](/articles/zkml-verifiable-inference-landscape). But there's a cost on the bill that has nothing to do with verification, dwarfs it, and almost never gets named: **the batch a single-tenant node can't fill.**
 
-## Section heading
+Here is the number that should bother anyone building one of these networks. The same model, on the same GPUs, with nothing changed but how many users are sharing the card:
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+| Batch (requests sharing the GPU) | Throughput | Cost / million tokens |
+| ---: | ---: | ---: |
+| 1 | ~25 tok/s | ~$258 |
+| 8 | ~200 tok/s | ~$32 |
+| 32 | ~720 tok/s | ~$8.95 |
+| 128 | ~2,100 tok/s | ~$3.07 |
+| 256 | ~2,800 tok/s | ~$2.30 |
+
+That's Llama 3.3 70B in FP16 on an 8× H100 node, from Spheron's 2026 cost-per-token benchmark. Batch 1 to batch 256 is a **112× swing in the price of a token** — and the hardware never moved. The cost model is mundane: eight H100s rent for about 8 × $2.90 = **$23.20/hour**, so cost per million tokens is just `$23.20 / (tokens-per-sec × 3600) × 10⁶`. Plug in 2,800 tok/s and you get $2.30; plug in 25 and you get $258. The whole story is in the throughput column.
+
+<Artifact slug="the-decentralization-tax" />
+
+## Why a token gets cheaper in a crowd
+
+The reason batching works is that LLM decoding is **memory-bandwidth-bound, not compute-bound**. To generate one token, the GPU has to read every weight in the model out of HBM and multiply it by a single column of activations. At 70B parameters in FP16 that's ~140 GB streamed from memory per token. An H100's HBM tops out around 3.35 TB/s, so even with infinitely fast math units you're looking at tens of tokens per second per stream. The tensor cores spend most of their time idle, waiting on memory.
+
+Now serve a second request at the same time. You read the same 140 GB of weights once and multiply them by *two* columns instead of one. The expensive part — the memory traffic — is shared; the cheap part — the extra arithmetic — barely registers. Stack 256 requests and you amortize that weight-read across 256 tokens of output. The GPU's arithmetic intensity climbs until it finally becomes compute-bound and the tensor cores earn their keep. That's the whole trick: batching converts a bandwidth-bound workload into a compute-bound one, and a compute-bound H100 is a very different economic object than a bandwidth-starved one.
+
+Two systems make this practical. **Continuous batching** schedules at the token level instead of the request level, so a finished sequence is evicted and a waiting one slots in mid-flight rather than the batch stalling on its slowest member. **PagedAttention** (the idea behind vLLM) stores each sequence's KV cache in non-contiguous pages so you don't pre-reserve a worst-case contiguous block per request — which is what lets you actually pack hundreds of concurrent sequences into HBM rather than fragmenting it away. vLLM's own numbers put the gains from this scheduling work at 2.7× throughput on Llama 8B. The KV cache is the binding constraint on how high batch can go: Llama 70B burns roughly 320 KB of KV per token of context, so a few thousand tokens per request times a few hundred requests is hundreds of gigabytes — you run out of memory for concurrency long before you run out of compute.
+
+None of this is exotic. It's how every centralized provider gets to fractions of a cent per thousand tokens. It's also exactly what a decentralized node is structurally bad at.
+
+## Why a decentralized node can't fill the batch
+
+Filling a batch requires **demand aggregation**: a steady firehose of many users' requests arriving at the same GPU at the same moment. Centralized inference is one giant funnel — millions of requests routed into a few datacenters where a scheduler packs them tight. Decentralization is the deliberate opposite. The whole pitch is many independent operators running their own hardware, often a single consumer or prosumer GPU, serving whoever the network routes to them right now. Route one request to a node and it serves a batch of one — the $258 column.
+
+You can't easily fix this by "just batching across the network," because the second structural problem is latency. Centralized serving keeps the GPUs that cooperate on a model a NVLink hop apart. Decentralized nodes are continents apart on commodity internet, and for models too big for one card you're now doing tensor- or pipeline-parallel inference across that link. Pipeline parallelism wants many microbatches in flight to hide the bubble; high inter-node latency means each microbatch owns the GPU longer and the pipeline drains, so utilization falls again. The DeServe work ([arXiv:2501.14784](https://arxiv.org/abs/2501.14784)) is explicitly about this regime — "optimizing serving throughput in high-latency network environments" — and reports 6.7×–12.6× throughput improvements precisely by restructuring how requests are grouped and scheduled when the network between GPUs is slow. The size of that win is the size of the problem it's solving.
+
+So the decentralized operator is caught between two bad numbers: serve single requests at near-zero utilization, or aggregate across a slow network and give a chunk of the batching gain back to latency.
+
+## What this does to the verification story
+
+Here's why this matters for the trust-machinery debate. Verification overhead is real but bounded and, increasingly, small. [TEE-attested inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) runs at single-digit-percent overhead. Optimistic re-execution only re-runs on dispute. Even the heavy end — running a transformer under [secure multi-party computation](/articles/minutes-per-token) — is its own separate, enormous bill. But for the honest, fast paths the verification tax is a modest multiplier on top of the compute cost.
+
+The batching tax is a 10–100× multiplier *underneath* it. If your node is running at batch 8 because that's all the demand the network sent it, you're already paying ~14× the filled-GPU price ($32 vs $2.30) before you add a single byte of attestation. A 7% TEE overhead on a number that's already 14× inflated is rounding error. Optimizing the proof system while ignoring GPU fill is polishing the trim on a car with no engine. The ordering is the lesson: **utilization first, verification second** — because a decentralized network that can't fill batches will lose to a centralized API on price by an order of magnitude no matter how elegant its proofs are, and price is what most inference buyers actually shop on.
+
+It also reframes the [model-substitution problem](/articles/model-substitution-inference-markets) from the other side. A provider quietly swapping FP16 for FP8 isn't only saving on quality — it's buying *throughput*: the same Spheron run shows FP8 nearly doubling tokens/sec (2,800 → 5,600) and INT4 (AWQ) roughly tripling it (→ 8,400), which drops cost per million from $2.30 to $1.15 to $0.77. Quantization is one of the few levers that helps a node fill its compute envelope without more users, which is exactly why it's both a legitimate optimization and a tempting cheat.
+
+## How networks actually fight it
+
+Nobody serious ships batch-1 economics and hopes. The real designs attack utilization directly:
+
+- **Reintroduce a batching coordinator.** Route many users' requests to the same node and schedule them as one batch. This works — and it quietly recentralizes the thing you decentralized, because the coordinator now decides who gets served, sees the traffic, and becomes the trust and liveness bottleneck. Most "decentralized inference" with competitive prices has one of these somewhere.
+- **Serve offline / asynchronous workloads.** If you drop the low-latency requirement, you can buffer requests and wait until you've accumulated a full batch before running it. DeServe targets exactly this "offline inference" niche; it's also why decentralized networks gravitate toward batch jobs — synthetic data generation, bulk evaluation, embedding backfills — rather than interactive chat.
+- **Quantize and pick the right model.** FP8/INT4 raise the throughput ceiling per GPU; Mixture-of-Experts models activate only a slice of parameters per token, cutting the per-token memory read that bottlenecks batch-1 decode in the first place.
+- **Aggregate demand at the token level and price the idle gap.** Networks that lease genuinely [idle GPU capacity](/articles/decentralized-gpu-markets-burn-mint-vs-auction) cheaply can survive lower utilization because their input cost is lower — paying the batching tax on a card you got at a steep discount can still beat a filled card you rented at list price. It's a real strategy, but it's arbitrage on hardware pricing, not a defeat of the underlying physics.
 
 ## Takeaways
 
-TODO.
+- Decentralized LLM inference has two taxes. The verification tax is the one everyone debates; the **batching tax** is the one that's 10–100× bigger and almost never priced.
+- It's not a software bug you can patch away. Decode is memory-bandwidth-bound, batching is the fix, and batching needs aggregated demand on one fast-interconnected GPU — the precise thing decentralization disperses.
+- On 8× H100s, the same Llama 70B costs **$258/M tokens at batch 1 and $2.30 at batch 256**. Where your network's nodes actually sit on that curve is the single biggest determinant of whether it can compete on price.
+- Judge a decentralized inference network by its GPU fill rate before you judge it by its proof system. A beautiful proof on an empty batch is an expensive token.

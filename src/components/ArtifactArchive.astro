@@ -1,9 +1,17 @@
 ---
 import type { Page } from 'astro';
 import ArtifactCard from '@/components/ArtifactCard.astro';
+import DrillChips from '@/components/DrillChips.astro';
 import Pagination from '@/components/Pagination.astro';
 import SortBar from '@/components/SortBar.astro';
-import { ARTIFACT_SORTS, type Artifact, type ArtifactSortKey } from '@/lib/content-helpers';
+import {
+  ARTIFACT_SORTS,
+  dateChip,
+  getArtifacts,
+  groupByDate,
+  type Artifact,
+  type ArtifactSortKey,
+} from '@/lib/content-helpers';
 
 /** The shared /artifacts gallery body, parameterised by sort order. */
 interface Props {
@@ -14,6 +22,10 @@ interface Props {
 const { page, sortKey } = Astro.props;
 // Only the default newest-first order reads as "Newer / Older".
 const dateDefault = sortKey === 'newest';
+// Date drill-down entry: one chip per year, into /artifacts/date/<year>/.
+const dateChips = groupByDate(await getArtifacts()).years.map((y) =>
+  dateChip('/artifacts', y.year, undefined, undefined, y.count),
+);
 ---
 
 <header class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-6">
@@ -23,9 +35,10 @@ const dateDefault = sortKey === 'newest';
   </h1>
   <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
     {page.total} explorable, interactive piece{page.total === 1 ? '' : 's'} — every concept we write
-    about, made tangible. <a href="/artifacts/date/" class="text-accent hover:underline">Browse by date</a>.
+    about, made tangible.
   </p>
-  <div class="mt-6" data-reveal="0.35">
+  <div class="mt-6 flex flex-col gap-3" data-reveal="0.35">
+    <DrillChips label="Date" chips={dateChips} />
     <SortBar options={ARTIFACT_SORTS} current={sortKey} />
   </div>
 </header>

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 56,
-    "artifacts": 56
+    "artifacts": 57
   },
   "topicCounts": {
     "agents": 23,
@@ -1499,6 +1499,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-funding-skew",
+      "path": "content/artifacts/the-funding-skew/manifest.json",
+      "module": "src/islands/artifacts/the-funding-skew.ts",
+      "url": "/artifacts/the-funding-skew",
+      "title": "The Funding Skew",
+      "description": "A perpetual market maker's quote ladder. Avellaneda-Stoikov skews only for inventory; funding adds a second, signed skew that survives even at zero inventory. Drag the reservation line to set inventory, push funding and horizon, and watch the two skews stack or cancel.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-receipt-ladder",
       "path": "content/artifacts/the-receipt-ladder/manifest.json",

@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 47,
-    "artifacts": 48
+    "articles": 48,
+    "artifacts": 49
   },
   "topicCounts": {
     "agents": 19,
     "ai": 4,
-    "blockchain": 10,
+    "blockchain": 11,
     "cryptography": 7,
     "data": 5,
     "defi": 11,
-    "infrastructure": 21,
+    "infrastructure": 22,
     "llm": 10,
-    "machine-learning": 20,
+    "machine-learning": 21,
     "research": 1,
     "security": 16,
     "smart-contracts": 10,
@@ -21,6 +21,32 @@
     "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "acting-on-a-stale-policy",
+      "path": "content/articles/2026/06/acting-on-a-stale-policy/index.mdx",
+      "url": "/articles/acting-on-a-stale-policy",
+      "title": "Acting on a Stale Policy: The Asynchrony Budget in Decentralized RL",
+      "description": "Decentralized RL splits the actor from the learner across the internet: the policy a worker acts with runs several steps behind the one that learns. INTELLECT-2 held reward at 4 steps stale; SparrowRL cut the broadcast 79x. The bandwidth and staleness taxes, and what the chain secures.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "blockchain"
+      ],
+      "tags": [
+        "decentralized-rl",
+        "async-rl",
+        "grpo",
+        "intellect-2",
+        "prime-intellect",
+        "off-policy"
+      ],
+      "artifacts": [
+        "the-staleness-clock"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-batch-you-cant-fill",
       "path": "content/articles/2026/06/the-batch-you-cant-fill/index.mdx",
@@ -1263,6 +1289,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-staleness-clock",
+      "path": "content/artifacts/the-staleness-clock/manifest.json",
+      "module": "src/islands/artifacts/the-staleness-clock.ts",
+      "url": "/artifacts/the-staleness-clock",
+      "title": "The Staleness Clock",
+      "description": "In decentralized RL the rollout worker acts with a policy several steps behind the trainer. Staleness g = broadcast time / step cadence. Pick a model and link, toggle sparse deltas, and watch g cross INTELLECT-2's demonstrated 4-step budget — full 32B weights blow right past it.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-decentralization-tax",
       "path": "content/artifacts/the-decentralization-tax/manifest.json",

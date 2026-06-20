@@ -54,15 +54,24 @@
       "path": "content/articles/2026/06/verifiable-read-zk-coprocessors/index.mdx",
       "url": "/articles/verifiable-read-zk-coprocessors",
       "title": "The Verifiable Read: ZK Coprocessors and the Cost of Proving On-Chain History",
-      "description": "An on-chain AI agent acts on facts it reads from an RPC it has to trust. ZK coprocessors replace that trusted read with a proof — and the punchline is succinctness: verifying a query over a year of blocks costs the same flat ~300k gas as verifying one slot. The mechanism, the anchor problem, and what real-time proving actually buys.",
+      "description": "An on-chain agent acts on facts it reads from an RPC it has to trust. ZK coprocessors swap that trusted read for a proof — and the punchline is succinctness: proving a query over a year of blocks verifies for the same flat ~300k gas as one slot. The mechanism, the anchor problem, real-time proving.",
       "pubDate": "2026-06-20",
       "topics": [
         "zero-knowledge",
         "infrastructure",
         "data"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "zk-coprocessor",
+        "storage-proofs",
+        "axiom",
+        "brevis",
+        "eip-2935",
+        "real-time-proving"
+      ],
+      "artifacts": [
+        "the-flat-verifier"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1418,7 +1427,7 @@
       "module": "src/islands/artifacts/the-flat-verifier.ts",
       "url": "/artifacts/the-flat-verifier",
       "title": "The Flat Verifier",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "On-chain cost of a query versus how much history it touches. Re-executing pays a cold SLOAD per value and hits the 60M block-gas wall — or can't reach the data at all. A coprocessor's proof verifies flat at ~300k gas whatever the size. Drag the cursor or pick a real query; the cyan line never moves.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "chart",

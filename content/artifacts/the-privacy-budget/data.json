@@ -1,0 +1,64 @@
+{
+  "config": {
+    "delta": 1e-5,
+    "epsMin": 0.1,
+    "epsMax": 50,
+    "note": "The warm curve is the rigorous worst-case bound on membership-inference advantage for an (ε, δ)-DP mechanism, Adv ≤ (e^ε − 1 + 2δ)/(e^ε + 1) (Humphries et al., 'Differentially Private Learning Does Not Bound Membership Inference'), at δ = 1e-5. Advantage = 2·(attack accuracy − ½). The cool dots are measured DP-SGD test accuracy at the stated ε (δ = 1e-5); the small warm dots are measured empirical attack advantage on CIFAR-10. Utility numbers: CIFAR-10 from scratch and ImageNet fine-tuning from De et al. 2022 (arXiv:2204.13650) and the DP-SGD image-classification literature; ImageNet-from-scratch ResNet-50 from the same lineage. No runtime fetches — every number is snapshotted here."
+  },
+  "references": [
+    { "id": "comfort", "eps": 1, "label": "research comfort", "detail": "ε ≤ 1 — what the DP literature treats as a strong guarantee" },
+    { "id": "mltarget", "eps": 8, "label": "common ML target", "detail": "ε ≈ 8 — the budget most usable private models actually report" },
+    { "id": "apple", "eps": 16, "label": "Apple / day", "detail": "ε ≈ 1–2 per datum, but ≈ 16 per day across apps, renewed daily (Tang & Korolova 2017)" },
+    { "id": "census", "eps": 19.61, "label": "US Census 2020", "detail": "ε = 19.61 total privacy-loss budget, 2020 redistricting data product" }
+  ],
+  "regimes": [
+    {
+      "id": "in-scratch",
+      "label": "ImageNet · from scratch",
+      "model": "ResNet-50",
+      "baseline": 76,
+      "points": [
+        { "eps": 0.5, "acc": 2.64 },
+        { "eps": 1, "acc": 6.78 }
+      ]
+    },
+    {
+      "id": "cifar-scratch",
+      "label": "CIFAR-10 · from scratch",
+      "model": "Wide-ResNet",
+      "baseline": 95,
+      "points": [
+        { "eps": 1, "acc": 57.45 },
+        { "eps": 2, "acc": 64.03 },
+        { "eps": 4, "acc": 68.89 },
+        { "eps": 8, "acc": 81.4 }
+      ]
+    },
+    {
+      "id": "cifar-ft",
+      "label": "CIFAR-10 · fine-tuned",
+      "model": "WRN, ImageNet pretrain",
+      "baseline": 96,
+      "points": [
+        { "eps": 1, "acc": 94.84 }
+      ]
+    },
+    {
+      "id": "in-ft",
+      "label": "ImageNet · fine-tuned",
+      "model": "NFNet-F3",
+      "baseline": 86,
+      "points": [
+        { "eps": 0.5, "acc": 83.8 }
+      ]
+    }
+  ],
+  "empiricalMia": {
+    "label": "empirical attack (CIFAR-10)",
+    "note": "membership-inference advantage = 2·(attack accuracy − ½); 50.8% attack accuracy at ε=1, 58.3% at ε=8",
+    "points": [
+      { "eps": 1, "adv": 1.6 },
+      { "eps": 8, "adv": 16.6 }
+    ]
+  }
+}

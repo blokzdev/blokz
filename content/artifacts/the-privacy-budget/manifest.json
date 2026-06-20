@@ -1,0 +1,18 @@
+{
+  "slug": "the-privacy-budget",
+  "title": "The Privacy Budget",
+  "description": "A data market can't pay you for your data's value AND protect it with one privacy budget ε. Drag ε: the worst-case leakage bound hits ≈100% by ε=8 — exactly where from-scratch models finally become usable. Real attacks sit far below the bound, and that gap is your only cover.",
+  "pubDate": "2026-06-20T22:29:37.808Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "cryptography",
+    "data",
+    "machine-learning"
+  ],
+  "aspect": "840/472",
+  "featured": false,
+  "controls": ["drag the ε cursor", "tap a reference line or a dot", "tab between training regimes", "arrow keys to step"],
+  "dataSource": { "label": "De et al. 2022 (arXiv:2204.13650) + DP image-classification & membership-inference literature", "url": "https://arxiv.org/abs/2204.13650" },
+  "dataAsOf": "2026-06-20"
+}

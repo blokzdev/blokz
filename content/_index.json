@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 60,
-    "artifacts": 61
+    "articles": 61,
+    "artifacts": 62
   },
   "topicCounts": {
     "agents": 24,
     "ai": 4,
     "blockchain": 11,
-    "cryptography": 8,
-    "data": 7,
+    "cryptography": 9,
+    "data": 8,
     "defi": 13,
     "infrastructure": 27,
     "llm": 13,
-    "machine-learning": 28,
+    "machine-learning": 29,
     "research": 1,
     "security": 20,
     "smart-contracts": 11,
@@ -21,6 +21,32 @@
     "zero-knowledge": 5
   },
   "articles": [
+    {
+      "slug": "noise-you-cant-audit-differential-privacy-in-on-chain-data-markets",
+      "path": "content/articles/2026/06/noise-you-cant-audit-differential-privacy-in-on-chain-data-markets/index.mdx",
+      "url": "/articles/noise-you-cant-audit-differential-privacy-in-on-chain-data-markets",
+      "title": "Noise You Can't Audit: Differential Privacy in On-Chain Data Markets",
+      "description": "On-chain data markets promise to pay you for your data's value AND protect your privacy. Differential privacy is the only rigorous knob for the second — and one budget ε can't serve both. The utility collapse, the composition trap, and why no chain can verify the ε you were promised.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "cryptography",
+        "data",
+        "machine-learning"
+      ],
+      "tags": [
+        "differential-privacy",
+        "datadao",
+        "vana",
+        "dp-sgd",
+        "membership-inference",
+        "verifiable-privacy"
+      ],
+      "artifacts": [
+        "the-privacy-budget"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "aligned-not-capable",
       "path": "content/articles/2026/06/aligned-not-capable/index.mdx",
@@ -1603,6 +1629,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-privacy-budget",
+      "path": "content/artifacts/the-privacy-budget/manifest.json",
+      "module": "src/islands/artifacts/the-privacy-budget.ts",
+      "url": "/artifacts/the-privacy-budget",
+      "title": "The Privacy Budget",
+      "description": "A data market can't pay you for your data's value AND protect it with one privacy budget ε. Drag ε: the worst-case leakage bound hits ≈100% by ε=8 — exactly where from-scratch models finally become usable. Real attacks sit far below the bound, and that gap is your only cover.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "data",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-undercutting-spiral",
       "path": "content/artifacts/the-undercutting-spiral/manifest.json",

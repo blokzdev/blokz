@@ -14,15 +14,16 @@ import {
 } from '@/lib/content-helpers';
 
 /**
- * Shared body for the date drill-down pages (year / month / day), for either
- * articles or artifacts. Renders the date breadcrumb plus — when the bucket
- * holds more than one item — a functional sort bar scoped to that date.
+ * Shared body for the date drill-down levels (all / year / month / day), for
+ * either articles or artifacts. Each level lists its items with a sort bar,
+ * a breadcrumb that steps *up*, and drill chips that step *down*.
  */
 interface Props {
   page: Page<Article | Artifact>;
-  /** Collection root for breadcrumb hrefs, e.g. "/articles" or "/artifacts". */
+  /** Collection root for hrefs, e.g. "/articles" or "/artifacts". */
   base: string;
-  year: string;
+  /** Omit all three for the top "all dates" level. */
+  year?: string;
   month?: string;
   day?: string;
   /** Which card to render; also selects the noun in the copy. */
@@ -31,6 +32,8 @@ interface Props {
   sortKey?: string;
   /** Date-scoped sort options (from `dateScopedSorts`). Omit to hide the sort bar. */
   sortOptions?: SortOption[];
+  /** Child buckets to drill into (years / months / days); omit on the leaf day. */
+  children?: Array<SortOption & { count: number }>;
   /** Topics for article cards (unused for artifacts). */
   topics?: Topic[];
 }
@@ -44,10 +47,11 @@ const {
   kind = 'article',
   sortKey = 'newest',
   sortOptions,
+  children,
   topics = [],
 } = Astro.props;
 
-const label = dateArchiveLabel(year, month, day);
+const label = year ? dateArchiveLabel(year, month, day) : 'All dates';
 const crumbs = dateArchiveCrumbs(base, year, month, day);
 const current = crumbs[crumbs.length - 1].key;
 const noun = kind === 'artifact' ? 'artifact' : 'article';
@@ -56,6 +60,9 @@ const noun = kind === 'artifact' ? 'artifact' : 'article';
 const dateDefault = sortKey === 'newest';
 // Sorting only changes anything when the bucket holds more than one item.
 const showSort = Boolean(sortOptions) && page.total > 1;
+// Eyebrow for the drill chips, by depth.
+const childUnit = !year ? 'Years' : !month ? 'Months' : 'Days';
+const showChildren = Boolean(children && children.length > 0);
 ---
 
 <header class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-6">
@@ -64,11 +71,31 @@ const showSort = Boolean(sortOptions) && page.total > 1;
     {label}
   </h1>
   <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
-    {page.total} {noun}{page.total === 1 ? '' : 's'} published in this period.
+    {page.total} {noun}{page.total === 1 ? '' : 's'}{
+      year ? ' published in this period' : ', grouped by date'
+    }.
   </p>
   <div class="mt-6 flex flex-col gap-3" data-reveal="0.35">
     <SortBar label="Date" options={crumbs} current={current} />
     {showSort && <SortBar label="Sort" options={sortOptions!} current={sortKey} />}
+    {
+      showChildren && (
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">{childUnit}</span>
+          <div class="flex flex-wrap gap-1.5">
+            {children!.map((c) => (
+              <a
+                href={c.href}
+                class="glass rounded-lg px-3 py-1.5 font-mono text-xs text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
+              >
+                {c.label}
+                <span class="text-faint"> {c.count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
   </div>
 </header>
 

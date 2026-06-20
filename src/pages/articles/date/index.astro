@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { dateArchiveLabel, getArticles, groupArticlesByDate } from '@/lib/content-helpers';
+import { dateArchiveLabel, getArticles, groupByDate } from '@/lib/content-helpers';
 
 const articles = await getArticles();
-const { years } = groupArticlesByDate(articles);
+const { years } = groupByDate(articles);
 ---
 
 <BaseLayout

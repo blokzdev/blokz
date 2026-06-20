@@ -3,17 +3,19 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DateArchive from '@/components/DateArchive.astro';
 import {
+  ARTICLE_SORTS,
   dateArchiveLabel,
-  filterArticlesByDate,
+  dateScopedSorts,
+  filterByDate,
   getArticles,
   getTopics,
-  groupArticlesByDate,
+  groupByDate,
 } from '@/lib/content-helpers';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const articles = await getArticles();
-  return groupArticlesByDate(articles).years.flatMap((y) =>
-    paginate(filterArticlesByDate(articles, y.year), {
+  return groupByDate(articles).years.flatMap((y) =>
+    paginate(filterByDate(articles, y.year), {
       params: { year: y.year },
       props: { year: y.year },
       pageSize: 12,
@@ -24,6 +26,7 @@ export const getStaticPaths = (async ({ paginate }) => {
 const { page, year } = Astro.props as typeof Astro.props & { year: string };
 const topics = await getTopics();
 const label = dateArchiveLabel(year);
+const sortOptions = dateScopedSorts('/articles', ARTICLE_SORTS, year);
 ---
 
 <BaseLayout
@@ -31,5 +34,5 @@ const label = dateArchiveLabel(year);
   description={`Blokz articles published in ${label}: ${page.total} article${page.total === 1 ? '' : 's'} from the archive, newest first.`}
   noindex
 >
-  <DateArchive {page} {topics} {year} />
+  <DateArchive {page} base="/articles" kind="article" {topics} {year} {sortOptions} />
 </BaseLayout>

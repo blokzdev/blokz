@@ -1,7 +1,7 @@
 {
   "slug": "the-attestation-ladder",
   "title": "The Attestation Ladder",
-  "description": "The on-chain gas cost of verifying a TEE attestation quote, across three paths: naive Solidity, EIP-7951 precompile, and a zkVM-compressed proof. Toggle the ECDSA path and scale to attestations-per-day; the flat ~290k proof is the only one that survives continuous agent attestation.",
+  "description": "The on-chain gas cost of verifying a TEE attestation quote, across three paths: naive Solidity (~4.5M), the EIP-7951 precompile (~3.5M), and a zkVM-compressed proof (flat ~290k). Tap a bar and scale to attestations-per-day — the flat proof is the only path that survives continuous agent attestation.",
   "pubDate": "2026-06-20T19:27:30.745Z",
   "type": "svg",
   "archetype": "chart",
@@ -10,7 +10,15 @@
     "infrastructure",
     "cryptography"
   ],
-  "aspect": "16/9",
-  "featured": false,
-  "controls": []
+  "aspect": "800/340",
+  "featured": true,
+  "controls": [
+    "tap a bar (or its button) to select a verification path",
+    "slider: attestations per day (keyboard accessible)"
+  ],
+  "dataSource": {
+    "label": "Automata DCAP Attestation v1.1 & Phala RiscZero zkVM verifier",
+    "url": "https://blog.ata.network/automatas-release-of-dcap-attestation-v1-1-for-agentic-systems-84ae98900370"
+  },
+  "dataAsOf": "2026-06-20"
 }

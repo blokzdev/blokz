@@ -1,0 +1,24 @@
+{
+  "slug": "the-undercutting-spiral",
+  "title": "The Undercutting Spiral",
+  "description": "Autonomous LLM firms undercut each other below unit cost in a race to bankruptcy, then survivors monopoly-price. Drag price discovery up to deepen the crash (the paper's counterintuitive result), or add stabilizer firms to rescue the market. Deterministic model of Agent Bazaar's 'The Crash'.",
+  "pubDate": "2026-06-20T21:52:45.018Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "agents",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag competing firms, price discovery, and stabilizer firms",
+    "watch prices spiral below unit cost into bankruptcies (✗)",
+    "keyboard: tab to a slider, arrow keys to adjust"
+  ],
+  "dataSource": {
+    "label": "Agent Bazaar (Karten, Crow, Jin), arXiv:2605.17698",
+    "url": "https://arxiv.org/abs/2605.17698"
+  },
+  "dataAsOf": "2026-05-17"
+}

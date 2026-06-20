@@ -1,0 +1,26 @@
+name: Scheduled deploy
+
+# Vercel git deploys are disabled (vercel.json git.deploymentEnabled: false) so
+# that the hourly content routine's per-article pushes/merges don't each trigger
+# a build. Instead, batch production deploys onto a schedule by POSTing a Vercel
+# Deploy Hook. workflow_dispatch is the manual "publish now" button.
+on:
+  schedule:
+    - cron: '0 6 * * *'    # 06:00 UTC
+    - cron: '0 18 * * *'   # 18:00 UTC
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Trigger Vercel deploy hook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fire deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_URL secret is not set — create a Vercel Deploy Hook for the main branch and add it as a repo secret."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK" -o /dev/null -w "Deploy hook triggered: HTTP %{http_code}\n"

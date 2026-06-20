@@ -1,22 +1,100 @@
 ---
 slug: the-drafter-can-lie
 title: "The Drafter Can Lie: Speculative Decoding and the Limits of Cheap Verification"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
-pubDate: 2026-06-20T14:28:58.175Z
+description: "Speculative decoding lets a small, even adversarial, drafter propose tokens that a big model verifies in parallel — and the output is provably the big model's, unchanged. Real drafters land at α ≈ 0.6–0.8 for a ~2× win. But the verifier still runs every token, so it's a latency win, not a trust win."
+pubDate: 2026-06-20T15:10:00Z
 author: blokz
 topics: [machine-learning, llm, infrastructure]
-tags: []
-artifacts: []
+tags: [speculative-decoding, draft-verify, rejection-sampling, decentralized-inference, eagle, inference-latency]
+artifacts: [the-draft-verify-loop]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Leviathan et al. — Fast Inference from Transformers via Speculative Decoding (2023)"
+    url: "https://arxiv.org/abs/2211.17192"
+  - label: "VIA-SD: Verification via Intra-Model Routing for Speculative Decoding (2026)"
+    url: "https://arxiv.org/abs/2606.12243"
+  - label: "Timor et al. — Distributed Speculative Inference of LLMs (2024)"
+    url: "https://arxiv.org/abs/2405.14105"
+  - label: "LLM-42: Enabling Determinism in LLM Inference with Verified Speculation (2026)"
+    url: "https://arxiv.org/abs/2601.17768"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Here is a fact about speculative decoding that sounds like it must be a bug: the small model proposing the tokens can be *wrong about everything*, even adversarial, and the text you get out is still — exactly, distributionally — what the big model would have produced on its own. Not "close." Not "usually." The same distribution, token for token.
 
-## Section heading
+That property is doing a lot of quiet work in the case for decentralized and verifiable AI. If a cheap, untrusted node can propose and an expensive one only has to *check*, it smells like the cheap-proposer / expensive-verifier split that optimistic systems are built on. So it is worth being precise about what speculative decoding actually verifies, what it leaves a trusted party still holding, and why — for the single-tenant nodes that make up most decentralized inference networks — it is the right lever anyway.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The loop
+
+Autoregressive decoding is sequential by construction: token *t+1* needs token *t*. Each step is one forward pass of a multi-billion-parameter model, and at batch size 1 that pass is bottlenecked on memory bandwidth, not arithmetic — you stream the whole weight matrix through the chip to emit a single token. The GPU is mostly idle.
+
+Speculative decoding ([Leviathan et al., 2023](https://arxiv.org/abs/2211.17192)) breaks the dependency with a second, much smaller *draft* model **q**. The loop:
+
+1. **Draft.** Run q autoregressively for γ steps to propose γ tokens. q is small, so this is cheap.
+2. **Verify.** Run the *target* model **p** once, in a single parallel forward pass, scoring all γ proposed positions at once.
+3. **Accept / correct.** Walk the proposals left to right. Accept each as long as a rejection-sampling test passes; at the first failure, throw away the rest and replace that one token with a sample from an adjusted distribution. If *all* γ are accepted, take a free bonus token from the target's final position.
+
+The accept test is the whole trick. For draft probability `q(x)` and target probability `p(x)` at a position, accept the drafted token `x` with probability `min(1, p(x)/q(x))`; on rejection, resample from the normalized residual `(p − q)⁺`. This is ordinary rejection sampling, and its output is distributed *exactly* as `p`. Here it is as a verify step:
+
+```python
+def verify_step(draft_token, p_dist, q_dist):
+    x = draft_token
+    accept_prob = min(1.0, p_dist[x] / q_dist[x])
+    if random() < accept_prob:
+        return x, True                      # accepted: it's a sample from p
+    residual = relu(p_dist - q_dist)        # (p - q)+
+    return sample(residual / residual.sum()), False   # corrected: also a sample from p
+```
+
+Whether the token is accepted or corrected, it is a sample from `p`. That is why **q never touches the output distribution.** A better q gets *more* tokens accepted per pass — it is faster — but a worse q, or a malicious one, only costs speed. The text is the target's either way. The drafter can lie; the verifier launders every lie back into a true sample.
+
+## The math, and where the win goes
+
+Model per-token acceptance as a coin flip with probability α (the "acceptance rate"). The run length before the first rejection is geometric, so the expected number of tokens emitted per target pass — accepted prefix plus the one free token — has a closed form:
+
+```text
+Ω(α, γ) = (1 − α^(γ+1)) / (1 − α)
+```
+
+The target ran once and you advanced Ω positions instead of one. But you also paid for γ draft passes. With `c` = (draft cost) / (target cost), the walltime speedup over plain autoregressive decoding is:
+
+```text
+S = Ω / (1 + γc) = (1 − α^(γ+1)) / [ (1 − α)(1 + γc) ]
+```
+
+Two things fall out of that denominator, and both matter more than the headline number. First, **S has an optimum in γ and then fades.** Push the draft length too far and you are generating tokens q's acceptance can't sustain, paying the `γc` tax for proposals the verifier throws away. Second, **a weak drafter collapses the whole thing.** At α = 0.9 you accept nearly a full draft window; at α = 0.5 the expected accepted length is ~1.4 and S barely clears 1. The artifact below runs the loop one round at a time — watch the empirical accepted length converge to Ω, and watch S peak then sag as you drag γ:
+
+<Artifact slug="the-draft-verify-loop" />
+
+The theory uses α near 1.0; reality does not. Measured end to end, a strong self-drafting setup like EAGLE-3 on Llama-3.1-8B lands acceptance in the **0.6–0.8** band for roughly a **2×** wall-clock win — real, bankable, and a long way from the 3–4× a back-of-envelope α = 0.95 promises. The frontier is mostly a fight to push α up without making q expensive: [VIA-SD (2026)](https://arxiv.org/abs/2606.12243) routes medium-confidence rejects to a *slim* sub-verifier instead of the full target, cutting rejection rates 0.10–0.22 and reporting 2.5–3× over non-drafting decoding.
+
+## Why decentralized inference reaches for it
+
+The win is concentrated exactly where decentralized inference hurts. We've argued before that [the real tax on decentralized LLM inference is the batch a single-tenant node can't fill](/articles/the-batch-you-cant-fill): one user's request runs at batch 1, memory-bandwidth-bound, while a hyperscaler amortizes the same weights over 256 concurrent streams. Speculative decoding is a *low-batch latency* optimization — it converts idle bandwidth headroom into parallel verification. The node that is stuck at batch 1 is precisely the node with the spare arithmetic to draft into.
+
+So the two levers stack rather than compete: batching attacks throughput-per-GPU, speculation attacks latency-per-stream, and a decentralized node that can't do the first should absolutely do the second. This is also why the technique is going distributed. [Distributed Speculative Inference (2024)](https://arxiv.org/abs/2405.14105) orchestrates draft and target instances across machines and proves it beats single-node speculation — 1.29–1.92× in their setup — and client-server variants put the drafter on the user's own device, calling the server's target model only to verify, staying useful even across a flaky network link.
+
+## The category error
+
+Here is where the trust story gets oversold. The shape — cheap proposer, expensive checker — is the same silhouette as an [optimistic ML oracle](/articles/optimistic-ml-oracles), where a claim is posted cheaply and only *challenged* expensively. It is tempting to read speculative decoding the same way: untrusted nodes draft, a verifier rubber-stamps, trust falls out for free.
+
+It doesn't, because the two "verifications" are not the same operation. An optimistic oracle's verifier runs **only on dispute**, on a small fraction of claims — that's what makes the cheap path cheap. Speculative decoding's verifier runs the **full target model on every single token**, accepted or rejected. The forward pass over γ proposals costs essentially what scoring γ real tokens costs; speculation doesn't reduce the target's FLOPs, it reorders them from γ sequential passes into one parallel pass. The number of *sequential* target invocations drops; the *compute* the target performs does not (it actually does slightly more, scoring the tokens it then rejects).
+
+The consequences for a verifiable-inference design are sharp:
+
+- **You can safely offload drafting to untrusted peers.** Correctness is unconditional in q — a Byzantine drafter only burns its own proposals. That's a genuine, useful trust property: a permissionless drafting market with no slashing needed, because there is nothing to slash *for*.
+- **You cannot offload the security budget.** The party that runs the target — the one whose output you're trusting — still pays full target cost. Whatever you used to keep *that* node honest (a [bond and a slash](/articles/restaking-verifiable-ai-cost-of-corruption), a [TEE attestation](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed), a re-execution game) you still need, unchanged. Speculation makes the trusted computation *faster*, not *cheaper to trust*, and definitely not *trustless*.
+
+Conflating those is the category error. "The verifier accepted the draft tokens" is a statement about q's quality, not about whether the operator of p ran the model it claimed. Speculative decoding has nothing to say about the second question — which is the only one a decentralized inference market is actually selling.
+
+## Where speculation *does* buy trust
+
+There is a real bridge, and it runs through determinism. On-chain verification by re-execution needs the forward pass to be bit-for-bit reproducible — and as we covered in [Same Prompt, Different Bytes](/articles/deterministic-inference-onchain-verification), it isn't: floating-point non-associativity plus dynamic batching gives you different logits, and different tokens, run to run. The usual fix, batch-invariant kernels, taxes *every* request whether or not it needs determinism.
+
+[LLM-42 (2026)](https://arxiv.org/abs/2601.17768) borrows the speculative-decoding machinery to do better: decode on a fast, non-deterministic path, then run a lightweight **verify-rollback** loop that replays candidate tokens under a fixed-shape reduction schedule, commits the ones provably stable across runs, and rolls back the rest. Overhead scales with how much of the traffic actually demands determinism, not with all of it. That is the draft-verify pattern aimed at the exact property a re-execution-based on-chain verifier depends on — the closest speculative decoding comes to earning its keep on the trust side rather than the speed side.
 
 ## Takeaways
 
-TODO.
+- **Correctness is unconditional in the drafter.** Rejection sampling means the output is the target's distribution for *any* q. A bad or adversarial drafter costs only speed (lower α), never correctness — so untrusted, permissionless drafting is safe with nothing to slash.
+- **The speedup is bounded and peaked.** `S = Ω/(1+γc)` rises with α, has a finite optimal γ, and collapses toward 1 when the drafter is weak. Real systems live at α ≈ 0.6–0.8 and ~2×, not the 3–4× the idealized formula suggests.
+- **It's the right lever for batch-1 nodes.** Speculation buys single-stream latency by spending idle bandwidth — exactly the regime a single-tenant decentralized node is trapped in, and complementary to batching rather than competing with it.
+- **It is a latency win, not a trust win.** The verifier runs the full target on every token; the security budget for the node running the target is untouched. The one place the pattern touches trust is determinism — verify-rollback gives cheap, on-demand reproducibility for the re-execution checks on-chain verification relies on.

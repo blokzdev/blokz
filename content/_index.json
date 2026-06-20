@@ -54,15 +54,24 @@
       "path": "content/articles/2026/06/the-drafter-can-lie/index.mdx",
       "url": "/articles/the-drafter-can-lie",
       "title": "The Drafter Can Lie: Speculative Decoding and the Limits of Cheap Verification",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Speculative decoding lets a small, even adversarial, drafter propose tokens that a big model verifies in parallel — and the output is provably the big model's, unchanged. Real drafters land at α ≈ 0.6–0.8 for a ~2× win. But the verifier still runs every token, so it's a latency win, not a trust win.",
       "pubDate": "2026-06-20",
       "topics": [
         "machine-learning",
         "llm",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "speculative-decoding",
+        "draft-verify",
+        "rejection-sampling",
+        "decentralized-inference",
+        "eagle",
+        "inference-latency"
+      ],
+      "artifacts": [
+        "the-draft-verify-loop"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1439,23 +1448,6 @@
   ],
   "artifacts": [
     {
-      "slug": "the-draft-verify-loop",
-      "path": "content/artifacts/the-draft-verify-loop/manifest.json",
-      "module": "src/islands/artifacts/the-draft-verify-loop.ts",
-      "url": "/artifacts/the-draft-verify-loop",
-      "title": "The Draft-Verify Loop",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
-      "pubDate": "2026-06-20",
-      "type": "svg",
-      "archetype": "simulation",
-      "topics": [
-        "machine-learning",
-        "llm",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
       "slug": "the-flat-verifier",
       "path": "content/artifacts/the-flat-verifier/manifest.json",
       "module": "src/islands/artifacts/the-flat-verifier.ts",
@@ -1620,6 +1612,23 @@
         "infrastructure",
         "web3",
         "data"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-draft-verify-loop",
+      "path": "content/artifacts/the-draft-verify-loop/manifest.json",
+      "module": "src/islands/artifacts/the-draft-verify-loop.ts",
+      "url": "/artifacts/the-draft-verify-loop",
+      "title": "The Draft-Verify Loop",
+      "description": "Run a speculative-decoding round at a time: a cheap drafter proposes γ tokens, the target verifies them in parallel and accepts a prefix plus one free token. Drive α, γ, and drafter cost c; watch the accepted length converge to Leviathan's Ω and the speedup peak, then fade.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "llm",
+        "infrastructure"
       ],
       "draft": false
     },

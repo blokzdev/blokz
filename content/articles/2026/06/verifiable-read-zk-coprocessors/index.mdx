@@ -1,0 +1,116 @@
+---
+slug: verifiable-read-zk-coprocessors
+title: "The Verifiable Read: ZK Coprocessors and the Cost of Proving On-Chain History"
+description: "An on-chain agent acts on facts it reads from an RPC it has to trust. ZK coprocessors swap that trusted read for a proof — and the punchline is succinctness: proving a query over a year of blocks verifies for the same flat ~300k gas as one slot. The mechanism, the anchor problem, real-time proving."
+pubDate: 2026-06-20T13:30:10.106Z
+author: blokz
+topics: [zero-knowledge, infrastructure, data]
+tags: [zk-coprocessor, storage-proofs, axiom, brevis, eip-2935, real-time-proving]
+artifacts: [the-flat-verifier]
+difficulty: intermediate
+sources:
+  - label: "EIP-2935 — Serve historical block hashes from state"
+    url: "https://eips.ethereum.org/EIPS/eip-2935"
+  - label: "Axiom — ZK coprocessor for Ethereum (docs)"
+    url: "https://docs.axiom.xyz/"
+  - label: "Brevis — Pico Prism 2.0: real-time Ethereum proving"
+    url: "https://blog.brevis.network/2026/05/12/pico-prism-2-0-a-5-3x-efficiency-leap-in-real-time-ethereum-proving/"
+  - label: "Herodotus — Storage proofs / provable access to historical state"
+    url: "https://docs.herodotus.dev/"
+  - label: "EIP-2929 — Gas cost increases for state access (cold SLOAD = 2100)"
+    url: "https://eips.ethereum.org/EIPS/eip-2929"
+---
+
+An autonomous agent rebalances a vault when a pool's 30-day average price drifts past a band. To get that average it calls an RPC — Alchemy, Infura, a self-hosted node, an indexer like The Graph — and trusts the number that comes back. Every verifiable-inference scheme this blog has dissected, from [optimistic ML oracles](/articles/optimistic-ml-oracles) to [TEE-attested inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed), hardens the *write* side: it proves the model ran. None of them touch the *read*. The agent's decision is only as trustworthy as the JSON it fetched, and that JSON came from a single party with no proof attached.
+
+That is the trusted-read gap, and it is wider than it looks. A smart contract — the thing the agent ultimately signs a transaction into — is even blinder than the agent. It cannot see its own chain's history.
+
+## What the EVM can't see
+
+The EVM exposes exactly one window into the past: `blockhash(n)`. Before the Pectra upgrade that reached back 256 blocks; [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) now serves the last **8,191** block hashes from a system contract at `0x0000…2935` — about 27 hours of Ethereum. Past that window, `blockhash` returns zero. And even inside it, a hash is not the data. There is no opcode to walk a past account's storage trie, no way to read another contract's balances as they were 200 blocks ago, and certainly no way to read a value that lives on a different chain.
+
+So a contract that wants a time-weighted average price is stuck:
+
+```solidity
+// What a contract CAN read — this block, its own chain:
+function spot() external view returns (uint256) {
+    return oracle.latestAnswer();
+}
+
+// What it CANNOT: a 30-day average over prices that lived in
+// blocks now pruned from every node's active state. blockhash()
+// can't reach them, and there's no opcode to walk historical
+// storage even if it could. The data is simply out of range.
+```
+
+The usual workaround is to make the chain remember: write a checkpoint to storage every block (Uniswap V2's accumulator), or run an off-chain indexer and trust its answer. The first burns gas forever and only captures what you thought to record; the second reintroduces the oracle you were trying to remove. The agent reading that indexer is in the same position as the agent in our [zkTLS piece](/articles/zktls-web-proofs-for-agents), which had to prove it really saw a bank balance over HTTPS — except here the data it needs is *on the chain it is standing on*, and it still can't prove it.
+
+## The mechanism: prove the read
+
+A ZK coprocessor closes the gap by moving the computation off-chain and bringing back a proof instead of a promise. Four steps:
+
+1. **Anchor.** Everything roots in a block hash the chain already agrees on — from the EIP-2935 window for recent blocks, or by proving a chain of headers back to a known hash for deeper history. The block hash commits to the state root, and the state root commits to every account and every storage slot at that height.
+
+2. **Storage proof.** A Merkle-Patricia inclusion proof shows that account `A`'s slot `S` held value `V` under that state root. This is the primitive [Herodotus](https://docs.herodotus.dev/) calls a storage proof: a few hundred bytes of trie nodes that bind a single historical value to consensus, verifiable without trusting whoever served it.
+
+3. **Compute.** A zkVM executes an arbitrary program over the proven values — average them, count them, filter them, feed them through a scoring function — and produces a succinct proof that the output follows from the inputs.
+
+4. **Verify.** A verifier contract checks that one proof on-chain and hands your callback a result you can treat as fact.
+
+Schematically, the developer writes the historical reads and the computation off-chain, and receives the answer in a callback that fires only after the proof clears:
+
+```ts
+// Off-chain: declare the reads + the computation
+const q = coprocessor.query()
+  .storage({ block: 21_000_000, addr: POOL, slot: PRICE })  // ×720 hourly obs
+  .compute(vals => mean(vals));                              // runs in the zkVM
+
+// On-chain: the callback receives a PROVEN value
+function onResult(bytes32 schema, Result calldata r) external onlyVerifier {
+    uint256 twap = abi.decode(r.value, (uint256));  // trustless; verify already paid
+}
+```
+
+[Axiom](https://docs.axiom.xyz/) productized exactly this for Ethereum: queries over account data, storage slots, transactions, and receipts from any historical block, answered with a ZK proof delivered to your contract. The agent no longer trusts an RPC; it trusts a proof that the RPC's answer matches the chain's own state root.
+
+## The punchline: the verifier doesn't move
+
+Here is the property that makes coprocessors more than a novelty. **On-chain verification cost is independent of how much history the query touched.** A SNARK is succinct: checking it costs the same whether the proof attests to one storage slot or a year of them.
+
+Concretely, a Groth16 proof on BN254 verifies for roughly **230k gas** plus about 6.15k per public input — the pairing precompiles dominate, and the statement's size is invisible to them. Axiom reports a fixed **300k–500k gas** on-chain regardless of how many slots or how much computation the query folds in. Re-executing the same read on-chain, by contrast, pays a cold `SLOAD` — **2,100 gas** under [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) — for *every* value, and there is no succinctness to rescue you.
+
+That divergence is the whole story, and it's worth feeling rather than reading:
+
+<Artifact slug="the-flat-verifier" />
+
+Two curves. Re-execution rises linearly with the number of values and crosses the flat verifier line at about **120 values** — below that, if the data is in current state, just read it on-chain. Past roughly **26,000 values** re-execution won't fit in a 60M-gas Ethereum block at all, and the coprocessor's line hasn't budged. And for the presets that matter — a 30-day TWAP, a 90-day holding proof, a value on another chain — re-execution isn't merely expensive, it's *impossible*, because the data sits outside the 8,191-block window or on a foreign chain. The cyan line is the only path, and it's flat.
+
+This is the same shape as the [EVM gas wall](/articles/evm-native-ml-gas-wall) we charted for on-chain inference, inverted: there, the cost of *computing* in the EVM exploded; here, the cost of *reading the past* explodes, and the coprocessor flattens it by proving the read elsewhere.
+
+## The cost didn't vanish — it moved to a GPU
+
+Succinct verification is not free computation; it's computation relocated. Someone still executes the zkVM program and generates the proof, and that someone is now a GPU cluster — which is where this stops being a pure blockchain story and becomes an AI-infrastructure one. The proving workload looks a lot like the dense linear algebra that fills decentralized GPU markets, and it is increasingly auctioned the same way.
+
+The numbers have moved fast. Brevis's [Pico Prism 2.0](https://blog.brevis.network/2026/05/12/pico-prism-2-0-a-5-3x-efficiency-leap-in-real-time-ethereum-proving/) proves a full **60M-gas Ethereum block in 6.1 seconds**, finishing inside the 12-second slot **99.9%** of the time, on **16 RTX 5090 GPUs** across two machines for about **$100k** — hitting the Ethereum Foundation's real-time-proving targets of sub-10-second average latency and under-$100k capex. That's a 5.3× efficiency gain over the prior version (GPU-seconds per million gas fell from 8.64 to 1.63). "Real-time proving" means the prover can keep pace with the chain head, which is what lets a coprocessor answer a query about the *latest* block, not just deep history — closing the freshness gap that used to make these systems feel archival. Brevis runs this through ProverNet, a marketplace where the proving job is sold to whichever operator bids it cheapest, the same burn-or-bid dynamic we saw in [decentralized GPU pricing](/articles/decentralized-gpu-markets-burn-mint-vs-auction).
+
+## The landscape, and who trusts what
+
+Four systems anchor the category, with different bets:
+
+| System | Specialization | Trust anchor | On-chain cost |
+| --- | --- | --- | --- |
+| **Axiom** | Historical queries + callbacks over Ethereum state | Block hash → state root, ZK | ~300–500k gas, fixed |
+| **Herodotus** | Storage proofs, cross-chain historical access | MPT inclusion vs. state root | Proof-size dependent |
+| **Brevis** | ZK Data Coprocessor + general zkVM (Pico) + real-time proving | Block hash, ZK | SNARK verify, flat |
+| **Lagrange** | ZK MapReduce / state committees over large datasets | Header chain + proof aggregation | Aggregated verify |
+
+What you are *not* trusting, in all four: the RPC, the indexer, the prover's honesty. What you *are* still trusting: the soundness of the proof system and its trusted setup, the correctness of the verifier contract, and the integrity of the anchor — if the block hash you root in is wrong, everything above it is a perfectly valid proof of the wrong history. The anchor is doing the load-bearing work, which is exactly why EIP-2935's on-chain history window matters: it turns "trust me, this was the block hash" into "the chain itself still remembers."
+
+The honest limitations are latency and liveness. A proof takes seconds to minutes to generate; an agent in a tight arbitrage loop can't wait, so coprocessors fit slower decisions — eligibility, settlement, rebalancing bands, dispute resolution — not the hot path. And the prover network has to actually be up and bidding; a coprocessor whose ProverNet has no liveness is an oracle with extra steps. Cost, too: ~300k gas of verification is cheap against proving a year of history, but it is not cheap against reading one slot you could have read directly. Below the break-even, the coprocessor is the wrong tool, and the chart says so.
+
+## Takeaways
+
+- **The read is an oracle too.** Verifiable inference proves the model ran; it says nothing about the on-chain facts the model and its agent consumed. Those still arrive from a trusted RPC unless you prove them.
+- **Succinctness is the product.** A coprocessor's on-chain verification is flat — ~300k gas whether it binds one storage slot or a year of blocks — while re-executing the read scales linearly and hits the block-gas wall around 26k values, if it can reach the data at all.
+- **Reach beats cost.** The strongest case isn't "cheaper than reading on-chain" (that only holds past ~120 values); it's that historical, aggregate, and cross-chain reads are *impossible* on-chain at any price, and a proof makes them possible.
+- **The bottleneck is now a GPU cluster.** Real-time provers like Pico Prism (60M-gas block in 6.1s, $100k rig) moved coprocessors from archival to live — and turned the verifiable read into a compute market that looks more like AI infrastructure than cryptography.

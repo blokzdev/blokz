@@ -1,0 +1,86 @@
+{
+  "asOf": "2026-06-20",
+  "sources": [
+    {
+      "label": "EIP-2929 — cold SLOAD = 2100 gas",
+      "url": "https://eips.ethereum.org/EIPS/eip-2929"
+    },
+    {
+      "label": "EIP-2935 — 8191-block history window (Pectra)",
+      "url": "https://eips.ethereum.org/EIPS/eip-2935"
+    },
+    {
+      "label": "Axiom V2 — ZK-verified historical queries (fixed on-chain verify)",
+      "url": "https://docs.axiom.xyz/"
+    },
+    {
+      "label": "Groth16 on-chain verification gas (BN254 pairing precompiles)",
+      "url": "https://hackmd.io/@nebra-one/ByoMB8Zf6"
+    },
+    {
+      "label": "Brevis Pico Prism 2.0 — real-time Ethereum proving",
+      "url": "https://blog.brevis.network/2026/05/12/pico-prism-2-0-a-5-3x-efficiency-leap-in-real-time-ethereum-proving/"
+    }
+  ],
+  "onchain": {
+    "txBaseGas": 21000,
+    "coldSloadGas": 2100,
+    "perValueComputeGas": 200,
+    "ethBlockGasLimit": 60000000,
+    "historyWindowBlocks": 8191,
+    "blockTimeSec": 12
+  },
+  "coprocessor": {
+    "groth16BaseGas": 230000,
+    "perPublicInputGas": 6150,
+    "resultPublicInputs": 11,
+    "axiomFixedLowGas": 300000,
+    "axiomFixedHighGas": 500000
+  },
+  "proving": {
+    "system": "Pico Prism 2.0",
+    "secPerBlock": 6.1,
+    "blockGasLimit": 60000000,
+    "gpuSecondsPerMgas": 1.63,
+    "gpus": "16× RTX 5090",
+    "rigCostUsd": 100000,
+    "slotCoverageWithin12s": 0.999
+  },
+  "presets": [
+    {
+      "id": "twap",
+      "label": "30-day TWAP",
+      "values": 720,
+      "reachable": false,
+      "note": "Time-weighted price from 720 hourly observations. The values are historical — older than the 8191-block (~27h) window the EVM can still see — so a contract can't recompute them on-chain at all."
+    },
+    {
+      "id": "holding",
+      "label": "90-day holding proof",
+      "values": 90,
+      "reachable": false,
+      "note": "Did this address hold ≥ N tokens across 90 daily snapshots? Loyalty / sybil-resistant airdrops. Ninety historical balances, none reachable from current state."
+    },
+    {
+      "id": "foreign",
+      "label": "Foreign-chain slot",
+      "values": 1,
+      "reachable": false,
+      "note": "Prove one Base storage slot to a contract on Ethereum. Only one value — but the EVM cannot read another chain's state at any price. Re-execution isn't expensive here, it's impossible."
+    },
+    {
+      "id": "year",
+      "label": "A year of transfers",
+      "values": 2628000,
+      "reachable": false,
+      "note": "Aggregate an address's activity across a year of blocks (~2.63M at 12s/block). Even if the state were reachable, the read alone is ~6.0B gas — a hundred Ethereum blocks of nothing but SLOADs."
+    },
+    {
+      "id": "current",
+      "label": "120 live balances",
+      "values": 120,
+      "reachable": true,
+      "note": "A snapshot of 120 balances in the current block. This the EVM *can* do — 120 cold reads ≈ 297k gas with the base tx — which is exactly the break-even against a coprocessor proof. Below this, read on-chain; above it (or back in time), prove."
+    }
+  ]
+}

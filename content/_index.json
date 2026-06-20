@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 52,
-    "artifacts": 53
+    "articles": 53,
+    "artifacts": 54
   },
   "topicCounts": {
     "agents": 21,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 7,
-    "data": 5,
+    "data": 6,
     "defi": 12,
-    "infrastructure": 23,
+    "infrastructure": 24,
     "llm": 10,
     "machine-learning": 23,
     "research": 1,
@@ -18,7 +18,7 @@
     "smart-contracts": 11,
     "tokenomics": 5,
     "web3": 7,
-    "zero-knowledge": 4
+    "zero-knowledge": 5
   },
   "articles": [
     {
@@ -45,6 +45,32 @@
       "seriesOrder": 6,
       "artifacts": [
         "the-sampling-threshold"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "verifiable-read-zk-coprocessors",
+      "path": "content/articles/2026/06/verifiable-read-zk-coprocessors/index.mdx",
+      "url": "/articles/verifiable-read-zk-coprocessors",
+      "title": "The Verifiable Read: ZK Coprocessors and the Cost of Proving On-Chain History",
+      "description": "An on-chain agent acts on facts it reads from an RPC it has to trust. ZK coprocessors swap that trusted read for a proof — and the punchline is succinctness: proving a query over a year of blocks verifies for the same flat ~300k gas as one slot. The mechanism, the anchor problem, real-time proving.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure",
+        "data"
+      ],
+      "tags": [
+        "zk-coprocessor",
+        "storage-proofs",
+        "axiom",
+        "brevis",
+        "eip-2935",
+        "real-time-proving"
+      ],
+      "artifacts": [
+        "the-flat-verifier"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1395,6 +1421,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-flat-verifier",
+      "path": "content/artifacts/the-flat-verifier/manifest.json",
+      "module": "src/islands/artifacts/the-flat-verifier.ts",
+      "url": "/artifacts/the-flat-verifier",
+      "title": "The Flat Verifier",
+      "description": "On-chain cost of a query versus how much history it touches. Re-executing pays a cold SLOAD per value and hits the 60M block-gas wall — or can't reach the data at all. A coprocessor's proof verifies flat at ~300k gas whatever the size. Drag the cursor or pick a real query; the cyan line never moves.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure",
+        "data"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-carry-curve",
       "path": "content/artifacts/the-carry-curve/manifest.json",

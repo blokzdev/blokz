@@ -1,7 +1,7 @@
 {
   "slug": "the-consensus-clip",
   "title": "The Consensus Clip",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Bittensor's Yuma Consensus scores a miner by the stake-weighted median of validator weights, then clips everything above it. Validators sit on a cumulative-stake axis; the consensus line is read at the κ=50% mark. Push a colluding bloc past 50% and watch the pump go from clipped to unstoppable.",
   "pubDate": "2026-06-20T09:29:10.406Z",
   "type": "svg",
   "archetype": "diagram",
@@ -12,5 +12,9 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag: colluding bloc stake share",
+    "drag: honest assessment of the miner",
+    "tap a column / ← → to inspect a validator"
+  ]
 }

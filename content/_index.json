@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/clipped-to-consensus/index.mdx",
       "url": "/articles/clipped-to-consensus",
       "title": "Clipped to Consensus: How Yuma Scores Subjective AI",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Decentralized AI networks have to turn many validators' subjective quality scores into one reward number. Bittensor's Yuma Consensus uses a stake-weighted median and clips the rest — robust to a <50% bloc. Then a parasite shows up: copying the consensus pays better than producing it.",
       "pubDate": "2026-06-20",
       "topics": [
         "machine-learning",
         "infrastructure",
         "tokenomics"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "bittensor",
+        "yuma-consensus",
+        "mechanism-design",
+        "weight-copying",
+        "stake-weighted-median",
+        "commit-reveal"
+      ],
+      "artifacts": [
+        "the-consensus-clip"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1312,7 +1321,7 @@
       "module": "src/islands/artifacts/the-consensus-clip.ts",
       "url": "/artifacts/the-consensus-clip",
       "title": "The Consensus Clip",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Bittensor's Yuma Consensus scores a miner by the stake-weighted median of validator weights, then clips everything above it. Validators sit on a cumulative-stake axis; the consensus line is read at the κ=50% mark. Push a colluding bloc past 50% and watch the pump go from clipped to unstoppable.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "diagram",

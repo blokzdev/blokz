@@ -41,12 +41,13 @@ const SKELETON = `
 .afl-root { position: relative; width: 100%; min-height: 100%; }
 .artifact-fs .afl-root { position: absolute; inset: 0; }
 .afl-grid {
-  display: grid; gap: 12px; height: 100%; min-height: 0;
+  display: grid; gap: 12px; min-height: 0;
   padding: clamp(13px, 3.4vw, 18px); box-sizing: border-box;
   grid-template-columns: 1fr;
   grid-template-areas: "stage" "panel" "controls" "caption";
 }
 .afl-grid.is-wide {
+  height: 100%;
   grid-template-columns: minmax(0, var(--afl-stage-fr, 1.6fr)) minmax(190px, 1fr);
   grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:

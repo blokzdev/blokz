@@ -80,14 +80,21 @@ export function artifactUrl(artifact: Artifact): string {
 
 /* ------------------------------------------------------------------ sorting */
 
-export type ArticleSortKey = 'newest' | 'oldest' | 'az' | 'za' | 'short' | 'long';
-
-/** Sort options for the /articles archive — order drives the sort bar. */
-export const ARTICLE_SORTS: ReadonlyArray<{
-  key: ArticleSortKey;
+/** Sort option for a collection archive — drives the sort bar. */
+export interface SortOption {
+  key: string;
   label: string;
   href: string;
-}> = [
+}
+
+/** Orders shared by any pubDate+title collection (articles and artifacts). */
+export type BaseSortKey = 'newest' | 'oldest' | 'az' | 'za';
+/** Articles add reading-length orders (artifacts have no body). */
+export type ArticleSortKey = BaseSortKey | 'short' | 'long';
+export type ArtifactSortKey = BaseSortKey;
+
+/** Sort options for the /articles archive — order drives the sort bar. */
+export const ARTICLE_SORTS: ReadonlyArray<SortOption & { key: ArticleSortKey }> = [
   { key: 'newest', label: 'Newest', href: '/articles/' },
   { key: 'oldest', label: 'Oldest', href: '/articles/sort/oldest/' },
   { key: 'az', label: 'A–Z', href: '/articles/sort/az/' },
@@ -96,11 +103,20 @@ export const ARTICLE_SORTS: ReadonlyArray<{
   { key: 'long', label: 'Longest', href: '/articles/sort/long/' },
 ];
 
+/** Sort options for the /artifacts archive (no reading-length — no body). */
+export const ARTIFACT_SORTS: ReadonlyArray<SortOption & { key: ArtifactSortKey }> = [
+  { key: 'newest', label: 'Newest', href: '/artifacts/' },
+  { key: 'oldest', label: 'Oldest', href: '/artifacts/sort/oldest/' },
+  { key: 'az', label: 'A–Z', href: '/artifacts/sort/az/' },
+  { key: 'za', label: 'Z–A', href: '/artifacts/sort/za/' },
+];
+
 /** The non-default orders that get their own pre-rendered routes. */
 export const ARTICLE_SORT_VARIANTS = ['oldest', 'az', 'za', 'short', 'long'] as const;
+export const ARTIFACT_SORT_VARIANTS = ['oldest', 'az', 'za'] as const;
 
-/** Return a new array sorted by `key`; every order has a deterministic tiebreak. */
-export function sortArticles(list: Article[], key: ArticleSortKey): Article[] {
+/** Shared orders for any Article|Artifact; every order has a deterministic tiebreak. */
+function sortEntries<T extends Article | Artifact>(list: T[], key: BaseSortKey): T[] {
   const out = [...list];
   switch (key) {
     case 'oldest':
@@ -113,13 +129,30 @@ export function sortArticles(list: Article[], key: ArticleSortKey): Article[] {
       return out.sort((a, b) => a.data.title.localeCompare(b.data.title) || byPubDateDesc(a, b));
     case 'za':
       return out.sort((a, b) => b.data.title.localeCompare(a.data.title) || byPubDateDesc(a, b));
-    case 'short':
-      return out.sort((a, b) => readingTime(a.body) - readingTime(b.body) || byPubDateDesc(a, b));
-    case 'long':
-      return out.sort((a, b) => readingTime(b.body) - readingTime(a.body) || byPubDateDesc(a, b));
     default:
       return out.sort(byPubDateDesc);
   }
+}
+
+/** Return a new array sorted by `key`. Adds reading-length orders to the shared set. */
+export function sortArticles(list: Article[], key: ArticleSortKey): Article[] {
+  switch (key) {
+    case 'short':
+      return [...list].sort(
+        (a, b) => readingTime(a.body) - readingTime(b.body) || byPubDateDesc(a, b),
+      );
+    case 'long':
+      return [...list].sort(
+        (a, b) => readingTime(b.body) - readingTime(a.body) || byPubDateDesc(a, b),
+      );
+    default:
+      return sortEntries(list, key);
+  }
+}
+
+/** Return a new array of artifacts sorted by `key` (shared orders only). */
+export function sortArtifacts(list: Artifact[], key: ArtifactSortKey): Artifact[] {
+  return sortEntries(list, key);
 }
 
 /* ----------------------------------------------------------- date archives */
@@ -146,15 +179,15 @@ function dateParts(d: Date): { year: string; month: string; day: string } {
   };
 }
 
-/** True if `article` falls in the given UTC year (+ optional month/day). */
-export function filterArticlesByDate(
-  articles: Article[],
+/** Entries (articles or artifacts) falling in the given UTC year (+ month/day). */
+export function filterByDate<T extends Article | Artifact>(
+  entries: T[],
   year: string,
   month?: string,
   day?: string,
-): Article[] {
-  return articles.filter((a) => {
-    const p = dateParts(a.data.pubDate);
+): T[] {
+  return entries.filter((e) => {
+    const p = dateParts(e.data.pubDate);
     if (p.year !== year) return false;
     if (month && p.month !== month) return false;
     if (day && p.day !== day) return false;
@@ -164,12 +197,12 @@ export function filterArticlesByDate(
 
 /**
  * Nested year → month → day tree with per-bucket counts, all descending
- * (newest first). Powers the /articles/date navigator. Input is assumed
- * newest-first (from getArticles), so insertion order is already correct.
+ * (newest first). Powers a date navigator. Input is assumed newest-first
+ * (from getArticles/getArtifacts), so insertion order is already correct.
  */
-export function groupArticlesByDate(articles: Article[]): DateTree {
+export function groupByDate(entries: Array<Article | Artifact>): DateTree {
   const years: DateTree['years'] = [];
-  for (const a of articles) {
+  for (const a of entries) {
     const { year, month, day } = dateParts(a.data.pubDate);
     let y = years.find((e) => e.year === year);
     if (!y) {
@@ -208,24 +241,48 @@ export function dateArchiveLabel(year: string, month?: string, day?: string): st
 
 /**
  * Breadcrumb pills (SortBar-shaped) from "All dates" down to the active bucket.
- * The deepest segment is the active `current` key.
+ * `base` is the collection root, e.g. "/articles" or "/artifacts". The deepest
+ * segment is the active `current` key.
  */
 export function dateArchiveCrumbs(
+  base: string,
   year: string,
   month?: string,
   day?: string,
-): Array<{ key: string; label: string; href: string }> {
-  const crumbs = [{ key: 'all', label: 'All dates', href: '/articles/date/' }];
-  crumbs.push({ key: year, label: year, href: `/articles/date/${year}/` });
+): SortOption[] {
+  const crumbs: SortOption[] = [{ key: 'all', label: 'All dates', href: `${base}/date/` }];
+  crumbs.push({ key: year, label: year, href: `${base}/date/${year}/` });
   if (month) {
     crumbs.push({
       key: month,
       label: dateArchiveLabel(year, month).replace(` ${year}`, ''),
-      href: `/articles/date/${year}/${month}/`,
+      href: `${base}/date/${year}/${month}/`,
     });
   }
   if (day) {
-    crumbs.push({ key: day, label: day, href: `/articles/date/${year}/${month}/${day}/` });
+    crumbs.push({ key: day, label: day, href: `${base}/date/${year}/${month}/${day}/` });
   }
   return crumbs;
+}
+
+/**
+ * The sort bar for a date-archive page, scoped to that date bucket: `newest`
+ * links back to the plain date URL; each other order links to its
+ * `${base}/date/<seg>/sort/<key>/` variant. Pass the collection's full SORTS
+ * list (ARTICLE_SORTS / ARTIFACT_SORTS) — labels come from it.
+ */
+export function dateScopedSorts(
+  base: string,
+  sorts: ReadonlyArray<SortOption>,
+  year: string,
+  month?: string,
+  day?: string,
+): SortOption[] {
+  const seg = [year, month, day].filter(Boolean).join('/');
+  const plain = `${base}/date/${seg}/`;
+  return sorts.map((s) => ({
+    key: s.key,
+    label: s.label,
+    href: s.key === 'newest' ? plain : `${base}/date/${seg}/sort/${s.key}/`,
+  }));
 }

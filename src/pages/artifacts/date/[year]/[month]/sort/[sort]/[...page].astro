@@ -1,0 +1,49 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import DateArchive from '@/components/DateArchive.astro';
+import {
+  ARTIFACT_SORTS,
+  ARTIFACT_SORT_VARIANTS,
+  dateArchiveLabel,
+  dateScopedSorts,
+  filterByDate,
+  getArtifacts,
+  groupByDate,
+  sortArtifacts,
+  type ArtifactSortKey,
+} from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const artifacts = await getArtifacts();
+  return groupByDate(artifacts).years.flatMap((y) =>
+    y.months.flatMap((m) => {
+      const bucket = filterByDate(artifacts, y.year, m.month);
+      if (bucket.length <= 1) return [];
+      return ARTIFACT_SORT_VARIANTS.flatMap((key) =>
+        paginate(sortArtifacts(bucket, key), {
+          params: { year: y.year, month: m.month, sort: key },
+          props: { year: y.year, month: m.month, sortKey: key },
+          pageSize: 12,
+        }),
+      );
+    }),
+  );
+}) satisfies GetStaticPaths;
+
+const { page, year, month, sortKey } = Astro.props as typeof Astro.props & {
+  year: string;
+  month: string;
+  sortKey: ArtifactSortKey;
+};
+const label = dateArchiveLabel(year, month);
+const sortOptions = dateScopedSorts('/artifacts', ARTIFACT_SORTS, year, month);
+---
+
+<BaseLayout
+  title={`Artifacts — ${label}`}
+  description={`Blokz artifacts published in ${label}, sorted.`}
+  noindex
+>
+  <DateArchive {page} base="/artifacts" kind="artifact" {year} {month} {sortKey} {sortOptions} />
+</BaseLayout>

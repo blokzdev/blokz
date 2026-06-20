@@ -1,0 +1,39 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArtifactArchive from '@/components/ArtifactArchive.astro';
+import {
+  ARTIFACT_SORT_VARIANTS,
+  getArtifacts,
+  sortArtifacts,
+  type ArtifactSortKey,
+} from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const artifacts = await getArtifacts();
+  return ARTIFACT_SORT_VARIANTS.flatMap((key) =>
+    paginate(sortArtifacts(artifacts, key), {
+      params: { sort: key },
+      props: { sortKey: key },
+      pageSize: 12,
+    }),
+  );
+}) satisfies GetStaticPaths;
+
+const { page, sortKey } = Astro.props as typeof Astro.props & { sortKey: ArtifactSortKey };
+
+const titleByKey: Record<ArtifactSortKey, string> = {
+  newest: 'Artifacts — Blokz',
+  oldest: 'Artifacts — Oldest first',
+  az: 'Artifacts — A to Z',
+  za: 'Artifacts — Z to A',
+};
+---
+
+<BaseLayout
+  title={titleByKey[sortKey]}
+  description="Interactive artifacts from the Blokz lab: WebGL scenes, visualizations, and explorable explanations of AI and blockchain systems."
+  noindex
+>
+  <ArtifactArchive {page} {sortKey} />
+</BaseLayout>

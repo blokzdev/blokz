@@ -1,28 +1,61 @@
 ---
 import type { Page } from 'astro';
 import ArticleCard from '@/components/ArticleCard.astro';
+import ArtifactCard from '@/components/ArtifactCard.astro';
 import Pagination from '@/components/Pagination.astro';
 import SortBar from '@/components/SortBar.astro';
 import {
   dateArchiveCrumbs,
   dateArchiveLabel,
   type Article,
+  type Artifact,
+  type SortOption,
   type Topic,
 } from '@/lib/content-helpers';
 
-/** Shared body for the date drill-down pages (year / month / day). */
+/**
+ * Shared body for the date drill-down pages (year / month / day), for either
+ * articles or artifacts. Renders the date breadcrumb plus — when the bucket
+ * holds more than one item — a functional sort bar scoped to that date.
+ */
 interface Props {
-  page: Page<Article>;
-  topics: Topic[];
+  page: Page<Article | Artifact>;
+  /** Collection root for breadcrumb hrefs, e.g. "/articles" or "/artifacts". */
+  base: string;
   year: string;
   month?: string;
   day?: string;
+  /** Which card to render; also selects the noun in the copy. */
+  kind?: 'article' | 'artifact';
+  /** Active sort order (default newest); drives the sort bar highlight + labels. */
+  sortKey?: string;
+  /** Date-scoped sort options (from `dateScopedSorts`). Omit to hide the sort bar. */
+  sortOptions?: SortOption[];
+  /** Topics for article cards (unused for artifacts). */
+  topics?: Topic[];
 }
 
-const { page, topics, year, month, day } = Astro.props;
+const {
+  page,
+  base,
+  year,
+  month,
+  day,
+  kind = 'article',
+  sortKey = 'newest',
+  sortOptions,
+  topics = [],
+} = Astro.props;
+
 const label = dateArchiveLabel(year, month, day);
-const crumbs = dateArchiveCrumbs(year, month, day);
+const crumbs = dateArchiveCrumbs(base, year, month, day);
 const current = crumbs[crumbs.length - 1].key;
+const noun = kind === 'artifact' ? 'artifact' : 'article';
+// Only the default newest-first order reads as "Newer / Older"; sorted orders
+// use neutral pagination labels.
+const dateDefault = sortKey === 'newest';
+// Sorting only changes anything when the bucket holds more than one item.
+const showSort = Boolean(sortOptions) && page.total > 1;
 ---
 
 <header class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-6">
@@ -31,10 +64,11 @@ const current = crumbs[crumbs.length - 1].key;
     {label}
   </h1>
   <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
-    {page.total} article{page.total === 1 ? '' : 's'} published in this period.
+    {page.total} {noun}{page.total === 1 ? '' : 's'} published in this period.
   </p>
-  <div class="mt-6" data-reveal="0.35">
+  <div class="mt-6 flex flex-col gap-3" data-reveal="0.35">
     <SortBar label="Date" options={crumbs} current={current} />
+    {showSort && <SortBar label="Sort" options={sortOptions!} current={sortKey} />}
   </div>
 </header>
 
@@ -42,15 +76,23 @@ const current = crumbs[crumbs.length - 1].key;
   {
     page.data.length > 0 ? (
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
-        {page.data.map((article) => (
-          <ArticleCard {article} {topics} />
-        ))}
+        {page.data.map((entry) =>
+          kind === 'artifact' ? (
+            <ArtifactCard artifact={entry as Artifact} />
+          ) : (
+            <ArticleCard article={entry as Article} {topics} />
+          ),
+        )}
       </div>
     ) : (
       <p class="glass rounded-2xl p-8 text-center text-muted">
-        Nothing here yet — no articles in this period.
+        Nothing here yet — no {noun}s in this period.
       </p>
     )
   }
-  <Pagination {page} />
+  <Pagination
+    page={page}
+    prevLabel={dateDefault ? undefined : '← Prev'}
+    nextLabel={dateDefault ? undefined : 'Next →'}
+  />
 </section>

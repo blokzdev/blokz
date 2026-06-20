@@ -1,0 +1,16 @@
+{
+  "slug": "the-attestation-ladder",
+  "title": "The Attestation Ladder",
+  "description": "The on-chain gas cost of verifying a TEE attestation quote, across three paths: naive Solidity, EIP-7951 precompile, and a zkVM-compressed proof. Toggle the ECDSA path and scale to attestations-per-day; the flat ~290k proof is the only one that survives continuous agent attestation.",
+  "pubDate": "2026-06-20T19:27:30.745Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "security",
+    "infrastructure",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

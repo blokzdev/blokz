@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 57,
-    "artifacts": 58
+    "articles": 58,
+    "artifacts": 59
   },
   "topicCounts": {
     "agents": 23,
     "ai": 4,
     "blockchain": 11,
-    "cryptography": 7,
+    "cryptography": 8,
     "data": 6,
     "defi": 13,
-    "infrastructure": 26,
+    "infrastructure": 27,
     "llm": 13,
     "machine-learning": 26,
     "research": 1,
-    "security": 19,
+    "security": 20,
     "smart-contracts": 11,
     "tokenomics": 5,
     "web3": 7,
     "zero-knowledge": 5
   },
   "articles": [
+    {
+      "slug": "trusting-the-quote-onchain-tee-attestation",
+      "path": "content/articles/2026/06/trusting-the-quote-onchain-tee-attestation/index.mdx",
+      "url": "/articles/trusting-the-quote-onchain-tee-attestation",
+      "title": "Trusting the Quote: What It Costs a Chain to Verify a TEE",
+      "description": "An AI inference that runs inside a TEE proves it with an attestation quote. A smart contract can check that quote — for ~4-5M gas naively, down to a flat ~290k once a zkVM compresses it. But every gas unit buys a chip vendor's signature, and in 2025 a $1,000 interposer forged one.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "security",
+        "infrastructure",
+        "cryptography"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-expert-shuffle",
       "path": "content/articles/2026/06/the-expert-shuffle/index.mdx",
@@ -1525,6 +1542,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-attestation-ladder",
+      "path": "content/artifacts/the-attestation-ladder/manifest.json",
+      "module": "src/islands/artifacts/the-attestation-ladder.ts",
+      "url": "/artifacts/the-attestation-ladder",
+      "title": "The Attestation Ladder",
+      "description": "The on-chain gas cost of verifying a TEE attestation quote, across three paths: naive Solidity, EIP-7951 precompile, and a zkVM-compressed proof. Toggle the ECDSA path and scale to attestations-per-day; the flat ~290k proof is the only one that survives continuous agent attestation.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "security",
+        "infrastructure",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-all-to-all-wall",
       "path": "content/artifacts/the-all-to-all-wall/manifest.json",

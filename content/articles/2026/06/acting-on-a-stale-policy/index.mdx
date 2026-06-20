@@ -1,0 +1,98 @@
+---
+slug: acting-on-a-stale-policy
+title: "Acting on a Stale Policy: The Asynchrony Budget in Decentralized RL"
+description: "Decentralized RL splits the actor from the learner across the internet: the policy a worker acts with runs several steps behind the one that learns. INTELLECT-2 held reward at 4 steps stale; SparrowRL cut the broadcast 79x. The bandwidth and staleness taxes, and what the chain secures."
+pubDate: 2026-06-20T09:10:00Z
+author: blokz
+topics: [machine-learning, infrastructure, blockchain]
+tags: [decentralized-rl, async-rl, grpo, intellect-2, prime-intellect, off-policy]
+artifacts: [the-staleness-clock]
+difficulty: intermediate
+sources:
+  - label: "INTELLECT-2: A Reasoning Model Trained Through Globally Decentralized RL (arXiv 2505.07291)"
+    url: "https://arxiv.org/abs/2505.07291"
+  - label: "RL over Commodity Networks: Overcoming the Bandwidth Barrier with Lossless Sparse Deltas (arXiv 2602.11456)"
+    url: "https://arxiv.org/abs/2602.11456"
+  - label: "Prime Intellect — INTELLECT-2 release notes"
+    url: "https://www.primeintellect.ai/blog/intellect-2-release"
+  - label: "Gensyn — RL Swarm technical report"
+    url: "https://github.com/gensyn-ai/paper-rl-swarm"
+---
+
+Reinforcement learning has a clean diagram on a whiteboard: an *actor* rolls out a trajectory under the current policy, a *learner* scores it and nudges the weights, repeat. In a single datacenter the two live in the same process on the same GPUs, so "current policy" means the same thing to both. The moment you decentralize the training run — push the rollouts out to a permissionless swarm of contributors reachable only over the public internet — that shared clock breaks. The policy a worker **acts** with is no longer the policy the trainer is **learning**. It is several optimizer steps behind, and how many steps decides whether the run converges or quietly diverges.
+
+This is the central engineering fact of decentralized RL post-training, and it is a different problem from decentralized *pretraining*. We've covered [what the blockchain actually does in a decentralized pretraining run](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training) — gradients never touch the chain — and [how hard it is to prove a model was even trained](/articles/proof-of-training-3-percent-spoof). RL post-training, the phase that turns a base model into a reasoner, inverts the bottleneck. The expensive, parallel, embarrassingly-shardable work is *generation* (rollouts), and that is exactly the part you can hand to cheap, untrusted, heterogeneous hardware. What you get back for free is staleness.
+
+## The shape of a decentralized RL run
+
+The reference design is Prime Intellect's **INTELLECT-2**, the first 32B-parameter reasoning model trained through globally distributed RL (improving on QwQ-32B over 285k verifiable math and coding tasks). Its `PRIME-RL` framework splits the run into three roles that do not share a process:
+
+- **Rollout workers** generate reasoning traces with the current policy. This is inference — it runs fine on consumer GPUs, scales horizontally, and needs no fast interconnect. It is the bulk of the FLOPs.
+- **GRPO trainers** take verified rollouts, compute group-relative advantages, and step the policy.
+- **SHARDCAST** broadcasts each new policy back out to the rollout workers over an HTTP tree topology.
+
+The work that benefits from a 400 Gbps InfiniBand fabric — the gradient step — is small and centralizable. The work that wants to be everywhere is generation. That asymmetry is what makes RL, not pretraining, the natural fit for a [decentralized GPU market](/articles/the-batch-you-cant-fill): a rollout worker is just a model serving tokens.
+
+But splitting the loop across a WAN imposes two taxes the whiteboard diagram hides. One is paid in bytes; the other in time.
+
+## Tax one: the broadcast barrier
+
+Every optimizer step produces a new policy, and every rollout worker needs it before its next trajectory is on-distribution. The naive broadcast ships the full weights. In bf16 that is **2 bytes per parameter** — 16 GB for an 8B model, 64 GB for INTELLECT-2's 32B. Pushing 16 GB across a commodity 1 Gbps link is 128 seconds of nothing but copying.
+
+The February 2026 **SparrowRL** work ("RL over Commodity Networks") measured exactly this wall: synchronizing an 8B model "can take over 100 seconds on bandwidth-limited links, while rollout generation typically takes tens of seconds." The communication step is *longer than the work it gates*. On a reserved RDMA cluster you'd never notice; over the internet it dominates.
+
+Their fix is the kind of empirical observation that resets a design. Between two adjacent RL steps, **only about 1% of parameter elements actually change**. So you don't broadcast the weights — you broadcast a lossless *sparse delta*: the changed coordinates and their new values. For Qwen3-8B that shrinks the per-step payload by **79×**, lifts WAN throughput **2.4–9.5×** over full-weight broadcast across up to four geographic regions, and closes the gap to an ideal single-datacenter RDMA baseline to within **8.91%** — at **1.21–1.59× higher tokens per dollar** than the reserved cluster. The bandwidth tax, it turns out, was mostly a tax on sending zeros.
+
+## Tax two: staleness
+
+Shrinking the broadcast doesn't make it instantaneous, and that residue is the harder problem. Whatever the broadcast costs, the trainer keeps stepping while it's in flight. If a policy broadcast takes `B` seconds and the trainer emits a new version every `S` seconds, then by the time the weights land a rollout worker is already
+
+```
+g = B / S   (optimizer steps behind the live policy)
+```
+
+stale. Its trajectories were sampled from `π_{θ_t-g}`, but the gradient is applied to `π_{θ_t}`. That is off-policy RL whether you asked for it or not, and large `g` is where importance ratios explode and training diverges.
+
+The artifact below is that race made concrete. Pick a model and a link, toggle sparse deltas, and read the staleness `g` against the budget the correction can absorb.
+
+<Artifact slug="the-staleness-clock" />
+
+Two things fall out of pushing the controls. First, full 32B weights on anything short of a fat datacenter link land the worker far past any safe budget — the bandwidth tax and the staleness tax are the same tax viewed from two angles, which is why SparrowRL's deltas matter beyond throughput. Second, even a healthy `g` is *still off-policy*, and you have to make the gradient survive it.
+
+INTELLECT-2's answer is **two-sided GRPO clipping**. Standard GRPO already clips the token-level importance ratio `r = π_θ(a)/π_{θ_old}(a)` into `[1-ε, 1+ε]` on the positive-advantage side. The twist for the asynchronous setting: they add a second hyperparameter `δ` that "adds an upper bound to the token probability ratio in the case of negative advantages." A stale rollout will contain tokens the live policy now considers very unlikely; without the cap, a single such token carrying a negative advantage produces an enormous, destabilizing update.
+
+```python
+# token-level importance ratio: live learner vs the stale actor that sampled it
+r = pi_theta(a) / pi_theta_old(a)
+A = group_relative_advantage          # GRPO: normalized within the sampled group
+
+if A >= 0:
+    term = min(r, 1 + eps) * A         # don't over-credit a token that got luckier
+else:
+    term = max(min(r, delta), 1 - eps) * A   # delta caps a stale token's downside swing
+
+# INTELLECT-2: eps = 0.2, delta = 4
+```
+
+They also compute the log-probabilities for the ratio "using the policy at the start of the optimization step rather than the policy that produced the original trajectories" — folding part of the staleness into the ratio itself rather than pretending it isn't there. With this, the ablation result is the headline: even at **four-step asynchrony** — the inference policy four steps behind the trainer — the reward trajectory **matches the synchronous baseline**. Four steps is not a law of nature; it's the empirically demonstrated budget for this recipe. The job of the whole stack — sparse deltas, tree-topology broadcast, overlapping communication with compute — is to keep `g` underneath it.
+
+## What the chain is actually for
+
+Nothing above needs a blockchain. Asynchronous off-policy RL across datacenters is a systems problem you could solve inside one company's VPC. The chain earns its place the moment the rollout workers are *permissionless* — anonymous contributors you cannot trust to have run the model you asked for.
+
+A rollout worker is paid to return trajectories. A lazy or adversarial one can return plausible-looking traces it never actually generated, or generate them with a quantized stand-in to save FLOPs — the same [model-substitution incentive](/articles/model-substitution-inference-markets) that haunts decentralized inference markets. If those fabricated rollouts enter the gradient, they poison the policy. So before a trajectory counts, **TOPLOC** validators re-check it with a locality-sensitive hash of the activations that detects tampering or precision changes; Prime Intellect reports the check runs "significantly faster than generation," at roughly **1% inference overhead**. The chain coordinates identity, the task queue, and the rewards; TOPLOC is the cryptographic gate that lets the trainer accept work from a stranger.
+
+Gensyn's **RL Swarm** takes the collaborative variant of the same bet: peers post answers and critiques, score each other against the group's reward average (GRPO again), and lean on on-chain identity plus Gensyn's `Verde` dispute-arbitration and a Reproducible Execution Environment to settle disagreements about what a given peer actually computed. Different topology, same load-bearing idea — the ledger isn't there to store gradients or weights, it's there to make an *untrusted* actor's contribution *checkable and slashable*. That is the line between "geographically distributed" (one trusted operator, many regions) and "decentralized" (many untrusted operators). The bandwidth and staleness work makes distribution viable; verification is what makes it decentralized.
+
+## Where the honesty lives
+
+A few caveats worth keeping in view. The `S ≈ tens of seconds` cadence the artifact assumes is anchored to SparrowRL's reported rollout times; a real run's step time depends on group size, sequence length (INTELLECT-2 trained at 32K context, batch 512, 16 responses across 256 prompts per rollout step), and how many optimizer steps it takes per rollout batch. The four-step budget is a demonstrated result for one model and recipe, not a guarantee that eight steps would be fine. And "within 8.91% of RDMA" is genuinely close, but it is still behind — decentralization buys you tokens-per-dollar and censorship resistance, not a free lunch on wall-clock throughput.
+
+The deeper point survives all of it. RL post-training is the rare frontier workload whose heaviest component — rollout generation — *wants* to be cheap, parallel, and untrusted, which is precisely the shape a permissionless network can fill. The price of admission is that you can no longer assume the actor and the learner share a policy. You get an asynchrony budget instead, measured in optimizer steps, defended by a clip on one side and a sparse-delta broadcast on the other, with a cryptographic check standing between the swarm's output and your gradient. Spend the budget well and the chain disappears into the background, exactly where good infrastructure belongs.
+
+## Takeaways
+
+- **Decentralizing RL decouples the actor from the learner.** Rollouts run on cheap untrusted hardware; the policy they use is `g = broadcast_time / step_cadence` optimizer steps stale by the time it lands.
+- **Two taxes, one root.** Full bf16 weights make the broadcast longer than the rollout it gates (>100s for 8B on a 1 Gbps link). SparrowRL's lossless sparse deltas exploit ~1% per-step change for a 79× payload cut, which is also a staleness cut.
+- **Off-policy is survivable on a budget.** INTELLECT-2's two-sided GRPO clip (ε=0.2, δ=4) held reward to a synchronous baseline at four-step asynchrony; the systems stack exists to keep `g` under that line.
+- **The chain secures trust, not compute.** TOPLOC (≈1% overhead) and Gensyn's Verde verify that an anonymous worker's rollouts are real before they touch the gradient — the dividing line between distributed and decentralized.

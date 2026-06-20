@@ -1,0 +1,26 @@
+{
+  "config": {
+    "bytesPerParam": 2,
+    "deltaFraction": 0.0127,
+    "stepSec": 30,
+    "budgetSteps": 4,
+    "clipDelta": 4,
+    "clipEps": 0.2
+  },
+  "models": [
+    { "id": "qwen3-8b", "label": "Qwen3-8B", "params": 8000000000, "src": "SparrowRL" },
+    { "id": "qwen3-14b", "label": "Qwen3-14B", "params": 14000000000, "src": "SparrowRL" },
+    { "id": "intellect-2", "label": "INTELLECT-2 32B", "params": 32000000000, "src": "Prime Intellect" }
+  ],
+  "links": [
+    { "id": "commodity", "label": "1 Gbps", "sub": "commodity WAN", "gbps": 1 },
+    { "id": "broadband", "label": "10 Gbps", "sub": "datacenter", "gbps": 10 },
+    { "id": "fast", "label": "25 Gbps", "sub": "fast peer", "gbps": 25 },
+    { "id": "rdma", "label": "400 Gbps", "sub": "InfiniBand", "gbps": 400 }
+  ],
+  "anchors": {
+    "sparrowSync8bSec": 100,
+    "sparrowReduction8b": 79,
+    "rdmaGapPct": 8.91
+  }
+}

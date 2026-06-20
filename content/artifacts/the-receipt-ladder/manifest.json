@@ -1,16 +1,21 @@
 {
   "slug": "the-receipt-ladder",
   "title": "The Receipt Ladder",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Seven ways to verify what an AI agent claims it did, plotted by latency added against the share of fabricated claims caught. Pick a claim type and watch it route to the cheapest sufficient verifier — a free chain receipt, a 12ms signed receipt, or a zkLLM proof reserved for the inference itself.",
   "pubDate": "2026-06-20T15:32:20.357Z",
   "type": "svg",
   "archetype": "chart",
-  "topics": [
-    "agents",
-    "security",
-    "llm"
-  ],
+  "topics": ["agents", "security", "llm"],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "pick a claim type to highlight its cheapest sufficient verifier",
+    "tap a point to inspect a method",
+    "arrow keys cycle through methods"
+  ],
+  "dataSource": {
+    "label": "Basu, Tool Receipts Not Zero-Knowledge Proofs (arXiv:2603.10060), Table 3",
+    "url": "https://arxiv.org/abs/2603.10060"
+  },
+  "dataAsOf": "2026-06-20"
 }

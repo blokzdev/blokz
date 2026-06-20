@@ -1,0 +1,113 @@
+{
+  "note": "Verification methods for an AI agent's natural-language report of what it did, plotted by added latency per response (log ms) versus the share of fabricated claims they catch (detection coverage). Detection/FPR/latency for the five output-checking methods are from Table 3 of Basu, 'Tool Receipts, Not Zero-Knowledge Proofs' (arXiv:2603.10060). The cryptographic extreme (zkLLM) and the chain-native receipt are reference anchors: zkLLM proves the forward pass, not tool truth, at minutes per query (Chen et al., zkLLM, CCS 2024); the chain receipt is the consensus-settled log of an on-chain action, read in roughly one RPC round-trip and deterministic. The 100ms wall marks the rough threshold above which added latency stops feeling instant to an interactive agent's user.",
+  "interactiveWallMs": 100,
+  "claimTypes": [
+    {
+      "id": "action",
+      "label": "On-chain action",
+      "example": "\"I swapped 134 WETH and 13,186 USDC into a liquidity position.\"",
+      "recommended": "chain-receipt",
+      "why": "The chain already wrote an unforgeable receipt: status, gas, and the exact Transfer/Mint logs. Reading it is deterministic and consensus-backed — no proof to generate, nothing for the model to fake."
+    },
+    {
+      "id": "tool",
+      "label": "Off-chain tool output",
+      "example": "\"The price API returned 5 venues; the best quote was $1,731.40.\"",
+      "recommended": "receipts",
+      "why": "No blockchain witnesses an HTTPS call, but the agent's own runtime can: sign every tool execution and check the model's claimed counts/facts against the receipt. ~12 ms, no model in the loop."
+    },
+    {
+      "id": "compute",
+      "label": "Inference correctness",
+      "example": "\"This summary was produced by the model you paid for, unaltered.\"",
+      "recommended": "zkllm",
+      "why": "Proving the forward pass itself was the named model needs cryptography — zkLLM or re-execution. It is the one claim a receipt cannot make, and it costs minutes per query."
+    },
+    {
+      "id": "reasoning",
+      "label": "Free reasoning / opinion",
+      "example": "\"I considered the gas environment and decided now was the cheapest moment.\"",
+      "recommended": null,
+      "why": "No receipt exists, because nothing was executed. The honest engineering move is to label it as ungrounded — not to assert it as a verified fact. Every verifier here abstains."
+    }
+  ],
+  "methods": [
+    {
+      "id": "chain-receipt",
+      "label": "Chain receipt",
+      "latencyMs": 1,
+      "coverage": 100,
+      "fpr": 0,
+      "cost": "$0",
+      "kind": "trustless",
+      "verifies": "On-chain actions — transfers, swaps, contract calls — from the block's own logs.",
+      "note": "An EIP-2718 receipt commits to status, gas used, and a logs array, sealed into the block by consensus. Verifying \"the swap happened, for exactly these amounts\" is a log lookup, not a proof. It is the cheapest verifier that exists — but it only witnesses what touched the chain."
+    },
+    {
+      "id": "regex",
+      "label": "Output regex",
+      "latencyMs": 2,
+      "coverage": 35,
+      "fpr": 8,
+      "cost": "$0",
+      "kind": "heuristic",
+      "verifies": "Surface patterns in the text — malformed counts, obvious format breaks.",
+      "note": "Almost free and never wrong about syntax, but blind to a confident, well-formed lie. Catches roughly a third of fabrications."
+    },
+    {
+      "id": "receipts",
+      "label": "Signed tool receipts",
+      "latencyMs": 12,
+      "coverage": 91,
+      "fpr": 4,
+      "cost": "$0",
+      "kind": "receipt",
+      "verifies": "Each claim against an HMAC-signed record of the tool call that supposedly produced it.",
+      "note": "NabaOS: the runtime hashes every tool input/output into a signed receipt the model can't forge, then cross-checks claimed counts and facts. 94.2% of fabricated tool calls, 87.6% of count mismatches, 91.3% of false-absence claims — at under 15 ms, no second model in the loop."
+    },
+    {
+      "id": "svip",
+      "label": "SVIP-style probe",
+      "latencyMs": 50,
+      "coverage": 68,
+      "fpr": 10,
+      "cost": "$0",
+      "kind": "heuristic",
+      "verifies": "Internal-signal heuristics on the generation itself.",
+      "note": "Cheaper than a full re-generation and better than regex, but still a guess about whether the model is grounded — a 10% false-positive rate flags honest answers too."
+    },
+    {
+      "id": "rag",
+      "label": "RAG re-grounding",
+      "latencyMs": 1500,
+      "coverage": 52,
+      "fpr": 18,
+      "cost": "+$0.01",
+      "kind": "model",
+      "verifies": "Claims against freshly retrieved context.",
+      "note": "Pays a retrieval round-trip per response and still misses half the fabrications, while flagging nearly one honest claim in five. Adds latency the user feels."
+    },
+    {
+      "id": "self-consistency",
+      "label": "Self-consistency",
+      "latencyMs": 4000,
+      "coverage": 45,
+      "fpr": 12,
+      "cost": "+$0.03",
+      "kind": "model",
+      "verifies": "Whether the model agrees with itself across samples.",
+      "note": "Re-runs the generation several times and compares. Multiplies cost and seconds of latency to catch fewer than half of fabrications — a correlated model fails the same way every time."
+    },
+    {
+      "id": "zkllm",
+      "label": "zkLLM proof",
+      "latencyMs": 180000,
+      "coverage": 99,
+      "fpr": 0,
+      "cost": "high",
+      "kind": "cryptographic",
+      "verifies": "That the forward pass was the named model, bit-exact — not whether a tool output is real.",
+      "note": "A genuine cryptographic guarantee, and the right tool when the inference itself is the disputed object. But it is thousands of times slower than plain inference — minutes per query — and it still says nothing about whether the API the agent quoted actually returned what it claims."
+    }
+  ]
+}

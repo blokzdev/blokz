@@ -53,16 +53,25 @@
       "slug": "the-receipt-the-model-cant-forge",
       "path": "content/articles/2026/06/the-receipt-the-model-cant-forge/index.mdx",
       "url": "/articles/the-receipt-the-model-cant-forge",
-      "title": "The Receipt the Model Can't Forge",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "title": "The Receipt the Model Can't Forge: Trusting On-Chain Agents Without zkML",
+      "description": "An on-chain agent reports its work in prose — and some of those sentences are fabricated tool calls. zkML proves the wrong thing at minutes per query. The blockchain already wrote an unforgeable receipt for the actions that matter, and a 12ms signed receipt covers the rest.",
       "pubDate": "2026-06-20",
       "topics": [
         "agents",
         "security",
         "llm"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "tool-hallucination",
+        "agent-receipts",
+        "verifiable-inference",
+        "zkml",
+        "eip-2718",
+        "on-chain-agents"
+      ],
+      "artifacts": [
+        "the-receipt-ladder"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1470,7 +1479,7 @@
       "module": "src/islands/artifacts/the-receipt-ladder.ts",
       "url": "/artifacts/the-receipt-ladder",
       "title": "The Receipt Ladder",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Seven ways to verify what an AI agent claims it did, plotted by latency added against the share of fabricated claims caught. Pick a claim type and watch it route to the cheapest sufficient verifier — a free chain receipt, a 12ms signed receipt, or a zkLLM proof reserved for the inference itself.",
       "pubDate": "2026-06-20",
       "type": "svg",
       "archetype": "chart",

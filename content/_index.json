@@ -1,20 +1,20 @@
 {
   "counts": {
-    "articles": 54,
-    "artifacts": 55
+    "articles": 55,
+    "artifacts": 56
   },
   "topicCounts": {
-    "agents": 21,
+    "agents": 22,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 7,
     "data": 6,
     "defi": 12,
     "infrastructure": 25,
-    "llm": 11,
+    "llm": 12,
     "machine-learning": 24,
     "research": 1,
-    "security": 18,
+    "security": 19,
     "smart-contracts": 11,
     "tokenomics": 5,
     "web3": 7,
@@ -46,6 +46,23 @@
       "artifacts": [
         "the-sampling-threshold"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-receipt-the-model-cant-forge",
+      "path": "content/articles/2026/06/the-receipt-the-model-cant-forge/index.mdx",
+      "url": "/articles/the-receipt-the-model-cant-forge",
+      "title": "The Receipt the Model Can't Forge",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "agents",
+        "security",
+        "llm"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1447,6 +1464,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-receipt-ladder",
+      "path": "content/artifacts/the-receipt-ladder/manifest.json",
+      "module": "src/islands/artifacts/the-receipt-ladder.ts",
+      "url": "/artifacts/the-receipt-ladder",
+      "title": "The Receipt Ladder",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "security",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-flat-verifier",
       "path": "content/artifacts/the-flat-verifier/manifest.json",

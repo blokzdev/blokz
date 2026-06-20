@@ -5,18 +5,96 @@ description: "An AI inference that runs inside a TEE proves it with an attestati
 pubDate: 2026-06-20T19:27:20.938Z
 author: blokz
 topics: [security, infrastructure, cryptography]
-tags: []
-artifacts: []
+tags: [tee, remote-attestation, dcap, intel-sgx, confidential-computing, eip-7951]
+artifacts: [the-attestation-ladder]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Automata — DCAP Attestation v1.1 for agentic systems"
+    url: "https://blog.ata.network/automatas-release-of-dcap-attestation-v1-1-for-agentic-systems-84ae98900370"
+  - label: "Phala — Verifying TEE On-Chain with RiscZero zkVM"
+    url: "https://phala.com/posts/verifying_tee_onchain_with_risczero_zkvm"
+  - label: "WireTap: Breaking SGX via DDR4 memory-bus interposition"
+    url: "https://thehackernews.com/2025/10/new-wiretap-attack-extracts-intel-sgx.html"
+  - label: "TEE.fail: Breaking TEEs via DDR5 memory-bus interposition (TDX & SEV-SNP)"
+    url: "https://tee.fail/"
+  - label: "Omega: Trusted AI Agents in the Cloud (CVM + Confidential GPU)"
+    url: "https://hf.co/papers/2512.05951"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Half the verifiable-AI designs on this blog end the same way: zkML is too slow, MPC is too heavy, optimistic re-execution needs a watcher — *so the system falls back to a TEE*. [Blind MPC inference](/articles/minutes-per-token) runs at minutes per token and defers to hardware enclaves in practice; [inference markets that can't detect quantization](/articles/model-substitution-inference-markets) bond-and-attest instead. The trusted execution environment is the load-bearing assumption under a lot of "trustless" AI.
 
-## Section heading
+But a TEE off in some datacenter is useless to a smart contract unless the contract can *check* that the work really ran inside one. That check is **remote attestation**, and it has a price the marketing never quotes. This piece is about that price — what a chain pays in gas to believe a TEE, how that bill collapsed in 2025, and the uncomfortable thing all of it ultimately rests on.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The quote is the proof
+
+When code runs inside an Intel SGX enclave or a TDX confidential VM, the hardware can produce a signed measurement of what it's running: a **quote**. Strip away the wire format and a quote carries four things that matter:
+
+- **A measurement** — `MRENCLAVE` (SGX) or `MRTD` (TDX), the hash of the exact code and initial memory loaded into the enclave. Change a byte of the model server and this changes.
+- **64 bytes of report data** — free-form, chosen by the enclave. This is the binding hook. An AI node fills it with `keccak256(modelId, promptHash, outputHash, nonce)` so the quote cryptographically ties *this measurement* to *this inference output*.
+- **A signature** over the report, made by a per-machine **attestation key**.
+- **A certificate chain** — the PCK chain — proving that attestation key belongs to a genuine, up-to-date Intel part, rooting in the **Intel SGX Root CA**.
+
+So a quote is a hardware-backed statement: *"a genuine Intel TEE running code with this hash produced this output."* Verifying it means checking that statement end to end — and that is the work.
+
+## Verifying it on-chain
+
+To accept a quote, a verifier (a smart contract, here) walks roughly this pipeline:
+
+1. **Parse** the quote and the enclave report.
+2. **Walk the PCK X.509 certificate chain** — leaf → Intel intermediate → Intel SGX Root CA — verifying an ECDSA signature at each hop.
+3. **Check the collateral**: the current TCB info, the QE identity, and certificate revocation lists, to confirm the platform's firmware/microcode (its *Trusted Computing Base*) isn't a revoked, vulnerable version.
+4. **Verify the report signature** with the now-trusted attestation key.
+5. **Compare the measurement** against the one you expect, and read out the report data.
+
+Automata's open implementation does exactly this in Solidity, with the Intel collateral mirrored into an on-chain **PCCS** (Provisioning Certificate Caching Service) so the contract never leaves the chain:
+
+```solidity
+interface IDcapAttestation {
+    // raw SGX/TDX quote; collateral is pulled from the on-chain PCCS mirror
+    function verifyAndAttestOnChain(bytes calldata rawQuote)
+        external view returns (bool success, bytes memory output);
+
+    // same verdict, but the heavy lifting already ran in a zkVM off-chain
+    function verifyAndAttestWithZKProof(
+        bytes calldata journal,    // the verification result + report body
+        ZkCoProcessorType zkType,  // RiscZero or SP1
+        bytes calldata proof
+    ) external returns (bool success, bytes memory output);
+}
+```
+
+The first function is the honest, fully on-chain path — and it is *expensive*. Doing the whole DCAP verification in the EVM runs to roughly **4–5 million gas** per quote. Almost all of it is the two things the EVM is worst at: parsing X.509 ASN.1 certificates and iterating Intel's collateral, plus a handful of ECDSA P-256 signature verifications that the EVM has no native opcode for. The chart below breaks the bill down across the three ways to pay it.
+
+<Artifact slug="the-attestation-ladder" />
+
+## Two ways to shrink the bill
+
+**The precompile.** P-256 (`secp256r1`) is the curve Intel's attestation keys use, and until recently the EVM couldn't verify it natively — you paid ~330,000 gas per signature for a Solidity implementation. Ethereum's Fusaka upgrade ships **EIP-7951**, a `P256VERIFY` precompile that does the same check for **6,000 gas**. A DCAP quote needs several of these verifies across the cert chain, so the precompile shaves close to a million gas off the total. Real money — but look at the middle bar in the chart: the parsing-and-collateral bulk is untouched, so the *cost barely moves*. The precompile makes the cheap part cheaper.
+
+**The zkVM.** The real collapse comes from not doing the work on-chain at all. Run the entire DCAP verification inside a zkVM — RiscZero, SP1, or Automata's newer Pico — off-chain, and post a single succinct proof that it ran correctly. The contract verifies one Groth16 proof for a **flat ~250–290k gas** (one measured implementation averages **289,728 gas**), regardless of how long the certificate chain is or how much collateral was checked. It's the same succinctness trick a [ZK coprocessor uses to flatten the cost of reading chain history](/articles/verifiable-read-zk-coprocessors): move the computation off-chain, verify a constant-size proof on-chain. Against the naive path that's a ~15× reduction, and — more importantly — the cost stops scaling with the quote.
+
+Why does *flat* matter so much? Because attestation isn't one-and-done. An autonomous agent that wants to keep proving its integrity re-attests continuously. Push the slider in the chart to once-a-minute and the naive path burns over a hundred 60M-gas Ethereum blocks a day; the zkVM path is a rounding error. Continuous on-chain attestation is only economically real on the flat bar.
+
+## The root is a vendor's key
+
+Here is the part the gas chart can't show you. Every one of those signature checks — Solidity, precompile, or zkVM — is verifying the *same trust chain*, and that chain terminates at **Intel's signing key**. A successful on-chain verification proves one thing: *Intel attests that this is a genuine enclave running measurement X.* It does not prove the hardware wasn't physically tampered with. It proves Intel said so.
+
+The TCB-recovery machinery papers over the *known-vulnerability* case: when a microcode bug is found, Intel revokes the affected TCB level, and Automata's v1.1 even exposes an `AutomataTcbEvalDao` so integrators choose which TCB evaluation number to demand. That's good hygiene. It does nothing about the case where the attacker has the *key itself*.
+
+And in late 2025, attackers got the key. **WireTap** put a passive interposer on the DDR4 memory bus of an SGX machine and exploited Intel's use of *deterministic* memory encryption to recover the ECDSA attestation key out of the Quoting Enclave — for about **$1,000** in equipment. A sibling attack, **Battering RAM**, costs under $50. With the extracted key, an attacker signs arbitrary enclave reports that pass DCAP verification as genuine. **TEE.fail** then extended the technique to DDR5, reaching Intel TDX and AMD SEV-SNP, and reported pulling attestation secrets from fully-updated machines in good TCB standing.
+
+Sit with what that means for the chain. The contract runs the full pipeline, walks the cert chain to Intel's root, checks the TCB status, verifies every signature — and returns `success = true`. The verification was flawless. The quote was a lie. The forged measurement and forged report data sail through, because on-chain attestation faithfully verifies a vendor's signature, and the vendor's signature was forged at the silicon. No amount of gas buys you out of this; you were never paying for *security*, you were paying to check a *signature*.
+
+## So what is it good for?
+
+Plenty — as long as you price the trust honestly. These attacks need physical access to the memory bus; they don't scale to "anyone on the internet" the way a software prompt-injection does. For a lot of threat models, trusting Intel-or-NVIDIA-plus-physical-security is acceptable, and attestation's appeal is real: a quote is generated in microseconds and verified for ~290k gas, where [zkML proves the computation mathematically but at minutes per query](/articles/minutes-per-token). That is the entire trade — math you don't have to trust anyone for, versus a silicon vendor's word that's thousands of times cheaper.
+
+The frontier is extending the chain to the accelerator. AI inference runs on GPUs, and **NVIDIA H100/H200 confidential computing** produces its own device attestation so the GPU's work joins the measured boundary. Systems like **Omega** combine a confidential VM (AMD SEV-SNP) with a confidential GPU and use *differential attestation* to establish trust across the CPU–GPU seam — the same DCAP idea, now spanning two vendors' roots instead of one. Every link you add is another key you're trusting, and another interposer target.
 
 ## Takeaways
 
-TODO.
+- **Attestation is a signature check, not a security proof.** On-chain verification proves a chip vendor vouched for an enclave and its measurement — nothing about physical integrity. Treat a passing quote as "Intel says so," and design for the day Intel's say-so is forged.
+- **The gas bill is now tractable.** Naive Solidity DCAP verification is ~4–5M gas; EIP-7951's `P256VERIFY` precompile saves ~1M; a zkVM-compressed proof verifies flat at ~250–290k. Only the flat path makes *continuous* attestation affordable.
+- **Flatness is the whole game at scale.** Per-quote cost that's independent of cert-chain length is what lets an agent re-attest every minute without burning a block a minute.
+- **Bind the output into the report data.** A quote is only as useful as what its 64 report-data bytes commit to; hash the model id, prompt, and output in, or you've proven a genuine enclave ran *something*.
+- **2025 moved the goalposts.** WireTap (~$1,000) and TEE.fail pulled attestation keys off real SGX, TDX, and SEV-SNP machines. The cost of *forging* a quote is now a line item too — and it's a lot cheaper than the math you're avoiding.

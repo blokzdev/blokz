@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 53,
-    "artifacts": 54
+    "articles": 54,
+    "artifacts": 55
   },
   "topicCounts": {
     "agents": 21,
@@ -10,9 +10,9 @@
     "cryptography": 7,
     "data": 6,
     "defi": 12,
-    "infrastructure": 24,
-    "llm": 10,
-    "machine-learning": 23,
+    "infrastructure": 25,
+    "llm": 11,
+    "machine-learning": 24,
     "research": 1,
     "security": 18,
     "smart-contracts": 11,
@@ -45,6 +45,32 @@
       "seriesOrder": 6,
       "artifacts": [
         "the-sampling-threshold"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-drafter-can-lie",
+      "path": "content/articles/2026/06/the-drafter-can-lie/index.mdx",
+      "url": "/articles/the-drafter-can-lie",
+      "title": "The Drafter Can Lie: Speculative Decoding and the Limits of Cheap Verification",
+      "description": "Speculative decoding lets a small, even adversarial, drafter propose tokens that a big model verifies in parallel — and the output is provably the big model's, unchanged. Real drafters land at α ≈ 0.6–0.8 for a ~2× win. But the verifier still runs every token, so it's a latency win, not a trust win.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "machine-learning",
+        "llm",
+        "infrastructure"
+      ],
+      "tags": [
+        "speculative-decoding",
+        "draft-verify",
+        "rejection-sampling",
+        "decentralized-inference",
+        "eagle",
+        "inference-latency"
+      ],
+      "artifacts": [
+        "the-draft-verify-loop"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -1586,6 +1612,23 @@
         "infrastructure",
         "web3",
         "data"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-draft-verify-loop",
+      "path": "content/artifacts/the-draft-verify-loop/manifest.json",
+      "module": "src/islands/artifacts/the-draft-verify-loop.ts",
+      "url": "/artifacts/the-draft-verify-loop",
+      "title": "The Draft-Verify Loop",
+      "description": "Run a speculative-decoding round at a time: a cheap drafter proposes γ tokens, the target verifies them in parallel and accepts a prefix plus one free token. Drive α, γ, and drafter cost c; watch the accepted length converge to Leviathan's Ω and the speedup peak, then fade.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "llm",
+        "infrastructure"
       ],
       "draft": false
     },

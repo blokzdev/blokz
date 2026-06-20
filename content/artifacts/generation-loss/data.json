@@ -1,0 +1,26 @@
+{
+  "_comment": "Generation Loss is a faithful client-side reproduction of the recursive-resampling model behind language-model collapse: each generation draws a finite sample of size M from the current distribution and refits the next distribution from it. This file holds the model parameters and the documented anchor figures shown in the readout/caption. The animation generates no empirical numbers of its own — it re-runs a documented mechanism.",
+  "model": {
+    "binCount": 96,
+    "xMin": -4.2,
+    "xMax": 4.2,
+    "sigma0": 1.0,
+    "tailEdge": 2.0
+  },
+  "presets": [
+    { "id": "small", "label": "small batch", "M": 60, "note": "A thin sample per generation — the tails starve fast and the support collapses within a handful of generations." },
+    { "id": "web", "label": "web-scale", "M": 600, "note": "More samples slow the drift, but replace still wanders away from the original and concentrates." },
+    { "id": "huge", "label": "huge batch", "M": 4000, "note": "Even a huge per-generation sample only buys time: replace collapses eventually; the bound is finite only under accumulate." }
+  ],
+  "anchors": {
+    "shumailov_model": "OPT-125m fine-tuned recursively on its own generations (wikitext2): perplexity climbs every generation and output degenerates to repetitive text by generation 9.",
+    "early_vs_late": "Early collapse loses the tails (rare events) first; late collapse converges to a point estimate with little variance.",
+    "gaussian_certainty": "In the tractable 1D Gaussian model, finite-sample refitting makes collapse certain: the variance is absorbed at zero as generations grow.",
+    "accumulate_bound": "Replacing data each generation makes test error diverge with the iteration count; accumulating real + synthetic data caps it at a finite upper bound independent of the number of iterations.",
+    "c2pa": "C2PA content credentials prove who signed a manifest and when — signing, not truth. A valid credential does not establish that the bytes are human-authored or uncontaminated."
+  },
+  "sources": [
+    { "label": "Shumailov et al., 'AI models collapse when trained on recursively generated data', Nature 2024", "url": "https://www.nature.com/articles/s41586-024-07566-y" },
+    { "label": "Gerstgrasser et al., 'Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data', 2024", "url": "https://arxiv.org/abs/2404.01413" }
+  ]
+}

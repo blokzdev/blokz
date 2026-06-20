@@ -1,0 +1,24 @@
+{
+  "slug": "generation-loss",
+  "title": "Generation Loss",
+  "description": "Train a model on its own output, generation after generation. Each step draws a finite sample of size M and refits — so the tails starve first and the curve collapses toward a spike. Toggle replace vs accumulate: replace drives σ̂ toward zero, accumulate holds it. A copy of a copy of a copy.",
+  "pubDate": "2026-06-20T20:29:00.241Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "data",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": true,
+  "controls": [
+    "tap replace / accumulate to switch regime",
+    "drag the sample budget M",
+    "run, step one generation, or reset"
+  ],
+  "dataSource": {
+    "label": "Shumailov et al., Nature 2024 · model collapse",
+    "url": "https://www.nature.com/articles/s41586-024-07566-y"
+  },
+  "dataAsOf": "2026-06-20"
+}

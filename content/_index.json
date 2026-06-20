@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 55,
+    "articles": 56,
     "artifacts": 56
   },
   "topicCounts": {
-    "agents": 22,
+    "agents": 23,
     "ai": 4,
     "blockchain": 11,
     "cryptography": 7,
     "data": 6,
-    "defi": 12,
+    "defi": 13,
     "infrastructure": 25,
     "llm": 12,
-    "machine-learning": 24,
+    "machine-learning": 25,
     "research": 1,
     "security": 19,
     "smart-contracts": 11,
@@ -21,6 +21,32 @@
     "zero-knowledge": 5
   },
   "articles": [
+    {
+      "slug": "inventory-has-a-coupon",
+      "path": "content/articles/2026/06/inventory-has-a-coupon/index.mdx",
+      "url": "/articles/inventory-has-a-coupon",
+      "title": "Inventory Has a Coupon: Funding-Aware Market Making on Perp DEXs",
+      "description": "The textbook market-making model quotes symmetrically around mid. On a perpetual, holding inventory pays or charges funding every hour — a deterministic drift Avellaneda-Stoikov never sees. A 2026 HJB model that prices it cut inventory risk 36-38% on Hyperliquid ETH and BTC.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "agents"
+      ],
+      "tags": [
+        "market-making",
+        "funding-rate",
+        "avellaneda-stoikov",
+        "hyperliquid",
+        "inventory-risk",
+        "optimal-control"
+      ],
+      "artifacts": [
+        "the-funding-skew"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-verifiers-dilemma",
       "path": "content/articles/2026/06/the-verifiers-dilemma/index.mdx",

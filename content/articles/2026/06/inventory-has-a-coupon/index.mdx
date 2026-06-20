@@ -1,0 +1,121 @@
+---
+slug: inventory-has-a-coupon
+title: "Inventory Has a Coupon: Funding-Aware Market Making on Perp DEXs"
+description: "The textbook market-making model quotes symmetrically around mid. On a perpetual, holding inventory pays or charges funding every hour — a deterministic drift Avellaneda-Stoikov never sees. A 2026 HJB model that prices it cut inventory risk 36-38% on Hyperliquid ETH and BTC."
+pubDate: 2026-06-20T16:45:00.000Z
+author: blokz
+topics: [defi, machine-learning, agents]
+tags: [market-making, funding-rate, avellaneda-stoikov, hyperliquid, inventory-risk, optimal-control]
+artifacts: [the-funding-skew]
+difficulty: intermediate
+sources:
+  - label: "Funding-Aware Optimal Market Making for Perpetual DEXs (arXiv:2605.06405, 2026)"
+    url: "https://arxiv.org/abs/2605.06405"
+  - label: "Avellaneda & Stoikov — High-frequency trading in a limit order book (2008)"
+    url: "https://www.math.nyu.edu/~avellane/HighFrequencyTrading.pdf"
+  - label: "Hyperliquid Docs — Funding"
+    url: "https://hyperliquid.gitbook.io/hyperliquid-docs/trading/funding"
+  - label: "Crypto.com Exchange — ETH/BTC/SOL perpetual market data"
+    url: "https://crypto.com/exchange"
+---
+
+A market maker quoting a perpetual future has a problem a stock market maker doesn't: the thing in its inventory pays or charges rent every hour. Hold a long perp position into a positive funding window and you wire cash to the shorts; hold it into a negative one and they pay you. The position has a coupon, and the sign of that coupon flips with the crowd. The standard market-making model — the one nearly every on-chain quoting bot starts from — is blind to it.
+
+That model is **Avellaneda-Stoikov** (2008), the closed-form answer to "where do I put my bid and ask if I'm afraid of accumulating inventory?" It is elegant, it is correct for equities, and on a perp DEX it quotes as if inventory were free to hold. A [delta-neutral funding harvester](/articles/carry-the-peg) goes out of its way to *collect* that coupon with no price risk; a market maker can't choose its inventory — it gets whatever the flow hands it — so for the maker the coupon is a tax it pays on a position it didn't pick. A [May 2026 paper](https://arxiv.org/abs/2605.06405) works out what changes when you put funding inside the optimal-control problem, calibrates it on Hyperliquid, and the answer is a measurable cut in inventory risk. Here's the mechanism and the math.
+
+## The classic quote, and why it skews
+
+Avellaneda-Stoikov starts from a mid price $S$ that follows a random walk and a maker who holds inventory $q$ (signed: positive long, negative short). The maker is risk-averse with coefficient $\gamma$, the mid has volatility $\sigma$, and the horizon is $T-t$. Two numbers come out.
+
+The first is the **reservation price** — the maker's own fair value, tilted away from mid by the inventory it's already carrying:
+
+```
+r(s, q, t) = S − q · γ · σ² · (T − t)
+```
+
+If you're long ($q>0$), your reservation price sits *below* mid: you mark your own book conservatively because you want to sell down the position, so you shade both quotes lower to get hit on the ask and lifted less on the bid. Inventory you don't want pushes your quotes away from accumulating more of it. That tilt is the **skew**.
+
+The second is the **optimal half-spread**, the total bid-ask width the maker charges for liquidity and adverse selection:
+
+```
+δ = γ · σ² · (T − t)  +  (2/γ) · ln(1 + γ/k)
+```
+
+where $k$ governs how fill probability decays as you quote further from mid (orders arrive with intensity $\lambda(\delta) = A\,e^{-k\delta}$). The bid and ask land at $r \pm \delta/2$. Wider vol, wider spread; more inventory, more skew. Clean.
+
+Notice what's *not* in either formula: any cost of holding $q$ other than price risk. On equities that's right — a share sitting in inventory overnight costs you financing, but nothing structural pulls money out of the position each hour based on which way the crowd is leaning. On a perp, something does.
+
+## Funding is a drift on inventory, not noise
+
+Recall how the peg works. A perpetual never expires, so the only thing tying its price to spot is the **funding rate** $F$ — a periodic cash transfer between longs and shorts, [settled hourly on Hyperliquid](/articles/carry-the-peg). When the perp trades rich, longs pay shorts; when it trades cheap, shorts pay longs. For a maker holding $q$ contracts at mark $S$, the funding cash flow per interval is
+
+```
+funding P&L per period  =  − q · S · F
+```
+
+— negative (a payment) when your inventory sign and the funding sign agree, positive (a receipt) when they oppose. Write $f = S \cdot F$ for the cash-scaled funding, the quote-currency cost of carrying one contract for one period.
+
+The thing to see is that $f$ is a **deterministic drift on the value of inventory**, not another source of variance. Volatility $\sigma$ is symmetric — it punishes inventory in either direction equally, which is exactly why the AS skew is symmetric in the sign of $q$. Funding is *directional*: it makes one side of the book strictly more expensive to hold than the other, and it does so predictably, every hour, until the rate changes sign. A model that folds funding into volatility, or ignores it, leaves a first-order term on the table.
+
+The 2026 paper makes this precise by putting funding in the maker's value function as a running term. The Hamilton-Jacobi-Bellman equation for the inventory-funding value $\theta(t,q,f)$ carries a coupling term that does all the work:
+
+```
+∂ₜθ + κ(f̄ − f)·∂_f θ + ½σ_f²·∂_ff θ − q·f − φq² + Hᵃ + Hᵇ = 0
+```
+
+The $-q f$ term is the funding coupling: when inventory and funding share a sign, holding costs the maker value, and the optimal quotes respond. Funding itself is modeled as **mean-reverting** — an Ornstein-Uhlenbeck process pulling toward a long-run level $\bar f$ at speed $\kappa$ — because that's what funding empirically does. The optimal bid and ask offsets come straight out of the value differences between neighboring inventory levels:
+
+```
+δ*ₐ(t, q, f) = 1/k − [θ(t, q−Δq, f) − θ(t, q, f)]
+δ*ᵦ(t, q, f) = 1/k − [θ(t, q+Δq, f) − θ(t, q, f)]
+```
+
+In words: the quote on each side is the base spread, adjusted by how much the maker values moving one step in that inventory direction — and that valuation now includes the funding it would pay or earn on the new position. The skew is no longer driven by inventory alone.
+
+## The skew, decomposed
+
+You can read the result without solving the PDE. The maker's reservation price now carries two tilts instead of one:
+
+```
+r ≈ S − γ·σ²·(T−t)·q   −   f·(T−t)
+        └ inventory skew ┘   └ funding skew ┘
+```
+
+The inventory skew is the classic term, proportional to how much you hold. The **funding skew is new, and it doesn't vanish at zero inventory**. With positive funding and a flat book, classic AS quotes symmetrically around mid — but the funding-aware maker shades its whole ladder *down*, because being long the next contract means paying funding on it, and being short means collecting. A flat maker under positive funding would rather lean short. Avellaneda-Stoikov, quoting symmetrically, gets adversely selected into exactly the inventory the funding is about to charge it for.
+
+When inventory and funding align in sign, the two skews **stack** and the maker quotes aggressively to flatten. When they oppose — you're long and funding has gone negative, so the position pays you — the funding skew *softens* the inventory skew: you're being paid to hold the inventory you'd otherwise rush to dump, so you hold a little longer. That interaction is the whole game, and it's what the interactive below lets you push on.
+
+<Artifact slug="the-funding-skew" />
+
+The ladder is the live quote: mid in the middle, the funding-aware reservation price as the cyan center, and the bid/ask brackets around it. The faint marker is where classic Avellaneda-Stoikov would have centered — funding-blind. Load ETH, BTC, or SOL (their volatilities are real, measured from Crypto.com hourly candles on 2026-06-20: BTC the calmest at ~29% annualized, ETH ~36%, SOL the wildest at ~54%), then push inventory and the funding rate and watch the two skews stack or cancel. The gap between the cyan line and the faint one is the money the funding-blind quote leaves on the table.
+
+## Does pricing it actually help?
+
+A cleaner model is worth nothing if the edge is imaginary. The paper backtests the funding-aware HJB against classical Avellaneda-Stoikov on a 100-seed holdout of Hyperliquid data (Nov 26 – Dec 31, 2025), calibrating fill intensities from official crossed fills and L2 snapshots. The headline is not "more PnL at any cost" — it's better risk-adjusted behavior, and it's asset-dependent:
+
+| Asset | Funding half-life | Mean equity vs AS | Win rate | Inventory RMS vs AS |
+| --- | --- | --- | --- | --- |
+| ETH | 5.56 h | +1312 | 0.62 | **0.64×** |
+| BTC | 4.07 h | +809 | 0.57 | **0.62×** |
+| SOL | 2.31 h | +18871 | 1.00 | 2.59× |
+
+ETH and BTC are the honest wins: higher mean equity **and** inventory RMS cut by 36-38%. The maker holds less risky inventory and makes more money — the funding skew is steering it off positions it would otherwise have paid to carry. SOL looks spectacular on PnL but its inventory RMS is 2.6× *higher*, and the authors are blunt that a risk-scaled AS diagnostic beats the HJB there: on SOL the model isn't finding alpha, it's taking a bigger, funding-tilted directional bet that happened to pay in-sample. Read honestly, the result is "funding-aware quoting reduces inventory risk where funding is a persistent, slow-moving state," not "free money."
+
+Why the asset split? Look at the half-lives. Funding that mean-reverts over 4-6 hours (ETH, BTC) is a *state* worth tracking — it persists long enough that skewing for it pays off before it flips. SOL's funding reverts in ~2.3 hours and is jumpier (the paper needs an OU-plus-jump process, with heavy-tailed innovations the Gaussian baseline misses), so the signal you're skewing for is half-gone by the time you've leaned into it. The edge of funding-aware quoting is exactly as large as funding is predictable.
+
+## The caveats that matter for anyone shipping this
+
+This is a controlled comparison under shared execution assumptions, and the gaps are where production lives:
+
+- **Fill realism.** The results depend on an exponential fill-intensity model calibrated from official fills, not on queue position. On a real CLOB your place in the FIFO queue at each level decides whether you get filled at all; a skew that looks optimal in an intensity model can sit behind 200 contracts of resting size in practice. The paper says as much.
+- **Funding is itself adversarially selected.** The same crowding that drives funding positive is the flow hitting your quotes. When everyone is long and paying funding, the market orders lifting your ask are longs adding more — you're accumulating the short side the funding pays you for, which is the model working, but the inventory you build is correlated with a market that's about to mean-revert against the crowd. Funding skew and adverse selection are not independent.
+- **The skew can be gamed.** A maker that *always* leans short under positive funding is predictable, and predictable makers get run over. The funding term is a prior, not a strategy; it belongs underneath toxicity classification ([VPIN](/articles/the-sandwich-tax-on-autonomous-agents)-style flow toxicity, queue dynamics), not on top.
+- **Hourly settlement is a feature here.** Because [Hyperliquid settles funding every hour](/articles/carry-the-peg) rather than every eight, the funding state is close to a continuous drift you can integrate against — which is exactly what makes it worth putting in the control problem. On an 8-hour-settlement venue the term is lumpier and the skew is harder to justify intraday.
+
+The broader point is the one that keeps recurring with on-chain market structure: the textbook model was written for a market without a funding rate, and the perp's defining feature — the [coupon that enforces its peg](/articles/carry-the-peg) — sits exactly in the blind spot of the formula everyone imports. The fix isn't exotic. It's recognizing that inventory on a perp is never just inventory; it's a position with a known, signed carry, and a maker that prices the carry quotes a different book than one that doesn't.
+
+## Takeaways
+
+- **Avellaneda-Stoikov skews quotes for inventory risk only** — symmetric in the sign of your position — because on equities holding inventory has no directional carry. On a perp it does: funding is a deterministic, signed drift on inventory value, and the classic model can't see it.
+- **Funding adds a second skew that survives at zero inventory.** Under positive funding a flat maker should lean short; the funding-blind quote gets adversely selected into the side funding is about to charge it for. The two skews stack when inventory and funding align and cancel when they oppose.
+- **Pricing it works where funding is persistent.** A 2026 HJB model cut inventory RMS 36-38% on Hyperliquid ETH and BTC (4-6 h funding half-lives) while improving mean equity; on jumpy, fast-reverting SOL the "gain" was just a bigger directional bet. The edge is exactly as large as funding is predictable — and queue position, not the formula, decides whether you get filled at all.

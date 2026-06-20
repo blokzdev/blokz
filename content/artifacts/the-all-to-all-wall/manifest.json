@@ -1,7 +1,7 @@
 {
   "slug": "the-all-to-all-wall",
   "title": "The All-to-All Wall",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Decode speed of a frontier MoE model versus interconnect bandwidth. Each layer's expert routing is an all-to-all shuffle bounded by the slowest link. Drag from NVLink down to home broadband: the line crosses the interactive floor at the datacenter edge, then falls to seconds per token.",
   "pubDate": "2026-06-20T18:28:39.648Z",
   "type": "svg",
   "archetype": "chart",
@@ -10,7 +10,9 @@
     "infrastructure",
     "llm"
   ],
-  "aspect": "16/9",
+  "aspect": "840/472",
   "featured": false,
-  "controls": []
+  "controls": ["drag the bandwidth cursor", "tap a link or model", "arrow keys to step"],
+  "dataSource": { "label": "DeepSeek-V3 hardware report (arXiv:2505.09343) + DeepEP benchmarks", "url": "https://arxiv.org/abs/2505.09343" },
+  "dataAsOf": "2026-06-20"
 }

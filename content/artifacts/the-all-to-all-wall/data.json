@@ -1,0 +1,26 @@
+{
+  "config": {
+    "anchorModel": "deepseek-v3",
+    "anchorBwGBps": 50,
+    "anchorTpotMs": 14.76,
+    "anchorTokps": 67.7,
+    "interactiveTokps": 20,
+    "dispatchBytes": 1,
+    "combineBytes": 2,
+    "note": "Communication-bound decode latency. Per token, every MoE layer runs an all-to-all that dispatches the token's hidden vector to its top-k experts (FP8, 1 byte) and combines the results back (BF16, 2 bytes). DeepSeek's hardware report computes a ~14.76 ms TPOT ceiling (~67 tok/s per request) from this shuffle alone on a 400 Gbps InfiniBand fabric (~50 GB/s effective). The curve scales that published anchor by each model's relative all-to-all volume (3 x top-k x hidden x MoE-layers) and inversely with effective interconnect bandwidth; compute and dual-microbatch overlap are idealized away, so this is the network's best case."
+  },
+  "models": [
+    { "id": "deepseek-v3", "label": "DeepSeek-V3", "total": "671B", "active": "37B", "hidden": 7168, "moeLayers": 58, "experts": 256, "topk": 8 },
+    { "id": "qwen3-235b", "label": "Qwen3-235B-A22B", "total": "235B", "active": "22B", "hidden": 4096, "moeLayers": 94, "experts": 128, "topk": 8 },
+    { "id": "kimi-k2", "label": "Kimi K2", "total": "1.04T", "active": "32B", "hidden": 7168, "moeLayers": 60, "experts": 384, "topk": 8 }
+  ],
+  "links": [
+    { "id": "nvlink", "label": "NVLink", "detail": "intra-node, H800", "effGBps": 160, "kind": "fabric" },
+    { "id": "ib400", "label": "400G InfiniBand", "detail": "datacenter scale-out", "effGBps": 50, "kind": "fabric" },
+    { "id": "100gbe", "label": "100 GbE", "detail": "datacenter ethernet", "effGBps": 10, "kind": "datacenter" },
+    { "id": "25gbe", "label": "25 GbE", "detail": "premium colo uplink", "effGBps": 2.8, "kind": "datacenter" },
+    { "id": "10gbe", "label": "10 GbE", "detail": "high-end node uplink", "effGBps": 1.1, "kind": "internet" },
+    { "id": "1gbps", "label": "1 Gbps fiber", "detail": "consumer internet", "effGBps": 0.11, "kind": "internet" },
+    { "id": "100mbps", "label": "100 Mbps", "detail": "home broadband", "effGBps": 0.011, "kind": "internet" }
+  ]
+}

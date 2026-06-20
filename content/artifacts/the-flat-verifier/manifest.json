@@ -1,0 +1,16 @@
+{
+  "slug": "the-flat-verifier",
+  "title": "The Flat Verifier",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-20T13:30:13.443Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "infrastructure",
+    "data"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

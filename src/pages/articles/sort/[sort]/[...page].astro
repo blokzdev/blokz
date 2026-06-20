@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArticleArchive from '@/components/ArticleArchive.astro';
+import {
+  ARTICLE_SORT_VARIANTS,
+  getArticles,
+  getTopics,
+  sortArticles,
+  type ArticleSortKey,
+} from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const articles = await getArticles();
+  return ARTICLE_SORT_VARIANTS.flatMap((key) =>
+    paginate(sortArticles(articles, key), {
+      params: { sort: key },
+      props: { sortKey: key },
+      pageSize: 12,
+    }),
+  );
+}) satisfies GetStaticPaths;
+
+const { page, sortKey } = Astro.props as typeof Astro.props & { sortKey: ArticleSortKey };
+const topics = await getTopics();
+
+const titleByKey: Record<ArticleSortKey, string> = {
+  newest: 'Articles — Blokz',
+  oldest: 'Articles — Oldest first',
+  az: 'Articles — A to Z',
+  za: 'Articles — Z to A',
+};
+---
+
+<BaseLayout
+  title={titleByKey[sortKey]}
+  description="The full Blokz archive: deep technical articles on AI, blockchain, agents, zero-knowledge systems, and the engineering between them."
+  noindex
+>
+  <ArticleArchive {page} {topics} {sortKey} />
+</BaseLayout>

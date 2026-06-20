@@ -77,3 +77,41 @@ export function articleUrl(article: Article): string {
 export function artifactUrl(artifact: Artifact): string {
   return `/artifacts/${artifact.data.slug}`;
 }
+
+/* ------------------------------------------------------------------ sorting */
+
+export type ArticleSortKey = 'newest' | 'oldest' | 'az' | 'za';
+
+/** Sort options for the /articles archive — order drives the sort bar. */
+export const ARTICLE_SORTS: ReadonlyArray<{
+  key: ArticleSortKey;
+  label: string;
+  href: string;
+}> = [
+  { key: 'newest', label: 'Newest', href: '/articles/' },
+  { key: 'oldest', label: 'Oldest', href: '/articles/sort/oldest/' },
+  { key: 'az', label: 'A–Z', href: '/articles/sort/az/' },
+  { key: 'za', label: 'Z–A', href: '/articles/sort/za/' },
+];
+
+/** The three non-default orders that get their own pre-rendered routes. */
+export const ARTICLE_SORT_VARIANTS = ['oldest', 'az', 'za'] as const;
+
+/** Return a new array sorted by `key`; every order has a deterministic tiebreak. */
+export function sortArticles(list: Article[], key: ArticleSortKey): Article[] {
+  const out = [...list];
+  switch (key) {
+    case 'oldest':
+      return out.sort(
+        (a, b) =>
+          a.data.pubDate.valueOf() - b.data.pubDate.valueOf() ||
+          a.data.slug.localeCompare(b.data.slug),
+      );
+    case 'az':
+      return out.sort((a, b) => a.data.title.localeCompare(b.data.title) || byPubDateDesc(a, b));
+    case 'za':
+      return out.sort((a, b) => b.data.title.localeCompare(a.data.title) || byPubDateDesc(a, b));
+    default:
+      return out.sort(byPubDateDesc);
+  }
+}

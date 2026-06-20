@@ -35,7 +35,9 @@ function rehypeTableScroll() {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://blokz.dev',
-  integrations: [mdx(), sitemap()],
+  // Alternate article sort orders (/articles/sort/*) are duplicate content —
+  // keep them out of the sitemap (they're also robots noindex).
+  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/articles/sort/') })],
   markdown: {
     shikiConfig: {
       theme: 'tokyo-night',

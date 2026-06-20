@@ -1,0 +1,84 @@
+---
+slug: noise-you-cant-audit-differential-privacy-in-on-chain-data-markets
+title: "Noise You Can't Audit: Differential Privacy in On-Chain Data Markets"
+description: "On-chain data markets promise to pay you for your data's value AND protect your privacy. Differential privacy is the only rigorous knob for the second — and one budget ε can't serve both. The utility collapse, the composition trap, and why no chain can verify the ε you were promised."
+pubDate: 2026-06-20T23:10:00Z
+author: blokz
+topics: [cryptography, data, machine-learning]
+tags: [differential-privacy, datadao, vana, dp-sgd, membership-inference, verifiable-privacy]
+artifacts: [the-privacy-budget]
+difficulty: intermediate
+sources:
+  - label: "Abadi et al. — Deep Learning with Differential Privacy (DP-SGD, CCS 2016)"
+    url: "https://arxiv.org/abs/1607.00133"
+  - label: "De et al. — Unlocking High-Accuracy Differentially Private Image Classification through Scale (2022)"
+    url: "https://arxiv.org/abs/2204.13650"
+  - label: "Humphries et al. — Differentially Private Learning Does Not Bound Membership Inference"
+    url: "https://arxiv.org/abs/2010.12112"
+  - label: "Tang, Korolova et al. — Privacy Loss in Apple's Implementation of Differential Privacy on MacOS 10.12"
+    url: "https://arxiv.org/abs/1709.02753"
+  - label: "Jin et al. — Are We There Yet? Timing and Floating-Point Attacks on Differential Privacy Systems (IEEE S&P 2022)"
+    url: "https://arxiv.org/abs/2112.05307"
+  - label: "VERIDP — Verifiable Differentially Private Training (IACR ePrint 2026/542)"
+    url: "https://eprint.iacr.org/2026/542"
+  - label: "Vana — Proof of Contribution (docs)"
+    url: "https://docs.vana.org/docs/proof-of-contribution"
+---
+
+An on-chain data market makes two promises in the same breath. The first: contribute your medical records, your Reddit history, your driving telemetry, and get paid in proportion to the *value* your data adds to a buyer's model. The second: your raw data never leaks — it's protected. Vana's mainnet is built on exactly this pitch, and the numbers are real: 1M+ contributors across 300+ data pools, a single Reddit DataDAO that onboarded over 140,000 users, 15% of the token supply earmarked for contributor rewards.
+
+The first promise is a hard mechanism-design problem — we took it apart in [valuing on-chain data contributions](/articles/data-valuation-onchain-markets). The second promise has a name too: **differential privacy** (DP), the only privacy definition with a rigorous, composable guarantee instead of a vibe. This piece is about a collision the marketing never mentions: the single knob that delivers the second promise is calibrated in the exact units that destroy the first — and even if you accept that trade, *no chain can verify the privacy you were sold actually happened.*
+
+## What ε actually buys
+
+Differential privacy bounds how much one person's data can change a computation's output. Formally, a randomized mechanism `M` is `(ε, δ)`-DP if for any two datasets differing in one record, and any output set `S`,
+
+```
+Pr[M(D) ∈ S] ≤ e^ε · Pr[M(D') ∈ S] + δ
+```
+
+ε is the privacy budget. Small ε means the output distribution barely moves whether or not you're in the dataset — strong privacy. Large ε means it moves a lot. The mechanism that makes a neural network `(ε, δ)`-DP is **DP-SGD** (Abadi et al., 2016): clip each per-example gradient to a fixed norm, add calibrated Gaussian noise to the batch gradient, and account for the privacy spent at every step. The noise is the price of the guarantee.
+
+How much privacy does a given ε actually buy? The cleanest way to read it is through the worst-case **membership-inference advantage** — an attacker's edge over a coin flip at deciding whether your record was in the training set. For an `(ε, δ)`-DP model, that advantage is provably bounded (Humphries et al.):
+
+```
+Adv ≤ (e^ε − 1 + 2δ) / (e^ε + 1)
+```
+
+At ε = 1 the bound is 0.46. At ε = 4 it's 0.96. At ε = 8 it's 0.9993 — the guarantee is, for practical purposes, *gone*. The artifact below plots that bound (the warm curve) against the budgets people actually deploy. Drag the ε cursor and watch where the line is by the time you reach a usable model.
+
+<Artifact slug="the-privacy-budget" />
+
+The trap is in the shape. The leakage bound is already vertical before ε reaches the range where models become useful — and "useful" is the buyer's whole reason for paying.
+
+## The utility you destroy is the value you're paid for
+
+Here is the part the two-promise pitch can't reconcile. DP noise is calibrated to the *worst-case* contributor — the one rare, identifying record that moves the model most. But "the record that moves the model most" is precisely the record an on-chain valuation mechanism — Shapley values, influence functions, Vana's Proof of Contribution — pays the most for. **DP's noise is aimed at exactly the signal the reward is aimed at.** Strengthen the privacy and you don't just blur outliers in the abstract; you erase the marginal contribution the market was about to cut a check for.
+
+The measured numbers are brutal at the privacy end. Training ResNet-50 on ImageNet *from scratch* under DP-SGD lands at **6.78% top-1 at ε = 1** (and 2.64% at ε = 0.5) — versus ~76% non-private. CIFAR-10 from scratch climbs from **57.5% at ε = 1** to **81.4% at ε = 8** (De et al., 2022), still short of the ~95% non-private Wide-ResNet. The only way to get a usable model at small ε is to *not learn the private data at all*: start from a model pretrained on public data and fine-tune. That move buys **94.8% on CIFAR-10 at ε = 1** and **83.8% on ImageNet at ε = 0.5** — genuinely strong, but notice what happened. The accuracy came from the public pretraining; the private, paid-for contributions are now a thin, heavily-noised correction on top. The contributor whose data the buyer most wants is the contributor DP clips hardest, and a market that prices marginal value will pay them least. *Private and valuable* is not a point on the ε axis. It's the gap between two curves that never meet.
+
+## The ε you agreed to isn't the ε you got
+
+Suppose a market quotes a per-round budget — "every training run on your data is ε = 0.5, perfectly reasonable." DP's headline feature is that budgets **compose**: run the mechanism twice and, in the worst case, the privacy losses *add*. Ten rounds of ε = 0.5 is an ε = 5 disclosure. A buyer who retrains monthly burns through any honest budget inside a year, and advanced composition only softens the growth to roughly `√(2T·ln(1/δ))·ε` — sublinear, but still unbounded.
+
+This isn't a hypothetical. When researchers measured Apple's deployed DP, the per-submission budget was a tidy 1–2, but the system permitted a total privacy loss of **up to ε ≈ 16 per day** across its features — *and renewed that budget every day*, so the real loss grows without bound the longer you opt in (Tang, Korolova et al.). The 2020 US Census shipped its redistricting data at a total **ε = 19.61**. These are the budgets serious institutions, under public scrutiny, actually chose. Read them back onto the artifact's axis: every one sits in the region where the worst-case leakage bound is indistinguishable from 100%. The quoted per-round ε is a sticker price; the bill is what composition adds up to, and a contributor signing a one-line "ε-protected" consent has no way to see the running total.
+
+## You can't verify it on-chain anyway
+
+Grant, for a moment, that a market picks a defensible total ε and accounts for composition honestly. The on-chain story is still missing its load-bearing beam: **nothing proves the privacy promised was the privacy delivered.**
+
+Vana's Proof of Contribution runs validation inside a TEE and writes an attestation on-chain. We dissected what a hardware attestation actually certifies in [the cost of verifying a TEE](/articles/trusting-the-quote-onchain-tee-attestation): it proves a *specific binary* ran inside a genuine enclave. It says nothing about whether that binary clipped gradients to the right norm, sampled Gaussian noise at the right scale, or accounted for the budget correctly. A TEE attesting a buggy or dishonest DP implementation produces a perfectly valid attestation of the wrong thing — the same gap as "signed is not clean" from [the data-provenance piece](/articles/the-curse-of-recursion), one layer down: *attested is not private.*
+
+And DP implementations are dishonest more often than you'd like. The guarantee is a statement about real-number distributions; computers add noise in floating point. Mironov showed in 2012 that a naïve Laplace mechanism leaks through the gaps in the floating-point grid — some output values are simply unreachable, and which ones depend on the secret input. "Are We There Yet?" (IEEE S&P 2022) extended the attack to the Gaussian mechanism and to *timing* side channels, breaking the DP guarantee of widely-used libraries that were, on paper, correct. The ε in the consent form and the ε the bytes actually delivered are different numbers, and the difference is invisible to any attestation that only checks code identity.
+
+The honest fix is a **zero-knowledge proof of DP-SGD itself** — prove, in zero knowledge, that each step clipped, averaged, and added noise of the claimed scale. VERIDP (ePrint 2026/542) is the first reasonably complete construction: polynomial commitments plus sumcheck/GKR plus incrementally-verifiable computation, producing per-iteration proofs that verify in **2–5 ms** with a **3–4 KB** proof regardless of dataset size. That is genuinely deployable as an on-chain check — the verification cost is in the same flat, succinct regime we saw for [ZK coprocessors](/articles/verifiable-read-zk-coprocessors). But read the scope precisely: VERIDP proves the *per-iteration mechanics* were executed faithfully. It does not, by itself, settle the *policy* questions that are the actual hole — the global budget after composition, the subsampling-amplification accounting, the choice of δ, and whether the noise was drawn from a floating-point distribution that honors the math. You can prove the recipe was followed and still be served a dish that leaks.
+
+## Takeaways
+
+Differential privacy is not snake oil — it is the only privacy promise in this stack with a theorem behind it, and that's exactly why it deserves to be held to its terms. The terms are unforgiving for a data market:
+
+- **One ε can't price both promises.** Privacy is calibrated to the worst-case record; value is calibrated to the same record. The budget that protects the contributor erases what the buyer pays for. From-scratch DP models only become usable (CIFAR-10 81% at ε = 8) where the leakage guarantee has already collapsed.
+- **Composition is the real budget.** A reasonable-sounding per-round ε adds up. Apple's deployed system reached ≈16/day and renewed it; the Census shipped 19.6. A market that quotes per-round ε without surfacing the running total is quoting the sticker, not the bill.
+- **Attestation verifies the wrong thing.** A TEE proves code identity, not DP correctness, and floating-point implementations leak underneath a valid attestation. ZK-DPSGD (VERIDP: 2–5 ms verify, 3–4 KB proof) can prove the per-step mechanics on-chain — but the global budget, the δ, and the noise distribution are policy the proof doesn't bind.
+
+The same membership-inference attacks that DP is supposed to stop are the ones that pulled "forgotten" records back out of [unlearned models at 0.97 recovery](/articles/proving-a-model-forgot) — and the gap between the worst-case bound and today's empirical attacks is the only reason small-ε models aren't already leaking everything. That gap is real cover, but it's a property of attackers' current strength, not of the budget you were promised. A data market that sells "ε-protected" as a checkbox is selling a number it cannot audit, calibrated against a value it must destroy. The right move isn't to abandon DP — it's to put the *composed, verified* ε on-chain as a first-class, provable quantity, and to price contributions knowing the noise floor is part of the product. Until then, "private and you get paid for it" is two promises wearing one budget.

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 56,
-    "artifacts": 57
+    "articles": 57,
+    "artifacts": 58
   },
   "topicCounts": {
     "agents": 23,
@@ -10,9 +10,9 @@
     "cryptography": 7,
     "data": 6,
     "defi": 13,
-    "infrastructure": 25,
-    "llm": 12,
-    "machine-learning": 25,
+    "infrastructure": 26,
+    "llm": 13,
+    "machine-learning": 26,
     "research": 1,
     "security": 19,
     "smart-contracts": 11,
@@ -21,6 +21,32 @@
     "zero-knowledge": 5
   },
   "articles": [
+    {
+      "slug": "the-expert-shuffle",
+      "path": "content/articles/2026/06/the-expert-shuffle/index.mdx",
+      "url": "/articles/the-expert-shuffle",
+      "title": "The Expert Shuffle: Why MoE Broke the Plan to Decentralize Inference",
+      "description": "Frontier open models are now Mixture-of-Experts — cheap to serve in a datacenter, nearly impossible across the internet. The all-to-all expert shuffle moves ~9.5 MiB/token and caps decode at ~67 tok/s even on 400G InfiniBand; on internet links it falls to seconds per token.",
+      "pubDate": "2026-06-20",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "llm"
+      ],
+      "tags": [
+        "mixture-of-experts",
+        "expert-parallelism",
+        "all-to-all",
+        "decentralized-inference",
+        "deepseek",
+        "bandwidth"
+      ],
+      "artifacts": [
+        "the-all-to-all-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "inventory-has-a-coupon",
       "path": "content/articles/2026/06/inventory-has-a-coupon/index.mdx",
@@ -1499,6 +1525,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-all-to-all-wall",
+      "path": "content/artifacts/the-all-to-all-wall/manifest.json",
+      "module": "src/islands/artifacts/the-all-to-all-wall.ts",
+      "url": "/artifacts/the-all-to-all-wall",
+      "title": "The All-to-All Wall",
+      "description": "Decode speed of a frontier MoE model versus interconnect bandwidth. Each layer's expert routing is an all-to-all shuffle bounded by the slowest link. Drag from NVLink down to home broadband: the line crosses the interactive floor at the datacenter edge, then falls to seconds per token.",
+      "pubDate": "2026-06-20",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-funding-skew",
       "path": "content/artifacts/the-funding-skew/manifest.json",

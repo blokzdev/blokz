@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 77,
-    "artifacts": 78
+    "articles": 78,
+    "artifacts": 79
   },
   "topicCounts": {
     "agents": 29,
     "ai": 6,
     "blockchain": 16,
     "cryptography": 13,
-    "data": 9,
-    "defi": 16,
+    "data": 10,
+    "defi": 17,
     "infrastructure": 32,
     "llm": 16,
     "machine-learning": 33,
@@ -17,7 +17,7 @@
     "security": 23,
     "smart-contracts": 14,
     "tokenomics": 9,
-    "web3": 9,
+    "web3": 10,
     "zero-knowledge": 9
   },
   "articles": [
@@ -157,6 +157,25 @@
       ],
       "artifacts": [
         "the-qubit-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window",
+      "path": "content/articles/2026/06/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window/index.mdx",
+      "url": "/articles/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window",
+      "title": "The Ghost Fill: How Polymarket's Hybrid Architecture Built a $1.49M Attack Window",
+      "description": "Polymarket's off-chain matching + on-chain settlement creates a ~10-second consistency gap. GHOSTHUNTER found 980K targeted reversions and $1.49M extracted — here's the exact mechanism.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "web3",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [
+        "the-ghost-fill-window"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2138,6 +2157,22 @@
         "cryptography",
         "security",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-ghost-fill-window",
+      "path": "content/artifacts/the-ghost-fill-window/manifest.json",
+      "module": "src/islands/artifacts/the-ghost-fill-window.ts",
+      "url": "/artifacts/the-ghost-fill-window",
+      "title": "The Ghost Fill Window",
+      "description": "Four attack vectors that exploit Polymarket's off-chain match / on-chain settlement gap. Tap a vector to see mechanism, timing, and cost.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "web3"
       ],
       "draft": false
     },

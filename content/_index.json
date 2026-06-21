@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 63,
-    "artifacts": 64
+    "articles": 64,
+    "artifacts": 65
   },
   "topicCounts": {
-    "agents": 24,
+    "agents": 25,
     "ai": 4,
     "blockchain": 12,
     "cryptography": 9,
@@ -14,13 +14,30 @@
     "llm": 13,
     "machine-learning": 30,
     "research": 1,
-    "security": 20,
+    "security": 21,
     "smart-contracts": 11,
     "tokenomics": 7,
-    "web3": 8,
+    "web3": 9,
     "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
+      "path": "content/articles/2026/06/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls/index.mdx",
+      "url": "/articles/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
+      "title": "Who Authorized That? The Delegation Gap in AI Agent Tool Calls",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
       "path": "content/articles/2026/06/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance/index.mdx",
@@ -1681,6 +1698,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-delegation-chain",
+      "path": "content/artifacts/the-delegation-chain/manifest.json",
+      "module": "src/islands/artifacts/the-delegation-chain.ts",
+      "url": "/artifacts/the-delegation-chain",
+      "title": "The Delegation Chain",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-aum-gap",
       "path": "content/artifacts/the-aum-gap/manifest.json",

@@ -1,0 +1,16 @@
+{
+  "slug": "the-delegation-chain",
+  "title": "The Delegation Chain",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-21T02:26:02.272Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

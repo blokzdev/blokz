@@ -1,24 +1,130 @@
 ---
 slug: the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification
 title: "The Thinking Tax: Why Reasoning Models Break On-Chain AI Verification"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "DeepSeek-R1 emits 8,400 thinking tokens before a 341-token answer on hard math. Every existing on-chain verification scheme — TEE, optimistic, ZK, sampling — was designed when computation and output were proportional. They aren't anymore."
 pubDate: 2026-06-21T10:30:37.509Z
 author: blokz
 topics: [llm, zero-knowledge, infrastructure]
-tags: []
+tags: [reasoning-models, deepseek-r1, extended-thinking, verifiable-inference, kv-cache, scratchpad-attack, thinking-tokens, coin-protocol]
 series: proof-of-intelligence
 seriesOrder: 7
-artifacts: []
+artifacts: [the-thinking-ledger]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning"
+    url: "https://arxiv.org/abs/2501.12948"
+  - label: "CoIn: Counting the Invisible Reasoning Tokens in Commercial Opaque LLM APIs"
+    url: "https://arxiv.org/abs/2505.13778"
+  - label: "DeepSeek-R1 Thoughtology: Let's think about LLM Reasoning"
+    url: "https://arxiv.org/abs/2504.07128"
+  - label: "Don't Overthink It: A Survey of Efficient R1-style Large Reasoning Models"
+    url: "https://arxiv.org/abs/2508.02120"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+When DeepSeek-R1 solves an AIME competition problem, it doesn't just give you the answer. According to the R1 paper, the model generates an average of 8,741 output tokens per problem on AIME 2024. The final solution — the part you'd actually read — runs to a few hundred tokens. The remaining 8,400 are the reasoning trace: the model thinking aloud, backtracking, reconsidering, before arriving.
 
-## Section heading
+This is the extended reasoning paradigm that defines the current generation of frontier LLMs: DeepSeek-R1, OpenAI o3, Gemini 2.5 Pro, Qwen-3 with extended thinking. On hard benchmarks, **97% of the tokens a reasoning model emits are thinking**. The answer is the tip of the iceberg.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+Now wire one of these models into an on-chain AI oracle. The oracle serves a DeFi protocol that needs analytical reasoning about market conditions — the kind of multi-step judgment that requires genuine deliberation, not a one-shot response. You need verifiable AI inference: an attestation or proof that the output came from a legitimate forward pass on the claimed model.
 
-## Takeaways
+Here's the problem. The verifiable inference landscape — TEE attestation, optimistic dispute games, ZK proofs, proof-of-sampling — was designed when computation and output were roughly proportional. For reasoning models, that assumption is wrong by 100×. The verification schemes still work. The denominator just changed.
 
-TODO.
+## The Token Ledger
+
+To understand the gap, start with the arithmetic.
+
+The DeepSeek-R1 paper (arXiv:2501.12948) reports the average output length on AIME 2024: **8,741 tokens** for R1. The final answer to an AIME problem is typically one or two paragraphs — roughly 300–400 tokens. The remaining ~8,400 are the chain-of-thought prefix. The Thoughtology analysis (arXiv:2504.07128) of R1's reasoning finds the model has a "sweet spot" of reasoning depth, with thinking traces ranging from a few hundred tokens on easy queries to over 32,000 tokens on problems near the model's capability limit.
+
+<Artifact slug="the-thinking-ledger" />
+
+The ratio isn't academic. Each thinking token demands the same forward pass through the model as an output token. But thinking tokens are ephemeral: they accumulate in the KV cache during generation and are discarded once the response is complete. The user receives the answer. The verifier inherits only the answer.
+
+The KV cache math was covered in [The Memory Wall](/articles/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize), but the reasoning model case has a specific texture. For a Llama-3.1 8B class model (8 GQA KV heads, 128-dim, 32 layers, BF16):
+
+```
+KV per token = 2 × 8 heads × 128 dim × 32 layers × 2 bytes = 131,072 bytes ≈ 128 KB
+```
+
+Storing the full KV state for 8,400 thinking tokens requires **1.07 GB of ephemeral memory — per request**. For 32,000 tokens on a harder problem: 4 GB. For a 70B class model (320 KB/token), a 32,000-token reasoning trace occupies 10 GB of transient state on a single H100 card. That's 12% of peak VRAM consumed by intermediate state that evaporates when the response is sent.
+
+This is the thinking tax. You're paying for computation that produces no durable artifact.
+
+## What Each Scheme Sees
+
+The [Price of Trust](/articles/model-substitution-inference-markets) article mapped the existing verification landscape: TEE at ~1.07× overhead, optimistic at 2–4×, ZK at 1,000×+. Those numbers assumed standard inference, where output tokens are the computation. For reasoning models, each scheme runs into a different wall.
+
+**TEE attestation** (used by Phala, ORA, Automata, and others): The model runs inside a Trusted Execution Environment — Intel TDX or Nvidia H100 Confidential Computing — which produces a cryptographic quote binding the model weights, the input, and the output. That quote proves the inference was honest.
+
+There are two deployment modes, and they differ sharply for reasoning models:
+
+*Output-only attestation*: The TEE executes the full inference — thinking tokens and all — then attests to the final answer tokens. The thinking trace is never committed. The verifier receives a proof that these weights produced this answer, but has no visibility into the 8,400-token reasoning process. The answer may be honest; the relationship between the thinking and the answer is trusted, not proven.
+
+*Full-trace attestation*: The TEE hashes each thinking token's embedding as it's generated, building a Merkle root over the full reasoning trace, then includes that root in the attestation quote. Now any thinking token can be proved via a short Merkle path (~13 hashes for 8,400 tokens). This works — but the attestation evidence grows with the reasoning trace length, and the storage and egress costs scale accordingly.
+
+Full-trace TEE attestation is the only existing mechanism that robustly handles reasoning models. As of mid-2026, it is not deployed by any major verifiable inference network.
+
+**Optimistic re-execution**: A proposer posts a result; a challenge window opens; any watcher can re-run the inference and dispute a divergent output. This works cleanly for [deterministic outputs from deterministic models](/articles/deterministic-inference-onchain-verification) — but reasoning models are neither.
+
+The thinking process is stochastic. The same R1 model on the same prompt will produce a different reasoning trace on every call, even at temperature 0, due to floating-point non-determinism across hardware and batch configurations. A challenger re-running the inference gets a different reasoning trace — and potentially a different answer. The optimistic dispute mechanism cannot distinguish "different because reasoning is stochastic" from "different because the original was fabricated." **Optimistic verification of reasoning model outputs is neutralized by design.**
+
+**ZK proofs** (zkML systems like EZKL, Modulus, and Nebula): The prover generates a succinct cryptographic proof that a specific input, passed through specific model weights, produced a specific output. Proof cost scales with the computation being proven.
+
+ZK isn't neutralized — it's made impractically expensive. If proving a standard 500-token forward pass currently costs 1,000× native inference time (the established baseline from [zkML in 2026](/articles/zkml-verifiable-inference-landscape)), then proving a reasoning pass with 8,400 thinking tokens costs ~17,000× native inference. For 32,000 thinking tokens: ~64,000×. The [Prover's Stack](/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs) article documented AI ASICs cutting NTT cost 40× over CPU — even with that improvement, proving a 32k-token reasoning trace would run at ~1,600× native inference time, still beyond practical deployment latency.
+
+**Proof-of-sampling** (SPML and similar schemes, covered in [The Verifier's Dilemma](/articles/the-verifiers-dilemma)): Random auditors re-query the model and check output distributions. Sampling catches model substitution — if the provider swapped R1 for a weaker model, output quality on spot-check queries would diverge statistically. But sampling probes the output layer, not the reasoning process. It's blind to scratchpad attacks, and auditing a reasoning model is expensive: every probe triggers a full reasoning trace, multiplying the audit cost by the thinking:output ratio.
+
+## The Scratchpad Attack
+
+The most targeted exploit in this landscape doesn't require swapping models or faking weights. It exploits the asymmetry between verified and unverified computation.
+
+A malicious inference node does the following:
+
+1. Receives a query that would normally trigger 8,400 reasoning tokens
+2. Computes only the output — 300–400 tokens of direct response, fast and cheap
+3. Appends a plausible-looking 8,400-token reasoning trace constructed from templates or cached chains of thought
+4. Returns the assembled response (reasoning + answer) to the caller
+5. Bills for 8,741 tokens; actually computed ~400
+
+The output may pass semantic checks — the provider can answer correctly without deep reasoning on a particular query. The reasoning trace looks coherent. The billing matches the claimed compute. Neither output-only TEE attestation nor optimistic verification catches this; both verify the answer, not the relationship between the thinking and the answer.
+
+This is the problem the CoIn paper (arXiv:2505.13778, May 2025) documented in commercial LLM APIs: providers can bill for hidden reasoning tokens that may not correspond to genuine computation. The paper's audit framework found discrepancies and proposed a **verifiable hash tree** — a Merkle commitment over token embeddings — as a mechanism for proving that a given set of hidden tokens was genuinely computed. Each token's embedding is hashed as it's generated; the root is published; spot-checks can verify any position.
+
+Applied to TEEs: if the enclave commits a Merkle root over the reasoning trace as part of the attestation quote, the scratchpad attack fails. The attacker cannot forge a valid embedding for a fabricated thinking token — the embedding requires running the model. Any claimed thinking token can be challenged with an inclusion proof.
+
+## Thinking Commitments
+
+The solution space is beginning to form. What on-chain reasoning verification needs is not full-trace storage (too expensive) or stochastic re-execution (fundamentally broken) — it is *thinking commitments*: a tamper-proof, space-efficient representation of the reasoning trace that enables spot-checking without preserving all 8,400 tokens.
+
+Three approaches are being explored:
+
+**Merkle-hashed traces (CoIn + TEE)**: As the model generates each thinking token, the TEE hashes the token embedding and its position, updating a running Merkle root. The attestation quote carries this root alongside the output tokens. A challenger can verify any thinking token with a 13-hash Merkle path. Storage cost: O(log n) per challenge, not O(n) for the full trace. This is the most practical near-term approach.
+
+**Thinking-compressed ZK**: Treat the reasoning and output phases as two separate proof circuits. The thinking circuit generates a succinct Merkle commitment to the reasoning trace; the output circuit proves that these weights, conditioned on this thinking commitment, produced this output. The output circuit is cheap (400 tokens). The thinking circuit is expensive but can be batched, outsourced to a specialized prover cluster, or replaced with a statistical spot-check over a randomly sampled window.
+
+**Structural attestation**: Rather than attesting to every thinking token, attest to structural properties — that the reasoning trace contained at least T tokens, that the final thinking token's embedding is logically consistent with the answer embedding, that no thinking token was replicated verbatim from a known cached trace. This is weaker but lighter, and may be sufficient for lower-stakes applications.
+
+None of these are in production today. The thinking commitment design space is genuinely open.
+
+## The Updated Scheme Table
+
+| Scheme | Covers thinking? | Works on reasoning models? | Scratchpad detection | Cost (vs. output-only) |
+|---|---|---|---|---|
+| TEE — full trace | ✓ | ✓ | ✓ (Merkle commitment) | 1.07× + O(n) KV storage |
+| TEE — output only | ✗ | Partially | ✗ | 1.07× (unmodified) |
+| Optimistic | ✗ | ✗ (stochastic) | ✗ | Broken |
+| ZK proof | ✓ | Theoretically | ✓ | ~(thinking/output) × 1,000× |
+| Proof-of-sampling | ✗ | No | ✗ | Expensive probes, blind |
+
+The honest recommendation for mid-2026: if you need verifiable reasoning, use full-trace TEE attestation with a Merkle commitment over the thinking trace. Everything else leaves a gap the scratchpad attack fits through.
+
+## Why This Compounds
+
+Extended reasoning isn't a niche. Reasoning models are rapidly becoming the default for hard tasks: coding, mathematical analysis, strategic planning, complex DeFi risk evaluation. As the capability ceiling rises, the average thinking token count rises with it. A model that thinks for 8,000 tokens today will think for 80,000 tomorrow on problems of equivalent relative difficulty.
+
+The [KV Wall](/articles/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize) article showed that KV cache scales linearly with context length. The thinking tax compounds that: now the context that needs to be verified is not the input you control, but the reasoning process you don't. Every improvement in reasoning capability increases the cost of proving that reasoning was genuine.
+
+The [Verifier's Dilemma](/articles/the-verifiers-dilemma) showed that rational verifiers won't audit unless they're paid to. The thinking tax makes auditing reasoning models even more expensive, raising the minimum subsidy required to keep a verifier watching. The bounty has to grow with the thinking trace.
+
+This is not a solved problem. It's not even a well-posed one yet — the field lacks standard definitions for what "verifying reasoning" means at the cryptographic level. The scratchpad attack is real and currently undefended on every deployed on-chain AI network. The thinking commitment designs are nascent. For builders deploying reasoning models in trust-sensitive contexts, the practical answer is the same as it often is at the frontier of cryptographic systems: use TEEs for now, build the ZK proof systems in parallel, and be honest with your users about what's currently being proven and what isn't.
+
+The thinking happens. The question is whether the chain ever sees it.

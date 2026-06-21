@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "source": "Bai et al., 'How Do AI Agents Spend Your Money?' arXiv:2604.22750, Apr 2026",
+    "note": "Measured on SWE-bench Verified (8 frontier LLMs, ~500 tasks). On-chain task scenarios extrapolated from structural findings (1000× gap, 30× variance). Token pricing from published public rates, June 2026."
+  },
+  "findings": {
+    "agenticVsChatRatio": 1000,
+    "withinTaskMaxVariance": 30,
+    "selfPredictCorrelation": 0.39,
+    "systematicBias": "underestimate",
+    "heavyVsLightDeltaKTokens": 1500,
+    "comment": "Kimi-K2 and Claude-Sonnet-4.5 consumed 1.5M more tokens than GPT-5 on identical SWE-bench tasks"
+  },
+  "taskScenarios": [
+    {
+      "id": "oracle",
+      "label": "Oracle check",
+      "note": "Read a price feed, compare to threshold — boolean output",
+      "medianK": 8,
+      "logSd": 1.2
+    },
+    {
+      "id": "swap",
+      "label": "Swap routing",
+      "note": "Route a single swap across 2–3 pools with slippage analysis",
+      "medianK": 50,
+      "logSd": 1.4
+    },
+    {
+      "id": "arb",
+      "label": "Arb calculation",
+      "note": "Multi-hop arbitrage across 3+ protocols, path selection",
+      "medianK": 280,
+      "logSd": 1.5
+    },
+    {
+      "id": "rebalance",
+      "label": "Portfolio rebalance",
+      "note": "Full rebalance across 5+ positions — closest to SWE-bench complexity",
+      "medianK": 1200,
+      "logSd": 1.6
+    }
+  ],
+  "modelTiers": [
+    { "id": "t1", "label": "Tier 1 — Haiku-class", "costPerMk": 0.25,  "color": "#5fd39b" },
+    { "id": "t2", "label": "Tier 2 — Sonnet-class", "costPerMk": 3.0,  "color": "#7c8cff" },
+    { "id": "t3", "label": "Tier 3 — Opus-class",  "costPerMk": 15.0, "color": "#f0883e" }
+  ]
+}

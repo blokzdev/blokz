@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 72,
-    "artifacts": 73
+    "articles": 73,
+    "artifacts": 74
   },
   "topicCounts": {
-    "agents": 26,
+    "agents": 27,
     "ai": 4,
     "blockchain": 15,
     "cryptography": 12,
@@ -12,15 +12,43 @@
     "defi": 16,
     "infrastructure": 32,
     "llm": 15,
-    "machine-learning": 32,
+    "machine-learning": 33,
     "research": 1,
     "security": 23,
     "smart-contracts": 13,
-    "tokenomics": 8,
+    "tokenomics": 9,
     "web3": 9,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-darwin-machine-how-agent-auction-economies-outperform-frontier-models",
+      "path": "content/articles/2026/06/the-darwin-machine-how-agent-auction-economies-outperform-frontier-models/index.mdx",
+      "url": "/articles/the-darwin-machine-how-agent-auction-economies-outperform-frontier-models",
+      "title": "The Darwin Machine: How Agent Auction Economies Outperform Frontier Models",
+      "description": "Llama-3.1-8B starts at 15.9% on MATH. Put it in an auction economy and it reaches 57.0% — beating a stronger monolithic baseline. The mechanism is Hayek: decentralized price signals, wealth accumulation, and economic selection pressure do what central orchestration can't.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "machine-learning",
+        "tokenomics"
+      ],
+      "tags": [
+        "agent-economy",
+        "auction",
+        "credit-assignment",
+        "economic-selection",
+        "hayek",
+        "multi-agent",
+        "emergence",
+        "bankruptcy"
+      ],
+      "artifacts": [
+        "the-darwin-machine"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
       "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
@@ -1920,6 +1948,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-darwin-machine",
+      "path": "content/artifacts/the-darwin-machine/manifest.json",
+      "module": "src/islands/artifacts/the-darwin-machine.ts",
+      "url": "/artifacts/the-darwin-machine",
+      "title": "The Darwin Machine",
+      "description": "20 weak agents compete for tasks via sealed-bid auctions; bankrupt agents are replaced by mutations of the wealthiest survivors. Watch economic selection pressure raise collective performance past the monolithic baseline. Toggle difficulty, step through rounds, and observe wealth dynamics and bankruptcy cycles.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "machine-learning",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-qubit-gap",
       "path": "content/artifacts/the-qubit-gap/manifest.json",

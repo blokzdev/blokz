@@ -1,0 +1,71 @@
+{
+  "assets": [
+    {
+      "id": "weth",
+      "label": "WETH",
+      "chain": "Base",
+      "maxLTV": 0.80,
+      "liqThreshold": 0.83,
+      "supplyAPY": 0.028,
+      "tiers": {
+        "none": 0.65,
+        "basic": 0.70,
+        "verified": 0.75,
+        "institutional": 1.00
+      }
+    },
+    {
+      "id": "cbeth",
+      "label": "cbETH",
+      "chain": "Base",
+      "maxLTV": 0.745,
+      "liqThreshold": 0.79,
+      "supplyAPY": 0.028,
+      "tiers": {
+        "none": 0.60,
+        "basic": 0.64,
+        "verified": 0.68,
+        "institutional": 1.00
+      }
+    },
+    {
+      "id": "wbtc",
+      "label": "wBTC",
+      "chain": "Ethereum",
+      "maxLTV": 0.70,
+      "liqThreshold": 0.75,
+      "supplyAPY": 0.025,
+      "tiers": {
+        "none": 0.56,
+        "basic": 0.60,
+        "verified": 0.64,
+        "institutional": 1.00
+      }
+    }
+  ],
+  "tiers": [
+    {
+      "id": "none",
+      "label": "None",
+      "note": "New address, no on-chain credit history"
+    },
+    {
+      "id": "basic",
+      "label": "Basic",
+      "note": "1+ yr history, no liquidations (OCCR model signals)"
+    },
+    {
+      "id": "verified",
+      "label": "Verified",
+      "note": "OCCR score ≥ 800 or audited contract bytecode hash"
+    },
+    {
+      "id": "institutional",
+      "label": "Institutional",
+      "note": "KYCed legal entity — Maple Finance / Clearpool model, no on-chain collateral"
+    }
+  ],
+  "deployedAPY": 0.08,
+  "supplyAPY": 0.028,
+  "opportunityDiff": 0.052
+}

@@ -1,0 +1,96 @@
+---
+slug: the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window
+title: "The Ghost Fill: How Polymarket's Hybrid Architecture Built a $1.49M Attack Window"
+description: "Polymarket's off-chain matching + on-chain settlement creates a ~10-second consistency gap. GHOSTHUNTER found 980K targeted reversions and $1.49M extracted — here's the exact mechanism."
+pubDate: 2026-06-21T11:27:37.291Z
+author: blokz
+topics: [defi, web3, data]
+tags: []
+artifacts: [the-ghost-fill-window]
+difficulty: intermediate
+sources:
+  - label: "GHOSTHUNTER: Hunting Ghost Fills in Hybrid Prediction Market Architectures (arXiv:2606.16852)"
+    url: "https://arxiv.org/abs/2606.16852"
+  - label: "Polymarket CTFExchange contract on Polygon"
+    url: "https://polygonscan.com/address/0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E"
+  - label: "Polymarket CLOB API documentation"
+    url: "https://docs.polymarket.com/developers/clob/introduction"
+---
+
+Polymarket has settled over $61 billion in prediction market volume. The engine underneath that number is a hybrid: orders are matched off-chain by a central operator, then settled on-chain via the CTFExchange smart contract on Polygon. That gap between match and settlement — roughly 5 to 10 seconds — turns out to be an attack surface. Researchers built a tool called GHOSTHUNTER and found that makers had already extracted at least $1.49 million by deliberately triggering reverts before their matched fills could land on-chain.
+
+## The two-speed architecture
+
+Prediction markets need cheap, fast order matching. Ethereum-family gas costs make running a full on-chain order book prohibitively expensive for a market that clears thousands of fills per day. Polymarket's answer is a hybrid Central Limit Order Book (CLOB): the matching engine runs off-chain, the settlement is on-chain.
+
+When a taker accepts a maker's offer, the operator broadcasts a `fillOrders` transaction to CTFExchange on Polygon. This transaction transfers conditional tokens from taker to maker and USDC from maker to taker, guarded by a `transferFrom` call that requires the maker's balance, allowance, and nonce to be exactly as they were when the order was signed.
+
+The critical word is "were". The blockchain state the operator observed when matching can change in the seconds before `fillOrders` mines. If it does, the transaction reverts — the on-chain leg never executes, but the off-chain system recorded a fill. The order appears matched in the CLOB but never actually settles. This is a **ghost fill**.
+
+## GHOSTHUNTER and the scale of the problem
+
+The GHOSTHUNTER paper (arXiv:2606.16852) crawled 1,952,440 reverted settlement transactions on Polygon from Polymarket's history. Of those, 980,133 — roughly half — showed fingerprints of **intentional** reversion: the revert was caused by a maker-initiated on-chain action that occurred after the off-chain match but before the settlement mined.
+
+The numbers at scale:
+
+- **$1.49M** extracted in maker profit by exploiting ghost fills
+- **$1.78B** in aggregate funds at risk across all open orders during studied intervals
+- **$23M** in user funds directly at risk in identified targeted positions
+- **$212,000** in wasted operator gas from broadcasting transactions that were set up to fail
+- **35** distinct attack variant signatures across **167** contracts and **10** chains
+- Peak reversion rate: **24.3%** of settlement transactions in a single measurement window
+
+The profit mechanism is straightforward: a maker submits a bid on an outcome. If the outcome probability moves in their favor between match-time and settlement-time, they let it settle normally. If it moves against them — or if they learn information that changes their view — they trigger a revert. They collect the informational value of having held a matched position without ever actually being at risk on-chain.
+
+## The four attack vectors
+
+The GHOSTHUNTER taxonomy identifies four mechanically distinct reversion techniques. Each exploits the same consistency gap from a different angle.
+
+<Artifact slug="the-ghost-fill-window" />
+
+**Nonce bump** is the cheapest and most common. Every Ethereum account has a sequential nonce. The `fillOrders` transaction was signed (by the operator) referencing the maker's current nonce. If the maker sends any other transaction from their address with higher gas priority before the settlement mines, their nonce advances. The settlement transaction arrives with a stale nonce and the EVM rejects it. Cost: under 0.001 POL per revert. The maker can run this at scale for pennies, targeting every unfavorable fill simultaneously.
+
+**Balance drain** targets the USDC `transferFrom` leg. The settlement requires the maker to hold sufficient USDC at the moment `fillOrders` executes. If the maker moves their USDC to another address before settlement mines, the `transferFrom` call fails with `TRANSFER_FAILED`. The maker recovers the drained funds from their receiving address immediately after — so the cost is roughly one round-trip gas fee, and the capital is never actually at risk.
+
+**Allowance revoke** is a single transaction that can take down an entire outstanding order book. One `approve(ctfExchange, 0)` call sets the CTFExchange's allowance to zero. Every pending settlement for that maker will revert until they re-approve. Cost: roughly 0.0005 POL — less than a cent — regardless of how many positions are ghosted. This is the highest-leverage vector: a maker watching the market move against them can revoke during a volatile minute and invalidate every filled order in a single cheap call.
+
+**Proxy trap** is the most technically sophisticated. Polymarket's exchange contract uses an upgradeable proxy pattern. A maker with mempool visibility and resources can front-run the settlement broadcast by triggering a proxy upgrade or routing manipulation that causes the implementation call to hit a revert path. This requires more setup and costs 0.005–0.05 POL per targeted revert, so it's used selectively on large positions where the protection value exceeds the execution cost.
+
+## AI agents as preferred targets
+
+GHOSTHUNTER identified that arbitrage bots and AI trading agents are disproportionately targeted by ghost fill operators. The reasoning is structural: automated agents submit orders mechanically based on price signals, without human oversight of individual fills. They don't notice when fills are consistently ghosted until the strategy's realized P&L diverges significantly from expected P&L. A sophisticated maker can repeatedly ghost fills from a specific agent's address, extracting the informational value of the agent's pricing model without ever taking the associated risk.
+
+This connects to a broader pattern: [AI agents operating on-chain](/articles/mcp-tool-poisoning-onchain-agents) face adversaries who can exploit the gap between the agent's decision and the actual blockchain state. The [sandwich tax on autonomous agents](/articles/the-sandwich-tax-on-autonomous-agents) describes a related problem — the mempool is a hostile environment for any actor that commits to a state before it mines.
+
+Prediction markets in particular are information aggregation mechanisms. A maker who can selectively ghost fills effectively extracts option value: the right to settle favorable fills while voiding unfavorable ones, at low cost. Against an AI counterparty that doesn't adapt, this is a sustained information arbitrage.
+
+## Contagion across 167 contracts
+
+The ghost fill vulnerability is not unique to Polymarket's specific CTFExchange implementation. GHOSTHUNTER's methodology identified 167 contracts across 10 chains exhibiting the same structural pattern: off-chain commitment with on-chain settlement via `transferFrom`, with no atomic locking of state between the two phases.
+
+This is the surface area of the problem. Any protocol that:
+1. Matches orders off-chain (for speed or cost reasons)
+2. Settles on-chain using a pull-payment pattern (`transferFrom` requiring maker state to be stable)
+3. Does not lock or escrow maker funds atomically at match time
+
+...is vulnerable to some variant of the ghost fill attack. The attack vectors map cleanly onto EVM primitives that are available on every EVM-compatible chain: nonces are always sequential, allowances are always revocable, balances are always movable.
+
+## Designing away the gap
+
+The architectural fix is to eliminate the consistency window. Three approaches appear in the literature and in practice:
+
+**Atomic approval commitment**: At match time, the operator calls a `commitFill` entry point that transfers the maker's required USDC into escrow in the same transaction. Settlement then releases from escrow rather than pulling from the maker's wallet. Nonce bumps and balance drains become irrelevant because the funds are already locked. Cost: one additional on-chain transaction per match, roughly doubling settlement gas.
+
+**Commitment locking**: Instead of escrowing funds, the contract locks a `commitmentHash` mapping keyed by the maker's address and order hash. Any state-changing transaction from the maker between commit and settlement fails if the commitment is active. This is cheaper than full escrow but requires makers to accept a temporary freeze of their account for each open commitment.
+
+**Sequenced settlement with validity proofs**: Move the matching engine toward a validity-proof rollup model where the off-chain state transition is proven before on-chain state can diverge. This is the highest-overhead option architecturally but eliminates the gap at the protocol level rather than patching individual vectors. Zero-knowledge proving for order matching is still expensive at Polymarket's throughput, but the costs are falling.
+
+None of these are free. The hybrid CLOB exists because pure on-chain order books are expensive. Each mitigation re-introduces some of the cost the off-chain architecture was designed to avoid. The $1.49M figure is the market's revealed answer to the question "how much does the current design cost in exploitation?"
+
+## Takeaways
+
+- Polymarket's hybrid CLOB has a structural consistency gap of ~5–10 seconds between off-chain match and on-chain settlement; GHOSTHUNTER found 980K intentional reverts in this window.
+- The cheapest vector (nonce bump) costs under 0.001 POL per revert; allowance revoke can ghost an entire order book for ~0.0005 POL, making the attack accessible to any funded maker.
+- AI trading agents are disproportionately targeted because they don't adapt in real time when fills are systematically ghosted.
+- The same vulnerability pattern exists in 167 contracts across 10 chains — this is an architectural class of risk, not a Polymarket-specific bug.
+- Mitigations (atomic escrow, commitment locking, validity proofs) all trade settlement gas cost for consistency; the right answer depends on throughput requirements and acceptable cost per fill.

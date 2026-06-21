@@ -1,7 +1,7 @@
 {
   "slug": "the-availability-cliff",
   "title": "The Availability Cliff",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Drag the training-duration cursor to see which DA layers can serve your data. EIP-4844 blobs vanish after 18.2 days — the cliff most pipelines fall off.",
   "pubDate": "2026-06-21T22:31:54.431Z",
   "type": "svg",
   "archetype": "chart",
@@ -12,5 +12,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag the vertical cursor to set training-pipeline duration",
+    "tap a preset (7 d · 30 d · 45 d · 90 d · 1 yr) to jump to common windows"
+  ],
+  "dataSource": {
+    "label": "EIP-4844 spec · EigenDA docs · Celestia docs · Filecoin docs · Arweave whitepaper",
+    "url": "https://eips.ethereum.org/EIPS/eip-4844"
+  },
+  "dataAsOf": "2026-06-21"
 }

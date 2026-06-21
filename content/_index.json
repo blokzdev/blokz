@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 62,
-    "artifacts": 63
+    "articles": 63,
+    "artifacts": 64
   },
   "topicCounts": {
     "agents": 24,
     "ai": 4,
-    "blockchain": 11,
+    "blockchain": 12,
     "cryptography": 9,
     "data": 8,
-    "defi": 13,
+    "defi": 14,
     "infrastructure": 28,
     "llm": 13,
     "machine-learning": 30,
     "research": 1,
     "security": 20,
     "smart-contracts": 11,
-    "tokenomics": 6,
+    "tokenomics": 7,
     "web3": 8,
     "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "path": "content/articles/2026/06/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance/index.mdx",
+      "url": "/articles/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "title": "The 10,000x Problem: Why AI Agent Token Valuations Have Detached from Treasury Performance",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "tokenomics",
+        "defi",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces",
       "path": "content/articles/2026/06/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces/index.mdx",
@@ -1655,6 +1672,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-aum-gap",
+      "path": "content/artifacts/the-aum-gap/manifest.json",
+      "module": "src/islands/artifacts/the-aum-gap.ts",
+      "url": "/artifacts/the-aum-gap",
+      "title": "The AUM Gap",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tokenomics",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-provers-bargain",
       "path": "content/artifacts/the-provers-bargain/manifest.json",

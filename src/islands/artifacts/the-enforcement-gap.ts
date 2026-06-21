@@ -26,6 +26,7 @@ interface Data {
   competitivePrice: number;
   monopolyPrice: number;
   regimes: Regime[];
+  runsPerCondition: number;
   cohensD: number;
   source: string;
   asOf: string;

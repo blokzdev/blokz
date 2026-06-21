@@ -26,15 +26,22 @@
       "path": "content/articles/2026/06/inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents/index.mdx",
       "url": "/articles/inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents",
       "title": "Inference at the Margin: The Token Budget Problem for On-Chain AI Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "On-chain AI agents face a circular oracle problem: you need inference to decide if inference is worth calling. Here's what the token cost distribution actually looks like — and how to build around it.",
       "pubDate": "2026-06-21",
       "topics": [
         "agents",
         "llm",
         "tokenomics"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "token-economics",
+        "cost-optimization",
+        "agentic-systems",
+        "lognormal-distribution"
+      ],
+      "artifacts": [
+        "the-token-margin"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2001,7 +2008,7 @@
       "module": "src/islands/artifacts/the-token-margin.ts",
       "url": "/artifacts/the-token-margin",
       "title": "The Token Margin",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "When does calling an LLM pay off? Pick a task complexity, model tier, and expected profit per decision: the lognormal token distribution — anchored to the paper's 30× variance finding — shows the fraction of invocations that beat break-even. Drag profit up until the green zone dominates.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "calculator",

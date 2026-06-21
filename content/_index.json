@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 64,
-    "artifacts": 65
+    "articles": 65,
+    "artifacts": 66
   },
   "topicCounts": {
     "agents": 25,
@@ -10,9 +10,9 @@
     "cryptography": 9,
     "data": 8,
     "defi": 14,
-    "infrastructure": 28,
-    "llm": 13,
-    "machine-learning": 30,
+    "infrastructure": 29,
+    "llm": 14,
+    "machine-learning": 31,
     "research": 1,
     "security": 21,
     "smart-contracts": 11,
@@ -21,6 +21,33 @@
     "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize",
+      "path": "content/articles/2026/06/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize/index.mdx",
+      "url": "/articles/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize",
+      "title": "The Memory Wall: KV Cache and Why Long-Context AI Can't Decentralize",
+      "description": "Long-context AI's real bottleneck isn't proof overhead — it's the KV cache. At 128K tokens, Llama 3.1 8B's KV state equals its own weights (15 GiB), pinned to one node per request. The formula, the GPU math, and why prefix caching demands stickiness that decentralized routing can't provide.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "llm"
+      ],
+      "tags": [
+        "kv-cache",
+        "long-context",
+        "prefix-caching",
+        "decentralized-inference",
+        "context-length",
+        "vram",
+        "llama"
+      ],
+      "artifacts": [
+        "the-kv-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
       "path": "content/articles/2026/06/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls/index.mdx",
@@ -1756,6 +1783,23 @@
         "zero-knowledge",
         "machine-learning",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-kv-wall",
+      "path": "content/artifacts/the-kv-wall/manifest.json",
+      "module": "src/islands/artifacts/the-kv-wall.ts",
+      "url": "/artifacts/the-kv-wall",
+      "title": "The KV Wall",
+      "description": "KV cache size (GiB) vs context length for Llama 3.1 8B, 70B, and 405B on log-log axes, against A10G / H100 VRAM ceilings. Toggle BF16, INT4, or DeltaKV compression and drag the cursor — the panel shows whether the live KV state fits on a single GPU.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure",
+        "llm"
       ],
       "draft": false
     },

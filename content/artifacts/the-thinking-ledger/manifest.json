@@ -1,0 +1,16 @@
+{
+  "slug": "the-thinking-ledger",
+  "title": "The Thinking Ledger",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-21T10:30:41.213Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "llm",
+    "zero-knowledge",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

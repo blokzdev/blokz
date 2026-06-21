@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 70,
-    "artifacts": 71
+    "articles": 71,
+    "artifacts": 72
   },
   "topicCounts": {
     "agents": 26,
@@ -10,17 +10,36 @@
     "cryptography": 11,
     "data": 8,
     "defi": 16,
-    "infrastructure": 31,
-    "llm": 14,
+    "infrastructure": 32,
+    "llm": 15,
     "machine-learning": 32,
     "research": 1,
     "security": 22,
     "smart-contracts": 13,
     "tokenomics": 8,
     "web3": 9,
-    "zero-knowledge": 7
+    "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
+      "path": "content/articles/2026/06/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification/index.mdx",
+      "url": "/articles/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
+      "title": "The Thinking Tax: Why Reasoning Models Break On-Chain AI Verification",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "llm",
+        "zero-knowledge",
+        "infrastructure"
+      ],
+      "tags": [],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 7,
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents",
       "path": "content/articles/2026/06/the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents/index.mdx",
@@ -1862,6 +1881,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-thinking-ledger",
+      "path": "content/artifacts/the-thinking-ledger/manifest.json",
+      "module": "src/islands/artifacts/the-thinking-ledger.ts",
+      "url": "/artifacts/the-thinking-ledger",
+      "title": "The Thinking Ledger",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "zero-knowledge",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "bridge-trust-spectrum",
       "path": "content/artifacts/bridge-trust-spectrum/manifest.json",

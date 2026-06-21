@@ -1,22 +1,100 @@
 ---
 slug: harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets
 title: "Harvest Now, Decrypt Later: The Quantum Threat to AI Agent Wallets"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Every ECDSA signature broadcasts the wallet's public key. A March 2026 Google/EF paper tightens the quantum break estimate to ~500k physical qubits — here's what that means for autonomous AI agent wallets."
 pubDate: 2026-06-21T12:30:58.547Z
 author: blokz
 topics: [cryptography, security, blockchain]
-tags: []
-artifacts: []
+tags: [quantum, secp256k1, post-quantum, ecdsa, crqc, eip-7702, ml-dsa, harvest-now-decrypt-later]
+artifacts: [the-qubit-gap]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Babbush et al. — Even More Efficient Quantum Computations of Chemistry Through Tensor Hypercontraction (arXiv:2603.28846)"
+    url: "https://arxiv.org/abs/2603.28846"
+  - label: "Webber et al. — The impact of hardware specifications on reaching quantum advantage in the fault tolerant regime (AVS Quantum Sci., 2022)"
+    url: "https://avs.scitation.org/doi/10.1116/5.0073075"
+  - label: "NIST Post-Quantum Cryptography Standards (FIPS 204/205/203, August 2024)"
+    url: "https://csrc.nist.gov/projects/post-quantum-cryptography"
+  - label: "EIP-7702: Set EOA account code (Pectra, May 2025)"
+    url: "https://eips.ethereum.org/EIPS/eip-7702"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every time an Ethereum wallet signs a transaction, it broadcasts a 65-byte compressed public key. That public key is permanently on-chain, readable by anyone forever. For most wallets this has been an abstract problem: breaking secp256k1 from a public key requires solving the elliptic-curve discrete logarithm, which is hard on classical hardware and would take longer than the age of the universe to brute-force.
 
-## Section heading
+Quantum computers change that calculus. Shor's algorithm solves the ECDLP in polynomial time. The question isn't whether a sufficiently large quantum computer could break your wallet's private key — it can — it's how many qubits that takes, and how far away those machines are. In March 2026, a joint paper from Google Quantum AI and Ethereum Foundation researcher Justin Drake (arXiv:2603.28846) tightened that estimate substantially. The result is a concrete engineering target, and it's closer than the 2022 consensus suggested.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+For AI agent wallets in particular — systems that sign continuously, run autonomously, and cannot easily self-migrate — this calculus deserves careful attention now.
+
+## What the March 2026 Paper Actually Says
+
+Babbush et al. used improved quantum circuit synthesis to recalculate the resources required to run Shor's algorithm against secp256k1 at cryptographic scale. Their "Option 1" result, targeting completion in minutes:
+
+- **Fewer than 1,200 logical qubits**
+- **Fewer than 90 million Toffoli gates**
+- **Fewer than 500,000 physical qubits** at a 1×10⁻³ physical error rate
+
+This is roughly **20× fewer logical qubits** than the 2022 Webber et al. estimate, which put the number closer to 23,000 logical qubits. The improvement comes from two sources: better qubit routing algorithms that reduce SWAP overhead, and tensor hypercontraction techniques that compress the arithmetic circuits for modular exponentiation over the secp256k1 group.
+
+The "minutes" execution time is the operationally important clause. It determines which attack surface is viable.
+
+## Two Attack Surfaces, One Underlying Exposure
+
+The ECDSA vulnerability has two distinct threat windows:
+
+**At-rest attack**: Any address that has ever sent a transaction has its public key permanently recorded on-chain. A CRQC (cryptographically-relevant quantum computer) arriving at any point in the future can look up that public key and run Shor's algorithm offline, recovering the private key. There is no time pressure — the attacker can do this at leisure, days or years after the signing event. Every historical EOA transaction is permanently vulnerable to this attack once a CRQC exists.
+
+**On-spend attack**: When you broadcast a transaction to the mempool, your signature — and thus your public key — is visible to validators before inclusion. A CRQC with sufficiently fast clock speed could theoretically derive the private key within the ~12-second Ethereum block window and front-run the transaction with a replacement that redirects funds. This requires both the CRQC and low-latency quantum networking, making it a harder target. The Babbush "minutes" estimate is still too slow for the on-spend window at current latency assumptions.
+
+The practical near-term risk is the at-rest attack. Any wallet that has ever sent a transaction is a future target. The question of *when* a CRQC exists determines when harvested signatures become actionable, not whether they can be exploited.
+
+<Artifact slug="the-qubit-gap" />
+
+The chart above shows every publicly disclosed quantum system against the ~500,000 physical qubit threshold. IBM's Condor (2023) holds 1,121 physical qubits — the highest raw count ever publicly demonstrated. That is still 446× below the break threshold. Google's Willow (2024) demonstrated something arguably more important: **below-threshold error correction**, where adding physical qubits now *reduces* logical error rate instead of accumulating it. That is a necessary architectural milestone. The absolute count gap remains enormous.
+
+## Why AI Agent Wallets Face a Harder Migration
+
+The quantum threat is real but distant for most wallets. Monitoring hardware progress and migrating when it becomes urgent is a reasonable posture — for humans. AI agent wallets have structural properties that make this harder:
+
+**Continuous signature exposure.** An AI agent managing a treasury, rebalancing a DeFi position, or executing cross-chain swaps signs dozens of transactions per day. Each one re-exposes the public key. A human wallet that rarely transacts accrues limited additional risk once the public key is known. An agent wallet that signs 10,000 transactions per year has no "quiet periods" where the key isn't in use.
+
+**Long operational lifetimes.** Agent wallets tied to long-running autonomous systems may operate for years without human intervention. A wallet created today could still be in production use when the quantum hardware gap closes. The migration window for human wallets runs from "today until a CRQC exists." For agent wallets in persistent production, that window is effectively "now."
+
+**Autonomous custody with user stakes.** Many agent wallets hold funds on behalf of users — DEX liquidity, DAO treasuries, on-chain payroll systems. When an agent key is compromised, the user has no recourse: the agent signed the attacker's transaction with valid credentials. Unlike centralized custody breaches, there is no recovery mechanism.
+
+**Cannot self-migrate without protocol support.** A human can move funds to a new address in a single transaction. An agent wallet can too — but *only if the agent's own authorization scheme survives migration*. An agent running as a smart contract wallet (e.g. EIP-7702 delegation) can switch signature modules. A raw EOA agent cannot change its own address or signing scheme without external coordination.
+
+The compound risk: an agent with a 5-year operational lifetime, signing daily, holding user funds. By the time a CRQC arrives (whenever that is), its entire transaction history is harvestable, its current public key is live, and it cannot autonomously rotate to post-quantum credentials.
+
+## Ethereum's Migration Path
+
+Ethereum has at least three levers in motion:
+
+**EIP-7702 (live as of Pectra, May 2025)**: EOAs can delegate to a smart contract for a single transaction, effectively adopting the contract's signature verification logic. An agent wallet on EIP-7702 can delegate to a post-quantum signature contract (e.g. one implementing ML-DSA). This is the shortest available path: the EOA's address doesn't change, but its verification logic can be swapped. The catch is that the EIP-7702 delegation itself is authorized by a secp256k1 signature — so migrating via 7702 is only valid while your secp256k1 key is still uncompromised.
+
+**EIP-8141 (proposed)**: Native account abstraction that lets individual accounts choose their own signature verification scheme at the protocol level. This would allow agent wallets to be provisioned from day one with a post-quantum scheme, never exposing secp256k1 at all. Status as of mid-2026: under active EF research, no deployment target.
+
+**Ethereum Foundation quantum migration roadmap**: The EF has a stated target of quantum-safe defaults before a CRQC is considered practically achievable, with 2029 as an internal engineering milestone. This involves fork-level changes to how transaction validation works, not just application-layer workarounds.
+
+**NIST PQC standards (finalized August 2024)**: ML-DSA (FIPS 204, from Dilithium) and SLH-DSA (FIPS 205, from SPHINCS+) are the primary lattice-based and hash-based signature standards. ML-DSA produces 2.4 kB signatures vs ECDSA's 65 bytes — a 37× size increase. That is a significant gas cost impact for contracts that verify many signatures in a batch. Hash-based schemes like leanXMSS can reduce this substantially for aggregated proofs, but they require stateful key management that is structurally difficult for autonomous agents.
+
+## What Agent Builders Should Do Now
+
+The gap between today's hardware and the break threshold is large enough that no agent wallet faces imminent quantum risk. But "not imminent" is different from "can be ignored indefinitely," and several preparatory steps are low-cost to take now:
+
+**Prefer contract wallets over raw EOAs.** Any agent wallet deployed as a smart contract (Safe, Kernel, or similar) retains the ability to change its verification logic. An EOA cannot. The gas premium for a contract wallet is the insurance premium for future-proofing.
+
+**Understand your key's exposure surface.** An agent key that has signed zero transactions has no recoverable public key on-chain. Keep operational wallets for active signing separate from treasury wallets that hold but rarely sign. Long-lived hot keys accumulate risk; cold separation limits blast radius.
+
+**Track EIP-7702 and EIP-8141 progress.** EIP-7702 is already live. Agent frameworks that are built to use 7702-style delegation can swap to a post-quantum signature module before the window closes. Frameworks that hardcode secp256k1 verification in non-upgradable contracts cannot.
+
+**Model your key's operational lifetime.** If your agent runs for 10 years and the quantum hardware gap closes in 7, the migration must happen during that overlap window. The 2022 Webber estimate gave more runway than the 2026 Babbush estimate. The trend is in one direction: each algorithmic improvement reduces the required hardware further.
+
+**Don't wait for the protocol to solve it.** The EF has a quantum roadmap, but it targets the average Ethereum user. Agent wallets with specialized requirements — continuous signing, user custody, autonomous operation — need application-layer solutions now, not protocol-layer rescues later.
 
 ## Takeaways
 
-TODO.
+- Babbush et al. (March 2026) lowered the physical qubit estimate for breaking secp256k1 to ~500,000, roughly 20× below the 2022 consensus. Current best hardware (IBM Condor, 1,121 qubits) is still 446× short.
+- Every ECDSA signature permanently exposes the wallet's public key on-chain. At-rest attack is viable at any point after a CRQC exists; no future-proofing is possible retroactively.
+- AI agent wallets face compounded exposure: long-lived keys, continuous signing, autonomous custody, and structural difficulty migrating without external coordination.
+- EIP-7702 (live in Pectra) is the shortest available migration path. Contract wallets with upgradable verification modules are a significantly better default than raw EOAs for any agent with a multi-year operational horizon.
+- The hardware gap is large but shrinking algorithmically. Plan for a migration window that opens in years, not decades.

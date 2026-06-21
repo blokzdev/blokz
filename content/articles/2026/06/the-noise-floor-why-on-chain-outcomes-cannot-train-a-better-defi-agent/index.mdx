@@ -1,0 +1,105 @@
+---
+slug: the-noise-floor-why-on-chain-outcomes-cannot-train-a-better-defi-agent
+title: "The Noise Floor: Why On-Chain Outcomes Cannot Train a Better DeFi Agent"
+description: "ETH's 3.46% daily volatility buries a 0.1% trading edge so deeply that on-chain P&L needs 4,600 trades — 230 days — before you can tell skill from luck at 95% confidence. Process rewards fix it in 23."
+pubDate: 2026-06-21T08:29:20.981Z
+author: blokz
+topics: [machine-learning, blockchain, smart-contracts]
+tags: [reinforcement-learning, defi, trading-agents, rlvr, signal-to-noise, process-rewards]
+artifacts: [the-noise-floor]
+difficulty: intermediate
+sources:
+  - label: "Trade-R1: Bridging Verifiable Rewards to Stochastic Environments via Process-Level Reasoning Verification"
+    url: "https://arxiv.org/abs/2601.03948"
+  - label: "Verifiable Process Rewards for Agentic Reasoning (arXiv:2605.10325)"
+    url: "https://arxiv.org/abs/2605.10325"
+  - label: "Exploring Data Scaling Trends and Effects in RLHF (arXiv:2503.22230)"
+    url: "https://arxiv.org/abs/2503.22230"
+  - label: "ETH/USDT daily OHLCV — Crypto.com Exchange"
+    url: "https://crypto.com/exchange"
+---
+
+The reinforcement-learning renaissance of 2025–2026 was built on a simple but powerful idea: if you can verify an outcome objectively, you can train on it directly without learning a reward model first. DeepSeek-R1 used it to reach frontier math performance. SWE-bench agents used it to fix real bugs. The technique — Reinforcement Learning with Verifiable Rewards (RLVR) — works because the outcome signal is *clean*. A proof is right or wrong. A test suite passes or fails. The reward is a step function.
+
+DeFi is not a step function. DeFi is a slot machine where the house edge is smaller than the noise floor. And that difference, measured precisely, explains why every "AI trading agent" announcement should come with a signal-to-noise disclosure before it comes with a backtest.
+
+## The formula hiding in plain sight
+
+Let an agent execute a strategy with true edge α — the expected excess return per trade in percentage points — against background noise σ, the daily volatility of the asset being traded. After n independent trades, the standard result from the central limit theorem gives us the test statistic:
+
+```
+z = α · √n / σ
+```
+
+Confidence that α > 0 (i.e., skill is real) is Φ(z), where Φ is the standard normal CDF. For 95% confidence (z = 1.96):
+
+```
+n₉₅ = ⌈(1.96 · σ / α)²⌉
+```
+
+This is the noise floor equation. It tells you how many labelled examples your reinforcement-learning environment must supply before the reward signal means anything statistically. Plug in numbers from the real world and the picture gets bleak fast.
+
+## Real numbers from ETH
+
+ETH/USDT 30-day realized volatility (May 22 – June 21, 2026, computed from daily close log-returns on Crypto.com Exchange): **σ = 3.46% per day, 66.1% annualized**.
+
+A sophisticated ETH perpetuals strategy might realistically produce α = 0.1% edge per trade — already optimistic for a market this competitive. Plug both in:
+
+```
+n₉₅ = ⌈(1.96 × 3.46 / 0.1)²⌉ = ⌈67.816²⌉ = 4,598 trades
+```
+
+At 20 on-chain trades per day — realistic for a gas-conscious DeFi agent — that's **230 days of live trading** before a 95%-confident verdict on whether the strategy works at all. During those 230 days the agent is either burning gas on a losing strategy or not updating its weights on a winning one. Either way, it's flying blind.
+
+<Artifact slug="the-noise-floor" />
+
+Drag the σ and α sliders to explore the parameter space. The orange curve is your DeFi agent. Compare it to the green Math RL curve (DeepSeek-R1 style, α=40%, σ≈2%): it hits 95% confidence by episode 7. Code RL (SWE-bench, α=25%, σ=8%) gets there in 4. The gap is not architectural — it's physics.
+
+## Why Math RL and Code RL don't have this problem
+
+The RLVR literature works because its domains have two properties DeFi lacks:
+
+**High edge.** Math problems are graded on binary correctness. If your model gets 40% of hard problems right where random would get 5%, α ≈ 35%. DeFi alpha measured in basis points of return per trade is three orders of magnitude smaller.
+
+**Low noise.** A test suite is deterministic (modulo flakiness). The "market" that grades a math problem does not have a 3.46% daily volatility. Even with 2% grading noise — generous for a code RL environment — you get 95% confidence by episode 4. ETH's noise is 1.7× higher than that, and the edge is 400× smaller.
+
+The ratio that matters is σ/α, the inverse signal-to-noise ratio. For Math RL it's roughly 0.05. For DeFi at default parameters it's 34.6. The noise floor is 690× higher.
+
+## What process rewards actually do
+
+The Trade-R1 paper (arXiv:2601.03948) introduces a specific fix: **simulation-in-the-loop process rewards**. Instead of committing every candidate action to the chain and waiting for realized P&L, the agent runs each candidate through a local simulation environment first, evaluates the reasoning trace for internal consistency (triangular arbitrage checks, slippage bounds, venue selection logic), and only submits the top-scoring action on-chain.
+
+This densifies the reward signal by roughly 10× without changing the on-chain economics: you still execute 20 real trades per day, but each one was preceded by ~200 simulated evaluations with feedback. The effective episode count for training purposes becomes 200/day instead of 20/day.
+
+The formula shifts too. Process rewards reduce the *effective* σ (by picking consistently better actions, reducing the variance attributable to agent choice rather than market noise) and increase the *effective* trades-per-day for signal accumulation. In practice, this compresses the time-to-95%-confidence from 230 days to roughly **23 days** — the cyan curve in the artifact.
+
+23 days is still not 7 episodes, but it's the difference between "unusable for production RL" and "feasible in a training cycle."
+
+A related line of work — Verifiable Process Rewards for Agentic Reasoning (arXiv:2605.10325) — formalizes the general principle: when outcome rewards are too sparse or noisy to train on directly, reward the *process* of reasoning instead, using verifiable intermediate steps as the signal. The verification costs compute, but that compute is cheap relative to the cost of 230 days of live capital.
+
+## The deeper problem: reward latency
+
+The noise-floor calculation above assumes you get *one* reward per trade. But DeFi strategies rarely resolve in a single block. Liquidity provision earns fees over time. Lending strategies compound slowly. Perp positions can be held for hours. The effective "trade duration" stretches the episode timeline further and introduces temporal credit assignment errors that the n₉₅ formula doesn't capture.
+
+A strategy that holds positions for 3 days effectively reduces the signal frequency to roughly 7 trades per week, not 20 trades per day. Run the formula at 7/week and the 230-day estimate becomes 1,285 days — over three years of live capital exposure before statistical significance.
+
+This isn't an argument that DeFi agents can't work. It's an argument that training them on raw on-chain P&L is the wrong approach unless you have either an implausibly large edge, an implausibly low-volatility asset, or a process reward system that densifies the signal before it hits the chain.
+
+## What this means for evaluation
+
+Before trusting any claimed DeFi agent performance, ask three questions:
+
+1. **What is the measured α?** Not expected, not backtested — measured out-of-sample. A strategy claiming α > 1% in a liquid ETH market should be met with skepticism proportional to its implausibility.
+
+2. **What is σ for the traded asset, and over what horizon?** Daily volatility is the right denominator for daily-resolution strategies. For intraday strategies, use intraday realized vol.
+
+3. **What is n?** If n < n₉₅, the performance claim — positive *or* negative — is noise. "Our agent lost money" is not evidence it can't trade. "Our agent made money" is not evidence it can.
+
+The honest version of most DeFi agent benchmarks would show confidence intervals so wide they span zero. Process rewards don't eliminate this problem; they shrink the confidence interval 10× faster. That's meaningful. It's not magic.
+
+## Takeaways
+
+- The RLVR techniques powering Math and Code RL don't transfer directly to DeFi because the σ/α ratio is 690× worse. The same statistical mechanics demand ~4,600 on-chain samples for what a Math RL system resolves in 7.
+- Process rewards (Trade-R1 style) address this by densifying evaluation in simulation before on-chain commitment, compressing the sampling requirement roughly 10×.
+- Any claimed DeFi agent result should come with n, α, and σ — not just a Sharpe ratio. Without the noise floor calculation, the result is uninterpretable.
+- The formula n₉₅ = ⌈(1.96·σ/α)²⌉ is the thing to internalize. Drag the sliders above and watch how fast the requirement explodes when edge narrows or volatility rises. That's the physics of the problem, and no clever agent architecture changes it.

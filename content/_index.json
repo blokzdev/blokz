@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 72,
-    "artifacts": 73
+    "articles": 73,
+    "artifacts": 74
   },
   "topicCounts": {
-    "agents": 26,
-    "ai": 4,
-    "blockchain": 15,
+    "agents": 27,
+    "ai": 5,
+    "blockchain": 16,
     "cryptography": 12,
     "data": 8,
     "defi": 16,
@@ -21,6 +21,36 @@
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
+      "title": "The Finality Ladder: What 'Confirmed' Actually Means for On-Chain AI Agents",
+      "description": "On OP Stack chains, 'confirmed' is a four-layer promise stretching from 2 seconds to 7 days. AI agents that collapse these into one boolean expose themselves to sequencer reorgs, bridge lockups, and state dispute windows. Here's the full settlement stack, and an action taxonomy for each rung.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "blockchain",
+        "agents",
+        "ai"
+      ],
+      "tags": [
+        "rollups",
+        "finality",
+        "sequencer",
+        "op-stack",
+        "arbitrum",
+        "zk-rollup",
+        "based-rollup",
+        "settlement",
+        "l2",
+        "casper-ffg"
+      ],
+      "artifacts": [
+        "the-finality-ladder"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
       "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
@@ -1920,6 +1950,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-finality-ladder",
+      "path": "content/artifacts/the-finality-ladder/manifest.json",
+      "module": "src/islands/artifacts/the-finality-ladder.ts",
+      "url": "/artifacts/the-finality-ladder",
+      "title": "The Finality Ladder",
+      "description": "Settlement trust on four rollup architectures, mapped on a log time axis from 2-second soft confirmation to 7-day fraud-proof closure. Click any segment to see what that trust level means and which AI agent actions it covers.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "blockchain",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-qubit-gap",
       "path": "content/artifacts/the-qubit-gap/manifest.json",

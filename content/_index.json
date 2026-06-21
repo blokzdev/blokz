@@ -26,15 +26,25 @@
       "path": "content/articles/2026/06/the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents/index.mdx",
       "url": "/articles/the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents",
       "title": "The Borrowed Block: Flash Loans as Zero-Collateral Primitives for AI DeFi Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A flash loan gives an AI agent $1M with no collateral — and demands it back plus 0.05% before the block ends. The atomic callback constraint is both what makes flash loans safe and what forces an agent to solve its entire strategy before touching the chain.",
       "pubDate": "2026-06-21",
       "topics": [
         "defi",
         "agents",
         "smart-contracts"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "flash-loans",
+        "aave",
+        "atomic-arbitrage",
+        "eip-3156",
+        "capital-efficiency",
+        "atomicity",
+        "collateral-swap"
+      ],
+      "artifacts": [
+        "the-flash-loan-machine"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1804,7 +1814,7 @@
       "module": "src/islands/artifacts/the-flash-loan-machine.ts",
       "url": "/artifacts/the-flash-loan-machine",
       "title": "The Flash Loan Machine",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Step through a flash loan transaction — three strategies (triangular arb, collateral swap, self-liquidation), same atomic structure. The amber step is the only place the AI agent reasons; everything after it is deterministic EVM. Tap a strategy chip, then tap any step.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "diagram",

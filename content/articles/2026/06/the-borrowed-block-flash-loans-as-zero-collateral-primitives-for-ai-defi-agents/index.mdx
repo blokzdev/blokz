@@ -1,22 +1,119 @@
 ---
 slug: the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents
 title: "The Borrowed Block: Flash Loans as Zero-Collateral Primitives for AI DeFi Agents"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "A flash loan gives an AI agent $1M with no collateral — and demands it back plus 0.05% before the block ends. The atomic callback constraint is both what makes flash loans safe and what forces an agent to solve its entire strategy before touching the chain."
 pubDate: 2026-06-21T06:26:26.559Z
 author: blokz
 topics: [defi, agents, smart-contracts]
-tags: []
-artifacts: []
+tags: [flash-loans, aave, atomic-arbitrage, eip-3156, capital-efficiency, atomicity, collateral-swap]
+artifacts: [the-flash-loan-machine]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "EIP-3156: Flash Loans"
+    url: "https://eips.ethereum.org/EIPS/eip-3156"
+  - label: "Aave V3 Flash Loans Documentation"
+    url: "https://docs.aave.com/developers/guides/flash-loans"
+  - label: "FlashSyn: Flash Loan Attack Synthesis via Counter Example Driven Approximation (arXiv:2206.10708)"
+    url: "https://arxiv.org/abs/2206.10708"
+  - label: "Aave V3 FLASHLOAN_PREMIUM_TOTAL governance parameter"
+    url: "https://governance.aave.com/t/arc-upgrade-aave-v3-flashloan-premium/10723"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+A flash loan is a loan that doesn't exist until the moment it's repaid. You borrow $1 million in USDC with no collateral, no credit history, and no counterparty risk — and if you haven't returned the principal plus a 0.05% fee by the end of the same transaction, the entire thing reverts as if the borrowing never happened. The lending protocol is never at risk because EVM atomicity is the guarantee.
 
-## Section heading
+This makes flash loans the most powerful zero-collateral financial primitive in DeFi. It also creates a constraint that reshapes what an AI agent can and can't do with them.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The EIP-3156 Callback
+
+EIP-3156 standardized the flash loan interface in 2020. The borrower implements two functions: `maxFlashLoan(token)` and `flashFee(token, amount)` to check capacity and cost, then calls `flashLoan(receiver, token, amount, data)` to initiate. The lender transfers `amount` of `token` to `receiver`, then calls `receiver.onFlashLoan(initiator, token, amount, fee, data)`. The receiver does whatever it wants inside that callback. When the callback returns, the lender pulls `amount + fee` from `receiver`. If the transfer fails, the transaction reverts.
+
+```solidity
+// The full strategy lives here, encoded before the transaction is sent
+function onFlashLoan(
+    address initiator,
+    address token,
+    uint256 amount,
+    uint256 fee,
+    bytes calldata data
+) external returns (bytes32) {
+    // Decode the pre-planned strategy from `data`
+    (address dex1, address dex2, uint256 minProfit) = abi.decode(data, (...));
+
+    // Execute the strategy atomically
+    _swapOnDex1(token, amount, dex1);
+    _swapOnDex2(token, amount, dex2);
+
+    // Must approve repayment before returning
+    IERC20(token).approve(msg.sender, amount + fee);
+    return CALLBACK_SUCCESS;
+}
+```
+
+The key detail: `data` is calldata you pass to the flash loan initiator. The strategy — which DEXes to hit, which amounts, which paths — must be **encoded before `flashLoan()` is called**. There is no asking the LLM what to do mid-execution. There is no tool call, no API call, no iteration.
+
+## Protocol Economics
+
+Aave V3 charges `FLASHLOAN_PREMIUM_TOTAL`, currently 5 basis points (0.05%). Borrow $1 million, pay $500 in fees. The contract pulls it from the receiver at the end of the callback — the borrower must have the fee available plus the principal.
+
+Uniswap V3 flash swaps charge the pool fee: 0.05%, 0.30%, or 1.00% depending on which tier the pool sits in. Most liquid pools are in the 0.30% tier. Balancer V2's `flashLoan()` currently charges 0%, making it attractive for fee-sensitive strategies. Morpho Blue is also 0%.
+
+At $1M borrowed from Aave V3, the arithmetic is:
+- Flash loan fee: **$500** (0.05%)
+- Typical complex arbitrage gas on an L2: **~$12** (at 20 gwei, ~600k gas)
+- Break-even price discrepancy: **0.051%**
+
+That last number matters. Any AI agent doing flash loan arbitrage must identify a price discrepancy **exceeding 0.051%** in a market where arbitrage bots have typically compressed spreads below 0.02%. The window is narrow, and the agent has to find it before submitting the transaction.
+
+<Artifact slug="the-flash-loan-machine" />
+
+## What AI Agents Can Do
+
+**Triangular arbitrage** is the canonical use case. An agent spots that token A trades at a higher price on DEX1 than implied by the A→B→C→A path across three pools. It encodes the full three-hop swap sequence into calldata, calls `flashLoan()`, executes all three swaps inside the callback, and returns with a profit. The agent provided no capital — it borrowed the entry position, executed the arb, and repaid from proceeds.
+
+**Collateral swaps** are subtler. Suppose an agent holds ETH as collateral on Aave with a USDC debt. It wants to switch to wBTC collateral — perhaps because wBTC's borrow rate is lower, or its LTV is more favorable for an upcoming volatility event. Doing this naively requires exiting the position: repay USDC, withdraw ETH, sell ETH for wBTC, re-deposit wBTC, re-borrow USDC. Each step is a separate transaction; the agent is exposed to price risk in between. With a flash loan the agent does the whole thing atomically in a single block: borrow wBTC, supply to Aave, borrow against it, repay the original USDC debt, withdraw the ETH collateral, swap ETH→wBTC, repay the flash loan. No intermediate exposure.
+
+**Self-liquidation** is the most financially interesting case. When a leveraged position approaches its liquidation threshold, a liquidation bot claims a bonus — typically 5–10% of the collateral value — in exchange for repaying the debt. An AI agent watching its own position can self-liquidate: flash borrow the debt token, repay the debt, withdraw the full collateral, sell just enough to cover the flash loan fee, keep the rest. The agent saves the liquidation penalty by getting there first with borrowed capital. At $500k of collateral with a 7.5% bonus, that's $37,500 in saved losses against a ~$250 flash loan fee.
+
+## The Pre-Planning Constraint
+
+Here is what all three strategies have in common: **the agent must solve the problem completely before the transaction touches the chain**.
+
+An LLM-based trading agent typically reasons iteratively. It observes the market, picks a tool (call a DEX for quotes, check a lending rate), reads the result, picks the next tool, and so on. This deliberative loop is fine for most DeFi operations. Flash loans break it.
+
+The flash loan callback is not a place where the agent can think. It's a deterministic execution of a plan that was fully formed when `flashLoan()` was called. If the agent wants to use a flash loan, it needs to:
+
+1. Determine the full strategy off-chain (route, amounts, slippage tolerances, fallback conditions)
+2. Encode the entire plan into `data` bytes before calling `flashLoan()`
+3. Implement `onFlashLoan()` as a deterministic decoder-executor of that pre-formed plan
+
+This is why the AI work happens before the transaction, not inside it. The agent must be a planner, not a reactor. The better the agent's ability to pre-compute swap routes, price impact curves, and liquidity depths, the more sophisticated the flash loan strategy it can execute. Tools like FlashSyn (arXiv:2206.10708) demonstrate this: they use numerical approximation of protocol behavior and optimization search to synthesize valid flash loan attack sequences automatically — and the synthesis step is entirely off-chain.
+
+This is a different constraint than the ones we've covered in [the-sandwich-tax-on-autonomous-agents](/articles/the-sandwich-tax-on-autonomous-agents), where the problem is that a reactive agent's public mempool transaction can be front-run. Flash loans are actually somewhat MEV-resistant: the whole arbitrage is atomic, so there's no partial state to sandwich. But the planning burden shifts from the chain (where you can react to other transactions) to off-chain (where you have to commit to your entire path before any of it executes).
+
+## What Flash Loans Cannot Do
+
+Flash loans cannot extend across blocks. If a strategy requires two separate transactions — for instance, calling a governance function, waiting for a timelock, then withdrawing funds — a flash loan can't help. The capital is gone after one block.
+
+Flash loans cannot pause mid-execution for an LLM to reason. The callback is synchronous Solidity. There are no async calls, no oracle queries that might return different results than pre-simulated, no opportunity for the agent to update its plan based on what it finds inside the callback. An agent can simulate the strategy off-chain against forked chain state, but if on-chain state changes between simulation and submission (another transaction settles first, a price moves), the strategy may fail or be unprofitable.
+
+Flash loans cannot hide an agent's intent. The calldata encoding the full strategy is visible in the mempool before the transaction is mined. Sophisticated searchers can read it and front-run the downstream swaps — though for complex multi-protocol arbs, the coordination cost of a competing transaction usually exceeds the opportunity. For simple single-hop arbs on liquid pools, the agent is racing against bots that have already found the same spread.
+
+Flash loans cannot fund strategies that need collateral on-chain between transactions. If the strategy is "borrow on Monday, observe market for 48 hours, close on Wednesday," a flash loan is the wrong tool. The borrowing cost of a flash loan doesn't accrue over time — but it also can't span time.
+
+## The Synthesis Problem
+
+The practical bottleneck for AI agents is not access to capital — flash loans democratize that completely. The bottleneck is **strategy synthesis**: given current on-chain state, find a sequence of contract calls that, when packed into flash loan calldata, executes profitably before the transaction settles.
+
+This is a search problem over a graph of protocol interactions. FlashSyn solves it by approximating DeFi protocol functions as polynomials and running constrained optimization. An LLM-based agent could solve simpler versions: given a list of prices across DEXes, find the profitable route. But the agent has to do this against live chain state, accounting for its own price impact, and submit fast enough that the opportunity hasn't vanished by the time the transaction is included.
+
+The interesting AI question is where reasoning ends and deterministic execution begins. For a flash loan strategy, that boundary is the calldata parameter of the `flashLoan()` call. Everything before it is the AI's domain — observation, search, synthesis. Everything after it is pure deterministic EVM execution. The agent's intelligence is compressed into a sequence of bytes before it ever touches the chain.
+
+This is architecturally different from the operating-layer model we looked at in [operating-layer-onchain-agents](/articles/operating-layer-onchain-agents), where reliability came from wrapping the agent's outputs in retries, guardrails, and circuit breakers. Flash loans don't have that scaffolding. There's one call, one callback, one outcome: profit or revert.
 
 ## Takeaways
 
-TODO.
+Flash loans are not a leverage mechanism — they're a **synchronization mechanism**. They let an agent align multiple protocol states simultaneously in a single block, without providing capital of its own. The zero-collateral property is a consequence of EVM atomicity, not a magic trick.
+
+For AI agents, the atomic constraint is both empowering and limiting. It empowers: the agent can command millions in capital with no balance sheet. It limits: the agent must compress its entire strategy into code before any of it executes on-chain. The smarter the agent's off-chain planning — the better its route search, its simulation of price impact, its timing of when to submit — the more valuable the flash loan primitive becomes.
+
+The floor is the fee. At 0.05% on Aave V3, every strategy must find at least a half-basis-point edge after gas to be worth running. In markets where arbitrage bots have compressed spreads to sub-basis-point levels, that edge is increasingly the quality of the agent's simulation — how accurately it can model what the chain will look like in the next block — rather than anything about the flash loan itself.

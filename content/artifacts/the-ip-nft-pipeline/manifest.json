@@ -1,0 +1,20 @@
+{
+  "slug": "the-ip-nft-pipeline",
+  "title": "The IP-NFT Pipeline",
+  "description": "The six-step lifecycle of a Molecule IP-NFT: from Snapshot vote to on-chain revenue share. Click any stage for verified gas costs, contract addresses, and real numbers from the VITA-FAST fractionalization.",
+  "pubDate": "2026-06-21T16:37:21.343Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "ai",
+    "research"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["click a step for details"],
+  "dataSource": {
+    "label": "VITA-FAST on Blockscout",
+    "url": "https://eth.blockscout.com/token/0x6034e0d6999741f07cb6Fb1162cBAA46a1D33d36"
+  },
+  "dataAsOf": "2026-06-21"
+}

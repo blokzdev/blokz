@@ -1,0 +1,54 @@
+{
+  "operations": [
+    {
+      "id": "matmul",
+      "label": "MatMul",
+      "sublabel": "Linear projection",
+      "noLookup": 4,
+      "withLookup": 4,
+      "kind": "linear",
+      "note": "Native field arithmetic: multiply-accumulate maps directly to constraints (~2 multiplications + additions per output element). This is what ZK circuits do cheaply — no transcendental functions, no lookup benefit."
+    },
+    {
+      "id": "softmax",
+      "label": "Softmax",
+      "sublabel": "Attention weights",
+      "noLookup": 275,
+      "withLookup": 30,
+      "kind": "nonlinear",
+      "note": "exp(x)/Σexp has no polynomial form over finite fields. Piecewise polynomial approximation requires 200–350 constraints/element. With LogUp/Lasso, a pre-committed exp() table reduces this to ~20–40 constraints — a 7–14× saving per element."
+    },
+    {
+      "id": "layernorm",
+      "label": "LayerNorm",
+      "sublabel": "Layer normalization",
+      "noLookup": 150,
+      "withLookup": 20,
+      "kind": "nonlinear",
+      "note": "Requires 1/√σ (inverse square root) — non-native in finite fields. Newton–Raphson polynomial approximation costs 100–200 constraints/element. Lookup-based range checks bring this to ~15–25 constraints, a ~7× reduction."
+    },
+    {
+      "id": "gelu",
+      "label": "GELU / SiLU",
+      "sublabel": "Activation function",
+      "noLookup": 400,
+      "withLookup": 40,
+      "kind": "nonlinear",
+      "note": "GELU uses erf(); SiLU uses sigmoid() — both transcendental. In-circuit polynomial approximation is the single most expensive operation: 300–500 constraints/element. Lasso sublinear lookups reduce this to 30–50 constraints, a ~10× saving."
+    },
+    {
+      "id": "other",
+      "label": "Other",
+      "sublabel": "Bias, residual, add",
+      "noLookup": 8,
+      "withLookup": 6,
+      "kind": "linear",
+      "note": "Residual connections, bias additions, and element-wise additions are native field additions — one gate each. Lookup arguments provide only marginal savings from amortized range checks."
+    }
+  ],
+  "dataSource": {
+    "label": "ZK-DeepSeek arXiv:2511.19902; ezkl benchmarks; Haböck LogUp arXiv:2022/1530; Setty & Lee Lasso 2023/1216",
+    "url": "https://arxiv.org/abs/2511.19902"
+  },
+  "dataAsOf": "2026-06-21"
+}

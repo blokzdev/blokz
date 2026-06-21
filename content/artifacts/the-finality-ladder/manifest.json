@@ -1,0 +1,20 @@
+{
+  "slug": "the-finality-ladder",
+  "title": "The Finality Ladder",
+  "description": "Settlement trust on four rollup architectures, mapped on a log time axis from 2-second soft confirmation to 7-day fraud-proof closure. Click any segment to see what that trust level means and which AI agent actions it covers.",
+  "pubDate": "2026-06-21T15:30:41.829Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "blockchain",
+    "agents"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a segment to see trust level and agent use cases"],
+  "dataSource": {
+    "label": "L2Beat + protocol documentation",
+    "url": "https://l2beat.com/scaling/summary"
+  },
+  "dataAsOf": "2026-06-21"
+}

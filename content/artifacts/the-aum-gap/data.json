@@ -1,0 +1,83 @@
+{
+  "_note": "MC/AUM ratio data from Yu, Zhao, Sui (2026) 'Paper Agents, Paper Gains' (arXiv:2605.29174). DeFi token prices from Crypto.com Exchange 2026-06-21; TVL figures are approximate public estimates for 2026-Q2. Circulating-supply estimates from public token-metrics disclosures.",
+  "ratios": [
+    {
+      "id": "ai-agents",
+      "label": "AI agent tokens",
+      "sublabel": "Solana agent cohort",
+      "ratio": 10000,
+      "ratioDisplay": ">10,000×",
+      "ratioNote": "Lower bound stated in the paper; individual projects exceed this. Aggregate MC peaked >$3B while typical per-project AUM (capital actively traded by the agent) was <$300k. The ratio is computed at the project level, not in aggregate.",
+      "category": "ai"
+    },
+    {
+      "id": "uniswap",
+      "label": "Uniswap (UNI)",
+      "sublabel": "MC ÷ protocol TVL",
+      "ratio": 0.40,
+      "ratioDisplay": "~0.40×",
+      "ratioNote": "UNI MC ~$1.8B (≈600M circulating × $3.00); Uniswap all-versions TVL ~$4.5B. UNI is a pure governance token — the fee switch has not been activated, so there is no direct revenue link between protocol income and token price.",
+      "category": "defi"
+    },
+    {
+      "id": "trad-fund",
+      "label": "Hedge fund mgmt co.",
+      "sublabel": "equity ÷ AUM",
+      "ratio": 0.40,
+      "ratioDisplay": "~0.4×",
+      "ratioNote": "Management company equity as a fraction of AUM: a $10B fund at 2% annual fee earns $200M/yr; at a 20× P/E the management business is worth $4B = 0.40× AUM. Fee income directly links the management company's value to assets under management.",
+      "category": "trad"
+    },
+    {
+      "id": "compound",
+      "label": "Compound (COMP)",
+      "sublabel": "MC ÷ protocol TVL",
+      "ratio": 0.076,
+      "ratioDisplay": "~0.076×",
+      "ratioNote": "COMP MC ~$133M (≈7.5M circulating × $17.74); Compound V3 TVL ~$1.75B. COMP carries a fee-switch option — governance could activate revenue sharing — but no active revenue currently flows to token holders.",
+      "category": "defi"
+    },
+    {
+      "id": "aave",
+      "label": "Aave (AAVE)",
+      "sublabel": "MC ÷ protocol TVL",
+      "ratio": 0.047,
+      "ratioDisplay": "~0.047×",
+      "ratioNote": "AAVE MC ~$1.13B (≈14.9M circulating × $75.71); Aave V3 TVL ~$24B. Protocol revenue flows to the safety module (stakers) and fee recipient — a partial revenue link anchors MC closer to TVL.",
+      "category": "defi"
+    }
+  ],
+  "gainDistribution": {
+    "totalHolders": 925323,
+    "topCutoff": 1,
+    "tiers": [
+      {
+        "id": "top1",
+        "label": "Top 1% of holders",
+        "sublabel": "9,253 wallets",
+        "gainUsd": 1810000000,
+        "shareOfGains": 81.4,
+        "note": "Early buyers, insiders, and sophisticated traders who accumulated near launch and sold into the peak. The paper reports this cohort captured 81.4% of all gains distributed across the 925,323-holder sample."
+      },
+      {
+        "id": "bottom99",
+        "label": "Bottom 99% of holders",
+        "sublabel": "916,070 wallets",
+        "gainUsd": -2001700000,
+        "note": "Computed: total net loss of all 925,323 holders (−$191.7M) minus top-1% gains (+$1.81B). Median returns were negative on every platform studied. Average token price declined 93% from ATH."
+      }
+    ],
+    "netHolderLossUsd": -191700000,
+    "avgAthDeclinePct": 93,
+    "peakAggGainUsd": 2400000000,
+    "treasuryGainUsd": 30000000,
+    "surveyed": 11
+  },
+  "marketData": {
+    "aavePrice": 75.71,
+    "uniPrice": 3.00,
+    "compPrice": 17.74,
+    "dataDate": "2026-06-21",
+    "dataSource": "Crypto.com Exchange"
+  }
+}

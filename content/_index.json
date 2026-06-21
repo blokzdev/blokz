@@ -1,26 +1,80 @@
 {
   "counts": {
-    "articles": 62,
-    "artifacts": 63
+    "articles": 64,
+    "artifacts": 65
   },
   "topicCounts": {
-    "agents": 24,
+    "agents": 25,
     "ai": 4,
-    "blockchain": 11,
+    "blockchain": 12,
     "cryptography": 9,
     "data": 8,
-    "defi": 13,
+    "defi": 14,
     "infrastructure": 28,
     "llm": 13,
     "machine-learning": 30,
     "research": 1,
-    "security": 20,
+    "security": 21,
     "smart-contracts": 11,
-    "tokenomics": 6,
-    "web3": 8,
+    "tokenomics": 7,
+    "web3": 9,
     "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
+      "path": "content/articles/2026/06/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls/index.mdx",
+      "url": "/articles/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
+      "title": "Who Authorized That? The Delegation Gap in AI Agent Tool Calls",
+      "description": "A scan of ~2,000 MCP servers found zero with authentication. When an AI agent calls a tool, the tool has no idea who authorized it, with what scope, or whether a human was ever involved. IBCT tokens and the HDP IETF draft add an unforgeable answer — in 0.049 ms Rust verification.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "tags": [
+        "mcp",
+        "a2a",
+        "delegation",
+        "ibct",
+        "verifiable-credentials",
+        "did",
+        "agent-identity",
+        "principal-chain"
+      ],
+      "artifacts": [
+        "the-delegation-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "path": "content/articles/2026/06/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance/index.mdx",
+      "url": "/articles/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "title": "The 10,000x Problem: Why AI Agent Token Valuations Have Detached from Treasury Performance",
+      "description": "A new paper quantifies what everyone suspected: AI agent tokens trade at >10,000x the capital they actively manage. Here's the mechanics of why, and what it means for builders.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "tokenomics",
+        "defi",
+        "blockchain"
+      ],
+      "tags": [
+        "ai-agents",
+        "market-cap",
+        "valuation",
+        "aum",
+        "solana",
+        "paper-agents"
+      ],
+      "artifacts": [
+        "the-aum-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces",
       "path": "content/articles/2026/06/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces/index.mdx",
@@ -1655,6 +1709,39 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-delegation-chain",
+      "path": "content/artifacts/the-delegation-chain/manifest.json",
+      "module": "src/islands/artifacts/the-delegation-chain.ts",
+      "url": "/artifacts/the-delegation-chain",
+      "title": "The Delegation Chain",
+      "description": "Five hops — Human → Orchestrator → Sub-Agent → MCP Tool → Chain Call — and zero authentication in the baseline. Toggle No Auth, IBCT Compact, or IBCT Chained; tap any edge chip to see what its token proves, what it carries, and what it can't verify. Based on AIP arXiv:2603.24775.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-aum-gap",
+      "path": "content/artifacts/the-aum-gap/manifest.json",
+      "module": "src/islands/artifacts/the-aum-gap.ts",
+      "url": "/artifacts/the-aum-gap",
+      "title": "The AUM Gap",
+      "description": "Log-scale comparison of MC/AUM ratios across AI agent tokens and DeFi protocols, plus gain distribution across 925k holders. Click bars to explore.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tokenomics",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-provers-bargain",
       "path": "content/artifacts/the-provers-bargain/manifest.json",

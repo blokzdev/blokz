@@ -1,26 +1,53 @@
 {
   "counts": {
-    "articles": 82,
-    "artifacts": 83
+    "articles": 83,
+    "artifacts": 84
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
-    "blockchain": 16,
+    "blockchain": 17,
     "cryptography": 13,
     "data": 11,
-    "defi": 18,
+    "defi": 19,
     "infrastructure": 32,
     "llm": 16,
     "machine-learning": 35,
     "research": 3,
     "security": 24,
-    "smart-contracts": 15,
+    "smart-contracts": 16,
     "tokenomics": 12,
     "web3": 10,
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "path": "content/articles/2026/06/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it/index.mdx",
+      "url": "/articles/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "title": "Uniswap v4 Hooks: The AMM Hook Lifecycle and What AI Agents Can Do With It",
+      "description": "Uniswap v4 hooks make every liquidity pool programmable. Here's how the 14-bit permission bitmap works, what fires during a swap, and where AI agents fit into dynamic fee architecture.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "uniswap",
+        "amm",
+        "hooks",
+        "dynamic-fees",
+        "lvr",
+        "ai-agents",
+        "mev"
+      ],
+      "artifacts": [
+        "hook-permission-visualizer"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
       "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
@@ -2191,6 +2218,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "hook-permission-visualizer",
+      "path": "content/artifacts/hook-permission-visualizer/manifest.json",
+      "module": "src/islands/artifacts/hook-permission-visualizer.ts",
+      "url": "/artifacts/hook-permission-visualizer",
+      "title": "Hook Permission Visualizer",
+      "description": "Explore how Uniswap v4's 14-bit permission bitmap maps to pool lifecycle callbacks. Toggle bits or select preset patterns to see which hook functions fire for each operation.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-softmax-constraint-map",
       "path": "content/artifacts/the-softmax-constraint-map/manifest.json",

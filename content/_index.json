@@ -1,22 +1,22 @@
 {
   "counts": {
-    "articles": 79,
-    "artifacts": 80
+    "articles": 80,
+    "artifacts": 81
   },
   "topicCounts": {
     "agents": 30,
-    "ai": 6,
+    "ai": 7,
     "blockchain": 16,
     "cryptography": 13,
     "data": 10,
     "defi": 17,
     "infrastructure": 32,
     "llm": 16,
-    "machine-learning": 34,
+    "machine-learning": 35,
     "research": 3,
     "security": 23,
     "smart-contracts": 14,
-    "tokenomics": 10,
+    "tokenomics": 11,
     "web3": 10,
     "zero-knowledge": 9
   },
@@ -129,6 +129,34 @@
       ],
       "artifacts": [
         "the-finality-ladder"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks",
+      "path": "content/articles/2026/06/copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks/index.mdx",
+      "url": "/articles/copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks",
+      "title": "Copy or Compute: The Uniqueness Trap in Permissionless AI Training Networks",
+      "description": "Any permissionless network that rewards the best gradient contribution faces a Nash equilibrium where every rational miner copies instead of computes — same reward, zero cost. Gauntlet's commit-reveal mechanism closes that trap, and already trained a 1.2B LLM on Bittensor with real token payouts.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "machine-learning",
+        "tokenomics",
+        "ai"
+      ],
+      "tags": [
+        "gauntlet",
+        "bittensor",
+        "permissionless-training",
+        "pseudo-gradients",
+        "openskill",
+        "uniqueness",
+        "decentralized-training",
+        "incentive-design"
+      ],
+      "artifacts": [
+        "the-gradient-race"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2168,6 +2196,22 @@
       "topics": [
         "blockchain",
         "agents"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-gradient-race",
+      "path": "content/artifacts/the-gradient-race/manifest.json",
+      "module": "src/islands/artifacts/the-gradient-race.ts",
+      "url": "/artifacts/the-gradient-race",
+      "title": "The Gradient Race",
+      "description": "What happens when copying dominates computing in a permissionless training network. Two loss curves — with and without Gauntlet's uniqueness enforcement — diverge as rational miners defect. Tune the compute burden and miner count; watch the copier fraction and training loss respond.",
+      "pubDate": "2026-06-21",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "tokenomics"
       ],
       "draft": false
     },

@@ -1,22 +1,108 @@
 ---
 slug: the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents
-title: "The Finality Ladder: What Confirmed Actually Means for On-Chain AI Agents"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+title: "The Finality Ladder: What 'Confirmed' Actually Means for On-Chain AI Agents"
+description: "On OP Stack chains, 'confirmed' is a four-layer promise stretching from 2 seconds to 7 days. AI agents that collapse these into one boolean expose themselves to sequencer reorgs, bridge lockups, and state dispute windows. Here's the full settlement stack, and an action taxonomy for each rung."
 pubDate: 2026-06-21T15:30:38.831Z
 author: blokz
 topics: [blockchain, agents, ai]
-tags: []
-artifacts: []
+tags: [rollups, finality, sequencer, op-stack, arbitrum, zk-rollup, based-rollup, settlement, l2, casper-ffg]
+artifacts: [the-finality-ladder]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "OP Stack fault proofs — Optimism docs"
+    url: "https://docs.optimism.io/stack/protocol/rollup/overview"
+  - label: "L2Beat finality risk assessments"
+    url: "https://l2beat.com/scaling/summary"
+  - label: "Arbitrum BoLD: bounded liquidity delay"
+    url: "https://arxiv.org/abs/2404.10491"
+  - label: "Ethereum consensus spec — Casper FFG finality"
+    url: "https://eth2book.info/capella/part2/consensus/casper_ffg/"
+  - label: "Based rollups: superpowers from L1 sequencing"
+    url: "https://ethresear.ch/t/based-rollups-superpowers-from-l1-sequencing/15096"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Your AI agent submits a swap on Base. The RPC returns `"status": "0x1"`. Is the trade done?
 
-## Section heading
+It depends entirely on what "done" means. On every Ethereum rollup running today, "confirmed" is not a binary state — it is a four-rung ladder, and each rung buys a fundamentally different promise. Agents that ignore that distinction are exposed to sequencer reorgs, seven-day withdrawal lockups, and silently stale state queries. Here is the full stack.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The three Ethereum block tags (and why they diverge on L2)
+
+The Ethereum JSON-RPC exposes three finality identifiers for `eth_getBlockByNumber`:
+
+- **`latest`** — the newest block the node has seen; may still be reorged.
+- **`safe`** — a block the node considers unlikely to be reorged under normal network conditions; practically one to two slots behind `latest` on L1.
+- **`finalized`** — a Casper FFG checkpoint; irreversible unless more than one-third of total validator stake is slashed; reached at roughly 12.8 minutes (two epochs of 32 slots at 12 seconds each).
+
+On Ethereum L1 these distinctions collapse to a matter of minutes. On L2 rollups the same three tags are exposed but their semantics are chain-specific, and the gaps between rungs can stretch to seven days.
+
+## The OP Stack settlement stack
+
+Base and Optimism both run the OP Stack, which moves L2 blocks through four distinct settlement stages.
+
+**Stage 0 — Soft confirmation (~2 seconds).** The sequencer — a single centralized server operated by the chain's founding team — accepts the transaction, orders it, and returns a receipt. The transaction exists only in the sequencer's database. If the sequencer crashes or is rate-limited before posting its next batch to L1, the transaction may never reach the chain. For actions whose economic risk is bounded to a single block — a liquidation, a MEV capture, a price-sensitive swap — soft confirmation is enough: the cost of a reorg is the gas cost of resubmitting.
+
+**Stage 1 — L1 data available (~5–15 minutes).** The sequencer periodically batches recent L2 transactions and posts them as EIP-4844 blobs to Ethereum L1. Once the blob lands in a confirmed L1 block, the transaction data is permanent. A sequencer reorg can no longer retract the data. However, the *state* resulting from executing those transactions has not yet been committed to L1.
+
+**Stage 2 — State root posted (~30–60 minutes).** A separate actor called the output proposer computes the L2 state root over recent batches and posts it to the `DisputeGameFactory` (Fault Proofs) or `L2OutputOracle` (legacy) contract on L1. This is the root that [ZK coprocessors reference when generating storage proofs](/articles/verifiable-read-zk-coprocessors). The root is now publicly challengeable — but the challenge window is fully open.
+
+**Stage 3 — Fraud proof window closed (7 days).** On OP Stack, an output root becomes final only after seven days pass without a valid dispute being raised and resolved. Only at this point can value flow from L2 to L1: `OptimismPortal.finalizeWithdrawalTransaction()` reverts if called before the window closes. Settling a large cross-chain transfer earlier than this is trusting that no challenger will dispute the root — a social rather than cryptographic assumption.
+
+<Artifact slug="the-finality-ladder" />
+
+## Arbitrum One (BoLD)
+
+Arbitrum runs a similar optimistic model with faster L1 data posting and a different fraud-proof design. Batches land on L1 as frequently as every minute at normal load, meaning Stage 1 arrives in under two minutes instead of fifteen. The assertion (Arbitrum's name for the output root) is posted within roughly thirty minutes.
+
+The final challenge period is comparable to OP Stack's. BoLD (Bounded Liquidity Delay) targets a ~6.4-day window. The key BoLD improvement is not to the timeline but to the economics: a single honest challenger can always prevail regardless of how many adversarial challengers are mounted, and the cost to challenge is bounded regardless of attestation count. From an AI agent perspective, however, "fully final in ~seven days" remains the correct mental model for L1 bridge withdrawals.
+
+## ZK rollups: collapsing the ladder
+
+ZK rollups — zkSync Era, StarkNet, Polygon zkEVM — present a qualitatively different settlement model. There is still a soft confirmation stage (~2 seconds from the sequencer). But there is no fraud proof window. Instead, the sequencer must generate a SNARK or STARK certifying the validity of every state transition in the batch. Once that proof is submitted to and verified by the L1 verifier contract, the state is *cryptographically* final: no game-theoretic window, no social assumption, no path to dispute it short of breaking the underlying cryptographic primitive.
+
+The cost: proof generation takes one to four hours depending on batch size and circuit complexity. That is the effective finality time for high-value operations on a ZK rollup.
+
+For AI agents this is significant: the four-rung ladder collapses to two rungs. Soft confirmation gives you sequencer trust (useful for UI feedback and low-value actions); ZK proof on L1 gives you Ethereum-equivalent finality with no ambiguous middle state.
+
+## Based rollups: removing the sequencer entirely
+
+In a based rollup (the live example is Taiko), there is no separate sequencer. Ethereum L1 validators — the same validators building Ethereum L1 blocks — include L2 transactions directly. The consequence: there is no independent sequencer to trust, reorg, or censor.
+
+An AI agent on a based rollup has its transaction confirmed at L1 block inclusion (~12 seconds, one L1 slot). Full Casper FFG finality arrives ~12.8 minutes later. The agent needs no concept of a fraud proof window and has no "sequencer-only" trust exposure. The bridge to L1 operates on L1 finality rules, not a seven-day challenge.
+
+The tradeoff is throughput: based rollups are bounded by the rate at which L1 can include their transactions, which is lower than a dedicated high-throughput sequencer's capacity.
+
+## The TOCTOU window
+
+Time-of-Check-Time-of-Use is the risk that a resource changes between when an agent reads its value and when it acts. On optimistic rollups this window is the period between an agent reading L2 state and the batch containing the agent's transaction being posted to L1.
+
+In practice: an agent reads ETH price from a Chainlink aggregator on Base at block 12345 (Stage 0), decides to execute a collateral swap, submits the transaction. The sequencer accepts it. But before the batch reaches L1, the sequencer fails over. The new sequencer processes a different ordering, and the state the agent acted on diverges.
+
+For most actions this window (minutes at most before L1 data posting) is an acceptable risk. For large-value settlements — bridging $500,000 to L1, for example — waiting for Stage 2 or Stage 3 is the engineering decision that should be encoded into the agent's custody policy. The [blast-radius calculation for agent key custody](/articles/agent-key-custody-blast-radius) changes materially by rung: an agent with a spend permission acting at soft confirmation can drain up to the permission limit even if the transaction is later reorged within that window.
+
+## An action taxonomy for the finality ladder
+
+| Action | Minimum finality | Reasoning |
+|---|---|---|
+| Liquidation / MEV / micro-swap | Soft confirmation (~2s) | Single-block risk; resubmit if sequencer reorgs |
+| Oracle read for risk model | L1 data available (~15 min) | Batch in L1 history; sequencer cannot retract |
+| ZK coprocessor storage proof | State root posted (~1 hr) | Proof references committed output root |
+| Bridge tokens to L1 | Fraud proof closed (7 days) | `finalizeWithdrawalTransaction()` enforces this |
+| Cross-chain settlement on ZK rollup | ZK proof on L1 (~2–4 hr) | Cryptographic guarantee; no dispute window |
+
+Most agent frameworks that target Base or Optimism today default to soft confirmation for all operations. That is fine for the first two rows. It is a latent failure mode for the last three.
+
+## What agents should do
+
+Call `eth_getBlockByNumber` with the `"finalized"` tag for any high-value state read that will drive an irreversible action. On OP Stack chains the JSON-RPC `"finalized"` tag tracks the last output root posted to L1 — which is *not* the same as fraud-proof-closed, because the tag updates when the root is posted, not when the seven-day window expires. Agents that need true finality on OP Stack must track the challenge deadline themselves.
+
+For bridge withdrawals, never call `finalizeWithdrawalTransaction()` speculatively. The contract reverts if the fraud proof window has not elapsed; the only cost is wasted gas — but it signals that the agent did not account for the finality ladder at design time.
+
+For ZK rollups, query the verifier contract's event log for `BlocksVerified` (zkSync) or `LogStateUpdate` (StarkNet) events to confirm the proof has landed on L1 before treating state as final. These events fire one to four hours after soft confirmation.
 
 ## Takeaways
 
-TODO.
+"Confirmed" on an OP Stack L2 resolves to four promises with time horizons spanning 2 seconds to 7 days. Agents that treat any receipt with `status: 0x1` as final are implicitly choosing soft confirmation — correct for liquidations and MEV, a latent failure mode for bridge settlements and large fund movements.
+
+ZK rollups collapse the ladder to two rungs: sequencer trust (seconds) and cryptographic finality (hours). Based rollups remove the sequencer rung entirely, giving L1-equivalent trust in ~12.8 minutes with no fraud proof window.
+
+The correct finality rung is a function of value at risk and action reversibility — not the default behavior of whatever client library your agent happens to be calling.

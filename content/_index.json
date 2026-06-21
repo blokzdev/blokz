@@ -25,16 +25,29 @@
       "slug": "the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
       "path": "content/articles/2026/06/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents/index.mdx",
       "url": "/articles/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
-      "title": "The Finality Ladder: What Confirmed Actually Means for On-Chain AI Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "title": "The Finality Ladder: What 'Confirmed' Actually Means for On-Chain AI Agents",
+      "description": "On OP Stack chains, 'confirmed' is a four-layer promise stretching from 2 seconds to 7 days. AI agents that collapse these into one boolean expose themselves to sequencer reorgs, bridge lockups, and state dispute windows. Here's the full settlement stack, and an action taxonomy for each rung.",
       "pubDate": "2026-06-21",
       "topics": [
         "blockchain",
         "agents",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "rollups",
+        "finality",
+        "sequencer",
+        "op-stack",
+        "arbitrum",
+        "zk-rollup",
+        "based-rollup",
+        "settlement",
+        "l2",
+        "casper-ffg"
+      ],
+      "artifacts": [
+        "the-finality-ladder"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1943,7 +1956,7 @@
       "module": "src/islands/artifacts/the-finality-ladder.ts",
       "url": "/artifacts/the-finality-ladder",
       "title": "The Finality Ladder",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Settlement trust on four rollup architectures, mapped on a log time axis from 2-second soft confirmation to 7-day fraud-proof closure. Click any segment to see what that trust level means and which AI agent actions it covers.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "chart",

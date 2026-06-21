@@ -1,0 +1,20 @@
+{
+  "slug": "the-ghost-fill-window",
+  "title": "The Ghost Fill Window",
+  "description": "Four attack vectors that exploit Polymarket's off-chain match / on-chain settlement gap. Tap a vector to see mechanism, timing, and cost.",
+  "pubDate": "2026-06-21T11:27:44.626Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "defi",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a vector to inspect"],
+  "dataSource": {
+    "label": "GHOSTHUNTER analysis (arXiv:2606.16852)",
+    "url": "https://arxiv.org/abs/2606.16852"
+  },
+  "dataAsOf": "2026-06-15"
+}

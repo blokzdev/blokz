@@ -1,0 +1,20 @@
+{
+  "slug": "the-enforcement-gap",
+  "title": "The Enforcement Gap",
+  "description": "Animate three governance regimes — ungoverned, constitutional, and institutional — and watch how only enforceable on-chain penalties drive LLM auction prices back toward the Nash equilibrium.",
+  "pubDate": "2026-06-21T07:27:15.118Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "agents",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["▶ Run — animate three regime price trajectories", "↺ Reset — return lines to start"],
+  "dataSource": {
+    "label": "Syrnikov et al., arXiv:2601.11369",
+    "url": "https://arxiv.org/abs/2601.11369"
+  },
+  "dataAsOf": "2026-01-20"
+}

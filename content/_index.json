@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 74,
-    "artifacts": 75
+    "articles": 75,
+    "artifacts": 76
   },
   "topicCounts": {
-    "agents": 27,
+    "agents": 28,
     "ai": 6,
     "blockchain": 16,
     "cryptography": 12,
@@ -14,13 +14,41 @@
     "llm": 15,
     "machine-learning": 32,
     "research": 2,
-    "security": 23,
-    "smart-contracts": 13,
+    "security": 24,
+    "smart-contracts": 14,
     "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-compliance-kernel-formal-verification-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-compliance-kernel-formal-verification-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-compliance-kernel-formal-verification-for-on-chain-ai-agents",
+      "title": "The Compliance Kernel: Formal Verification for On-Chain AI Agents",
+      "description": "Probabilistic classifiers miss 30–40 % of policy violations. Lean 4 theorem provers and SMT solvers make certain guardrail tiers mathematically certain — here's how the four-layer policy stack works.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "tags": [
+        "formal-verification",
+        "lean-4",
+        "smt-solver",
+        "temporal-constraints",
+        "symbolic-guardrails",
+        "agent-c",
+        "theorem-proving",
+        "policy-engine"
+      ],
+      "artifacts": [
+        "the-policy-stack"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop",
       "path": "content/articles/2026/06/the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop/index.mdx",
@@ -1978,6 +2006,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-policy-stack",
+      "path": "content/artifacts/the-policy-stack/manifest.json",
+      "module": "src/islands/artifacts/the-policy-stack.ts",
+      "url": "/artifacts/the-policy-stack",
+      "title": "The Policy Stack",
+      "description": "Four guardrail tiers for on-chain AI agents: probabilistic classifiers through Lean 4 theorem provers. Select an attack scenario to see which tier catches it — and which let it through.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "security",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-ip-nft-pipeline",
       "path": "content/artifacts/the-ip-nft-pipeline/manifest.json",

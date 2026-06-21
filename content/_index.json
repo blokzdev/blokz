@@ -1,26 +1,52 @@
 {
   "counts": {
-    "articles": 62,
-    "artifacts": 63
+    "articles": 63,
+    "artifacts": 64
   },
   "topicCounts": {
     "agents": 24,
     "ai": 4,
-    "blockchain": 11,
+    "blockchain": 12,
     "cryptography": 9,
     "data": 8,
-    "defi": 13,
+    "defi": 14,
     "infrastructure": 28,
     "llm": 13,
     "machine-learning": 30,
     "research": 1,
     "security": 20,
     "smart-contracts": 11,
-    "tokenomics": 6,
+    "tokenomics": 7,
     "web3": 8,
     "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "path": "content/articles/2026/06/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance/index.mdx",
+      "url": "/articles/the-10-000x-problem-why-ai-agent-token-valuations-have-detached-from-treasury-performance",
+      "title": "The 10,000x Problem: Why AI Agent Token Valuations Have Detached from Treasury Performance",
+      "description": "A new paper quantifies what everyone suspected: AI agent tokens trade at >10,000x the capital they actively manage. Here's the mechanics of why, and what it means for builders.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "tokenomics",
+        "defi",
+        "blockchain"
+      ],
+      "tags": [
+        "ai-agents",
+        "market-cap",
+        "valuation",
+        "aum",
+        "solana",
+        "paper-agents"
+      ],
+      "artifacts": [
+        "the-aum-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces",
       "path": "content/articles/2026/06/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces/index.mdx",
@@ -1655,6 +1681,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-aum-gap",
+      "path": "content/artifacts/the-aum-gap/manifest.json",
+      "module": "src/islands/artifacts/the-aum-gap.ts",
+      "url": "/artifacts/the-aum-gap",
+      "title": "The AUM Gap",
+      "description": "Log-scale comparison of MC/AUM ratios across AI agent tokens and DeFi protocols, plus gain distribution across 925k holders. Click bars to explore.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tokenomics",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-provers-bargain",
       "path": "content/artifacts/the-provers-bargain/manifest.json",

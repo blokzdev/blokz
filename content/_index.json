@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 71,
-    "artifacts": 72
+    "articles": 72,
+    "artifacts": 73
   },
   "topicCounts": {
     "agents": 26,
     "ai": 4,
     "blockchain": 14,
     "cryptography": 11,
-    "data": 8,
-    "defi": 16,
+    "data": 9,
+    "defi": 17,
     "infrastructure": 32,
     "llm": 15,
     "machine-learning": 32,
@@ -17,10 +17,27 @@
     "security": 22,
     "smart-contracts": 13,
     "tokenomics": 8,
-    "web3": 9,
+    "web3": 10,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window",
+      "path": "content/articles/2026/06/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window/index.mdx",
+      "url": "/articles/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window",
+      "title": "The Ghost Fill: How Polymarket's Hybrid Architecture Built a $1.49M Attack Window",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "web3",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
       "path": "content/articles/2026/06/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification/index.mdx",
@@ -1892,6 +1909,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-ghost-fill-window",
+      "path": "content/artifacts/the-ghost-fill-window/manifest.json",
+      "module": "src/islands/artifacts/the-ghost-fill-window.ts",
+      "url": "/artifacts/the-ghost-fill-window",
+      "title": "The Ghost Fill Window",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "bridge-trust-spectrum",
       "path": "content/artifacts/bridge-trust-spectrum/manifest.json",

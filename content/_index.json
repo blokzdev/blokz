@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 65,
-    "artifacts": 66
+    "articles": 66,
+    "artifacts": 67
   },
   "topicCounts": {
     "agents": 25,
     "ai": 4,
     "blockchain": 12,
-    "cryptography": 9,
+    "cryptography": 10,
     "data": 8,
     "defi": 14,
-    "infrastructure": 29,
+    "infrastructure": 30,
     "llm": 14,
     "machine-learning": 31,
     "research": 1,
@@ -18,9 +18,26 @@
     "smart-contracts": 11,
     "tokenomics": 7,
     "web3": 9,
-    "zero-knowledge": 6
+    "zero-knowledge": 7
   },
   "articles": [
+    {
+      "slug": "proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs",
+      "path": "content/articles/2026/06/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs/index.mdx",
+      "url": "/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs",
+      "title": "Proving as Matmul: How AI ASICs Are Rewriting the Cost Floor for Zero-Knowledge Proofs",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure",
+        "cryptography"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize",
       "path": "content/articles/2026/06/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize/index.mdx",
@@ -1736,6 +1753,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-provers-stack",
+      "path": "content/artifacts/the-provers-stack/manifest.json",
+      "module": "src/islands/artifacts/the-provers-stack.ts",
+      "url": "/artifacts/the-provers-stack",
+      "title": "The Prover's Stack",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-delegation-chain",
       "path": "content/artifacts/the-delegation-chain/manifest.json",

@@ -1,0 +1,15 @@
+{
+  "slug": "the-provers-stack",
+  "title": "The Prover's Stack",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-21T04:29:02.813Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

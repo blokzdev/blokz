@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 76,
-    "artifacts": 77
+    "articles": 77,
+    "artifacts": 78
   },
   "topicCounts": {
-    "agents": 28,
+    "agents": 29,
     "ai": 6,
     "blockchain": 16,
     "cryptography": 13,
@@ -13,9 +13,9 @@
     "infrastructure": 32,
     "llm": 16,
     "machine-learning": 33,
-    "research": 2,
+    "research": 3,
     "security": 23,
-    "smart-contracts": 13,
+    "smart-contracts": 14,
     "tokenomics": 9,
     "web3": 9,
     "zero-knowledge": 9
@@ -241,6 +241,33 @@
       ],
       "artifacts": [
         "the-noise-floor"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-constitution-wont-bind-governing-collusion-in-on-chain-ai-agent-markets",
+      "path": "content/articles/2026/06/the-constitution-wont-bind-governing-collusion-in-on-chain-ai-agent-markets/index.mdx",
+      "url": "/articles/the-constitution-wont-bind-governing-collusion-in-on-chain-ai-agent-markets",
+      "title": "The Constitution Won't Bind: Governing Collusion in On-Chain AI Agent Markets",
+      "description": "LLMs collude in on-chain auctions even when written rules forbid it — only enforceable, automatic penalties slash severe collusion from 50% to 5.6%. Here's how governance graphs make that concrete.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "research"
+      ],
+      "tags": [
+        "llm-collusion",
+        "governance-graphs",
+        "cournot",
+        "institutional-ai",
+        "mechanism-design",
+        "multi-agent",
+        "on-chain-governance"
+      ],
+      "artifacts": [
+        "the-enforcement-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2144,6 +2171,22 @@
       "topics": [
         "machine-learning",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-enforcement-gap",
+      "path": "content/artifacts/the-enforcement-gap/manifest.json",
+      "module": "src/islands/artifacts/the-enforcement-gap.ts",
+      "url": "/artifacts/the-enforcement-gap",
+      "title": "The Enforcement Gap",
+      "description": "Animate three governance regimes — ungoverned, constitutional, and institutional — and watch how only enforceable on-chain penalties drive LLM auction prices back toward the Nash equilibrium.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "smart-contracts"
       ],
       "draft": false
     },

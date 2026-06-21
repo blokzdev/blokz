@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls/index.mdx",
       "url": "/articles/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls",
       "title": "Who Authorized That? The Delegation Gap in AI Agent Tool Calls",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A scan of ~2,000 MCP servers found zero with authentication. When an AI agent calls a tool, the tool has no idea who authorized it, with what scope, or whether a human was ever involved. IBCT tokens and the HDP IETF draft add an unforgeable answer — in 0.049 ms Rust verification.",
       "pubDate": "2026-06-21",
       "topics": [
         "agents",
         "security",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "mcp",
+        "a2a",
+        "delegation",
+        "ibct",
+        "verifiable-credentials",
+        "did",
+        "agent-identity",
+        "principal-chain"
+      ],
+      "artifacts": [
+        "the-delegation-chain"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1704,7 +1715,7 @@
       "module": "src/islands/artifacts/the-delegation-chain.ts",
       "url": "/artifacts/the-delegation-chain",
       "title": "The Delegation Chain",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Five hops — Human → Orchestrator → Sub-Agent → MCP Tool → Chain Call — and zero authentication in the baseline. Toggle No Auth, IBCT Compact, or IBCT Chained; tap any edge chip to see what its token proves, what it carries, and what it can't verify. Based on AIP arXiv:2603.24775.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "diagram",

@@ -1,22 +1,108 @@
 ---
 slug: who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls
 title: "Who Authorized That? The Delegation Gap in AI Agent Tool Calls"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "A scan of ~2,000 MCP servers found zero with authentication. When an AI agent calls a tool, the tool has no idea who authorized it, with what scope, or whether a human was ever involved. IBCT tokens and the HDP IETF draft add an unforgeable answer — in 0.049 ms Rust verification."
 pubDate: 2026-06-21T02:25:59.551Z
 author: blokz
 topics: [agents, security, web3]
-tags: []
-artifacts: []
+tags: [mcp, a2a, delegation, ibct, verifiable-credentials, did, agent-identity, principal-chain]
+artifacts: [the-delegation-chain]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "AIP: Agent Identity Protocol for Verifiable Delegation (arXiv:2603.24775)"
+    url: "https://arxiv.org/abs/2603.24775"
+  - label: "HDP: Human Delegation Provenance in Agentic AI Systems (arXiv:2604.04522)"
+    url: "https://arxiv.org/abs/2604.04522"
+  - label: "Interoperable Architecture for Digital Identity Delegation for AI Agents (arXiv:2601.14982)"
+    url: "https://arxiv.org/abs/2601.14982"
+  - label: "Survey of agent interoperability protocols: MCP, ACP, A2A, ANP (arXiv:2505.02279)"
+    url: "https://arxiv.org/abs/2505.02279"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+An on-chain agent receives a task: pay an invoice for 500 USDC. It picks the right MCP tool, calls `transfer_funds()`, and the transfer goes through. Who authorized that? The model was told to. Who told the model? The orchestrator agent. Who authorized the orchestrator? A sub-session spawned three hops ago. Was there ever a human in this chain? The MCP server has no idea. It received a function call. It executed it.
 
-## Section heading
+This is the delegation gap: not "who are you?" but "who said you could?"
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The scan result: zero of two thousand
+
+The AIP paper (arXiv:2603.24775) built Invocation-Bound Capability Tokens and, as part of the work, scanned roughly 2,000 deployed MCP servers. Every single one lacked authentication. Not weak authentication — none. The tool servers that AI agents are actively calling to transfer funds, query databases, and submit transactions cannot verify who called them, whether that caller was itself authorized, or what scope it was given.
+
+This isn't a configuration problem. The MCP specification as designed doesn't define an identity layer. A tool server knows it received a JSON-RPC call. It does not know whether the calling agent was spawned by a legitimate orchestrator or by an injected instruction inside a poisoned tool description (as covered in [The Toolbelt Is the Attack Surface](/articles/mcp-tool-poisoning-onchain-agents)).
+
+The A2A protocol from Google has the same property. Neither protocol verifies agent identity. No prior implementation jointly provides public-key verifiable delegation, holder-side attenuation, chained policy, and provenance-oriented completion records. The gap is structural.
+
+## What the gap costs on-chain
+
+Off-chain this is a logging and accountability problem. On-chain it's a money problem.
+
+When an agent calls `transfer_funds()` via MCP and the tool executes a USDC transfer, the chain records the transaction. It does not record who authorized the agent that called the tool that signed the call. That audit trail exists only if you built it. Most systems haven't. The result is that a compromised sub-agent, a prompt-injected instruction, or a malicious tool server can insert itself into the chain and route a transfer, and the only on-chain evidence is the transaction itself. The authorization chain is entirely off-chain and, in the current baseline, unsigned.
+
+ERC-8004 agent registries (covered in [ERC-8004 in the Wild](/articles/erc-8004-agent-registries-onchain)) let you register an agent's identity on-chain, but a registry proves existence, not delegation. An agent registered at address `0xabc…` could have been delegated full wallet access or a single task — the registry doesn't encode that. Spend permissions and session keys (covered in [Agent Keys and the Blast Radius Problem](/articles/agent-key-custody-blast-radius)) limit *what* a compromised key can do. They don't prove *who* authorized the action that happened within the permitted scope.
+
+## The IBCT primitive: fusing identity, delegation, and provenance
+
+The AIP paper introduces Invocation-Bound Capability Tokens (IBCTs) as the missing primitive. An IBCT fuses three things into a single, append-only token chain:
+
+- **Identity**: the issuer's keypair (Ed25519) proves who signed this hop
+- **Authorization**: the scope field defines what actions are permitted (and scope can only shrink, never grow, at each hop)
+- **Provenance**: the chain records every delegation that led here
+
+IBCTs operate in two wire formats. **Compact mode** is a signed JWT for single-hop cases — when the caller's identity alone is sufficient. The JWT carries `iss` (issuer), `sub` (subject/callee), `scope`, `exp`, and `iat`. Verification at 0.049 ms in Rust, 0.189 ms in Python. Real MCP-over-HTTP overhead: 0.22 ms above the no-auth baseline.
+
+**Chained mode** uses Biscuit tokens with Datalog policies for multi-hop delegation. Each hop appends an attenuated block to the chain. The root block is signed by the human (or the root orchestrator with human authorization). Each subsequent agent signs a new block that can only narrow the scope of the previous one — you can reduce `max=1000 USDC` to `max=500 USDC` but you cannot expand it. The MCP tool server receiving the invocation block reads the entire chain, validates every signature, and checks the Datalog policies to confirm the full provenance.
+
+In a production multi-agent deployment using Gemini 2.5 Flash, AIP adds 2.35 ms of overhead — 0.086% of total end-to-end latency. Adversarial evaluation across 600 attack attempts showed 100% rejection. Two attack categories are uniquely caught by the chained model that neither unsigned baselines nor plain-JWT deployments catch: **delegation depth violations** (an agent claims it can sub-delegate past a depth limit) and **audit evasion through empty context** (an agent omits its authorization block to avoid logging its scope).
+
+<Artifact slug="the-delegation-chain" />
+
+## The HDP protocol: anchoring to the human
+
+The AIP paper solves agent-to-agent delegation. The HDP paper (arXiv:2604.04522, now an IETF Internet-Draft: `draft-helixar-hdp-agentic-delegation-00`) addresses a narrower but harder problem: proving, at any point in the chain, that a human authorized the original action.
+
+HDP tokens bind a human authorization event to a session identifier and record each subsequent delegation as a signed hop in an append-only Ed25519-signed chain. The critical property is that verification is fully offline — no registry lookup, no third-party trust anchor. Any participant who has the issuer's public key and the current session identifier can verify the entire provenance record.
+
+This matters because on-chain verification is expensive. A system that needs to query a registry or call an oracle to verify an agent delegation is adding latency and a trust dependency. HDP's offline-verification property means an on-chain verifier can check the chain with nothing more than the root public key, which can be stored cheaply as a 32-byte commitment.
+
+The HDP paper identifies a gap that existing standards leave open. OAuth 2.0 Token Exchange (RFC 8693), JWTs (RFC 7519), and UCAN all handle parts of the problem but none address the multi-hop, append-only, human-provenance requirements of agentic systems. UCAN comes closest in structure but lacks the session-scoping and human-provenance-binding that HDP introduces.
+
+## On-chain anchoring: optional, not structural
+
+The interoperable delegation framework paper (arXiv:2601.14982) makes an important architectural distinction: blockchain anchoring is an **optional integrity layer**, not a structural dependency. This is the right framing for a working engineer.
+
+You don't need to write every delegation grant on-chain. The chain would be prohibitively expensive and slow for the sub-second invocations that agents make. What blockchain anchoring *does* provide, when used selectively:
+
+- **Non-repudiation at session boundaries**: anchor the root IBCT (the human's initial authorization) to prove when the session started and what scope was granted. The chain's timestamp is unforgeable.
+- **Revocation**: post a revocation record that any participant can check. More efficient than the IBCT's built-in expiry for long-running sessions where mid-session revocation is needed.
+- **Audit log integrity**: for high-value delegations, anchor the execution record (block 3 in the chained IBCT) alongside the transaction, creating a cryptographic link between the authorization chain and the on-chain outcome.
+
+The pattern mirrors how [ZK coprocessors prove on-chain history](/articles/verifiable-read-zk-coprocessors): you don't prove everything, you prove the commitments that matter and derive the rest locally.
+
+## What to build today
+
+The full standardization picture is still taking shape — AIP, HDP, UCAN, and the W3C DID + Verifiable Credentials stack (arXiv:2605.06738) are not yet consolidated. But the engineering primitives are stable enough to deploy now:
+
+**1. Keypairs at every agent boundary.** Each agent that spawns sub-agents or calls tools should have an Ed25519 keypair. The public key is the identity; the private key signs delegation grants. Key custody for the root (the human-authorized keypair) should follow the same principles as [agent key custody](/articles/agent-key-custody-blast-radius) — session keys with constrained scope.
+
+**2. Compact IBCTs for homogeneous deployments.** If your system is one orchestrator calling tools directly, compact-mode JWTs add 0.22 ms and immediately give every tool server something to verify. At minimum, tools can check that the calling agent is who it claims, even if they can't verify the full chain.
+
+**3. Chained Biscuits for multi-agent pipelines.** If you have orchestrator → sub-agent → tool chains, the compact mode's inability to carry cross-hop provenance becomes a liability. An attacker who compromises the sub-agent can issue compact tokens claiming any iss they like — the tool has no way to check the sub-agent's own delegation. Chained mode closes this because the sub-agent cannot issue a block that exceeds the scope it received.
+
+**4. Anchor root grants, not every hop.** The root grant — "user:alice authorizes agent:orchestrator to pay invoices up to 1000 USDC in this session" — is the right thing to anchor on-chain. It's issued once per session, the cost is negligible, and it creates an immutable timestamp of the authorization scope before any tool calls happen.
+
+**5. Check for delegation depth limits.** The AIP evaluation caught depth-violation attacks that JWT baselines miss. Set `max_depth` in your root grant and verify it at each delegation block. Without this, a compromised sub-agent can spawn its own sub-agents outside the intended topology.
+
+## The accountability gap is the attack surface
+
+The [receipt an agent can't forge](/articles/the-receipt-the-model-cant-forge) covers one half of the verifiability problem: proving what an agent *did*. The delegation chain covers the other half: proving what an agent was *authorized to do*. Both matter, and neither substitutes for the other.
+
+A transaction receipt on Base proves that `transfer_funds()` was called and the transfer occurred. Without a delegation chain anchored to that receipt, you cannot prove from the on-chain record whether the transfer was authorized or whether a compromised agent, an injected instruction, or a malicious tool server inserted itself into the call path. The fact that 2,000 deployed MCP servers have no authentication means this is the current state of production agent systems: the tool executed the call. Whether anyone should have authorized it, nobody checked.
+
+The latency cost of fixing this is 0.22 ms for a single-hop verification and 2.35 ms in a production multi-agent system. The cost of not fixing it is auditable only after the transfer.
 
 ## Takeaways
 
-TODO.
+- **~2,000 deployed MCP servers have zero authentication.** A tool that executes financial operations cannot verify who authorized the agent that called it.
+- **IBCTs add provenance at each delegation hop** — compact JWTs for single-hop (0.049 ms Rust verification), chained Biscuit tokens for multi-agent pipelines. Scope can only narrow at each block.
+- **The HDP IETF draft enables offline human-provenance verification** with nothing more than an Ed25519 public key — no registry, no oracle.
+- **Blockchain anchoring is an optional integrity layer**, not a per-call requirement. Anchor root grants; derive hop-level verification locally.
+- **Delegation depth limits and audit context checks** catch attack categories that unsigned or plain-JWT systems miss entirely.

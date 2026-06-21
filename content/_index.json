@@ -1954,7 +1954,7 @@
       "module": "src/islands/artifacts/the-darwin-machine.ts",
       "url": "/artifacts/the-darwin-machine",
       "title": "The Darwin Machine",
-      "description": "20 weak agents compete for tasks via sealed-bid auctions; bankrupt agents are replaced by mutations of the wealthiest survivors. Watch economic selection pressure raise collective performance past the monolithic baseline. Toggle difficulty, step through rounds, and observe wealth dynamics and bankruptcy cycles.",
+      "description": "20 weak agents bid for tasks; bankrupt agents are replaced by mutations of the wealthiest survivors. Watch economic selection raise collective performance past a stronger monolithic baseline — the Economy of Minds mechanism. Toggle difficulty, step through rounds, observe wealth cycles.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "simulation",

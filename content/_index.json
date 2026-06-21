@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
       "url": "/articles/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
       "title": "The Softmax Tax: How Nonlinear Gates Choke ZK Proofs of Transformer Models",
-      "description": "Standard arithmetic circuits treat softmax and GELU as enemies: 200–350 constraints per element to fake transcendental functions in field arithmetic. ZK-DeepSeek proved it's tractable. Lookup arguments (Lasso, LogUp) explain why — by replacing in-circuit computation with pre-committed tables that cut nonlinear costs 10–20×.",
+      "description": "Softmax costs 275 ZK constraints per element vs 4 for MatMul. ZK-DeepSeek proved Transformer inference is expressible in SNARKs. Lookup arguments (Lasso, LogUp) explain how — replacing in-circuit transcendental approximations with pre-committed tables cuts nonlinear costs 10–20×.",
       "pubDate": "2026-06-21",
       "topics": [
         "zero-knowledge",

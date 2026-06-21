@@ -1,22 +1,117 @@
 ---
 slug: blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline
 title: "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "EIP-4844 blobs look like cheap on-chain storage, but they vanish in 18 days. Here is why DA windows break AI training pipelines and what to use instead."
 pubDate: 2026-06-21T22:31:50.957Z
 author: blokz
 topics: [data, blockchain, web3]
 tags: []
-artifacts: []
+artifacts: [the-availability-cliff]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "EIP-4844: Shard Blob Transactions"
+    url: https://eips.ethereum.org/EIPS/eip-4844
+  - label: "Consensus spec — MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS"
+    url: https://github.com/ethereum/consensus-specs/blob/dev/configs/mainnet.yaml
+  - label: "EIP-7691: Blob throughput increase (Pectra)"
+    url: https://eips.ethereum.org/EIPS/eip-7691
+  - label: "EigenDA: Eigenlayer Data Availability"
+    url: https://docs.eigenlayer.xyz/eigenda/overview
+  - label: "Celestia: Data Availability Layer"
+    url: https://docs.celestia.org/learn/how-celestia-works/data-availability-layer
+  - label: "Filecoin: Storage Deals"
+    url: https://docs.filecoin.io/basics/how-storage-works/storage-deals
+  - label: "Arweave: The Arweave Lightpaper"
+    url: https://www.arweave.org/files/arweave-lightpaper.pdf
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+When Ethereum added blob transactions in the Dencun upgrade (March 2024), builders celebrated. Finally: cheap, native data bandwidth — 128 KB per blob at a fraction of calldata cost. The on-chain pointer persists forever, so the data is "on Ethereum." Surely it can be trusted as a training corpus anchor.
 
-## Section heading
+It cannot. The pointer lives forever; the data itself is gone in roughly 18 days. For an AI training run — which typically replays a dataset over weeks, performs distributed preprocessing, then stores versioned checkpoints for months — that is a critical mismatch. Understanding *why* requires separating two concepts the ecosystem often conflates: **data availability** and **data retrievability**.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## What a Blob Actually Is
+
+A blob transaction (EIP-4844 type 0x03) carries a sidecar of up to six 128 KB blobs alongside the normal transaction fields. Each blob is committed to on-chain via a KZG polynomial commitment: a 48-byte hash that proves, without storing the data itself, that a specific 131,072-byte polynomial was published. The commitment is permanent — it lives in the beacon chain and can be verified forever.
+
+The blob contents are not stored in the execution or consensus layer's permanent state. Instead, consensus nodes gossip blob sidecars across a peer-to-peer network and are required to *serve* them only for:
+
+```
+MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS = 4096 epochs
+```
+
+One epoch is 32 slots × 12 seconds = 384 seconds. So:
+
+```
+4096 × 384 s = 1,572,864 s ÷ 86,400 s/day ≈ 18.2 days
+```
+
+After that window, nodes are free to delete the sidecars and most do. There is no consensus requirement to retain them. A node that pruned them is fully compliant with the protocol.
+
+EIP-7691 (Pectra, May 2025) doubled the target blob count from 3 to 6 per block (max 9). That increased throughput — good for rollups publishing state diffs — but did not change the pruning window. More data can flow through the pipe; the pipe still empties in 18 days.
+
+## Data Availability Is Not Data Retrieval
+
+This distinction is the source of almost every confusion in the space.
+
+**Data availability** (DA) means: a block producer published all the data needed to verify a state transition, and any honest node that tried to download it during the publication window *could* have. It is a *liveness guarantee at publication time*. KZG commitments enable fraud proofs and validity proofs against this published data. EIP-4844's 18-day window is sufficient for rollups posting state diffs — a week gives ample time for any challenger to reconstruct the rollup state and submit a fault proof.
+
+**Data retrievability** means: a named dataset can be downloaded *on demand*, at an arbitrary future time, with a verifiable guarantee of completeness. This is what a training pipeline needs. The training process may not even start until after a project raises funding, assembles compute, and finishes preprocessing — a timeline that regularly exceeds 18 days.
+
+Celestia and EigenDA are DA layers, not storage networks. They solve the same publication-time liveness problem. Celestia's light clients use data availability sampling (DAS): they randomly sample small chunks of each block and, by the birthday bound, can be confident with high probability that the full block was published if enough samples succeed. This is elegant and powerful for its intended use case. It does not mean the data can be retrieved six months later.
+
+## The Training Timeline Problem
+
+Consider a realistic on-chain AI training workflow. An operator commits dataset fingerprints on-chain for auditability, uses blobs for cheap batched data publishing, then trains a model that references those fingerprints.
+
+| Phase | Typical Duration |
+|---|---|
+| Dataset curation + publishing | 1–3 weeks |
+| Preprocessing / tokenization | 3–14 days |
+| Initial training run | 2–8 weeks |
+| Evaluation + ablations | 1–4 weeks |
+| Fine-tuning iterations | 1–6 weeks |
+| **Total** | **2–6 months** |
+
+The blob window closes on day 18. By the time the training run is complete and someone needs to reproduce the result, re-download a corrupted shard, or audit the dataset composition, the raw data is gone from any node that followed protocol. The KZG commitment proves the data *was published* — it cannot reconstruct the bytes.
+
+<Artifact slug="the-availability-cliff" />
+
+The chart above shows five storage strategies against a timeline you can drag. The "cliff" is where each layer's availability guarantee ends. Drag the cursor past day 18 and EIP-4844 blobs fall off. Drag past day 30 and typical Celestia full-node retention ends. Only Filecoin deals (with enforced renewals) and Arweave offer windows long enough for a full training lifecycle.
+
+## What Other DA Layers Offer
+
+**EigenDA** is built on EigenLayer's restaked ETH security model. Operators stake ETH and sign attestations that they are storing a data chunk; the aggregated signature provides an economic guarantee of retention. The default retention window is 14 days — shorter than EIP-4844 blobs. Extended windows up to 90 days are configurable by paying higher operator fees, but this is not the default and is not free. EigenDA targets high throughput (10 MB/s) for rollup batch publishing, not long-term archival.
+
+**Celestia** targets 8 MB per block at 6-second block times. Light clients using DAS can verify a block was published without downloading it fully — this is genuinely useful for modular blockchains. Full nodes that store Celestia data typically retain roughly 30 days of blocks by default. There is no protocol-enforced pruning schedule, but there is also no SLA for retrieval: a node that prunes its history is not slashed or penalized. If you need the data in month 3, you are relying on social goodwill, not cryptographic enforcement.
+
+**Filecoin** is structurally different. A storage deal is a smart contract between a client and a storage provider. The provider must submit Proof-of-Spacetime (PoSt) every 24 hours, proving they still hold the data. A missed proof results in slashing. Minimum deal duration is 180 days (six months); maximum is 540 days. At current market rates, 100 GB stored for 6 months costs roughly $15–20. Deals can be renewed. Retrieval is paid and protocol-enforced. This is the first layer on the list that actually provides the kind of guarantee a training pipeline needs.
+
+**Arweave** takes a different model: a one-time payment funds a storage endowment. The endowment earns interest (in theory) sufficient to pay miners to replicate data in perpetuity. The cryptoeconomic target is 200+ years. Cost for 100 GB is currently $400–800 one-time, compared to the Filecoin 6-month rate — but Arweave's cost is non-recurring. For a dataset that needs to be reproducible forever (a published model's training set, a regulatory audit trail), Arweave is structurally cheaper at the 5-year horizon than renewing Filecoin deals.
+
+## The Right Architecture: Commit On-Chain, Store Off-Chain
+
+The correct pattern for on-chain AI training pipelines is not to use blob space as the storage layer — it is to use blob space as the *commitment layer*:
+
+1. **Hash the dataset** (or dataset shards) with a content-addressable identifier: IPFS CID, Arweave transaction ID, or a Merkle root of Filecoin piece CIDs.
+2. **Publish the identifiers on-chain** via blob transaction or calldata. The commitment is cheap, permanent, and verifiable. The KZG commitment over the blob that contains your CIDs survives forever.
+3. **Store the raw data** on a system with a retrieval SLA long enough for your use case: Filecoin for a 6–18 month pipeline, Arweave for indefinite preservation.
+4. **Verify on access**: before training begins, recompute the hash of the retrieved data against the on-chain commitment. The chain proves *what* was committed; the hash proves the retrieved data *is* what was committed.
+
+This pattern is not novel — it is how IPFS pinning services and Filecoin storage clients are designed to work together. What is new is applying it deliberately in a training pipeline where the on-chain commitment is part of a model provenance trail that regulators, auditors, or decentralized governance may later inspect.
+
+## The Deeper Issue: What DAS Proves and What It Does Not
+
+Data availability sampling is widely cited as the breakthrough that makes sharded blockchains possible without trusting a committee to hold the data. The core claim: a light client that samples a random 1% of chunks from a block can be confident, with overwhelming probability, that the full block was published — because an adversarial block producer cannot hide 1% of chunks without hiding too much to reconstruct the block.
+
+This is correct for its stated purpose. But "was published" and "can be retrieved in six months" are different propositions. DAS proves liveness at a moment in time. It proves nothing about persistence. A system that uses DAS correctly still has no mechanism for a client to demand retrieval of six-month-old data from a node that chose to prune it.
+
+The gap is not a flaw in DAS — it is a scope boundary. DAS was designed to make *block validation* trustless, not to be a retrieval protocol. Conflating the two is a category error that leads builders to anchor training datasets in blob space and then wonder why they cannot reproduce training runs.
 
 ## Takeaways
 
-TODO.
+- EIP-4844 blobs are pruned after 18.2 days by protocol. This is expected and correct for rollups. It is fatal for training pipelines that outlast that window.
+- Data availability (was the data published?) and data retrievability (can I get it now?) are distinct properties. No DA layer — Ethereum, EigenDA, or Celestia — provides long-term retrieval guarantees.
+- Filecoin storage deals provide retrieval SLAs through on-chain enforcement (PoSt slashing), making them the minimum viable storage layer for a training corpus that needs to be re-accessed mid-run.
+- Arweave is economically superior to repeated Filecoin renewals at the 5-year+ horizon, at the cost of a larger upfront payment.
+- The correct architecture commits identifiers (CIDs, Merkle roots) on-chain and stores the raw bytes off-chain in a system with an enforced retrieval guarantee.
+- Pectra's EIP-7691 increases blob throughput but does not extend the pruning window. More bandwidth through the same 18-day pipe does not help.

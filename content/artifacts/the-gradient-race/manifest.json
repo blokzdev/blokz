@@ -1,0 +1,14 @@
+{
+  "slug": "the-gradient-race",
+  "title": "The Gradient Race",
+  "description": "What happens when copying dominates computing in a permissionless training network. Two loss curves — with and without Gauntlet's uniqueness enforcement — diverge as rational miners defect. Tune the compute burden and miner count; watch the copier fraction and training loss respond.",
+  "pubDate": "2026-06-21T14:27:43.242Z",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "tokenomics"
+  ],
+  "featured": false,
+  "controls": ["drag miners slider", "drag compute burden slider"]
+}

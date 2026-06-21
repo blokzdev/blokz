@@ -1,26 +1,53 @@
 {
   "counts": {
-    "articles": 67,
-    "artifacts": 68
+    "articles": 68,
+    "artifacts": 69
   },
   "topicCounts": {
-    "agents": 25,
+    "agents": 26,
     "ai": 4,
     "blockchain": 13,
     "cryptography": 10,
     "data": 8,
-    "defi": 15,
+    "defi": 16,
     "infrastructure": 30,
     "llm": 14,
     "machine-learning": 31,
     "research": 1,
     "security": 21,
-    "smart-contracts": 11,
+    "smart-contracts": 12,
     "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 7
   },
   "articles": [
+    {
+      "slug": "the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents",
+      "path": "content/articles/2026/06/the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents/index.mdx",
+      "url": "/articles/the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents",
+      "title": "The Borrowed Block: Flash Loans as Zero-Collateral Primitives for AI DeFi Agents",
+      "description": "A flash loan gives an AI agent $1M with no collateral — and demands it back plus 0.05% before the block ends. The atomic callback constraint is both what makes flash loans safe and what forces an agent to solve its entire strategy before touching the chain.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "agents",
+        "smart-contracts"
+      ],
+      "tags": [
+        "flash-loans",
+        "aave",
+        "atomic-arbitrage",
+        "eip-3156",
+        "capital-efficiency",
+        "atomicity",
+        "collateral-swap"
+      ],
+      "artifacts": [
+        "the-flash-loan-machine"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-permission-wall-how-5-billion-in-tokenized-treasuries-locks-out-autonomous-agents",
       "path": "content/articles/2026/06/the-permission-wall-how-5-billion-in-tokenized-treasuries-locks-out-autonomous-agents/index.mdx",
@@ -1781,6 +1808,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-flash-loan-machine",
+      "path": "content/artifacts/the-flash-loan-machine/manifest.json",
+      "module": "src/islands/artifacts/the-flash-loan-machine.ts",
+      "url": "/artifacts/the-flash-loan-machine",
+      "title": "The Flash Loan Machine",
+      "description": "Step through a flash loan transaction — three strategies (triangular arb, collateral swap, self-liquidation), same atomic structure. The amber step is the only place the AI agent reasons; everything after it is deterministic EVM. Tap a strategy chip, then tap any step.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-kyc-gate",
       "path": "content/artifacts/the-kyc-gate/manifest.json",

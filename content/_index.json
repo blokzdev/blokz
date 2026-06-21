@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 74,
-    "artifacts": 75
+    "articles": 75,
+    "artifacts": 76
   },
   "topicCounts": {
-    "agents": 27,
+    "agents": 28,
     "ai": 6,
     "blockchain": 16,
     "cryptography": 12,
     "data": 9,
     "defi": 16,
     "infrastructure": 32,
-    "llm": 15,
+    "llm": 16,
     "machine-learning": 32,
     "research": 2,
     "security": 23,
     "smart-contracts": 13,
-    "tokenomics": 8,
+    "tokenomics": 9,
     "web3": 9,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents",
+      "title": "Inference at the Margin: The Token Budget Problem for On-Chain AI Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "agents",
+        "llm",
+        "tokenomics"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop",
       "path": "content/articles/2026/06/the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop/index.mdx",
@@ -1978,6 +1995,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-token-margin",
+      "path": "content/artifacts/the-token-margin/manifest.json",
+      "module": "src/islands/artifacts/the-token-margin.ts",
+      "url": "/artifacts/the-token-margin",
+      "title": "The Token Margin",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "llm",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-ip-nft-pipeline",
       "path": "content/artifacts/the-ip-nft-pipeline/manifest.json",

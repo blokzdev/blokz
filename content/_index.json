@@ -1,26 +1,54 @@
 {
   "counts": {
-    "articles": 71,
-    "artifacts": 72
+    "articles": 72,
+    "artifacts": 73
   },
   "topicCounts": {
     "agents": 26,
     "ai": 4,
-    "blockchain": 14,
-    "cryptography": 11,
+    "blockchain": 15,
+    "cryptography": 12,
     "data": 8,
     "defi": 16,
     "infrastructure": 32,
     "llm": 15,
     "machine-learning": 32,
     "research": 1,
-    "security": 22,
+    "security": 23,
     "smart-contracts": 13,
     "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
+      "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
+      "url": "/articles/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
+      "title": "Harvest Now, Decrypt Later: The Quantum Threat to AI Agent Wallets",
+      "description": "Every ECDSA signature broadcasts the wallet's public key. A March 2026 Google/EF paper tightens the quantum break estimate to ~500k physical qubits — here's what that means for autonomous AI agent wallets.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "cryptography",
+        "security",
+        "blockchain"
+      ],
+      "tags": [
+        "quantum",
+        "secp256k1",
+        "post-quantum",
+        "ecdsa",
+        "crqc",
+        "eip-7702",
+        "ml-dsa",
+        "harvest-now-decrypt-later"
+      ],
+      "artifacts": [
+        "the-qubit-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
       "path": "content/articles/2026/06/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification/index.mdx",
@@ -1892,6 +1920,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-qubit-gap",
+      "path": "content/artifacts/the-qubit-gap/manifest.json",
+      "module": "src/islands/artifacts/the-qubit-gap.ts",
+      "url": "/artifacts/the-qubit-gap",
+      "title": "The Qubit Gap",
+      "description": "Log-scale chart comparing physical qubit counts in today's best quantum hardware against the ~500,000-qubit threshold needed to break secp256k1. Tap a chip to see how far it falls short.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "security",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "bridge-trust-spectrum",
       "path": "content/artifacts/bridge-trust-spectrum/manifest.json",

@@ -1,0 +1,113 @@
+---
+slug: the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models
+title: "The Softmax Tax: How Nonlinear Gates Choke ZK Proofs of Transformer Models"
+description: "Softmax costs 275 ZK constraints per element vs 4 for MatMul. ZK-DeepSeek proved Transformer inference is expressible in SNARKs. Lookup arguments (Lasso, LogUp) explain how — replacing in-circuit transcendental approximations with pre-committed tables cuts nonlinear costs 10–20×."
+pubDate: 2026-06-21T20:30:17.288Z
+author: blokz
+topics: [zero-knowledge, cryptography, machine-learning]
+tags: [zkml, lookup-arguments, lasso, logup, plookup, transformer, softmax, constraint-budget, snark, arithmetic-circuit]
+artifacts: [the-softmax-constraint-map]
+difficulty: intermediate
+sources:
+  - label: "ZK-DeepSeek — Zero-Knowledge Proof Based Verifiable Inference of Models (arXiv:2511.19902)"
+    url: "https://arxiv.org/abs/2511.19902"
+  - label: "JSTprove — Pioneering Verifiable AI for a Trustless Future (arXiv:2510.21024)"
+    url: "https://arxiv.org/abs/2510.21024"
+  - label: "Unlocking the Lookup Singularity with Lasso — Setty & Lee (2023)"
+    url: "https://eprint.iacr.org/2023/1216"
+  - label: "Multivariate lookups based on logarithmic derivatives — Haböck (2022)"
+    url: "https://eprint.iacr.org/2022/1530"
+  - label: "ezkl: make ZK claims about ML models"
+    url: "https://github.com/zkonduit/ezkl"
+---
+
+In November 2025, a paper called ZK-DeepSeek appeared. It proved that a Transformer attention layer had executed correctly — without revealing the model's weights — using a zero-knowledge proof system built on recursively composed zkSNARKs. The achievement was real. The headline writes itself: ZK proof of a frontier AI model.
+
+What the headline doesn't tell you is the proportion. The circuit that encodes a single Transformer block spends roughly **80–95% of its constraint budget on three operations that together do less than 1% of the model's floating-point work**: softmax, LayerNorm, and the activation function. Those three operations are what make a ZK proof of a Transformer block expensive — and they're expensive for one specific reason that is entirely fixable in principle: standard arithmetic circuits are fundamentally hostile to transcendental functions.
+
+Understanding the hostility, and how lookup arguments neutralize it, is the current technical frontier of zkML.
+
+## Field Arithmetic Does Not Know What e^x Is
+
+A zero-knowledge proof system works in a *finite field* — integers modulo a large prime, typically a 254-bit prime for SNARK-based systems like Groth16 or PLONK. Addition and multiplication in this field are cheap: each operation is one *constraint* in the circuit, a gate that the proving system audits.
+
+The problem is that a Transformer is not made of additions and multiplications. It contains:
+
+- **Softmax**: computes exp(xᵢ)/Σexp(xⱼ) for each attention weight. Exponential functions have no polynomial representation over finite fields. You must approximate them.
+- **LayerNorm**: divides by a standard deviation, which requires a square root. Square roots are also non-native.
+- **GELU/SiLU**: activation functions built on erf() and sigmoid() — again, transcendental.
+- **The residual connections and linear projections** (matmul): native field arithmetic — cheap.
+
+To handle softmax in an arithmetic circuit without lookups, you have two options:
+
+**Option 1 — polynomial approximation.** Fit a piecewise polynomial to exp(x) over a bounded range. Each piece requires tens of polynomial terms, each term is a constraint, and you need separate range checks to verify which piece applies. The total for a single softmax element lands in the **200–350 constraint range**, depending on precision requirements.
+
+**Option 2 — bit decomposition.** Decompose each value into its binary representation (16 or 32 bits), compute the function bit-by-bit, and recompose. This is expensive in a different way — you need one constraint per bit plus reconstruction logic. A 16-bit value decomposition costs 16 bit constraints plus ~30 range-check constraints — better for some functions, worse for others.
+
+Neither option is good. A matrix multiply costs roughly 4 constraints per output element (two multiplications + two additions for accumulation). Softmax costs 200-350. LayerNorm costs 100-200. GELU costs 300-500. The ratio is 50–100×.
+
+Scale that up: a single attention head in a 7B model processes sequences of length 2,048 across a 128-dimensional key/query space. Each softmax attention score requires 200+ constraints. The attention layer alone contributes hundreds of millions of constraints before you reach the feed-forward block. **Proving a single layer of a 7B model with a naive arithmetic circuit would require quadrillions of constraints** — simply not feasible.
+
+## ezkl and the Current Production Range
+
+The practical state of zkML is well-documented by [ezkl](https://github.com/zkonduit/ezkl), the open-source library that has been the main deployment platform for verifiable ML since 2023. On modern hardware:
+
+- MNIST classifiers (~26K parameters): ~2 seconds proof generation
+- ResNet-18 (~11M parameters): ~30 seconds proof generation
+- GPT-2 small (~124M parameters): hours, depending on sequence length
+
+The constraint count scales linearly with parameter count but super-linearly with the proportion of nonlinear operations. A ResNet-18 is dominated by ReLU activations — at ~40 constraints each without lookups, they're expensive but manageable. A Transformer with softmax everywhere is much worse.
+
+The ZK-DeepSeek paper's contribution is proving that the *recursive composition* approach — where you prove each layer independently and compose the proofs — can handle normalization and softmax within a zkSNARK framework, without a trusted setup. The paper demonstrates both efficiency and flexibility in real-world workloads. It's a proof of feasibility, not a production prover. The breakthrough matters because it showed the full operation class of a Transformer is *expressible*, not because the proving times are yet competitive with the operation itself.
+
+## The Lookup Singularity
+
+The term "lookup singularity" was coined in 2022 to describe a predicted phase transition in ZK proof systems: once lookup arguments become efficient enough, the cost of proving arbitrary computations (including transcendental functions) should converge toward the cost of simply looking up pre-computed answers in a table.
+
+The trajectory got there through three generations of lookup arguments:
+
+**Plookup (Gabizon & Williamson, 2020)** was the first practical lookup argument. It allows a prover to demonstrate that a value appears in a pre-committed lookup table, using a product-check argument over the polynomial. Cost: roughly one constraint per lookup, plus a commitment overhead proportional to table size. For a 16-bit lookup table (65,536 entries), the overhead is ~1,000 constraints amortized — expensive but now tractable.
+
+**LogUp (Haböck, 2022)** replaced the product check with a sum over logarithmic derivatives, reducing the argument to a sumcheck that works in extension fields. The key improvement: the argument can be batched across many lookups sharing the same table, amortizing the overhead dramatically. For a Transformer attention layer, where many elements look up the same exp() table, LogUp reduces softmax constraint overhead to roughly **20–40 constraints per element** — a 7–14× improvement over polynomial approximation.
+
+**Lasso (Setty & Lee, 2023)** pushed further: by decomposing large lookups into smaller sub-tables and using a multilinear polynomial commitment instead of univariate, Lasso achieves prover time *sublinear in the table size* — critical for 32-bit lookup tables (over 4 billion entries) needed for full-precision Transformer arithmetic. The paper frames this explicitly as "unlocking the lookup singularity."
+
+Together, these developments mean that softmax, LayerNorm, and GELU are no longer pathologically expensive to prove. They're expensive, but in the same *order of magnitude* as the linear operations. The constraint breakdown shifts from 80-95% nonlinear to something closer to 40-60% — enough to make proofs of real Transformer layers tractable.
+
+<Artifact slug="the-softmax-constraint-map" />
+
+## Expander and GPU-Accelerated Lookup Proofs
+
+The JSTprove toolkit (arXiv:2510.21024) wraps the Expander proof backend from Polyhedra Network, which implements a GKR-based proof system with Lasso-style lookups and GPU acceleration. The Goldwasser-Kalai-Rothblum (GKR) protocol is particularly suited to layered arithmetic circuits like Transformer blocks: each layer's output feeds the next, and the sumcheck protocol processes all layers in a single pass.
+
+What Expander adds is hardware parallelism. The inner products and sumchecks at the core of GKR-based proving are batched matrix operations — almost identical to the operations the GPU is already running for inference. This means the same H100 that runs the model can accelerate the proof. JSTprove reports roughly **10× GPU speedup over CPU provers** for ML inference verification workloads, using the Expander backend.
+
+This convergence — proof-generating hardware = inference hardware — is precisely what the [Proving as Matmul](/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs) article documented for ZK proof generation more broadly. The lookup argument improvements are the algorithmic complement to the hardware speedup: they change what goes into the GPU kernels, not just how fast the kernels run.
+
+## The Production Threshold
+
+Where does this leave the engineering problem? Three gaps remain between today's research provers and production deployment:
+
+**Proof time vs. inference time.** A Transformer forward pass runs in milliseconds. A ZK proof of that pass currently takes minutes to hours for meaningful model sizes, even with Expander's GPU acceleration. The 1,000× overhead figure in the title is a useful benchmark: it comes from comparing inference time on modern hardware against proof generation time for equivalent model sizes in today's best lookup-based systems. The [Price of Trust](/artifacts/price-of-trust) artifact captures this overhead hierarchy across all verification approaches.
+
+**Recursion depth.** Recursive proof composition (proving that a proof is valid without revealing the underlying computation) adds another overhead layer. ZK-DeepSeek uses recursive SNARKs to handle multiple layers, but each recursion step requires its own circuit — compounding the total proving time. The research frontier for 2026 is *efficient recursive composition with lookups*, which requires lookup arguments to be expressible within the recursion's inner circuit.
+
+**Quantization vs. precision.** Most zkML systems require quantized models (INT8 or INT4) because floating-point arithmetic in finite fields is even more constrained than fixed-point. But quantization changes model behavior. A ZK proof of a quantized model proves that the *quantized* computation ran correctly — not that it approximates the full-precision model. This gap, documented extensively by [ezkl's own team](https://github.com/zkonduit/ezkl), means that "verifiable AI" currently has a precision qualifier attached.
+
+The combination — lookup arguments × GPU prover × recursive composition — defines the path to proving a full 7B Transformer layer in under a minute. No single system today deploys all three at scale. But ZK-DeepSeek and JSTprove together demonstrate that the component technologies exist. The integration problem is what remains.
+
+## Why It Matters for On-Chain AI
+
+The applications that motivate on-chain AI verification are specific: an AI agent executes a strategy on your behalf, and you want cryptographic proof that the model which ran was the claimed model and that the inference was computed honestly. The [Receipt the Model Can't Forge](/articles/the-receipt-the-model-cant-forge) article described why the chain alone can't prove inference; TEE attestation is the practical compromise; zkML is the long-term cryptographic ideal.
+
+What lookup arguments change in this picture: they reduce the specific cost that was previously prohibitive. The nonlinear operations (softmax, LayerNorm, GELU) are not incidental to Transformer inference — they are the Transformer. A ZK proof system that couldn't handle them efficiently could prove toy models but not anything a rational agent would use. Lookup arguments close that gap.
+
+The remaining 1,000× overhead is real engineering work, not a theoretical barrier. It will compress as hardware improves, as proof systems optimize their inner circuits, and as model architectures converge on forms that are lookup-friendly. When it does, the verification layer for on-chain AI transitions from a trusted hardware assumption (TEE) to a cryptographic one.
+
+## Takeaways
+
+- **The constraint budget is dominated by nonlinearities.** Softmax, LayerNorm, and GELU together account for 80–95% of the constraint count in a naive Transformer ZK circuit despite representing less than 1% of the floating-point operations.
+- **Lookup arguments are the algorithmic fix.** Plookup (2020) → LogUp (2022) → Lasso (2023) progressively made it cheaper to prove "this value came from this table" rather than proving "I computed this transcendental function in-circuit." Nonlinear constraint counts drop 10–20×.
+- **ZK-DeepSeek proved feasibility; Expander/JSTprove added GPU throughput.** Neither is a production prover for 7B+ models, but together they demonstrate the full technical stack.
+- **The gap to production is ~1,000×** in proof time relative to inference time, bridgeable through recursive composition improvements, hardware scaling, and lookup-aware circuit design.
+- **Quantization is the hidden qualifier.** Current zkML proofs verify quantized forward passes, not full-precision ones. That distinction matters for high-stakes agent deployments.

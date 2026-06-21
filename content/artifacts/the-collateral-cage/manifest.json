@@ -1,0 +1,25 @@
+{
+  "slug": "the-collateral-cage",
+  "title": "The Collateral Cage",
+  "description": "See exactly how DeFi overcollateralization locks capital as a credit tax. Adjust loan amount, collateral asset, and credit tier to watch the cage shrink — or disappear entirely — as on-chain reputation improves.",
+  "pubDate": "2026-06-21T17:30:14.597Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "data",
+    "defi",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag loan amount slider to resize",
+    "click collateral asset to compare assets",
+    "click credit tier to see how reputation reduces the cage"
+  ],
+  "dataSource": {
+    "label": "Aave V3 Risk Parameters — Official Documentation",
+    "url": "https://docs.aave.com/risk/asset-risk/risk-parameters"
+  },
+  "dataAsOf": "2026-06-21"
+}

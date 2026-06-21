@@ -1,22 +1,22 @@
 {
   "counts": {
-    "articles": 80,
-    "artifacts": 81
+    "articles": 81,
+    "artifacts": 82
   },
   "topicCounts": {
     "agents": 30,
     "ai": 7,
     "blockchain": 16,
     "cryptography": 13,
-    "data": 10,
-    "defi": 17,
+    "data": 11,
+    "defi": 18,
     "infrastructure": 32,
     "llm": 16,
     "machine-learning": 35,
     "research": 3,
     "security": 23,
     "smart-contracts": 14,
-    "tokenomics": 11,
+    "tokenomics": 12,
     "web3": 10,
     "zero-knowledge": 9
   },
@@ -71,6 +71,35 @@
       ],
       "artifacts": [
         "the-token-margin"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "collateral-without-reputation-the-on-chain-credit-problem-for-ai-agent-wallets",
+      "path": "content/articles/2026/06/collateral-without-reputation-the-on-chain-credit-problem-for-ai-agent-wallets/index.mdx",
+      "url": "/articles/collateral-without-reputation-the-on-chain-credit-problem-for-ai-agent-wallets",
+      "title": "Collateral Without Reputation: The On-Chain Credit Problem for AI Agent Wallets",
+      "description": "To borrow $100 in DeFi, you lock $125–167 in collateral. That gap is the price of trustlessness — and AI agents pay it the same as anyone. On-chain credit scoring is emerging to close it, but the signals that work for humans fail for agents that can spin up new addresses in milliseconds.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "data",
+        "defi",
+        "tokenomics"
+      ],
+      "tags": [
+        "overcollateralization",
+        "credit-scoring",
+        "aave",
+        "maple-finance",
+        "ltv",
+        "undercollateralized-lending",
+        "ai-agents",
+        "defi-lending",
+        "occr"
+      ],
+      "artifacts": [
+        "the-collateral-cage"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2163,6 +2192,23 @@
       "topics": [
         "agents",
         "llm",
+        "tokenomics"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-collateral-cage",
+      "path": "content/artifacts/the-collateral-cage/manifest.json",
+      "module": "src/islands/artifacts/the-collateral-cage.ts",
+      "url": "/artifacts/the-collateral-cage",
+      "title": "The Collateral Cage",
+      "description": "See exactly how DeFi overcollateralization locks capital as a credit tax. Adjust loan amount, collateral asset, and credit tier to watch the cage shrink — or disappear entirely — as on-chain reputation improves.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "data",
+        "defi",
         "tokenomics"
       ],
       "draft": false

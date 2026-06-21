@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 61,
-    "artifacts": 62
+    "articles": 62,
+    "artifacts": 63
   },
   "topicCounts": {
     "agents": 24,
@@ -10,17 +10,43 @@
     "cryptography": 9,
     "data": 8,
     "defi": 13,
-    "infrastructure": 27,
+    "infrastructure": 28,
     "llm": 13,
-    "machine-learning": 29,
+    "machine-learning": 30,
     "research": 1,
     "security": 20,
     "smart-contracts": 11,
     "tokenomics": 6,
     "web3": 8,
-    "zero-knowledge": 5
+    "zero-knowledge": 6
   },
   "articles": [
+    {
+      "slug": "prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces",
+      "path": "content/articles/2026/06/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces/index.mdx",
+      "url": "/articles/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces",
+      "title": "Prove It Without Showing It: Zero-Knowledge Verification for LoRA Adapter Marketplaces",
+      "description": "ZKLoRA lets a LoRA seller prove adapter compatibility with your base model without exposing the weights. The verifier checks in 1–2 s — but the prover bears 31–74 s per module, and the protocol is interactive, which puts trustless on-chain settlement just out of reach.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "zklora",
+        "lora",
+        "adapter-marketplace",
+        "proof-system",
+        "mpc",
+        "model-ip"
+      ],
+      "artifacts": [
+        "the-provers-bargain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "noise-you-cant-audit-differential-privacy-in-on-chain-data-markets",
       "path": "content/articles/2026/06/noise-you-cant-audit-differential-privacy-in-on-chain-data-markets/index.mdx",
@@ -1629,6 +1655,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-provers-bargain",
+      "path": "content/artifacts/the-provers-bargain/manifest.json",
+      "module": "src/islands/artifacts/the-provers-bargain.ts",
+      "url": "/artifacts/the-provers-bargain",
+      "title": "The Prover's Bargain",
+      "description": "ZKLoRA proof times across six base models: the prover bears 31–74 s of computation per LoRA module while the verifier spends 1–2 s. Toggle per-module vs full adapter set; tap a model to see total prover and verifier work — the asymmetry is the deal.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-privacy-budget",
       "path": "content/artifacts/the-privacy-budget/manifest.json",

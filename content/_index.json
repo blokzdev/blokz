@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 73,
-    "artifacts": 74
+    "articles": 74,
+    "artifacts": 75
   },
   "topicCounts": {
     "agents": 27,
-    "ai": 5,
+    "ai": 6,
     "blockchain": 16,
     "cryptography": 12,
-    "data": 8,
+    "data": 9,
     "defi": 16,
     "infrastructure": 32,
     "llm": 15,
     "machine-learning": 32,
-    "research": 1,
+    "research": 2,
     "security": 23,
     "smart-contracts": 13,
     "tokenomics": 8,
@@ -21,6 +21,34 @@
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop",
+      "path": "content/articles/2026/06/the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop/index.mdx",
+      "url": "/articles/the-longevity-ledger-inside-vitadaos-ip-nft-and-the-ai-research-loop",
+      "title": "The Longevity Ledger: Inside VitaDAO's IP-NFT and the AI Research Loop",
+      "description": "VitaDAO mints a Molecule IP-NFT — an ERC-721 pointing to a legal research agreement on IPFS — then fractionalizes it into ERC-20 tokens for community funding. Now AutoScientists runs the experiments at machine speed. Here is what the chain actually proves, and what it doesn't.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "ai",
+        "research",
+        "data"
+      ],
+      "tags": [
+        "vitadao",
+        "desci",
+        "ip-nft",
+        "molecule",
+        "autoscientists",
+        "longevity",
+        "drug-discovery",
+        "fractionalization"
+      ],
+      "artifacts": [
+        "the-ip-nft-pipeline"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
       "path": "content/articles/2026/06/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents/index.mdx",
@@ -1950,6 +1978,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-ip-nft-pipeline",
+      "path": "content/artifacts/the-ip-nft-pipeline/manifest.json",
+      "module": "src/islands/artifacts/the-ip-nft-pipeline.ts",
+      "url": "/artifacts/the-ip-nft-pipeline",
+      "title": "The IP-NFT Pipeline",
+      "description": "The six-step lifecycle of a Molecule IP-NFT: from Snapshot vote to on-chain revenue share. Click any stage for verified gas costs, contract addresses, and real numbers from the VITA-FAST fractionalization.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "ai",
+        "research"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-finality-ladder",
       "path": "content/artifacts/the-finality-ladder/manifest.json",

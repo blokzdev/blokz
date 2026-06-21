@@ -1,0 +1,16 @@
+{
+  "slug": "the-thinking-ledger",
+  "title": "The Thinking Ledger",
+  "description": "How much of a reasoning model's output is actually thinking? For three model tiers at three task difficulties, stacked bars show thinking tokens dwarfing output — then a scheme matrix shows which verification schemes can see the thinking and which attest to the answer alone.",
+  "pubDate": "2026-06-21",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": ["llm", "zero-knowledge", "infrastructure"],
+  "featured": false,
+  "controls": ["tap a difficulty tab to change task complexity", "tap a scheme row to see its coverage detail"],
+  "dataSource": {
+    "label": "DeepSeek-R1 paper (arXiv:2501.12948); CoIn audit paper (arXiv:2505.13778)",
+    "url": "https://arxiv.org/abs/2501.12948"
+  },
+  "dataAsOf": "2026-06-21"
+}

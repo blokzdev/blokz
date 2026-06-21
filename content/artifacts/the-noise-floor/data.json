@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "tradePaper": "Trade-R1: Bridging Verifiable Rewards to Stochastic Environments via Process-Level Reasoning Verification, arXiv:2601.03948",
+    "rlvrPaper": "Verifiable Process Rewards for Agentic Reasoning, arXiv:2605.10325",
+    "rlhfPaper": "Exploring Data Scaling Trends and Effects in RLHF, arXiv:2503.22230",
+    "volSource": "ETH/USDT daily OHLCV, Crypto.com Exchange",
+    "volPeriod": "2026-05-22 to 2026-06-21 (30 trading days)",
+    "volDataAsOf": "2026-06-21"
+  },
+  "ethVol": {
+    "dailyPct": 3.46,
+    "annualizedPct": 66.1,
+    "periodDays": 30,
+    "note": "30-day realized volatility computed from daily close log-returns"
+  },
+  "domains": [
+    {
+      "id": "math",
+      "label": "Math RL",
+      "example": "DeepSeek-R1",
+      "color": "#5fd39b",
+      "alphaPct": 40.0,
+      "sigmaPct": 2.0,
+      "signalsPerDay": 5000000,
+      "note": "Binary correct/incorrect; σ≈0 in the limit. Even with 2% grading noise, 95% confidence by episode 7."
+    },
+    {
+      "id": "code",
+      "label": "Code RL",
+      "example": "SWE-bench RLVR",
+      "color": "#7c8cff",
+      "alphaPct": 25.0,
+      "sigmaPct": 8.0,
+      "signalsPerDay": 50000,
+      "note": "Test-suite pass/fail with flakiness; strong signal-to-noise ratio."
+    },
+    {
+      "id": "defi",
+      "label": "DeFi on-chain",
+      "example": "ETH perps baseline",
+      "color": "#f0883e",
+      "alphaPct": 0.1,
+      "sigmaPct": 3.46,
+      "signalsPerDay": 20,
+      "note": "P&L per trade as reward; market noise dominates the skill signal."
+    },
+    {
+      "id": "defi_process",
+      "label": "DeFi + process rewards",
+      "example": "Trade-R1 style",
+      "color": "#22d3ee",
+      "processMultiplier": 10,
+      "alphaPct": 0.1,
+      "sigmaPct": 3.46,
+      "signalsPerDay": 200,
+      "note": "Simulation-in-the-loop densifies signal 10× before committing to the chain."
+    }
+  ],
+  "defaults": {
+    "sigmaPct": 3.46,
+    "alphaPct": 0.1,
+    "tradesPerDay": 20
+  },
+  "benchmarks": {
+    "defi_n95_default": 4598,
+    "defi_days95_default": 230,
+    "defi_process_n95_default": 460,
+    "defi_process_days95_default": 23,
+    "math_n95": 7,
+    "code_n95": 4
+  }
+}

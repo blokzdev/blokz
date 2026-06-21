@@ -1,0 +1,20 @@
+{
+  "slug": "the-softmax-constraint-map",
+  "title": "The Softmax Constraint Map",
+  "description": "Constraint cost per Transformer operation in a ZK circuit — without and with lookup arguments. Softmax (275→30), LayerNorm (150→20), and GELU (400→40) dominate the budget until Lasso/LogUp replace in-circuit transcendental approximations with table lookups. Tap a row to inspect.",
+  "pubDate": "2026-06-21T20:33:53.404Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "800/430",
+  "featured": false,
+  "controls": ["tap operation row to inspect", "both states always visible: orange = no lookups, cyan = with lookups"],
+  "dataSource": {
+    "label": "ZK-DeepSeek arXiv:2511.19902; ezkl benchmarks; Haböck LogUp 2022/1530; Setty & Lee Lasso 2023/1216",
+    "url": "https://arxiv.org/abs/2511.19902"
+  },
+  "dataAsOf": "2026-06-21"
+}

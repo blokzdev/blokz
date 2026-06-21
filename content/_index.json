@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 82,
-    "artifacts": 83
+    "articles": 83,
+    "artifacts": 84
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
-    "blockchain": 16,
+    "blockchain": 17,
     "cryptography": 13,
     "data": 11,
-    "defi": 18,
-    "infrastructure": 32,
+    "defi": 19,
+    "infrastructure": 33,
     "llm": 16,
     "machine-learning": 35,
     "research": 3,
@@ -21,6 +21,35 @@
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line",
+      "path": "content/articles/2026/06/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line/index.mdx",
+      "url": "/articles/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line",
+      "title": "The Builder Oligopoly: Private Orderflow, Builder Bonds, and What AI Agents Pay to Skip the Line",
+      "description": "Five builders now win 96.7% of Ethereum blocks. Their edge isn't compute — it's exclusive orderflow: 12% of transactions that generate 54.59% of block value. AI agents transacting in public have to understand where they sit in that hierarchy — and when a preconfirmation changes the math.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "infrastructure",
+        "blockchain",
+        "defi"
+      ],
+      "tags": [
+        "mev",
+        "pbs",
+        "proposer-builder-separation",
+        "private-orderflow",
+        "mev-boost",
+        "preconfirmations",
+        "mev-commit",
+        "block-building",
+        "builder-concentration"
+      ],
+      "artifacts": [
+        "the-mev-supply-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
       "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
@@ -2191,6 +2220,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-mev-supply-chain",
+      "path": "content/artifacts/the-mev-supply-chain/manifest.json",
+      "module": "src/islands/artifacts/the-mev-supply-chain.ts",
+      "url": "/artifacts/the-mev-supply-chain",
+      "title": "The MEV Supply Chain",
+      "description": "Interactive diagram of Ethereum's PBS pipeline — Searcher, Builder, Relay, Proposer, Block — with builder concentration numbers, private orderflow paths, and the mev-commit preconf feedback arc.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "infrastructure",
+        "blockchain",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-softmax-constraint-map",
       "path": "content/artifacts/the-softmax-constraint-map/manifest.json",

@@ -1,7 +1,7 @@
 {
   "slug": "the-aum-gap",
   "title": "The AUM Gap",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Log-scale comparison of MC/AUM ratios across AI agent tokens and DeFi protocols, plus gain distribution across 925k holders. Click bars to explore.",
   "pubDate": "2026-06-21T01:28:46.751Z",
   "type": "svg",
   "archetype": "chart",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "dataSource": {
+    "label": "Yu, Zhao, Sui (2026) \"Paper Agents, Paper Gains\" arXiv:2605.29174; Crypto.com Exchange 2026-06-21",
+    "url": "https://arxiv.org/abs/2605.29174"
+  },
+  "dataAsOf": "2026-06-21",
+  "controls": [
+    "Toggle between MC/AUM Ratio view and Who Profited view using the tab buttons",
+    "Click any bar to see detailed data in the panel"
+  ]
 }

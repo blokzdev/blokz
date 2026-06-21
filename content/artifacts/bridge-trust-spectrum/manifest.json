@@ -1,16 +1,17 @@
 {
   "slug": "bridge-trust-spectrum",
   "title": "Bridge Trust Spectrum",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Six cross-chain protocols mapped as a trust topology. Each connects Ethereum to other chains — but their security assumptions span multi-sig keys to ZK consensus proofs. Tap a protocol to see its trust threshold, verification gas, and hack history.",
   "pubDate": "2026-06-21T09:28:55.001Z",
   "type": "svg",
   "archetype": "map",
-  "topics": [
-    "security",
-    "cryptography",
-    "infrastructure"
-  ],
-  "aspect": "16/9",
+  "topics": ["security", "cryptography", "infrastructure"],
+  "aspect": "7/6",
   "featured": false,
-  "controls": []
+  "controls": ["tap a protocol button to highlight its connections", "tap All to reset"],
+  "dataSource": {
+    "label": "DeFiLlama hacks, protocol docs, arXiv:2210.00264",
+    "url": "https://defillama.com/hacks"
+  },
+  "dataAsOf": "2026-06-21"
 }

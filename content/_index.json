@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents/index.mdx",
       "url": "/articles/the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents",
       "title": "The Bridge Cannot Prove It: Cross-Chain Message Trust for AI Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Cross-chain bridges have lost $2.5B to hacks because receiving contracts accept messages they cannot cryptographically verify. AI agents operating across chains inherit this exact problem. Here are the four trust models, their real security parameters, and a principled agent policy.",
       "pubDate": "2026-06-21",
       "topics": [
         "security",
         "cryptography",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "cross-chain",
+        "bridges",
+        "layerzero",
+        "ccip",
+        "wormhole",
+        "zk-light-client",
+        "trust-model",
+        "agent-security"
+      ],
+      "artifacts": [
+        "bridge-trust-spectrum"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1857,7 +1868,7 @@
       "module": "src/islands/artifacts/bridge-trust-spectrum.ts",
       "url": "/artifacts/bridge-trust-spectrum",
       "title": "Bridge Trust Spectrum",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Six cross-chain protocols mapped as a trust topology. Each connects Ethereum to other chains — but their security assumptions span multi-sig keys to ZK consensus proofs. Tap a protocol to see its trust threshold, verification gas, and hack history.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "map",

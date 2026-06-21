@@ -1,0 +1,16 @@
+{
+  "slug": "the-availability-cliff",
+  "title": "The Availability Cliff",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-21T22:31:54.431Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "data",
+    "blockchain",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

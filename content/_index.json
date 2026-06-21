@@ -1,14 +1,14 @@
 {
   "counts": {
-    "articles": 82,
-    "artifacts": 83
+    "articles": 83,
+    "artifacts": 84
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
-    "blockchain": 16,
+    "blockchain": 17,
     "cryptography": 13,
-    "data": 11,
+    "data": 12,
     "defi": 18,
     "infrastructure": 32,
     "llm": 16,
@@ -17,10 +17,27 @@
     "security": 24,
     "smart-contracts": 15,
     "tokenomics": 12,
-    "web3": 10,
+    "web3": 11,
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "path": "content/articles/2026/06/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline/index.mdx",
+      "url": "/articles/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "title": "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
       "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
@@ -2191,6 +2208,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-availability-cliff",
+      "path": "content/artifacts/the-availability-cliff/manifest.json",
+      "module": "src/islands/artifacts/the-availability-cliff.ts",
+      "url": "/artifacts/the-availability-cliff",
+      "title": "The Availability Cliff",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-softmax-constraint-map",
       "path": "content/artifacts/the-softmax-constraint-map/manifest.json",

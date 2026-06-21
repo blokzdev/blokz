@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
       "url": "/articles/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
       "title": "Harvest Now, Decrypt Later: The Quantum Threat to AI Agent Wallets",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Every ECDSA signature broadcasts the wallet's public key. A March 2026 Google/EF paper tightens the quantum break estimate to ~500k physical qubits — here's what that means for autonomous AI agent wallets.",
       "pubDate": "2026-06-21",
       "topics": [
         "cryptography",
         "security",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "quantum",
+        "secp256k1",
+        "post-quantum",
+        "ecdsa",
+        "crqc",
+        "eip-7702",
+        "ml-dsa",
+        "harvest-now-decrypt-later"
+      ],
+      "artifacts": [
+        "the-qubit-gap"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1915,7 +1926,7 @@
       "module": "src/islands/artifacts/the-qubit-gap.ts",
       "url": "/artifacts/the-qubit-gap",
       "title": "The Qubit Gap",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Log-scale chart comparing physical qubit counts in today's best quantum hardware against the ~500,000-qubit threshold needed to break secp256k1. Tap a chip to see how far it falls short.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "chart",

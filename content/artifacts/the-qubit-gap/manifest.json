@@ -1,7 +1,7 @@
 {
   "slug": "the-qubit-gap",
   "title": "The Qubit Gap",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Log-scale chart comparing physical qubit counts in today's best quantum hardware against the ~500,000-qubit threshold needed to break secp256k1. Tap a chip to see how far it falls short.",
   "pubDate": "2026-06-21T12:31:02.175Z",
   "type": "svg",
   "archetype": "chart",
@@ -10,7 +10,14 @@
     "security",
     "blockchain"
   ],
-  "aspect": "16/9",
+  "aspect": "800/340",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a row to inspect"
+  ],
+  "dataSource": {
+    "label": "Babbush et al., arXiv:2603.28846; IBM Quantum; Google Quantum AI (Nature 2024)",
+    "url": "https://arxiv.org/abs/2603.28846"
+  },
+  "dataAsOf": "2026-06-21"
 }

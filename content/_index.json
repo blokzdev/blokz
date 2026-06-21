@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 72,
-    "artifacts": 73
+    "articles": 73,
+    "artifacts": 74
   },
   "topicCounts": {
-    "agents": 26,
-    "ai": 4,
-    "blockchain": 15,
+    "agents": 27,
+    "ai": 5,
+    "blockchain": 16,
     "cryptography": 12,
     "data": 8,
     "defi": 16,
@@ -21,6 +21,23 @@
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents",
+      "title": "The Finality Ladder: What Confirmed Actually Means for On-Chain AI Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "blockchain",
+        "agents",
+        "ai"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
       "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
@@ -1920,6 +1937,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-finality-ladder",
+      "path": "content/artifacts/the-finality-ladder/manifest.json",
+      "module": "src/islands/artifacts/the-finality-ladder.ts",
+      "url": "/artifacts/the-finality-ladder",
+      "title": "The Finality Ladder",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "blockchain",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-qubit-gap",
       "path": "content/artifacts/the-qubit-gap/manifest.json",

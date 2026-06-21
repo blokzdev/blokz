@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize/index.mdx",
       "url": "/articles/the-memory-wall-kv-cache-and-why-long-context-ai-cant-decentralize",
       "title": "The Memory Wall: KV Cache and Why Long-Context AI Can't Decentralize",
-      "description": "Verification overhead gets the blame, but the deepest bottleneck for long-context AI on decentralized networks is the KV cache. At 128K tokens Llama 3.1 8B's attention state equals its own weights — 15 GiB per request, per node, non-transferable. Here's the math, the mitigations, and why prefix caching requires exactly the stickiness that decentralized routing destroys.",
+      "description": "Long-context AI's real bottleneck isn't proof overhead — it's the KV cache. At 128K tokens, Llama 3.1 8B's KV state equals its own weights (15 GiB), pinned to one node per request. The formula, the GPU math, and why prefix caching demands stickiness that decentralized routing can't provide.",
       "pubDate": "2026-06-21",
       "topics": [
         "machine-learning",
@@ -1792,7 +1792,7 @@
       "module": "src/islands/artifacts/the-kv-wall.ts",
       "url": "/artifacts/the-kv-wall",
       "title": "The KV Wall",
-      "description": "KV cache size in GiB vs context length for Llama 3.1 8B, 70B, and 405B on log-log axes, against A10G/A100/H100 VRAM ceilings. Toggle BF16, INT4, or DeltaKV (3.4×) compression and drag the cursor to any context length — the panel shows which GPUs can hold the live KV state and whether batching is possible.",
+      "description": "KV cache size (GiB) vs context length for Llama 3.1 8B, 70B, and 405B on log-log axes, against A10G / H100 VRAM ceilings. Toggle BF16, INT4, or DeltaKV compression and drag the cursor — the panel shows whether the live KV state fits on a single GPU.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "chart",

@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs/index.mdx",
       "url": "/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs",
       "title": "Proving as Matmul: How AI ASICs Are Rewriting the Cost Floor for Zero-Knowledge Proofs",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "MORPH shows that a TPU v6e8 pod runs NTT at 40× CPU — 10× faster than an H100. The same silicon that accelerates AI inference now accelerates ZK proof generation, and the math that explains it is the same in both cases.",
       "pubDate": "2026-06-21",
       "topics": [
         "zero-knowledge",
@@ -34,7 +34,9 @@
         "cryptography"
       ],
       "tags": [],
-      "artifacts": [],
+      "artifacts": [
+        "the-provers-stack"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1759,7 +1761,7 @@
       "module": "src/islands/artifacts/the-provers-stack.ts",
       "url": "/artifacts/the-provers-stack",
       "title": "The Prover's Stack",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "MSM and NTT throughput across four ZK prover hardware tiers — CPU, GPU H100, TPU v6e8, ZK ASIC — normalized to CPU on a log scale. Toggle SNARK (MSM-heavy) or STARK (NTT-heavy) to see how the proof system's operation mix determines end-to-end speedup. Tap a row to inspect.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "chart",

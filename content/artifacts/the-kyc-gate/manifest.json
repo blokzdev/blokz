@@ -1,0 +1,24 @@
+{
+  "slug": "the-kyc-gate",
+  "title": "The KYC Gate",
+  "description": "Three require() calls in Ondo Finance's CashKYCSenderReceiver block every address that isn't KYC-verified. Toggle wallet type and compliance model to see which $5B+ tokenized treasury tokens an AI agent can — and can't — reach.",
+  "pubDate": "2026-06-21T05:30:45.552Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "defi",
+    "blockchain",
+    "tokenomics"
+  ],
+  "aspect": "820/280",
+  "featured": false,
+  "controls": [
+    "Sender: toggle between AI Agent and KYC Institution to see which gates pass or fail",
+    "Token: switch between Permissioned (OUSG · BUIDL) and Blocklist (USDY) compliance models"
+  ],
+  "dataSource": {
+    "label": "Blockscout · Ethereum Mainnet",
+    "url": "https://eth.blockscout.com"
+  },
+  "dataAsOf": "2026-06-21"
+}

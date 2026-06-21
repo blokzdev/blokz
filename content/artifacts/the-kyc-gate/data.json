@@ -1,0 +1,73 @@
+{
+  "tokens": [
+    {
+      "id": "buidl",
+      "symbol": "BUIDL",
+      "name": "BlackRock USD Institutional Digital Liquidity Fund",
+      "protocol": "BlackRock / Securitize",
+      "address": "0x7712c34205737192402172409a8F7ccef8aA2AEc",
+      "holdersEth": 59,
+      "marketCapUsd": 2482626874,
+      "volume24hUsd": 0,
+      "model": "permissioned",
+      "gateCount": 3,
+      "launched": "2024-03"
+    },
+    {
+      "id": "ousg",
+      "symbol": "OUSG",
+      "name": "Ondo Short-Term US Government Bond",
+      "protocol": "Ondo Finance",
+      "address": "0x1B19C19393e2d034D8Ff31ff34c81252FcBbee92",
+      "holdersEth": 50,
+      "marketCapUsd": 479130821,
+      "volume24hUsd": 0,
+      "model": "permissioned",
+      "gateCount": 3,
+      "launched": "2023-01"
+    },
+    {
+      "id": "usdy",
+      "symbol": "USDY",
+      "name": "Ondo US Dollar Yield",
+      "protocol": "Ondo Finance",
+      "address": "0x96F6eF951840721AdBF46Ac996b59E0235CB985C",
+      "holdersEth": 982,
+      "marketCapUsd": 2153347633,
+      "volume24hUsd": 1246017,
+      "model": "blocklist",
+      "gateCount": 1,
+      "launched": "2023-10"
+    },
+    {
+      "id": "benji",
+      "symbol": "BENJI",
+      "name": "Franklin Templeton BENJI",
+      "protocol": "Franklin Templeton",
+      "address": "0x3DDc84940Ab509C11B20B76B466933f40b750dc9",
+      "holdersEth": 3,
+      "marketCapUsd": 700000000,
+      "volume24hUsd": 0,
+      "model": "permissioned",
+      "gateCount": 3,
+      "launched": "2024-08"
+    }
+  ],
+  "gates": [
+    {
+      "n": 1,
+      "check": "_getKYCStatus(msg.sender)",
+      "error": "CashKYCSenderReceiver: must be KYC’d to initiate transfer"
+    },
+    {
+      "n": 2,
+      "check": "_getKYCStatus(from)",
+      "error": "CashKYCSenderReceiver: `from` address must be KYC’d to send tokens"
+    },
+    {
+      "n": 3,
+      "check": "_getKYCStatus(to)",
+      "error": "CashKYCSenderReceiver: `to` address must be KYC’d to receive tokens"
+    }
+  ]
+}

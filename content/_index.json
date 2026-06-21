@@ -1,26 +1,52 @@
 {
   "counts": {
-    "articles": 66,
-    "artifacts": 67
+    "articles": 67,
+    "artifacts": 68
   },
   "topicCounts": {
     "agents": 25,
     "ai": 4,
-    "blockchain": 12,
+    "blockchain": 13,
     "cryptography": 10,
     "data": 8,
-    "defi": 14,
+    "defi": 15,
     "infrastructure": 30,
     "llm": 14,
     "machine-learning": 31,
     "research": 1,
     "security": 21,
     "smart-contracts": 11,
-    "tokenomics": 7,
+    "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 7
   },
   "articles": [
+    {
+      "slug": "the-permission-wall-how-5-billion-in-tokenized-treasuries-locks-out-autonomous-agents",
+      "path": "content/articles/2026/06/the-permission-wall-how-5-billion-in-tokenized-treasuries-locks-out-autonomous-agents/index.mdx",
+      "url": "/articles/the-permission-wall-how-5-billion-in-tokenized-treasuries-locks-out-autonomous-agents",
+      "title": "The Permission Wall: How $5 Billion in Tokenized Treasuries Locks Out Autonomous Agents",
+      "description": "Three require() calls in Ondo Finance's CashKYCSenderReceiver block every address without KYC from $3.2 billion in permissioned US Treasury tokens — and AI agents can never pass them.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "blockchain",
+        "tokenomics"
+      ],
+      "tags": [
+        "rwa",
+        "kyc",
+        "tokenized-treasuries",
+        "ai-agents",
+        "compliance",
+        "ondo-finance"
+      ],
+      "artifacts": [
+        "the-kyc-gate"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs",
       "path": "content/articles/2026/06/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs/index.mdx",
@@ -1755,6 +1781,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-kyc-gate",
+      "path": "content/artifacts/the-kyc-gate/manifest.json",
+      "module": "src/islands/artifacts/the-kyc-gate.ts",
+      "url": "/artifacts/the-kyc-gate",
+      "title": "The KYC Gate",
+      "description": "Three require() calls in Ondo Finance's CashKYCSenderReceiver block every address that isn't KYC-verified. Toggle wallet type and compliance model to see which $5B+ tokenized treasury tokens an AI agent can — and can't — reach.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "blockchain",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-provers-stack",
       "path": "content/artifacts/the-provers-stack/manifest.json",

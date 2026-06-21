@@ -1,0 +1,84 @@
+---
+slug: proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs
+title: "Proving as Matmul: How AI ASICs Are Rewriting the Cost Floor for Zero-Knowledge Proofs"
+description: "MORPH shows that a TPU v6e8 pod runs NTT at 40× CPU — 10× faster than an H100. The same silicon that accelerates AI inference now accelerates ZK proof generation, and the math that explains it is the same in both cases."
+pubDate: 2026-06-21T04:29:03.098Z
+author: blokz
+topics: [zero-knowledge, infrastructure, cryptography]
+tags: []
+artifacts: [the-provers-stack]
+difficulty: intermediate
+sources:
+  - label: "MORPH: Matrix Operations for Recursive Proving on Hardware — arXiv:2604.17808"
+    url: "https://arxiv.org/abs/2604.17808"
+  - label: "Ingonyama ICICLE-Snark: GPU-Accelerated Groth16 Prover"
+    url: "https://github.com/ingonyama-zk/icicle"
+  - label: "Cysic SolarMSM: ZK ASIC MSM Accelerator"
+    url: "https://cysic.xyz"
+  - label: "ZKProphet: Proof-of-Inference Framework — arXiv:2509.22684"
+    url: "https://arxiv.org/abs/2509.22684"
+---
+
+The economics of zero-knowledge proofs are bottlenecked by two operations that together consume 80–90% of proving time: Multi-Scalar Multiplication (MSM) and the Number-Theoretic Transform (NTT). Everything else — witness generation, constraint checking, hashing — is comparatively cheap. This means ZK prover performance is almost entirely a question of how efficiently your hardware runs those two algorithms.
+
+What makes this interesting right now is that an April 2026 paper, MORPH (arXiv:2604.17808), demonstrated that TPU v6e8 pods — the same chips Google deploys for large language model inference — run NTT at 40× CPU throughput, or roughly 10× faster than an H100 GPU. The paper's key claim: the mathematical structure of NTT is equivalent to a sequence of matrix multiplications, which means every FLOP invested in AI training silicon now pays dividends for cryptographic proving.
+
+## The Two Algorithms That Determine Everything
+
+**Multi-Scalar Multiplication** is the inner loop of elliptic-curve polynomial commitment schemes — the primitive underlying Groth16, PLONK, and most production SNARKs. Given a vector of scalars **s** and elliptic curve points **G**, MSM computes the sum Σᵢ sᵢGᵢ. The Pippenger algorithm solves this in O(n / log n) group operations by grouping scalars into windows and accumulating partial sums into buckets. For a 2²⁰-scale circuit, that's hundreds of millions of 254-bit modular operations that must happen sequentially per window — the algorithm has limited parallelism at small scales but benefits from the wide SIMD parallelism of GPUs at scale.
+
+**Number-Theoretic Transform** is the modular-arithmetic analogue of the Fast Fourier Transform, running in a prime field F_p. It evaluates polynomials over roots of unity and is the workhorse of STARKs, FRI-based systems (Plonky2, Polygon zkEVM), and the NTT-heavy phases of SNARKs. The butterfly network that implements NTT has a clean blocked structure: successive layers can be written as matrix multiplications over F_p. This is exactly the observation MORPH exploits.
+
+## The Hardware Stack
+
+<Artifact slug="the-provers-stack" />
+
+The chart above shows MSM and NTT throughput for four hardware tiers, normalized to CPU, on a log scale. Toggle between SNARK and STARK to see how the proof system's operation mix determines end-to-end speedup. The dashed purple line is the **effective speedup** — what Amdahl's law predicts when you apply each hardware's per-operation gains to the actual proving workload.
+
+**GPU / H100** is the current production standard. Ingonyama's ICICLE v2 achieves 8–10× MSM on BN254 via CUDA kernels that parallelize Pippenger's bucket accumulation across thousands of threads. NTT gains are more modest (3–5×) because the butterfly access pattern — strided reads across a large working set — does not map cleanly onto GPU L2 cache lines. The result: GPUs are strong for SNARK workloads but mediocre for STARKs, delivering only about 3.1× effective speedup on an NTT-heavy trace.
+
+**TPU v6e8 via MORPH** is the result that changes the picture. Google's tensor processing units are purpose-built for dense low-precision matrix multiply-accumulate. They are not natural cryptography hardware — they lack native 254-bit modular arithmetic. MORPH bridges this gap with **extended-RNS lazy reduction**: the 254-bit scalar is decomposed into small residues via the Chinese Remainder Theorem, and each residue lives in a range small enough for BF16 or INT8 MACs. The butterfly network's blocked structure maps precisely onto TPU's systolic array tiling, achieving 40× NTT throughput versus CPU. MSM speedup is comparable to GPU (≈9×) via a similar residue decomposition. On STARK workloads, this translates to **7.9× effective end-to-end speedup** — versus GPU's 3.1×. A 5-minute CPU STARK proof becomes 38 seconds on TPU versus 97 seconds on H100.
+
+**ZK ASICs** (Cysic SolarMSM Gen1) achieve ≈80× MSM speedup on a 2³⁰-scale BN254 MSM, completing it in 195 ms. NTT speedup is an engineering estimate around 60× based on Cysic's C1 chip targets. Purpose-built silicon eliminates all general-purpose overhead — memory controllers, branch predictors, out-of-order execution — and dedicates every transistor to modular arithmetic. But even at 80× MSM and 60× NTT, Amdahl's law caps the effective end-to-end speedup at around 9×, because the irreducible 10% "other" work — witness generation, hashing, I/O — cannot be parallelized away. The ASIC ceiling is hardware-domain-specific law: you need 90%+ of the workload to be parallelizable before near-perfect hardware wins big.
+
+## Why the SNARK/STARK Split Matters
+
+The operation mix varies dramatically between proof systems:
+
+| Proof system | MSM share | NTT share | GPU effective | TPU effective |
+|---|---|---|---|---|
+| SNARK / PLONK / Groth16 | 70% | 20% | 4.4× | 5.5× |
+| STARK / FRI / Plonky2 | 5% | 85% | 3.1× | 7.9× |
+
+GPUs are optimized for MSM and accidentally mediocre at NTT — which means GPU hardware, the dominant investment in ZK infrastructure over the last three years, is not the right hardware for the shift toward STARK-based systems. Plonky2, Plonky3, and SP1's FRI-based backend all lean heavily NTT. If ZK infrastructure spending assumed H100-like performance profiles, the pivot to STARK systems changes the cost model substantially.
+
+TPU access is elastic — you rent pods by the minute, the same infrastructure already serving LLM inference. Cysic and other ZK ASIC vendors are still in early production. For teams running STARK-based provers today, the cheapest path to 5–8× speedup may not be a GPU cluster at all.
+
+## MORPH's Technical Mechanism
+
+The extended-RNS (Residue Number System) representation is the key. To represent a BN254 scalar `a` in the prime field F_p (where p is 254 bits), MORPH selects a set of small primes q₁, q₂, …, qₖ whose product exceeds p² (to handle intermediate products without overflow). The scalar is stored as its residues (a mod q₁, a mod q₂, …, a mod qₖ), each fitting in 16 or 8 bits.
+
+Modular multiplication `a · b mod p` becomes: multiply each pair of residues using low-precision MACs, then reduce the result using precomputed constants (the "lazy reduction" — you defer the final modular reduction to minimize its frequency). Since TPU hardware executes millions of INT8 MACs per second across its systolic array, and each NTT butterfly reduces to a sequence of such multiplications, MORPH achieves utilization of the systolic array that GPU implementations cannot match.
+
+The paper reports wall-clock NTT throughput measured on actual Google TPU v6e8 hardware, not simulation. The 40× figure is relative to an optimized CPU implementation (AVX-512 SIMD), making it a conservative comparison — consumer CPU baselines would show larger multiples.
+
+## Implications for On-Chain AI
+
+The overlap between ZK infrastructure and AI hardware is not coincidental. Proof-of-inference — the project of producing a ZK proof that a given model ran correctly on a given input — requires running both the AI inference and the ZK prover. If the same TPU pod that executed the inference can now produce the proof without transferring to a different hardware substrate, the marginal cost of attestation approaches zero.
+
+ZKProphet (arXiv:2509.22684) demonstrated this pipeline for transformer inference: run the forward pass, extract the witness (intermediate activations), and prove correctness of each matrix multiply. The circuit is NTT-heavy because the polynomial commitment scheme evaluates the trace of the computation. MORPH's NTT speedup applies directly.
+
+This suggests a near-term economic model: cloud AI providers offer proof-attached inference as a premium tier. The attestation overhead, previously estimated at 100–1000× the raw inference cost in compute terms, drops toward 10–20× with hardware-efficient proving. For 2²⁰-constraint circuits, MORPH reports 8-minute CPU proofs reduced to under 80 seconds on a single TPU v6e8 pod.
+
+## Limitations
+
+The MORPH numbers come from a single research group; independent benchmark replication has not yet appeared in the literature as of this writing. The RNS decomposition adds overhead for witness generation that the paper accounts for but that practitioners may experience differently depending on circuit topology. MSM acceleration on TPU relies on similar RNS tricks and achieves parity with GPU — not superiority — so SNARK teams get less upside than STARK teams from a TPU migration. And ZK ASICs, while dramatically faster in the MSM regime, remain constrained by Amdahl's ceiling: the other 10% of work limits real-world system speedup regardless of raw operation throughput.
+
+## Takeaways
+
+- ZK proving is dominated by MSM (SNARK-heavy) and NTT (STARK-heavy). The operation mix of your proof system determines which hardware wins.
+- GPU / H100 remains the best single-hardware choice for SNARK systems at current scale, but its NTT mediocrity makes it suboptimal for STARK-based provers.
+- TPU v6e8 via MORPH achieves 40× NTT throughput, translating to 7.9× effective speedup for STARKs — more than double what GPU delivers. The mathematical mechanism is RNS decomposition mapping modular arithmetic onto dense matrix multiply.
+- ZK ASICs hit 80× MSM speedup but run into Amdahl's ceiling: end-to-end speedup is capped near 9× by the irreducible "other" fraction regardless of how fast MSM and NTT become.
+- The same silicon that runs LLM inference can now produce ZK proofs efficiently. For proof-of-inference pipelines, this closes the cost gap significantly.
+- The hardware convergence is an infrastructure signal: ZK teams selecting hardware should profile their operation mix before assuming GPU is the answer.

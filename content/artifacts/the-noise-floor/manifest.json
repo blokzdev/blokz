@@ -1,0 +1,23 @@
+{
+  "slug": "the-noise-floor",
+  "title": "The Noise Floor",
+  "description": "Why DeFi agents can't be trained on on-chain P&L alone: adjust σ (ETH's real 3.46% daily vol) and edge α to see how many trades you need for 95% confidence, and how process rewards cut it 10×. Math RL reaches certainty in 7 episodes; DeFi takes 4,600.",
+  "pubDate": "2026-06-21T08:29:24.127Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "machine-learning",
+    "blockchain"
+  ],
+  "featured": false,
+  "controls": [
+    "drag σ slider to set daily volatility",
+    "drag α slider to set edge per trade",
+    "drag trades/day to set signal frequency"
+  ],
+  "dataSource": {
+    "label": "ETH/USDT daily OHLCV, Crypto.com Exchange",
+    "url": "https://crypto.com/exchange"
+  },
+  "dataAsOf": "2026-06-21"
+}

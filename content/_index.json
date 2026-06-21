@@ -1,26 +1,56 @@
 {
   "counts": {
-    "articles": 75,
-    "artifacts": 76
+    "articles": 76,
+    "artifacts": 77
   },
   "topicCounts": {
     "agents": 28,
     "ai": 6,
     "blockchain": 16,
-    "cryptography": 12,
+    "cryptography": 13,
     "data": 9,
     "defi": 16,
     "infrastructure": 32,
     "llm": 16,
-    "machine-learning": 32,
+    "machine-learning": 33,
     "research": 2,
     "security": 23,
     "smart-contracts": 13,
     "tokenomics": 9,
     "web3": 9,
-    "zero-knowledge": 8
+    "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
+      "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
+      "url": "/articles/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
+      "title": "The Softmax Tax: How Nonlinear Gates Choke ZK Proofs of Transformer Models",
+      "description": "Standard arithmetic circuits treat softmax and GELU as enemies: 200–350 constraints per element to fake transcendental functions in field arithmetic. ZK-DeepSeek proved it's tractable. Lookup arguments (Lasso, LogUp) explain why — by replacing in-circuit computation with pre-committed tables that cut nonlinear costs 10–20×.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "machine-learning"
+      ],
+      "tags": [
+        "zkml",
+        "lookup-arguments",
+        "lasso",
+        "logup",
+        "plookup",
+        "transformer",
+        "softmax",
+        "constraint-budget",
+        "snark",
+        "arithmetic-circuit"
+      ],
+      "artifacts": [
+        "the-softmax-constraint-map"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents",
       "path": "content/articles/2026/06/inference-at-the-margin-the-token-budget-problem-for-on-chain-ai-agents/index.mdx",
@@ -2002,6 +2032,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-softmax-constraint-map",
+      "path": "content/artifacts/the-softmax-constraint-map/manifest.json",
+      "module": "src/islands/artifacts/the-softmax-constraint-map.ts",
+      "url": "/artifacts/the-softmax-constraint-map",
+      "title": "The Softmax Constraint Map",
+      "description": "Constraint cost per Transformer operation in a ZK circuit — without and with lookup arguments. Softmax (275→30), LayerNorm (150→20), and GELU (400→40) dominate the budget until Lasso/LogUp replace in-circuit transcendental approximations with table lookups. Tap a row to inspect.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-token-margin",
       "path": "content/artifacts/the-token-margin/manifest.json",

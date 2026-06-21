@@ -26,17 +26,28 @@
       "path": "content/articles/2026/06/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification/index.mdx",
       "url": "/articles/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
       "title": "The Thinking Tax: Why Reasoning Models Break On-Chain AI Verification",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "DeepSeek-R1 emits 8,400 thinking tokens before a 341-token answer on hard math. Every existing on-chain verification scheme — TEE, optimistic, ZK, sampling — was designed when computation and output were proportional. They aren't anymore.",
       "pubDate": "2026-06-21",
       "topics": [
         "llm",
         "zero-knowledge",
         "infrastructure"
       ],
-      "tags": [],
+      "tags": [
+        "reasoning-models",
+        "deepseek-r1",
+        "extended-thinking",
+        "verifiable-inference",
+        "kv-cache",
+        "scratchpad-attack",
+        "thinking-tokens",
+        "coin-protocol"
+      ],
       "series": "proof-of-intelligence",
       "seriesOrder": 7,
-      "artifacts": [],
+      "artifacts": [
+        "the-thinking-ledger"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1882,23 +1893,6 @@
   ],
   "artifacts": [
     {
-      "slug": "the-thinking-ledger",
-      "path": "content/artifacts/the-thinking-ledger/manifest.json",
-      "module": "src/islands/artifacts/the-thinking-ledger.ts",
-      "url": "/artifacts/the-thinking-ledger",
-      "title": "The Thinking Ledger",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
-      "pubDate": "2026-06-21",
-      "type": "svg",
-      "archetype": "chart",
-      "topics": [
-        "llm",
-        "zero-knowledge",
-        "infrastructure"
-      ],
-      "draft": false
-    },
-    {
       "slug": "bridge-trust-spectrum",
       "path": "content/artifacts/bridge-trust-spectrum/manifest.json",
       "module": "src/islands/artifacts/bridge-trust-spectrum.ts",
@@ -2044,6 +2038,23 @@
         "machine-learning",
         "infrastructure",
         "llm"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-thinking-ledger",
+      "path": "content/artifacts/the-thinking-ledger/manifest.json",
+      "module": "src/islands/artifacts/the-thinking-ledger.ts",
+      "url": "/artifacts/the-thinking-ledger",
+      "title": "The Thinking Ledger",
+      "description": "How much of a reasoning model's output is actually thinking? For three model tiers at three task difficulties, stacked bars show thinking tokens dwarfing output — then a scheme matrix shows which verification schemes can see the thinking and which attest to the answer alone.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "llm",
+        "zero-knowledge",
+        "infrastructure"
       ],
       "draft": false
     },

@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 71,
-    "artifacts": 72
+    "articles": 72,
+    "artifacts": 73
   },
   "topicCounts": {
     "agents": 26,
     "ai": 4,
-    "blockchain": 14,
-    "cryptography": 11,
+    "blockchain": 15,
+    "cryptography": 12,
     "data": 8,
     "defi": 16,
     "infrastructure": 32,
     "llm": 15,
     "machine-learning": 32,
     "research": 1,
-    "security": 22,
+    "security": 23,
     "smart-contracts": 13,
     "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 8
   },
   "articles": [
+    {
+      "slug": "harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
+      "path": "content/articles/2026/06/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets/index.mdx",
+      "url": "/articles/harvest-now-decrypt-later-the-quantum-threat-to-ai-agent-wallets",
+      "title": "Harvest Now, Decrypt Later: The Quantum Threat to AI Agent Wallets",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "cryptography",
+        "security",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification",
       "path": "content/articles/2026/06/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification/index.mdx",
@@ -1892,6 +1909,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-qubit-gap",
+      "path": "content/artifacts/the-qubit-gap/manifest.json",
+      "module": "src/islands/artifacts/the-qubit-gap.ts",
+      "url": "/artifacts/the-qubit-gap",
+      "title": "The Qubit Gap",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "security",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "bridge-trust-spectrum",
       "path": "content/artifacts/bridge-trust-spectrum/manifest.json",

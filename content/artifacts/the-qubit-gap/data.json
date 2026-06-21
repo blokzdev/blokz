@@ -1,0 +1,65 @@
+{
+  "hardware": [
+    {
+      "id": "sycamore",
+      "vendor": "Google",
+      "name": "Sycamore",
+      "year": 2019,
+      "physicalQubits": 53,
+      "note": "Google's 2019 supremacy demonstration: 53 superconducting transmon qubits across a 6×9 grid. Dominant media milestone but not a step toward fault-tolerant computation at cryptographic scale."
+    },
+    {
+      "id": "willow",
+      "vendor": "Google",
+      "name": "Willow",
+      "year": 2024,
+      "physicalQubits": 105,
+      "note": "Google's December 2024 chip. 105 qubits — but what matters is that it demonstrated below-threshold error correction: as the array scales, logical error rate now decreases rather than accumulates. A critical architectural milestone, not a qubit-count milestone."
+    },
+    {
+      "id": "eagle",
+      "vendor": "IBM",
+      "name": "Eagle",
+      "year": 2021,
+      "physicalQubits": 127,
+      "note": "IBM's first 100+ qubit chip. Introduced the heavy-hex lattice topology to reduce two-qubit error from cross-coupling. Still far from fault tolerance — every physical qubit carries its own error and they don't cancel."
+    },
+    {
+      "id": "heron",
+      "vendor": "IBM",
+      "name": "Heron R2",
+      "year": 2024,
+      "physicalQubits": 156,
+      "note": "IBM's current performance flagship. Smaller raw count than Condor but substantially better error rates. IBM has pivoted: the path to useful logical qubits requires fewer, higher-fidelity qubits — not more noisy ones."
+    },
+    {
+      "id": "osprey",
+      "vendor": "IBM",
+      "name": "Osprey",
+      "year": 2022,
+      "physicalQubits": 433,
+      "note": "IBM's 2022 scale milestone: 433 qubits on a 19×23 heavy-hex grid. Improved cryo-control electronics let IBM scale without proportionally accumulating error. Still nowhere near the 500k threshold."
+    },
+    {
+      "id": "condor",
+      "vendor": "IBM",
+      "name": "Condor",
+      "year": 2023,
+      "physicalQubits": 1121,
+      "note": "IBM's largest chip by raw qubit count: 1,121 physical qubits. It is also the closest any publicly disclosed quantum system has come to the secp256k1 break threshold — and it is still 446× short. IBM has since pivoted to smaller, higher-fidelity designs."
+    }
+  ],
+  "breakThreshold": {
+    "physicalQubits": 500000,
+    "logicalQubits": 1200,
+    "toffoliGates": 90000000,
+    "physicalErrorRate": 0.001,
+    "timeEstimate": "minutes",
+    "note": "Babbush et al. (arXiv:2603.28846): Option 1 — fewer than 1,200 logical qubits, fewer than 90M Toffoli gates, fewer than 500,000 physical qubits at 1e-3 physical error rate, execution time in minutes. This is ~20× fewer logical qubits than the 2022 Webber et al. estimate."
+  },
+  "dataSource": {
+    "label": "Babbush et al., arXiv:2603.28846; IBM Quantum; Google Quantum AI (Nature 2024)",
+    "url": "https://arxiv.org/abs/2603.28846"
+  },
+  "dataAsOf": "2026-06-21"
+}

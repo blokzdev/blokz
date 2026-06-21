@@ -1,0 +1,51 @@
+{
+  "models": [
+    {
+      "id": "8b",
+      "label": "Llama 3.1 8B",
+      "labelShort": "8B",
+      "color": "#38bdf8",
+      "layers": 32,
+      "kvHeads": 8,
+      "headDim": 128,
+      "bytesPerTokenBF16": 131072,
+      "weightGiB": 15.0
+    },
+    {
+      "id": "70b",
+      "label": "Llama 3.1 70B",
+      "labelShort": "70B",
+      "color": "#a78bfa",
+      "layers": 80,
+      "kvHeads": 8,
+      "headDim": 128,
+      "bytesPerTokenBF16": 327680,
+      "weightGiB": 131.0
+    },
+    {
+      "id": "405b",
+      "label": "Llama 3.1 405B",
+      "labelShort": "405B",
+      "color": "#f472b6",
+      "layers": 126,
+      "kvHeads": 8,
+      "headDim": 128,
+      "bytesPerTokenBF16": 516096,
+      "weightGiB": 755.0
+    }
+  ],
+  "gpus": [
+    { "id": "a10g",   "label": "A10G 24G",  "vramGiB": 24  },
+    { "id": "a100-40","label": "A100 40G",  "vramGiB": 40  },
+    { "id": "h100",   "label": "H100 80G",  "vramGiB": 80  }
+  ],
+  "compressions": [
+    { "id": "bf16",    "label": "BF16",          "factor": 1.0   },
+    { "id": "int4",    "label": "INT4  4×",       "factor": 0.25  },
+    { "id": "deltakv", "label": "DeltaKV  3.4×",  "factor": 0.294 }
+  ],
+  "contextStepsBits": [12, 13, 14, 15, 16, 17, 18, 19, 20],
+  "defaultCtxBits": 17,
+  "defaultCompression": "bf16",
+  "note": "bytesPerTokenBF16 = 2 × layers × kvHeads × headDim × 2 bytes. weightGiB = param_count × 2 / 2^30, rounded. Context steps are powers of 2: 4K … 1M. Sources: Meta Llama 3.1 (arXiv:2407.21783); DeltaKV (arXiv:2602.08005); ARKV (arXiv:2603.08727)."
+}

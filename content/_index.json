@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window/index.mdx",
       "url": "/articles/the-ghost-fill-how-polymarkets-hybrid-architecture-built-a-1-49m-attack-window",
       "title": "The Ghost Fill: How Polymarket's Hybrid Architecture Built a $1.49M Attack Window",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Polymarket's off-chain matching + on-chain settlement creates a ~10-second consistency gap. GHOSTHUNTER found 980K targeted reversions and $1.49M extracted — here's the exact mechanism.",
       "pubDate": "2026-06-21",
       "topics": [
         "defi",
@@ -34,7 +34,9 @@
         "data"
       ],
       "tags": [],
-      "artifacts": [],
+      "artifacts": [
+        "the-ghost-fill-window"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -1915,7 +1917,7 @@
       "module": "src/islands/artifacts/the-ghost-fill-window.ts",
       "url": "/artifacts/the-ghost-fill-window",
       "title": "The Ghost Fill Window",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Four attack vectors that exploit Polymarket's off-chain match / on-chain settlement gap. Tap a vector to see mechanism, timing, and cost.",
       "pubDate": "2026-06-21",
       "type": "svg",
       "archetype": "diagram",

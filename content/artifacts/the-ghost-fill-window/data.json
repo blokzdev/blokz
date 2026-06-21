@@ -1,0 +1,56 @@
+{
+  "stats": {
+    "totalReverted": 1952440,
+    "targeted": 980133,
+    "profitUSD": 1490000,
+    "fundsAtRiskUSD": 1780000000,
+    "operatorGasLoss": 212000,
+    "peakRevertRate": 24.3,
+    "contracts": 167,
+    "chains": 10,
+    "userFundsAtRiskUSD": 23000000,
+    "variants": 35
+  },
+  "vectors": [
+    {
+      "id": "nonce-bump",
+      "label": "Nonce Bump",
+      "labelShort": "Nonce",
+      "color": "#f87171",
+      "mechanism": "Sends any tx from the maker's address with higher gas priority. The operator's settlement tx arrives with a stale nonce and reverts.",
+      "timing": "Must win a ~5 s gas race before settlement mines on Polygon",
+      "cost": "<0.001 POL per revert",
+      "impact": "Cheapest to execute at scale — exploits the EVM's sequential nonce requirement"
+    },
+    {
+      "id": "balance-drain",
+      "label": "Balance Drain",
+      "labelShort": "Balance",
+      "color": "#fb923c",
+      "mechanism": "Moves USDC out of the maker's wallet between off-chain match and on-chain settlement. The settlement's transferFrom sees insufficient balance and reverts.",
+      "timing": "Drain tx must confirm before the operator's settlement is mined",
+      "cost": "0.001–0.01 POL; attacker recaptures the drained funds",
+      "impact": "Maker extracts information value of the fill while keeping capital uncommitted"
+    },
+    {
+      "id": "allowance-revoke",
+      "label": "Allowance Revoke",
+      "labelShort": "Revoke",
+      "color": "#facc15",
+      "mechanism": "One approve(ctfExchange, 0) call revokes the allowance the settlement's transferFrom needs. A single on-chain tx is enough.",
+      "timing": "Revoke tx races the settlement broadcast — one tx enables all pending fills to ghost",
+      "cost": "~0.0005 POL — cheapest vector to execute at any fill size",
+      "impact": "A single approval revocation can ghost an attacker's entire outstanding order book"
+    },
+    {
+      "id": "proxy-trap",
+      "label": "Proxy Trap",
+      "labelShort": "Proxy",
+      "color": "#a78bfa",
+      "mechanism": "Exploits the contract's proxy upgrade pattern by front-running the settlement's implementation call, routing execution to a revert path.",
+      "timing": "Requires mempool visibility and a gas premium; used selectively on high-value fills",
+      "cost": "0.005–0.05 POL per targeted revert",
+      "impact": "Most sophisticated vector; enables precision reversion of large positions without touching balances"
+    }
+  ]
+}

@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 69,
-    "artifacts": 70
+    "articles": 70,
+    "artifacts": 71
   },
   "topicCounts": {
     "agents": 26,
     "ai": 4,
     "blockchain": 14,
-    "cryptography": 10,
+    "cryptography": 11,
     "data": 8,
     "defi": 16,
-    "infrastructure": 30,
+    "infrastructure": 31,
     "llm": 14,
     "machine-learning": 32,
     "research": 1,
-    "security": 21,
+    "security": 22,
     "smart-contracts": 13,
     "tokenomics": 8,
     "web3": 9,
     "zero-knowledge": 7
   },
   "articles": [
+    {
+      "slug": "the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents",
+      "path": "content/articles/2026/06/the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents/index.mdx",
+      "url": "/articles/the-bridge-cannot-prove-it-cross-chain-message-trust-for-ai-agents",
+      "title": "The Bridge Cannot Prove It: Cross-Chain Message Trust for AI Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "security",
+        "cryptography",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-noise-floor-why-on-chain-outcomes-cannot-train-a-better-defi-agent",
       "path": "content/articles/2026/06/the-noise-floor-why-on-chain-outcomes-cannot-train-a-better-defi-agent/index.mdx",
@@ -1834,6 +1851,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "bridge-trust-spectrum",
+      "path": "content/artifacts/bridge-trust-spectrum/manifest.json",
+      "module": "src/islands/artifacts/bridge-trust-spectrum.ts",
+      "url": "/artifacts/bridge-trust-spectrum",
+      "title": "Bridge Trust Spectrum",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "security",
+        "cryptography",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-noise-floor",
       "path": "content/artifacts/the-noise-floor/manifest.json",

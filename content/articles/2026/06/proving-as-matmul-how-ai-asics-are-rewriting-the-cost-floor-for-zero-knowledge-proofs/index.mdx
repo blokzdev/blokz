@@ -25,9 +25,9 @@ What makes this interesting right now is that an April 2026 paper, MORPH (arXiv:
 
 ## The Two Algorithms That Determine Everything
 
-**Multi-Scalar Multiplication** is the inner loop of elliptic-curve polynomial commitment schemes — the primitive underlying Groth16, PLONK, and most production SNARKs. Given a vector of scalars $\mathbf{s}$ and elliptic curve points $\mathbf{G}$, MSM computes $\sum s_i G_i$. The Pippenger algorithm solves this in $O(n / \log n)$ group operations by grouping scalars into windows and accumulating partial sums into buckets. For a 2²⁰-scale circuit, that's hundreds of millions of 254-bit modular operations that must happen sequentially per window — the algorithm has limited parallelism at small scales but benefits from the wide SIMD parallelism of GPUs at scale.
+**Multi-Scalar Multiplication** is the inner loop of elliptic-curve polynomial commitment schemes — the primitive underlying Groth16, PLONK, and most production SNARKs. Given a vector of scalars **s** and elliptic curve points **G**, MSM computes the sum Σᵢ sᵢGᵢ. The Pippenger algorithm solves this in O(n / log n) group operations by grouping scalars into windows and accumulating partial sums into buckets. For a 2²⁰-scale circuit, that's hundreds of millions of 254-bit modular operations that must happen sequentially per window — the algorithm has limited parallelism at small scales but benefits from the wide SIMD parallelism of GPUs at scale.
 
-**Number-Theoretic Transform** is the modular-arithmetic analogue of the Fast Fourier Transform, running in a prime field $\mathbb{F}_p$. It evaluates polynomials over roots of unity and is the workhorse of STARKs, FRI-based systems (Plonky2, Polygon zkEVM), and the NTT-heavy phases of SNARKs. The butterfly network that implements NTT has a clean blocked structure: successive layers can be written as matrix multiplications over $\mathbb{F}_p$. This is exactly the observation MORPH exploits.
+**Number-Theoretic Transform** is the modular-arithmetic analogue of the Fast Fourier Transform, running in a prime field F_p. It evaluates polynomials over roots of unity and is the workhorse of STARKs, FRI-based systems (Plonky2, Polygon zkEVM), and the NTT-heavy phases of SNARKs. The butterfly network that implements NTT has a clean blocked structure: successive layers can be written as matrix multiplications over F_p. This is exactly the observation MORPH exploits.
 
 ## The Hardware Stack
 
@@ -56,9 +56,9 @@ TPU access is elastic — you rent pods by the minute, the same infrastructure a
 
 ## MORPH's Technical Mechanism
 
-The extended-RNS (Residue Number System) representation is the key. To represent a BN254 scalar $a \in \mathbb{F}_p$ (where $p$ is 254 bits), MORPH selects a set of small primes $\{q_1, q_2, \ldots, q_k\}$ whose product exceeds $p^2$ (to handle intermediate products without overflow). The scalar is stored as $(a \bmod q_1, a \bmod q_2, \ldots, a \bmod q_k)$, each residue fitting in 16 or 8 bits.
+The extended-RNS (Residue Number System) representation is the key. To represent a BN254 scalar `a` in the prime field F_p (where p is 254 bits), MORPH selects a set of small primes q₁, q₂, …, qₖ whose product exceeds p² (to handle intermediate products without overflow). The scalar is stored as its residues (a mod q₁, a mod q₂, …, a mod qₖ), each fitting in 16 or 8 bits.
 
-Modular multiplication $a \cdot b \bmod p$ becomes: multiply each pair of residues using low-precision MACs, then reduce the result using precomputed constants (the "lazy reduction" — you defer the final modular reduction to minimize its frequency). Since TPU hardware executes millions of INT8 MACs per second across its systolic array, and each NTT butterfly reduces to a sequence of such multiplications, MORPH achieves utilization of the systolic array that GPU implementations cannot match.
+Modular multiplication `a · b mod p` becomes: multiply each pair of residues using low-precision MACs, then reduce the result using precomputed constants (the "lazy reduction" — you defer the final modular reduction to minimize its frequency). Since TPU hardware executes millions of INT8 MACs per second across its systolic array, and each NTT butterfly reduces to a sequence of such multiplications, MORPH achieves utilization of the systolic array that GPU implementations cannot match.
 
 The paper reports wall-clock NTT throughput measured on actual Google TPU v6e8 hardware, not simulation. The 40× figure is relative to an optimized CPU implementation (AVX-512 SIMD), making it a conservative comparison — consumer CPU baselines would show larger multiples.
 

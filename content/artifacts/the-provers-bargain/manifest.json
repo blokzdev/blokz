@@ -1,0 +1,16 @@
+{
+  "slug": "the-provers-bargain",
+  "title": "The Prover's Bargain",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-21T00:31:13.929Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "machine-learning",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

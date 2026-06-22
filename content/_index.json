@@ -26,15 +26,25 @@
       "path": "content/articles/2026/06/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions/index.mdx",
       "url": "/articles/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
       "title": "The Code Isn't Frozen: How Proxy Upgrades Silently Break On-Chain AI Agent Assumptions",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Most DeFi protocols are upgradeable, and most on-chain AI agents don't know it. Here's how proxy architecture invalidates agent assumptions — and a tiered defense framework to build around it.",
       "pubDate": "2026-06-22",
       "topics": [
         "smart-contracts",
         "security",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "proxy-patterns",
+        "eip-1967",
+        "upgrades",
+        "ai-agents",
+        "oracles",
+        "timelocks",
+        "defi"
+      ],
+      "artifacts": [
+        "the-upgrade-window"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2242,7 +2252,7 @@
       "module": "src/islands/artifacts/the-upgrade-window.ts",
       "url": "/artifacts/the-upgrade-window",
       "title": "The Upgrade Window",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Seven DeFi protocols mapped by upgrade risk tier. Dependency edges reveal inherited risk — even immutable contracts can be exposed through multisig-controlled oracles. Tap a protocol to inspect its timelock window and agent safety note.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "map",

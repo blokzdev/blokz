@@ -1,16 +1,20 @@
 {
   "slug": "the-upgrade-window",
   "title": "The Upgrade Window",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Seven DeFi protocols mapped by upgrade risk tier. Dependency edges reveal inherited risk — even immutable contracts can be exposed through multisig-controlled oracles. Tap a protocol to inspect its timelock window and agent safety note.",
   "pubDate": "2026-06-22T06:29:28.174Z",
   "type": "svg",
   "archetype": "map",
-  "topics": [
-    "smart-contracts",
-    "security",
-    "blockchain"
-  ],
+  "topics": ["smart-contracts", "security", "blockchain"],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a protocol button to highlight its dependency edges",
+    "tap All to reset the view"
+  ],
+  "dataSource": {
+    "label": "Blockscout · Etherscan · Aave/Compound/Uniswap/MorphoBlue/Balancer protocol docs",
+    "url": "https://etherscan.io"
+  },
+  "dataAsOf": "2026-06-22"
 }

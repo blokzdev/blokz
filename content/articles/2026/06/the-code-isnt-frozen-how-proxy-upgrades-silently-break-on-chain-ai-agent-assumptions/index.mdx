@@ -1,22 +1,116 @@
 ---
 slug: the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions
 title: "The Code Isn't Frozen: How Proxy Upgrades Silently Break On-Chain AI Agent Assumptions"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Most DeFi protocols are upgradeable, and most on-chain AI agents don't know it. Here's how proxy architecture invalidates agent assumptions — and a tiered defense framework to build around it."
 pubDate: 2026-06-22T06:28:40.002Z
 author: blokz
 topics: [smart-contracts, security, blockchain]
-tags: []
-artifacts: []
+tags: [proxy-patterns, eip-1967, upgrades, ai-agents, oracles, timelocks, defi]
+artifacts: [the-upgrade-window]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "EIP-1967: Standard Proxy Storage Slots"
+    url: "https://eips.ethereum.org/EIPS/eip-1967"
+  - label: "Aave governance — Level 1 Executor"
+    url: "https://docs.aave.com/developers/governance/executor-contract"
+  - label: "Compound V3 Timelock (0x6d903f60) — Etherscan"
+    url: "https://etherscan.io/address/0x6d903f6003cca6255D85CcA4D3B5E5146dC33925"
+  - label: "Nomad Exploit Analysis — Coinbase Security"
+    url: "https://blog.coinbase.com/nomad-bridge-hack-analysis-6dcce30119a3"
+  - label: "MorphoBlue — Immutable Core Design"
+    url: "https://docs.morpho.org/morpho/concepts/immutability"
+  - label: "Uniswap V4 PoolManager deployment"
+    url: "https://github.com/Uniswap/v4-core"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+An on-chain AI agent that calls Aave's pool contract today will be calling a different implementation tomorrow if a governance proposal queues an upgrade. The address stays the same. The ABI stays the same. The behavior changes silently.
 
-## Section heading
+This is not a theoretical edge case. The overwhelming majority of DeFi protocols with meaningful TVL use some form of proxy architecture — EIP-1967 transparent proxies, UUPS patterns, or custom aggregator contracts that swap implementation addresses without warning. Agents that hardcode ABI assumptions against these addresses are building on glass.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The EIP-1967 Mechanics
+
+When you call a DeFi protocol's address, you're usually calling a proxy. The proxy stores the address of the current *implementation* in a deterministic storage slot (`0x360894...`), then delegates every call via `DELEGATECALL` to that implementation. The proxy's own bytecode is minimal — it just forwards. The logic lives elsewhere.
+
+The EIP-1967 standard defines three storage slots:
+- **Implementation slot** (`keccak256("eip1967.proxy.implementation") - 1`): the current logic address
+- **Admin slot**: who can trigger an upgrade
+- **Beacon slot**: optional, for beacon proxies that share an implementation
+
+An upgrade is a single transaction that writes a new address into the implementation slot. The proxy address never changes. Etherscan will still label it the same way. Every interface remains syntactically valid. But the semantics of every function call you make has potentially changed.
+
+**Agents never learn about this from the contracts they call.** There is no event emitted by the proxy on call. There is no introspection API. The only reliable signals are: monitoring governance proposal queues, watching the `Upgraded(address)` event on the proxy (emitted during the upgrade transaction itself), or computing a bytecode hash of the implementation before and after.
+
+## The Timelock Window
+
+The saving grace — for governance-controlled protocols — is that upgrades don't usually happen instantly. A governance vote queues an action into a timelock contract, which enforces a minimum delay before execution. This window is the agent's reaction time.
+
+The numbers matter:
+
+| Protocol | Proxy Type | Timelock | Agent reaction window |
+|---|---|---|---|
+| Uniswap V3 | None | — | Infinite (bytecode is final) |
+| Uniswap V4 | None | — | Infinite |
+| MorphoBlue | None | — | Infinite |
+| Balancer V2 Vault | None | — | Infinite |
+| Compound V3 Comet | Upgradeable proxy | **172 800 s (48 h)** | 48 hours |
+| Aave V3 Pool | EIP-1967 | **~86 400 s (24 h)** | ~24 hours |
+| Chainlink ETH/USD | Aggregator proxy | **None** | Zero |
+
+Compound V3's 48-hour timelock (172 800 seconds, on-chain at `0x6d903f6003cca6255D85CcA4D3B5E5146dC33925`) gives agents a meaningful window. Aave V3's Level 1 Executor imposes ~24 hours. Both are actionable: an agent that monitors governance queues can detect a queued upgrade and close positions or pause operations before the implementation changes.
+
+Chainlink's `AggregatorProxy` (`0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419`) is the dangerous case. The proxy is controlled by a multisig. The aggregator address — pointing to the actual off-chain data computation contract — can be swapped by that multisig with no mandatory public delay. Any protocol that uses Chainlink for pricing inherits this risk, including otherwise-immutable protocols like MorphoBlue that hardcode Chainlink adapters at market creation.
+
+<Artifact slug="the-upgrade-window" />
+
+## The Nomad Lesson: When Upgrade Logic Breaks
+
+The August 2022 Nomad bridge hack cost $190M and serves as the clearest case study in what goes wrong when proxy upgrade procedures are flawed.
+
+Nomad's bridge used an upgradeable proxy pattern for its `Replica` contracts. During a routine upgrade to optimize gas, the development team initialized the new implementation by calling `initialize()` directly — which set `committedRoot` to `bytes32(0x0000...0000)`. The bug: the message processing logic treated `bytes32(0)` as a trusted root by default.
+
+Any message with an "empty" proof was now valid. Within hours, hundreds of copycats were manually replaying and modifying earlier transactions, each extracting tokens by submitting proofs against the zero root. No private key was stolen. No flash loan was needed. The attack required only recognizing that a legitimate upgrade transaction had introduced a trusted zero-value.
+
+The protocol had a timelock, but the upgrade was routine enough that no one was monitoring for anomalous initial state. The lesson for AI agents isn't just "check the timelock" — it's that upgrades introduce initialization surfaces that don't exist in immutable contracts. A new implementation can set any storage to any value on its first call.
+
+## Inherited Risk: The Dependency Edge Problem
+
+The riskiest upgrade paths for agents aren't always in the protocol they're directly calling. They're in the protocols that protocol depends on.
+
+Consider an agent running a strategy on MorphoBlue. MorphoBlue's core (`0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`) is genuinely immutable — there's no admin, no upgrade path, no proxy. The core contract cannot change. But MorphoBlue markets are created with a specific oracle adapter, and the most common oracle for ETH-collateral markets is Chainlink. That Chainlink feed is multisig-controlled. The feed's aggregator contract can be swapped.
+
+An immutable core protocol wired to a mutable oracle is still exposed to oracle upgrade risk. The agent's position sizing, liquidation thresholds, and health factor calculations all feed off that oracle. If the aggregator is replaced with one that reports a different price precision or staleness window, the agent's invariants break without any transaction touching the MorphoBlue core.
+
+The map above shows these dependency edges explicitly. The cross-tier dependencies — immutable protocols pointing to lower-tier oracles — are where inherited risk lives.
+
+## A Defense Framework for Agent Authors
+
+**Tier-aware contract selection.** Not all addresses are equal. Design agent strategies with explicit awareness of which contracts are in scope and what tier they fall into. Prefer immutable protocols for core invariants. Keep mutable dependencies at the periphery and treat them as configuration, not ground truth.
+
+**Bytecode sentinel checks.** Before relying on a contract call, verify that the implementation hasn't changed:
+
+```solidity
+bytes32 constant EXPECTED_IMPL_HASH = 0xabc...;  // recorded at agent initialization
+
+function _assertImplementationUnchanged(address proxy) internal view {
+    address impl = address(uint160(uint256(
+        vm.load(proxy, bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1))
+    )));
+    require(keccak256(impl.code) == EXPECTED_IMPL_HASH, "Implementation changed");
+}
+```
+
+This adds a single `STATICCALL`-equivalent read per critical operation. On EVM, reading implementation storage for EIP-1967 proxies is deterministic and cheap.
+
+**Governance queue monitoring.** For protocols with timelocks, subscribe to the `CallScheduled` events emitted by `TimelockController` contracts. These events include the target, value, calldata, delay, and predecessor — enough to detect an upgrade transaction before it executes. An agent that sees a queued `upgradeTo(newImpl)` call on Aave's executor has 24 hours to act.
+
+**Fail-safe postures by tier.** Immutable contracts can be called without special guarding. Governance-48h and governance-24h protocols warrant sentinel checks plus governance monitoring. Multisig-controlled contracts (particularly oracles) should be treated as configuration that can change without warning — agents should have defined fallback behaviors (pause, close to safe asset, alert) that trigger if expected invariants break.
 
 ## Takeaways
 
-TODO.
+- Most DeFi protocol addresses are proxies. The logic behind them can change on governance vote, and the change is invisible at the call site.
+- Timelock windows (Compound: 48h, Aave: ~24h) are actionable reaction time for agents that monitor governance queues. Zero-timelock multisig oracles are not.
+- Inherited risk through dependency edges matters as much as direct exposure. An immutable base protocol wired to a mutable oracle is not fully immutable from the agent's perspective.
+- Bytecode sentinel checks (`keccak256(impl.code)`) are the cheapest reliable guard against silent implementation changes.
+- The Nomad hack shows that upgrade initialization is an independent attack surface — even a legitimate upgrade can introduce exploitable initial state.
+
+The EVM model makes address stability feel like code stability. It isn't. The address is the handle; the code is what matters, and on most production protocols, the code is negotiable.

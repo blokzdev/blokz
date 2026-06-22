@@ -1,7 +1,7 @@
 {
   "slug": "the-adl-queue",
   "title": "The ADL Queue",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Interactive ADL priority queue: drag the shortfall slider past the insurance fund to trigger auto-deleveraging. Positions close highest-profit-% first.",
   "pubDate": "2026-06-22T19:28:17.382Z",
   "type": "svg",
   "archetype": "calculator",
@@ -9,7 +9,12 @@
     "defi",
     "tokenomics"
   ],
-  "aspect": "16/9",
+  "aspect": "5/3",
   "featured": false,
-  "controls": []
+  "controls": ["drag shortfall slider to trigger ADL", "adjust insurance fund size"],
+  "dataSource": {
+    "label": "Chitra 2026, arXiv:2512.01112",
+    "url": "https://arxiv.org/abs/2512.01112"
+  },
+  "dataAsOf": "2026-06-22"
 }

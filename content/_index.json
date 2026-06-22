@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions/index.mdx",
       "url": "/articles/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
       "title": "The Forced Exit: Autodeleveraging and the Hidden Tax on Winning Perpetual Positions",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Perpetual DEXes socialize insolvency losses by force-closing profitable positions. Tarun Chitra proved it's a trilemma: no mechanism can be solvent, fair, and revenue-preserving simultaneously. On October 10, 2025, Hyperliquid's ADL closed $2.1B in 12 minutes — profitable traders ate $45–51.7M in excess haircut.",
       "pubDate": "2026-06-22",
       "topics": [
         "defi",
         "tokenomics",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "autodeleveraging",
+        "adl",
+        "perpetuals",
+        "insurance-fund",
+        "hyperliquid",
+        "liquidation",
+        "perp-dex",
+        "clearing"
+      ],
+      "artifacts": [
+        "the-adl-queue"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2547,7 +2558,7 @@
       "module": "src/islands/artifacts/the-adl-queue.ts",
       "url": "/artifacts/the-adl-queue",
       "title": "The ADL Queue",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Interactive ADL priority queue: drag the shortfall slider past the insurance fund to trigger auto-deleveraging. Positions close highest-profit-% first.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "calculator",

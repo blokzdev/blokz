@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 83,
-    "artifacts": 84
+    "articles": 84,
+    "artifacts": 85
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
     "blockchain": 17,
     "cryptography": 13,
-    "data": 11,
+    "data": 12,
     "defi": 18,
     "infrastructure": 32,
     "llm": 16,
-    "machine-learning": 36,
-    "research": 4,
+    "machine-learning": 37,
+    "research": 5,
     "security": 24,
     "smart-contracts": 15,
     "tokenomics": 12,
@@ -21,6 +21,23 @@
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "path": "content/articles/2026/06/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains/index.mdx",
+      "url": "/articles/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "title": "The Gradient Thief: Why Federated Learning's Privacy Promise Fails on Public Chains",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "machine-learning",
+        "research",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
       "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
@@ -2219,6 +2236,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-inversion-window",
+      "path": "content/artifacts/the-inversion-window/manifest.json",
+      "module": "src/islands/artifacts/the-inversion-window.ts",
+      "url": "/artifacts/the-inversion-window",
+      "title": "The Inversion Window",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "machine-learning",
+        "data"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-pipeline-breach",
       "path": "content/artifacts/the-pipeline-breach/manifest.json",

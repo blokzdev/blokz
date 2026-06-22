@@ -1,22 +1,211 @@
 ---
 slug: the-price-chainlink-shows-you-is-already-old
 title: "The Price Chainlink Shows You Is Already Old"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Chainlink's push oracle only updates when price moves ≥0.5% or an hour passes. That gap costs AI agents real money — and Pyth's pull model closes most of it."
 pubDate: 2026-06-22T04:33:49.745Z
 author: blokz
 topics: [defi, data, ai]
-tags: []
-artifacts: []
+tags: [oracles, chainlink, pyth, staleness, defi-risk, ai-agents]
+artifacts: [the-oracle-gap]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Chainlink ETH/USD Feed (Ethereum mainnet)"
+    url: "https://etherscan.io/address/0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+  - label: "Chainlink Data Feeds — deviation threshold and heartbeat docs"
+    url: "https://docs.chain.link/data-feeds/price-feeds/addresses"
+  - label: "Pyth Network — EVM price feeds"
+    url: "https://docs.pyth.network/price-feeds/use-real-time-data/evm"
+  - label: "Pyth Hermes REST API"
+    url: "https://hermes.pyth.network/docs"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+At 04:02 UTC on June 22, the Chainlink ETH/USD aggregator settled on $1,725.81 and went quiet.
+By 04:31 — 28 minutes later — spot ETH was trading at $1,733.48 on Crypto.com, a
+$7.67 gap that any swap router, lending protocol, or AI trading agent reading `latestRoundData()`
+would treat as accurate. It wasn't. And the oracle had no obligation to update until either
+the price moved another 0.8% in the same direction or another 32 minutes elapsed.
 
-## Section heading
+This is not a bug. It is the design. Understanding it is table stakes for anyone building
+on DeFi data.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## How Chainlink's two-trigger system works
+
+Chainlink's push oracles don't stream prices. A network of off-chain node operators watches
+a reference price (typically an aggregated median from multiple exchanges) and writes it
+on-chain only when one of two conditions fires:
+
+- **Deviation trigger**: the reference price has moved more than `deviationThreshold` percent
+  from the last on-chain value. For ETH/USD mainnet this is **0.5%**.
+- **Heartbeat trigger**: more than `heartbeatSecs` seconds have elapsed since the last update.
+  For ETH/USD mainnet this is **3600 seconds (1 hour)**.
+
+The oracle update is a gas transaction. Updating every block would cost millions of dollars
+per year per feed; the two-trigger model caps that cost by only writing when it matters.
+This is a reasonable engineering trade-off — but the cost is an always-present staleness window.
+
+When you call `latestRoundData()` on the proxy contract
+(`0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419`) you get:
+
+```solidity
+(
+  uint80 roundId,
+  int256 answer,       // price × 10^decimals (8 decimals for ETH/USD)
+  uint256 startedAt,
+  uint256 updatedAt,  // <── timestamp of last on-chain write
+  uint80 answeredInRound
+) = priceFeed.latestRoundData();
+```
+
+`updatedAt` is the only staleness signal you have. The price was accurate at that moment;
+it may not be now. A 28-minute-old answer that reads $1,725.81 while spot trades at $1,733.48
+is within the oracle's guaranteed SLA — and it will stay stale until the 0.5% threshold fires.
+
+<Artifact slug="the-oracle-gap" />
+
+The chart above shows the snapshot from 04:31 UTC. The shaded orange band is the
+**no-update zone**: while spot price stays inside $1,717.18–$1,734.44, the deviation trigger
+doesn't fire. The Chainlink anchor is at $1,725.81. Use the slider to push the simulated spot
+price past $1,734.44 — that's the moment the oracle would queue an update.
+
+## The current gap: 0.445%, just under threshold
+
+At snapshot time, the gap between Chainlink's on-chain price and Crypto.com spot was:
+
+| | Price | Gap vs spot |
+|---|---|---|
+| Chainlink (on-chain) | $1,725.81 | −$7.67 (−0.445%) |
+| Pyth (pull oracle) | $1,731.47 | −$2.01 (−0.116%) |
+| Spot (Crypto.com) | $1,733.48 | — |
+
+Chainlink is 0.445% stale — just 0.055 percentage points below the threshold that would
+trigger an on-chain correction. Pyth, which uses a different model entirely, is $2.01 away.
+
+## Pyth's pull model: you fetch, you pay
+
+Pyth takes the opposite approach. A network of first-party market makers (Jump Trading,
+CBOE, Jane Street, and others) sign price attestations off-chain roughly every 400ms.
+These attestations are aggregated on the Pythnet appchain and made available via the
+Hermes REST API. Nobody writes them to Ethereum until a contract actually needs them.
+
+When your DeFi protocol calls `getPriceNoOlderThan(priceFeedId, 60)`, your transaction
+must include the freshest Hermes-sourced price update as calldata. The caller pays the
+gas to write it. This is the "pull" model: data is always fresh off-chain, but on-chain
+freshness is gated on transaction activity.
+
+Pyth also exposes a **confidence interval** (`conf`) with every price. At snapshot time:
+
+```
+price:    173147000000  (= $1,731.47 with expo -8)
+conf:      90054418     (= ±$0.90)
+confPct:   0.052%
+```
+
+The confidence interval represents the spread of the underlying publisher quotes — a measure
+of current market uncertainty. When `conf` is large relative to `price`, the market is
+fragmented or thin. When it's tight (0.052% here), multiple market makers agree closely.
+**A well-designed protocol should reject Pyth prices when `conf/price` exceeds a threshold**,
+typically 0.5–1%, to guard against thin-market or manipulation conditions.
+
+## What the gap costs AI agents
+
+An AI agent managing a DeFi position has tighter error budgets than a human reading a chart.
+Three concrete failure modes:
+
+**Liquidation timing.** A lending protocol that uses Chainlink for collateral pricing will
+under-price ETH during a rising market. At $1,725.81 on-chain vs $1,733.48 real, a position
+that *should* be healthy at 110% collateralization ratio is being priced as if it's at 109.55%.
+An autonomous agent that monitors its own health using the oracle price will think it has
+more margin than it does. If spot then drops sharply — past the $1,717.18 lower trigger —
+the oracle updates in one transaction, and a second transaction liquidates the now-undercollateralized
+position. The agent saw it coming via spot data; the protocol didn't.
+
+**Collateral overstating in falling markets.** The mirror problem: in a falling market
+where ETH is sliding from $1,733 toward $1,717, the oracle reads $1,725.81 the whole way down.
+A smart contract that only reads `latestRoundData()` keeps treating collateral as worth $1,725.81.
+Bad debt accumulates while the on-chain price is stale. This is the LUNA/UST post-mortem vector —
+oracle staleness masked losses until the threshold gap closed catastrophically.
+
+**MEV exposure.** Sophisticated arbitrageurs watch mempool transactions and Chainlink
+oracle update transactions. When they see a Chainlink update about to land (closing a
+$7.67 gap), they front-run it. An AI agent trading against the oracle price is trading
+against adversaries who know the price is stale and have already positioned for the correction.
+
+## Engineering patterns
+
+### Staleness guard in Solidity
+
+The minimum viable fix for any protocol reading Chainlink:
+
+```solidity
+function getPrice() internal view returns (int256) {
+    (
+        ,
+        int256 answer,
+        ,
+        uint256 updatedAt,
+    ) = priceFeed.latestRoundData();
+
+    require(block.timestamp - updatedAt <= 3600, "stale oracle");
+    require(answer > 0, "invalid price");
+    return answer;
+}
+```
+
+The 3600-second bound matches the heartbeat. A tighter bound (e.g. 1800s) gives a safety margin
+at the cost of more frequent reverts during periods of low volatility when the heartbeat dominates.
+Many protocols add a circuit breaker that also checks deviation from the previous round to catch
+sudden multi-sigma moves.
+
+### Pyth confidence check in TypeScript (for AI agent off-chain logic)
+
+```typescript
+import { HermesClient } from '@pythnetwork/hermes-client';
+
+const client = new HermesClient('https://hermes.pyth.network');
+const ETH_USD = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace';
+
+async function getVerifiedEthPrice(): Promise<number> {
+  const updates = await client.getLatestPriceUpdates([ETH_USD]);
+  const p = updates.parsed?.[0]?.price;
+  if (!p) throw new Error('no price data');
+
+  const price = Number(p.price) * Math.pow(10, p.expo);
+  const conf  = Number(p.conf)  * Math.pow(10, p.expo);
+  const confPct = conf / price * 100;
+
+  if (confPct > 0.5) throw new Error(`conf too wide: ${confPct.toFixed(3)}%`);
+
+  return price;
+}
+```
+
+This is purely off-chain. For on-chain use, your contract calls
+`pyth.updatePriceFeeds(priceUpdateData)` with the Hermes-sourced `priceUpdateData` as calldata,
+then reads `getPriceNoOlderThan(feedId, maxAge)`. The caller pays the update gas.
+
+### Which oracle for which job
+
+| Use case | Recommended | Why |
+|---|---|---|
+| On-chain collateral pricing (Aave-style) | Chainlink | Manipulation-resistant; battle-tested; sufficient for hourly settlement |
+| Real-time on-chain pricing (perps mark price) | Pyth | Sub-second freshness; pull model means you pay for freshness when you need it |
+| AI agent off-chain position monitoring | Pyth Hermes (off-chain) | Free, real-time, confidence interval available |
+| AI agent risk sizing (σ-aware) | Pyth EMA price | Exponential moving average smooths noise; `emaPrice` is available on every Pyth feed |
+| Circuit breaker / sanity check | Both | Cross-reference Chainlink and Pyth; flag divergence > 1% |
 
 ## Takeaways
 
-TODO.
+Chainlink's gap isn't a flaw — it's a cost-minimization contract with known parameters.
+The flaw is treating `updatedAt` as the current time and `answer` as the current price
+without checking either. At 28 minutes old and 0.445% stale, the ETH/USD feed at snapshot
+time was operating exactly within its SLA, and any contract built without a staleness guard
+was accepting that risk silently.
+
+For AI agents operating at higher frequency, Pyth's pull model shifts the trade-off:
+fresher prices, available on demand, with a built-in uncertainty signal. The confidence
+interval is a free σ estimate that lets an agent size positions conservatively when markets
+are fragmented — something `latestRoundData()` cannot give you.
+
+The practical stack for a serious DeFi AI agent: Pyth Hermes off-chain for monitoring and
+sizing, Chainlink on-chain as the settlement anchor with an explicit staleness guard, and a
+divergence check between the two as a circuit breaker for abnormal conditions.

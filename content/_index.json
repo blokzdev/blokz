@@ -26,15 +26,24 @@
       "path": "content/articles/2026/06/the-price-chainlink-shows-you-is-already-old/index.mdx",
       "url": "/articles/the-price-chainlink-shows-you-is-already-old",
       "title": "The Price Chainlink Shows You Is Already Old",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Chainlink's push oracle only updates when price moves ≥0.5% or an hour passes. That gap costs AI agents real money — and Pyth's pull model closes most of it.",
       "pubDate": "2026-06-22",
       "topics": [
         "defi",
         "data",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "oracles",
+        "chainlink",
+        "pyth",
+        "staleness",
+        "defi-risk",
+        "ai-agents"
+      ],
+      "artifacts": [
+        "the-oracle-gap"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2242,7 +2251,7 @@
       "module": "src/islands/artifacts/the-oracle-gap.ts",
       "url": "/artifacts/the-oracle-gap",
       "title": "The Oracle Gap",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Compare Chainlink's push oracle price against Pyth's pull price and live spot. Drag the slider to see exactly when the 0.5% deviation threshold triggers an on-chain update.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "chart",

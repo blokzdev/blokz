@@ -1,17 +1,17 @@
 {
   "counts": {
-    "articles": 87,
-    "artifacts": 88
+    "articles": 88,
+    "artifacts": 89
   },
   "topicCounts": {
-    "agents": 32,
+    "agents": 33,
     "ai": 8,
     "blockchain": 19,
     "cryptography": 14,
-    "data": 11,
+    "data": 12,
     "defi": 19,
     "infrastructure": 33,
-    "llm": 16,
+    "llm": 17,
     "machine-learning": 37,
     "research": 4,
     "security": 25,
@@ -21,6 +21,33 @@
     "zero-knowledge": 10
   },
   "articles": [
+    {
+      "slug": "the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents",
+      "title": "The Blank Slate: Persistent Memory Costs and Architectures for On-Chain AI Agents",
+      "description": "On-chain AI agents reset state on every call. Four persistent-memory architectures span a 20× monthly cost gap — SSTORE at $78/month versus IPFS+CID at $3.92. Real June 2026 gas numbers, four trust models, one crossover you won't see coming.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "data",
+        "llm"
+      ],
+      "tags": [
+        "agent-memory",
+        "sstore",
+        "episodic-memory",
+        "working-memory",
+        "persistent-state",
+        "evm",
+        "agent-architecture"
+      ],
+      "artifacts": [
+        "agent-memory-cost-map"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
       "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
@@ -2326,6 +2353,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "agent-memory-cost-map",
+      "path": "content/artifacts/agent-memory-cost-map/manifest.json",
+      "module": "src/islands/artifacts/agent-memory-cost-map.ts",
+      "url": "/artifacts/agent-memory-cost-map",
+      "title": "Agent Memory Cost Map",
+      "description": "Adjust memory entries per call, call frequency, and gas price to see how monthly on-chain cost diverges across four persistent-memory architectures: SSTORE, event logs, IPFS+CID, and TEE.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "data",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-state-window",
       "path": "content/artifacts/the-state-window/manifest.json",

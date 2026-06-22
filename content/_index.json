@@ -1,26 +1,54 @@
 {
   "counts": {
-    "articles": 89,
-    "artifacts": 90
+    "articles": 90,
+    "artifacts": 91
   },
   "topicCounts": {
     "agents": 32,
     "ai": 8,
     "blockchain": 19,
-    "cryptography": 14,
+    "cryptography": 15,
     "data": 11,
     "defi": 20,
     "infrastructure": 33,
     "llm": 17,
     "machine-learning": 37,
-    "research": 5,
+    "research": 6,
     "security": 26,
     "smart-contracts": 16,
     "tokenomics": 14,
     "web3": 11,
-    "zero-knowledge": 10
+    "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
+      "url": "/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "title": "The Proof Wrapping Tax: Why zkML Lands in Groth16 Before Touching the Chain",
+      "description": "FRI-STARKs are fast and trustless, but their proofs are megabytes wide. Groth16 is 256 bytes but needs a ceremony. STARK→SNARK wrapping resolves the tension — and it's why SP1 and RISC Zero can settle any ML inference on L1 for under 300k gas.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "zkml",
+        "stark",
+        "snark",
+        "groth16",
+        "sp1",
+        "risc-zero",
+        "nova",
+        "on-chain-verification"
+      ],
+      "artifacts": [
+        "the-proof-tradeoff"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
       "path": "content/articles/2026/06/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents/index.mdx",
@@ -2382,6 +2410,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-proof-tradeoff",
+      "path": "content/artifacts/the-proof-tradeoff/manifest.json",
+      "module": "src/islands/artifacts/the-proof-tradeoff.ts",
+      "url": "/artifacts/the-proof-tradeoff",
+      "title": "The Proof Tradeoff",
+      "description": "Seven ZK proof configurations mapped on prover time vs. on-chain verification gas. Click any system to see proof size, setup requirements, and zkML viability. The annotated wrapper band shows the constant-gas region only reachable by STARK→SNARK wrapping.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "recursive-leverage-chain",
       "path": "content/artifacts/recursive-leverage-chain/manifest.json",

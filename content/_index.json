@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 97,
-    "artifacts": 98
+    "articles": 98,
+    "artifacts": 99
   },
   "topicCounts": {
-    "agents": 36,
+    "agents": 37,
     "ai": 9,
-    "blockchain": 20,
+    "blockchain": 21,
     "cryptography": 16,
     "data": 11,
     "defi": 22,
@@ -15,13 +15,39 @@
     "machine-learning": 37,
     "research": 8,
     "security": 27,
-    "smart-contracts": 18,
+    "smart-contracts": 19,
     "tokenomics": 15,
     "tooling": 1,
     "web3": 11,
     "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
+      "path": "content/articles/2026/06/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent/index.mdx",
+      "url": "/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
+      "title": "The Paymaster's Bargain: ERC-4337 Bundler Economics and the Gas-Free AI Agent",
+      "description": "ERC-4337 lets AI agents transact without holding ETH — but the alt-mempool has its own fee market, bundler economics, and MEV surface every builder must understand.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "erc-4337",
+        "account-abstraction",
+        "bundlers",
+        "paymasters",
+        "gas-abstraction",
+        "useroperation"
+      ],
+      "artifacts": [
+        "the-op-queue"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet",
       "path": "content/articles/2026/06/fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet/index.mdx",
@@ -2615,6 +2641,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-op-queue",
+      "path": "content/artifacts/the-op-queue/manifest.json",
+      "module": "src/islands/artifacts/the-op-queue.ts",
+      "url": "/artifacts/the-op-queue",
+      "title": "The Op Queue",
+      "description": "The six stages of an ERC-4337 UserOperation — from construction by an AI agent to paymaster settlement — with the actor, failure modes, and gas cost at each step.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-fork-divergence",
       "path": "content/artifacts/the-fork-divergence/manifest.json",

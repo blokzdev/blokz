@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 90,
-    "artifacts": 91
+    "articles": 91,
+    "artifacts": 92
   },
   "topicCounts": {
-    "agents": 32,
+    "agents": 33,
     "ai": 8,
-    "blockchain": 19,
+    "blockchain": 20,
     "cryptography": 15,
     "data": 11,
     "defi": 20,
-    "infrastructure": 33,
+    "infrastructure": 34,
     "llm": 17,
     "machine-learning": 37,
     "research": 6,
@@ -21,6 +21,23 @@
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
+      "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "title": "The Declared State: Sealevel Parallelism and the AI Agent Execution Contract on Solana",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
       "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
@@ -2410,6 +2427,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sealevel-lanes",
+      "path": "content/artifacts/the-sealevel-lanes/manifest.json",
+      "module": "src/islands/artifacts/the-sealevel-lanes.ts",
+      "url": "/artifacts/the-sealevel-lanes",
+      "title": "The Sealevel Lanes",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-proof-tradeoff",
       "path": "content/artifacts/the-proof-tradeoff/manifest.json",

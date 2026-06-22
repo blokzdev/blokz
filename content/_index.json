@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents/index.mdx",
       "url": "/articles/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
       "title": "The Solver Race: How Batch Auction Networks Eliminate MEV for AI DeFi Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "CoW Protocol's batch auction design makes front-running structurally impossible — and that matters enormously for AI agents executing DeFi strategies at machine speed.",
       "pubDate": "2026-06-22",
       "topics": [
         "defi",
         "smart-contracts",
         "research"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "batch-auction",
+        "cow-protocol",
+        "solver",
+        "mev",
+        "intent",
+        "uniform-clearing-price",
+        "surplus",
+        "coincidence-of-wants"
+      ],
+      "artifacts": [
+        "the-batch-settlement"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2491,7 +2502,7 @@
       "module": "src/islands/artifacts/the-batch-settlement.ts",
       "url": "/artifacts/the-batch-settlement",
       "title": "The Batch Settlement",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Step through a CoW Protocol batch auction: intents arrive, the batch seals, solvers compete, settlement executes on-chain, and surplus flows back to traders.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "diagram",

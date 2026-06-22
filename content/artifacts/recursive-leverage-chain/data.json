@@ -1,0 +1,12 @@
+{
+  "weth": {
+    "ltv": 0.805,
+    "liqThreshold": 0.83,
+    "liqBonus": 0.05,
+    "supplyApy": 0.01467,
+    "borrowApy": 0.03886
+  },
+  "ethPrice": 1766.27,
+  "blockNumber": 25373150,
+  "dataAsOf": "2026-06-22"
+}

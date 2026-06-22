@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 88,
-    "artifacts": 89
+    "articles": 89,
+    "artifacts": 90
   },
   "topicCounts": {
     "agents": 32,
@@ -9,18 +9,46 @@
     "blockchain": 19,
     "cryptography": 14,
     "data": 11,
-    "defi": 19,
+    "defi": 20,
     "infrastructure": 33,
     "llm": 17,
     "machine-learning": 37,
-    "research": 4,
+    "research": 5,
     "security": 26,
     "smart-contracts": 16,
-    "tokenomics": 13,
+    "tokenomics": 14,
     "web3": 11,
     "zero-knowledge": 10
   },
   "articles": [
+    {
+      "slug": "the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
+      "path": "content/articles/2026/06/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents/index.mdx",
+      "url": "/articles/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
+      "title": "The Recursive Ledger: How DeFi Composability Stacks Hidden Leverage for AI Agents",
+      "description": "Deposit ETH in Aave, borrow USDC, buy more ETH, repeat. Three loops creates 2.97× leverage from a single ETH — and all three positions share one liquidation trigger at −3% ETH price. The math, the cascade, and why AI yield optimizers find themselves here by default.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "tokenomics",
+        "research"
+      ],
+      "tags": [
+        "leverage-chain",
+        "liquidation-cascade",
+        "aave",
+        "composability",
+        "health-factor",
+        "rehypothecation",
+        "yield-optimization",
+        "defi-risk"
+      ],
+      "artifacts": [
+        "recursive-leverage-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents",
       "path": "content/articles/2026/06/the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents/index.mdx",
@@ -2354,6 +2382,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "recursive-leverage-chain",
+      "path": "content/artifacts/recursive-leverage-chain/manifest.json",
+      "module": "src/islands/artifacts/recursive-leverage-chain.ts",
+      "url": "/artifacts/recursive-leverage-chain",
+      "title": "Recursive Leverage Chain",
+      "description": "Interactive calculator: watch how deposit-borrow loops compound leverage toward the 1/(1−LTV) asymptote. Adjust LTV and loop count to see effective leverage, the liquidation trigger, and the loss from a single price move.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-context-attack-surface",
       "path": "content/artifacts/the-context-attack-surface/manifest.json",

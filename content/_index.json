@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 96,
-    "artifacts": 97
+    "articles": 97,
+    "artifacts": 98
   },
   "topicCounts": {
-    "agents": 35,
+    "agents": 36,
     "ai": 9,
     "blockchain": 20,
     "cryptography": 16,
@@ -15,12 +15,43 @@
     "machine-learning": 37,
     "research": 8,
     "security": 27,
-    "smart-contracts": 17,
+    "smart-contracts": 18,
     "tokenomics": 15,
+    "tooling": 1,
     "web3": 11,
     "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet",
+      "path": "content/articles/2026/06/fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet/index.mdx",
+      "url": "/articles/fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet",
+      "title": "Fork-Blind: The Five Assumptions That Break AI DeFi Agents at Mainnet",
+      "description": "Foundry forks freeze five properties of the Ethereum execution environment that are live, adversarial, and expensive in production: basefee, oracle prices, blockhash entropy, MEV competition, and TWAP accumulation. Each one silently misleads AI agents through testing.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "tooling",
+        "agents",
+        "smart-contracts"
+      ],
+      "tags": [
+        "foundry",
+        "anvil",
+        "fork-testing",
+        "basefee",
+        "chainlink",
+        "mev",
+        "twap",
+        "blockhash",
+        "testing-gaps",
+        "defi-agents"
+      ],
+      "artifacts": [
+        "the-fork-divergence"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
       "path": "content/articles/2026/06/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching/index.mdx",
@@ -2584,6 +2615,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-fork-divergence",
+      "path": "content/artifacts/the-fork-divergence/manifest.json",
+      "module": "src/islands/artifacts/the-fork-divergence.ts",
+      "url": "/artifacts/the-fork-divergence",
+      "title": "The Fork Divergence",
+      "description": "How quickly each Foundry fork property diverges from mainnet reality. Five divergences — blockhash entropy, MEV competition, basefee, TWAP, and oracle price — rated by blocks until first silent failure. Click a bar to inspect fork behavior vs. production.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tooling",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-proof-batch",
       "path": "content/artifacts/the-proof-batch/manifest.json",

@@ -1,0 +1,79 @@
+{
+  "schemes": [
+    {
+      "id": "kzg-blob",
+      "name": "KZG (EIP-4844)",
+      "label": "KZG",
+      "proofBytes": 48,
+      "setup": "trusted",
+      "color": "#5b8cff",
+      "usedIn": "EIP-4844 blob DA",
+      "note": "48-byte proof, 50,000 gas via point_evaluation_precompile. Requires the Powers of Tau ceremony — 140,416 participants over 69 days. Any single honest participant ensures security."
+    },
+    {
+      "id": "groth16",
+      "name": "Groth16",
+      "label": "Groth16",
+      "proofBytes": 128,
+      "setup": "trusted",
+      "color": "#a371f7",
+      "usedIn": "Polygon Hermez v1, zkML wrapping",
+      "note": "Smallest on-chain SNARK (~128 bytes, ~220k gas). Per-circuit trusted setup: each new circuit requires its own ceremony. Common in zkML pipelines as the final SNARK wrapper."
+    },
+    {
+      "id": "plonk",
+      "name": "PLONK",
+      "label": "PLONK",
+      "proofBytes": 768,
+      "setup": "trusted",
+      "color": "#79c0ff",
+      "usedIn": "Scroll, Polygon zkEVM v2",
+      "note": "Universal KZG SRS: one ceremony covers all circuits up to degree n. Proofs ~768 bytes, verification ~300k–500k gas. Separating setup from circuit design is a major practical advantage."
+    },
+    {
+      "id": "ipa-verkle",
+      "name": "IPA / Pedersen",
+      "label": "IPA",
+      "proofBytes": 576,
+      "setup": "transparent",
+      "color": "#3fb950",
+      "usedIn": "Ethereum Verkle state (EIP-6800)",
+      "note": "No trusted setup. Generators derived by hashing a public seed to curve points — anyone can verify independently. ~500–630 bytes per leaf opening. Multiproofs collapse across shared branches."
+    },
+    {
+      "id": "mpt-branch",
+      "name": "Merkle Patricia Trie",
+      "label": "MPT",
+      "proofBytes": 8192,
+      "setup": "transparent",
+      "color": "#d29922",
+      "usedIn": "Ethereum state (current, pre-Verge)",
+      "note": "Hash-based, not a polynomial commitment — included as a reference baseline. Branch witnesses run 8–20 KB per account access (10–15 hexary trie nodes × ~500 B each). 10–20× larger than Verkle witnesses."
+    },
+    {
+      "id": "fri-stark",
+      "name": "FRI-STARK",
+      "label": "FRI",
+      "proofBytes": 102400,
+      "setup": "transparent",
+      "color": "#f0883e",
+      "usedIn": "StarkNet (wrapped before L1 posting)",
+      "note": "No trusted setup, conjectured post-quantum resistant. Proofs ~100 KB — direct L1 calldata cost (~1.6M gas) makes posting impractical. In practice wrapped in a SNARK (Groth16 or PLONK) before L1."
+    }
+  ],
+  "ceremony": {
+    "startDate": "2023-01-13",
+    "endDate": "2023-03-23",
+    "durationDays": 69,
+    "participants": 140416,
+    "g1Points": 4096,
+    "g2Points": 65
+  },
+  "blobSpec": {
+    "fieldElements": 4096,
+    "totalBytes": 131072,
+    "commitmentBytes": 48,
+    "proofBytes": 48,
+    "pointEvalGas": 50000
+  }
+}

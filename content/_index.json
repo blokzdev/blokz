@@ -26,15 +26,28 @@
       "path": "content/articles/2026/06/the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state/index.mdx",
       "url": "/articles/the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state",
       "title": "The Ceremony and the Constant: KZG Commitments, the Powers of Tau, and Why Ethereum Uses IPA for State",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Every EIP-4844 blob is secured by a KZG polynomial commitment — 48 bytes that commit to 128 KB of data, verifiable in 50,000 gas. That efficiency came from 140,416 people collectively burying a mathematical secret for 69 days. Here's the math, the ceremony, and why Ethereum chose a different scheme for state.",
       "pubDate": "2026-06-22",
       "topics": [
         "zero-knowledge",
         "cryptography",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "kzg",
+        "polynomial-commitments",
+        "trusted-setup",
+        "ipa",
+        "verkle-trees",
+        "eip-4844",
+        "powers-of-tau",
+        "bls12-381",
+        "data-availability",
+        "blobspace"
+      ],
+      "artifacts": [
+        "the-commitment-space"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2575,7 +2588,7 @@
       "module": "src/islands/artifacts/the-commitment-space.ts",
       "url": "/artifacts/the-commitment-space",
       "title": "The Commitment Space",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Six commitment schemes plotted on proof size vs. trust model: KZG (EIP-4844 blobs), IPA/Pedersen (Verkle state), Groth16, PLONK, FRI-STARK, and Merkle Patricia Trie. Click any dot to inspect.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "chart",

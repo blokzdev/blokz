@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time/index.mdx",
       "url": "/articles/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time",
       "title": "The Accumulated Lie: TWAP Oracle Manipulation and the Cost of Moving Time",
-      "description": "A 15× spot spike on a $17M Uniswap v2 pool shifts its 30-minute TWAP by 9.3% in the next block. The arithmetic-mean accumulator makes large transient spikes cheap to exploit; the v3 tick accumulator needs a million-fold spike for the same 10% shift. Here is the manipulation cost formula, the Inverse Finance case study, and what pool depth a protocol actually needs to stay safe.",
+      "description": "A 15× spike on a $17M pool shifts its 30-minute v2 TWAP by 9.3% in one block. The arithmetic-mean accumulator is far weaker than v3's geometric tick accumulator. Covers the manipulation cost formula, the Inverse Finance case study, and minimum safe pool depth.",
       "pubDate": "2026-06-22",
       "topics": [
         "defi",

@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 86,
-    "artifacts": 87
+    "articles": 87,
+    "artifacts": 88
   },
   "topicCounts": {
     "agents": 32,
-    "ai": 7,
-    "blockchain": 18,
+    "ai": 8,
+    "blockchain": 19,
     "cryptography": 14,
     "data": 11,
     "defi": 19,
-    "infrastructure": 32,
+    "infrastructure": 33,
     "llm": 16,
     "machine-learning": 37,
     "research": 4,
@@ -21,6 +21,23 @@
     "zero-knowledge": 10
   },
   "articles": [
+    {
+      "slug": "the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
+      "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
+      "url": "/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
+      "title": "The Twelve-Second Floor: How Ethereum's Slot Clock Shapes AI Agent State Freshness",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
       "path": "content/articles/2026/06/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof/index.mdx",
@@ -2299,6 +2316,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-state-window",
+      "path": "content/artifacts/the-state-window/manifest.json",
+      "module": "src/islands/artifacts/the-state-window.ts",
+      "url": "/artifacts/the-state-window",
+      "title": "The State Window",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-useful-nonce",
       "path": "content/artifacts/the-useful-nonce/manifest.json",

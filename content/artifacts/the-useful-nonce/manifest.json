@@ -1,7 +1,7 @@
 {
   "slug": "the-useful-nonce",
   "title": "The Useful Nonce",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Drag the operating point across matrix sizes to see how the Freivalds overhead approaches 0% — and how much of Bitcoin's 150 TWh becomes AI compute under PoUW.",
   "pubDate": "2026-06-22T08:28:48.460Z",
   "type": "svg",
   "archetype": "calculator",
@@ -11,5 +11,14 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag the amber point left/right to change matrix size N",
+    "use ← → arrow keys when focused",
+    "slider below the chart also adjusts N"
+  ],
+  "dataSource": {
+    "label": "CBECI 2024 / NVIDIA H100 spec / arXiv:2504.09971",
+    "url": "https://ccaf.io/cbnsi/cbeci"
+  },
+  "dataAsOf": "2026-06-22"
 }

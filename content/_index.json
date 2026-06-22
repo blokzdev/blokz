@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof/index.mdx",
       "url": "/articles/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
       "title": "Mine Twice: The Cryptographic Construction That Turns a Matrix Multiply into a Block Proof",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Bitcoin burns ~150 TWh/year finding SHA-256 nonces that prove nothing. Komargodski and Weinstein showed in 2025 that a Freivalds randomisation check turns any matrix multiply into a valid proof-of-work with only 3/(2N) overhead — a 2-for-1 protocol where the same GPU seconds that train your model mine the block.",
       "pubDate": "2026-06-22",
       "topics": [
         "zero-knowledge",
         "cryptography",
         "tokenomics"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "proof-of-useful-work",
+        "matmul",
+        "freivalds",
+        "consensus",
+        "blockchain-consensus",
+        "energy-efficiency",
+        "gpu-economics",
+        "incentive-design"
+      ],
+      "artifacts": [
+        "the-useful-nonce"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2294,7 +2305,7 @@
       "module": "src/islands/artifacts/the-useful-nonce.ts",
       "url": "/artifacts/the-useful-nonce",
       "title": "The Useful Nonce",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Drag the operating point across matrix sizes to see how the Freivalds overhead approaches 0% — and how much of Bitcoin's 150 TWh becomes AI compute under PoUW.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "calculator",

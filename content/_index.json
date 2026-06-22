@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 87,
-    "artifacts": 88
+    "articles": 88,
+    "artifacts": 89
   },
   "topicCounts": {
     "agents": 32,
@@ -11,16 +11,44 @@
     "data": 11,
     "defi": 19,
     "infrastructure": 33,
-    "llm": 16,
+    "llm": 17,
     "machine-learning": 37,
     "research": 4,
-    "security": 25,
+    "security": 26,
     "smart-contracts": 16,
     "tokenomics": 13,
-    "web3": 10,
+    "web3": 11,
     "zero-knowledge": 10
   },
   "articles": [
+    {
+      "slug": "the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents",
+      "path": "content/articles/2026/06/the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents/index.mdx",
+      "url": "/articles/the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents",
+      "title": "The Fake Past: Memory Injection and the Context Attack Surface for Web3 AI Agents",
+      "description": "ElizaOS agents treat their memory store as ground truth — their own past. CrAIBench tests 685 attack cases across 33 Web3 action types and finds memory injection hits 55.1% ASR even on Claude Sonnet 3.7, while every off-the-shelf detector fails.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "security",
+        "llm",
+        "web3"
+      ],
+      "tags": [
+        "elizaos",
+        "context-manipulation",
+        "memory-injection",
+        "prompt-injection",
+        "web3-agents",
+        "agent-security",
+        "craibench",
+        "attack-surface"
+      ],
+      "artifacts": [
+        "the-context-attack-surface"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
       "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
@@ -2326,6 +2354,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-context-attack-surface",
+      "path": "content/artifacts/the-context-attack-surface/manifest.json",
+      "module": "src/islands/artifacts/the-context-attack-surface.ts",
+      "url": "/artifacts/the-context-attack-surface",
+      "title": "The Context Attack Surface",
+      "description": "Three interactive attack surfaces on an ElizaOS-style Web3 AI agent context pipeline — prompt injection, memory injection, and data feed manipulation — with ASR figures from CrAIBench.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "security",
+        "llm",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-state-window",
       "path": "content/artifacts/the-state-window/manifest.json",

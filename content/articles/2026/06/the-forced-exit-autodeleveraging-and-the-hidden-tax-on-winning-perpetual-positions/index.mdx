@@ -1,0 +1,103 @@
+---
+slug: the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions
+title: "The Forced Exit: Autodeleveraging and the Hidden Tax on Winning Perpetual Positions"
+description: "When a perp DEX's insurance fund runs dry, ADL force-closes winning positions first — ranked by profit %. Chitra 2026 proves no mechanism can be solvent, fair, and revenue-neutral. Hyperliquid Oct 10 2025: $2.1B closed, $653M via ADL, $45–51.7M haircut in 12 min."
+pubDate: 2026-06-22T19:28:14.167Z
+author: blokz
+topics: [defi, tokenomics, infrastructure]
+tags: [autodeleveraging, adl, perpetuals, insurance-fund, hyperliquid, liquidation, perp-dex, clearing]
+artifacts: [the-adl-queue]
+difficulty: intermediate
+sources:
+  - label: "Chitra 2026 — Autodeleveraging: Impossibilities and Optimization"
+    url: "https://arxiv.org/abs/2512.01112"
+  - label: "Fundamentals of Perpetual Futures (He, Manela, Ross, von Wachter)"
+    url: "https://arxiv.org/abs/2212.06888"
+---
+
+You are winning. Your position is solidly in profit, your leverage is calibrated, your risk manager has nothing to flag. Then the exchange sends a force-close notification at a price you would never accept in an arm's-length transaction.
+
+Welcome to auto-deleveraging (ADL) — the mechanism every perpetual exchange uses when insolvency exceeds what the insurance fund can absorb. It doesn't target losers; it targets winners, ranked by how profitable they are relative to their margin. The more precisely you timed your trade, the higher your profit percentage, and the earlier you appear in the queue.
+
+This post works through how the mechanism operates, what a 2026 impossibility theorem says about why it can't be fixed, what the October 10, 2025 Hyperliquid event looked like at scale, and why automated trading agents face compounded exposure that most risk frameworks don't model.
+
+## The Clearing Stack
+
+Perpetual futures eliminate the rollover problem of dated contracts, but they don't eliminate settlement risk — they redistribute it. When a position goes deeply negative and liquidation can't close it cleanly, the loss has to land somewhere. Every perpetual venue answers with four escalating layers.
+
+**Layer 1: initial margin.** Every position must be overcollateralized at open. The exchange defines a maintenance margin threshold; if mark-price moves push account equity below it, liquidation is triggered automatically.
+
+**Layer 2: liquidation.** The exchange (or its liquidation engine) takes over the underwater account and closes the position at market. In liquid conditions this completes near mark price; any collateral left after the close flows into the insurance fund as surplus.
+
+**Layer 3: insurance fund.** When liquidation executes below the account's bankruptcy price — meaning the exchange fills worse than zero equity — the insurance fund absorbs the gap. The fund accumulates during calm markets when liquidations generate surplus, and draws down when it has to cover shortfalls. Hyperliquid's fund peaked near $500M in mid-2025; Binance's is several times larger.
+
+**Layer 4: auto-deleveraging.** When the fund is exhausted or cannot cover the shortfall alone, ADL triggers. Profitable open positions are force-closed from the highest unrealized profit percentage downward. Their gains are used to settle the insolvent account's obligation.
+
+The sequence matters: ADL is the mechanism of last resort. But last-resort events cluster in exactly the conditions you'd least want a forced close — elevated volatility, wide spreads, correlated positions, and insurance funds already depleted by preceding liquidations.
+
+## Who Gets Hit First
+
+ADL is not random and not largest-position-first. The universal priority rule across Binance, Hyperliquid, dYdX, and virtually every other venue is **unrealized profit percentage**: profit as a fraction of initial (or maintenance) margin. The position with the highest return on margin is closed first.
+
+The intuition is that these traders gained most from the same directional move that caused the insolvency. They have the most "to give back." But this framing obscures the mechanism's structural consequences.
+
+**Precision is penalized.** A trader who opened a well-timed hedge at high leverage, capturing a large return on margin, leads the queue ahead of a trader with a larger absolute gain but lower leverage. The risk-adjusted outperformer is the first to be force-closed.
+
+**The fill price is the bankruptcy price.** The ADL fill is not the current market price. It is the price at which the bankrupt trader's equity hit zero — typically far from where the market is trading at the time of the ADL event. The difference between the bankruptcy price and the market price is the **haircut**: the premium the surviving trader is forced to surrender. A $1M market-price gain might yield a $750K ADL fill; the $250K gap is not a fee, not a slippage cost, and not anything the trader agreed to in the trade.
+
+<Artifact slug="the-adl-queue" />
+
+The queue above runs the priority logic against five illustrative positions. Drag the **Shortfall** slider past the **Insurance Fund** threshold to trigger ADL. Position A (ETH Long ×10, +18.4% profit) is closed before position B (BTC Long ×8, +14.2%), even though B's absolute dollar profit is larger — because A's percentage return is higher. The column that matters is not the notional or even the dollar gain; it is the profit percentage.
+
+## The Impossibility Theorem
+
+In early 2026, Tarun Chitra published a formal impossibility result for ADL mechanisms (arXiv:2512.01112). The paper proves that no ADL mechanism can simultaneously satisfy three properties:
+
+1. **Solvency**: losses are fully covered by existing collateral; the exchange cannot create money.
+2. **Revenue neutrality**: the insurance fund neither extracts surplus from profitable traders over the long run nor subsidizes insolvent ones beyond what their counterparties paid in.
+3. **Fairness**: no position is closed at an economically worse fill price than what an arm's-length liquidation at market would have produced.
+
+Any two can coexist; all three cannot. This is not an indictment of any particular implementation — it is a mathematical property of any mechanism operating under the constraint that total collateral is conserved across the system.
+
+The paper goes further. It quantifies how the moral hazard embedded in ADL scales with venue size: as open interest grows and the insurance fund shrinks relative to notional, the expected haircut per unit of profit grows **asymptotically**. Profitable traders are not simply bearing idiosyncratic ADL risk; they are effectively short a crash option written on the exchange's entire counterparty book. The implied premium for that option is not quoted anywhere. It does not appear in the funding rate, the bid-ask spread, or any price the trader observes until the forced close executes.
+
+## October 10, 2025
+
+The abstract became concrete on October 10, 2025. A cascading liquidation cascade on Hyperliquid generated $2.1 billion in position closes over twelve minutes. The insurance fund absorbed the first tranche; what remained triggered ADL at scale.
+
+The event figures from Chitra (2026):
+
+| Metric | Value |
+|---|---|
+| Total positions closed | $2.1B notional in 12 min |
+| Covered via ADL | $653.6M |
+| Excess haircut vs. optimal | $45.0M–$51.7M |
+| Duration | 12 minutes |
+
+"Excess haircut" is measured against a baseline mechanism that socializes losses at market prices rather than bankruptcy prices. The $45–51.7M gap represents the additional loss imposed on ADL'd counterparties by the fill-at-bankruptcy-price rule — roughly 7–8% of the ADL'd notional, transferred involuntarily from the most profitable traders to cover the shortfall.
+
+Chitra's paper also benchmarks against Binance across the same period. Binance, despite substantially higher absolute open interest, triggered ADL more frequently relative to its notional — suggesting that its insurance fund parameters are calibrated to protect the balance sheet rather than minimize ADL frequency.
+
+## What This Means for Automated Traders
+
+For a human discretionary trader, ADL is a tail risk to size around, mitigate by reducing leverage during stress periods, and accept as part of the cost structure of leveraged perpetual trading. For autonomous agents — AI systems running perpetual strategies via API or directly on-chain — the exposure is qualitatively worse across three dimensions.
+
+**Stale-state problem.** An exchange's real-time ADL queue and insurance fund level are internal data. External agents infer both from public snapshots that lag reality by seconds to minutes. During a stress event — precisely when this information would change trading decisions — the agent is operating on stale risk data. The lag is not a technical failure of the agent; it is a structural feature of how centralized risk engines publish state. This compounds the general problem of [acting on a stale policy](/articles/acting-on-a-stale-policy) that on-chain AI agents face.
+
+**Strategy correlation amplifies queue clustering.** A large fraction of algorithmic agents running perpetual strategies target the same signals: momentum, funding carry, cross-venue basis. Correlated strategies produce correlated exposures. When ADL triggers, the priority queue is not populated by randomly distributed positions — it may be dominated by the entire class of agents running the highest-percentage funding carry strategies. Every agent running the pattern described in [Inventory Has a Coupon](/articles/inventory-has-a-coupon) — long the high-funding-rate asset, high leverage, large profit percentage — appears near the front of the queue simultaneously. The ADL mechanism selects precisely for the most systematically profitable strategies.
+
+**Incomplete risk models overstate alpha.** The Chitra trilemma implies that a position with a high profit percentage is bearing an implicit liability: a short position in an ADL option whose strike and payoff are both unobservable in real time. A correct expected-value model for a perpetual strategy must include an explicit ADL haircut term, estimated as a function of current profit percentage, market volatility, insurance fund health, and cross-position correlation. This term does not appear in standard open-source perpetual backtesting frameworks, meaning most strategy simulations are overstating alpha by the expected value of future ADL haircuts.
+
+For [funding-rate carry strategies](/articles/carry-the-peg) in particular, the correlation is adversarial: high funding rates — the primary signal for entering a carry trade — coincide with high open interest, elevated volatility, and stressed insurance funds. The conditions that make carry most attractive are also the conditions that maximize ADL probability and haircut magnitude.
+
+## Takeaways
+
+- **ADL is structural.** The Chitra (2026) impossibility result shows it cannot be eliminated — only redistributed among the solvency, revenue, and fairness dimensions. Any mechanism that removes ADL haircuts shifts the loss to insurance fund contributors or to the exchange's balance sheet.
+
+- **Profit percentage is the queue key, not dollar size.** A high-leverage position with a 20% unrealized return faces ADL before a low-leverage position with a 5× larger absolute gain. The metric that optimizes trade returns is the same one that maximizes forced-close risk.
+
+- **Haircut = bankruptcy price − market price.** This gap is unbounded by exchange policy; its magnitude is set by how far the market moved before the insolvent position was identified and how quickly the ADL event executed.
+
+- **Automated agents face compounded exposure.** Stale-state lag, strategy-level correlation, and underspecified risk models each add to the expected ADL loss for algorithmic participants relative to discretionary traders who can monitor queue position and reduce exposure in real time.
+
+- **Size the ADL option into your edge.** For any perpetual strategy with a positive expected profit percentage, the unconditional expected return includes a negative tail term from ADL. Strategies that do not model this are running with systematically overstated Sharpe ratios.

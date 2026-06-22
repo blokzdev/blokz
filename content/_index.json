@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 94,
-    "artifacts": 95
+    "articles": 95,
+    "artifacts": 96
   },
   "topicCounts": {
     "agents": 35,
@@ -9,18 +9,46 @@
     "blockchain": 20,
     "cryptography": 16,
     "data": 11,
-    "defi": 21,
-    "infrastructure": 34,
+    "defi": 22,
+    "infrastructure": 35,
     "llm": 18,
     "machine-learning": 37,
     "research": 8,
     "security": 27,
     "smart-contracts": 17,
-    "tokenomics": 14,
+    "tokenomics": 15,
     "web3": 11,
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
+      "path": "content/articles/2026/06/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions/index.mdx",
+      "url": "/articles/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
+      "title": "The Forced Exit: Autodeleveraging and the Hidden Tax on Winning Perpetual Positions",
+      "description": "When a perp DEX's insurance fund runs dry, ADL force-closes winning positions first — ranked by profit %. Chitra 2026 proves no mechanism can be solvent, fair, and revenue-neutral. Hyperliquid Oct 10 2025: $2.1B closed, $653M via ADL, $45–51.7M haircut in 12 min.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "tokenomics",
+        "infrastructure"
+      ],
+      "tags": [
+        "autodeleveraging",
+        "adl",
+        "perpetuals",
+        "insurance-fund",
+        "hyperliquid",
+        "liquidation",
+        "perp-dex",
+        "clearing"
+      ],
+      "artifacts": [
+        "the-adl-queue"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
       "path": "content/articles/2026/06/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents/index.mdx",
@@ -2524,6 +2552,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-adl-queue",
+      "path": "content/artifacts/the-adl-queue/manifest.json",
+      "module": "src/islands/artifacts/the-adl-queue.ts",
+      "url": "/artifacts/the-adl-queue",
+      "title": "The ADL Queue",
+      "description": "Interactive ADL priority queue: drag the shortfall slider past the insurance fund to trigger auto-deleveraging. Positions close highest-profit-% first.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-agent-trajectory",
       "path": "content/artifacts/the-agent-trajectory/manifest.json",

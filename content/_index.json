@@ -26,15 +26,30 @@
       "path": "content/articles/2026/06/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching/index.mdx",
       "url": "/articles/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
       "title": "The Aggregation Ceiling: Why AI Inference Markets Need Proof Batching",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "An SP1 proof costs 327k gas on Ethereum mainnet. At a 30M-gas block target, a naive AI inference market maxes out at 91 verifications per block. SnarkPack's O(log N) aggregation collapses 1,000 proofs to a single 880k-gas verification — here's the mechanism, the math, and the latency tradeoffs.",
       "pubDate": "2026-06-22",
       "topics": [
         "zero-knowledge",
         "infrastructure",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "proof-aggregation",
+        "snarkpack",
+        "groth16",
+        "zkml",
+        "verifiable-inference",
+        "sp1",
+        "risc-zero",
+        "throughput",
+        "bn254",
+        "inner-product-argument"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 8,
+      "artifacts": [
+        "the-proof-batch"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2575,7 +2590,7 @@
       "module": "src/islands/artifacts/the-proof-batch.ts",
       "url": "/artifacts/the-proof-batch",
       "title": "The Proof Batch",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Gas cost vs. number of AI inference proofs under three aggregation strategies: naive per-proof (linear), SnarkPack O(log N), and ZK recursion (flat). Drag the slider to find the crossover where each strategy wins.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "chart",

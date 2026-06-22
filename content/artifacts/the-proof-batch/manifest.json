@@ -1,7 +1,7 @@
 {
   "slug": "the-proof-batch",
   "title": "The Proof Batch",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Gas cost vs. number of AI inference proofs under three aggregation strategies: naive per-proof (linear), SnarkPack O(log N), and ZK recursion (flat). Drag the slider to find the crossover where each strategy wins.",
   "pubDate": "2026-06-22T21:32:10.030Z",
   "type": "svg",
   "archetype": "chart",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "Drag the N slider to set the number of AI inference proofs per batch",
+    "Click a strategy row in the panel to highlight its curve"
+  ],
+  "dataSource": {
+    "label": "SP1VerifierGateway on Ethereum mainnet · SnarkPack (ePrint 2021/1165)",
+    "url": "https://eth.blockscout.com/address/0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
+  },
+  "dataAsOf": "2026-06-22"
 }

@@ -1,22 +1,98 @@
 ---
 slug: the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching
 title: "The Aggregation Ceiling: Why AI Inference Markets Need Proof Batching"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "An SP1 proof costs 327k gas on Ethereum mainnet. At a 30M-gas block target, a naive AI inference market maxes out at 91 verifications per block. SnarkPack's O(log N) aggregation collapses 1,000 proofs to a single 880k-gas verification — here's the mechanism, the math, and the latency tradeoffs."
 pubDate: 2026-06-22T21:32:05.356Z
 author: blokz
 topics: [zero-knowledge, infrastructure, ai]
-tags: []
-artifacts: []
+tags: [proof-aggregation, snarkpack, groth16, zkml, verifiable-inference, sp1, risc-zero, throughput, bn254, inner-product-argument]
+series: proof-of-intelligence
+seriesOrder: 8
+artifacts: [the-proof-batch]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "SnarkPack: Practical SNARK Aggregation (Bowe et al., ePrint 2021/1165)"
+    url: "https://eprint.iacr.org/2021/1165"
+  - label: "SP1VerifierGateway on Ethereum Mainnet (Blockscout, block 25375825)"
+    url: "https://eth.blockscout.com/address/0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
+  - label: "EIP-197: Precompiled contracts for optimal ate pairing on BN254"
+    url: "https://eips.ethereum.org/EIPS/eip-197"
+  - label: "SP1 Documentation — Succinct Protocol"
+    url: "https://docs.succinct.xyz/docs/sp1/introduction"
+  - label: "RISC Zero: Recursive proof composition"
+    url: "https://dev.risczero.com/api/zkvm/recursion"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+An SP1 proof costs 327,621 gas to verify on Ethereum mainnet — about $0.13 at June 2026 prices. That sounds manageable. But Ethereum's block gas target is 30 million gas under EIP-1559. Put those two numbers together and a naive AI inference market — one that submits a separate on-chain proof verification for each request — runs out of block space at 91 proofs. A market processing 1,000 requests per hour at L1 finality would consume eleven full Ethereum blocks every hour. That's an untenable share of global block space for a single application. The math establishes a hard ceiling. Crossing it requires proof batching: aggregating many independent verifications into a single on-chain operation that costs a fraction of the sum of its parts.
 
-## Section heading
+<Artifact slug="the-proof-batch" />
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Why verification gas doesn't compress for free
+
+A Groth16 proof is verified by checking three elliptic curve pairings on BN254. The EIP-197 precompile charges `45,000 + 34,000 × k` gas for `k` pairing operations — so three pairings alone cost 147,000 gas. The remaining 180k in a full SP1 verification (totaling 327,621 measured on mainnet) covers multi-scalar multiplications and calldata. None of that gas is padding. Every operation the verifier performs is load-bearing: removing any of the three pairings breaks the soundness guarantee.
+
+This means you cannot compress per-proof verification gas through optimization alone. Every Groth16 proof requires the same verifier computation regardless of what it proves. Parallelism doesn't help either — Ethereum's execution is sequential. A block verifying 200 AI inference proofs individually spends 200 × 327,621 = 65.5M gas on those verifications alone, exceeding the 60M block gas limit.
+
+The only path forward is structural: instead of verifying N proofs separately, change what you put on-chain so the chain only has to verify *one thing*.
+
+## SnarkPack: O(log N) batching for Groth16
+
+The production solution for homogeneous AI workloads — same model, same verifying key — is SnarkPack [Bowe, Gabizon, Green 2020, ePrint 2021/1165]. It was deployed by Filecoin for PoRep proof aggregation and remains the most practical batching mechanism for scenarios where every proof shares a circuit.
+
+The mechanism is an inner product argument. A standard Groth16 proof consists of three group elements `(A, B, C)` and an element `α` that must satisfy a pairing equation `e(A, B) = e(α_g1, β_g2) · e(C, δ_g2)`. Instead of checking this equation N times, SnarkPack folds all N proof triples into a single aggregated proof using the GKR-based inner product argument from AFGHO16. The verifier then checks one equation that summarizes all N, using a randomness beacon to bind the aggregation to a specific batch.
+
+The verifier's work drops from N × 3 pairings to approximately 4 + 2 × ⌈log₂ N⌉ pairings. At EIP-197's 45k + 34k × k gas formula:
+
+| N | Pairings (naive) | Pairings (SnarkPack) | Gas (naive) | Gas (SnarkPack) | Ratio |
+|---|---|---|---|---|---|
+| 10 | 30 | 10 | 3.28M | ~460k | 7× |
+| 100 | 300 | 18 | 32.8M | ~700k | 47× |
+| 1,000 | 3,000 | 24 | 327M | ~880k | 372× |
+
+The 100-proof row is the starkest. 32.8M gas is more than the 30M block gas target — naive verification of 100 AI inferences cannot fit in a single Ethereum block. After SnarkPack aggregation, those same 100 proofs cost 700k gas, roughly 2.3% of the block target.
+
+SnarkPack's prover side is proportionally cheap. Aggregating N Groth16 proofs costs O(N log N) multi-scalar multiplication operations on the prover. For N = 1,000 modern-sized proofs, this adds roughly 3–8 seconds on a GPU — well within Ethereum's 12-second slot cadence for a market batching per block. The per-proof amortized prover cost is negligible compared to the inference computation itself.
+
+**The constraint**: SnarkPack requires all aggregated proofs to share the same verifying key. That means the same circuit, which for zkML means the same model architecture and precision. An AI inference market where every request runs the same model (a hosted API scenario) can aggregate freely. A multi-model marketplace must group by circuit first and aggregate each group separately.
+
+## ZK recursion: constant gas, variable prover time
+
+A second approach achieves something SnarkPack can't: constant on-chain gas regardless of N, and the ability to aggregate proofs from heterogeneous circuits.
+
+The idea is to write a RISC-V program that accepts N Groth16 proofs as input, verifies each one, and returns success if all N are valid. Run that program through SP1. The on-chain verifier sees one SP1 proof — 327,621 gas — regardless of whether N is 10 or 10,000.
+
+This works because SP1 can prove the execution of any RISC-V program. "I ran a loop that verified 1,000 Groth16 proofs" is just a computation, and SP1 generates a proof that it ran correctly. The chain pays 327k gas to verify that outer proof; the inner N verifications are fully absorbed into the zkVM's execution trace.
+
+The significant drawback is prover time. Verifying a Groth16 proof inside a RISC-V context requires roughly 2–3 million RISC-V cycles (elliptic curve operations are expensive without hardware acceleration). At SP1's current throughput of roughly 1 million cycles per second on standard GPU hardware, verifying 100 proofs inside the zkVM takes ~200–300 seconds of proving time — about 16–25 Ethereum slots. For a real-time inference market, this is an unacceptable latency. For an overnight settlement run or a periodic checkpoint, it is the most gas-efficient option available.
+
+ZK recursion's heterogeneity advantage matters in practice. A decentralized inference marketplace where multiple model providers use SP1, RISC Zero, or Halo2 interchangeably would need to use recursive verification to produce a single unified on-chain proof. SnarkPack can't span circuit types.
+
+## L2 settlement: the pragmatic floor
+
+Both mechanisms above are sophisticated infrastructure. For most AI inference markets in the medium term, the right answer is simpler: settle proofs on an L2 instead of Ethereum mainnet.
+
+An OP Stack rollup (Base, OP Mainnet) has the same execution capacity as Ethereum mainnet but charges 100–1,000× less for transaction execution. An SP1 verification on Base costs roughly $0.0001–0.0003 versus $0.13 on L1 at June 2026 gas prices. At that cost level, individual per-request proof settlement is economically viable without any batching infrastructure.
+
+The tradeoff is finality latency. An L2 settlement is fully confirmed at L1 security once the rollup's fraud proof window closes — 7 days for OP Stack optimistic chains, around 1 hour for ZK rollups. For many AI inference use cases (verifiable ML oracle calls, model integrity attestations), L2 finality is sufficient and the lower cost outweighs the confirmation delay.
+
+L2 settlement and proof aggregation are orthogonal tools. A production system might settle per-request on an L2 for low-latency confirmaion, then periodically aggregate those L2 settlements into a single L1 checkpoint for durable finality. The L1 checkpoint inherits Ethereum's security; individual settlements have faster, cheaper L2 confirmation.
+
+## Break-even design guidance
+
+Three tiers emerge from the math:
+
+**Under 50 proofs per day at L1**: settle naively. The gas cost ($6.50/day at 50 proofs × $0.13) is a rounding error against any meaningful AI inference contract value. Simplicity dominates.
+
+**50–50,000 proofs per day**: L2 settlement is the path of least resistance. Per-request costs drop to fractions of a cent, finality is adequate for most use cases, and no aggregation infrastructure is required. This covers the vast majority of AI inference market deployments today.
+
+**Above 50,000 proofs per day with L1 finality requirements**: SnarkPack is the production path. It scales logarithmically, handles Ethereum's 12-second slot cadence in the prover budget, and has Filecoin production deployment as a reference implementation. ZK recursion is the fallback for heterogeneous proof systems or when gas minimization outweighs prover latency.
+
+The aggregate case — a single on-chain AI inference market settling all requests at full L1 finality in real time — does not yet exist. But the building blocks are deployed. SnarkPack aggregation runs on Filecoin. RISC Zero ships recursive proof composition. SP1 has mainnet Groth16 settlement. What's missing is not infrastructure but a market large enough to stress the current limits.
 
 ## Takeaways
 
-TODO.
+- A naive AI inference market settles at most ~91 SP1 proofs per Ethereum block at the 30M gas target.
+- SnarkPack aggregates N same-circuit Groth16 proofs into a single O(log N) verification: 1,000 proofs → 880k gas instead of 327M — a 372× reduction.
+- ZK recursion makes on-chain gas constant at ~327k regardless of N, but prover time grows linearly: impractical for real-time markets above ~50 proofs per batch.
+- L2 settlement is the pragmatic option for most markets today; per-proof costs under $0.0003 make per-request settlement viable without batching.
+- The infrastructure for an L1-finality AI inference market at scale exists. Volume, not tooling, is the missing piece.

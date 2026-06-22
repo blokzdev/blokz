@@ -1,7 +1,7 @@
 {
   "slug": "the-proof-tradeoff",
   "title": "The Proof Tradeoff",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Seven ZK proof configurations mapped on prover time vs. on-chain verification gas. Click any system to see proof size, setup requirements, and zkML viability. The annotated wrapper band shows the constant-gas region only reachable by STARK→SNARK wrapping.",
   "pubDate": "2026-06-22T13:30:23.477Z",
   "type": "svg",
   "archetype": "chart",
@@ -9,7 +9,12 @@
     "zero-knowledge",
     "cryptography"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": ["click a system dot to inspect", "hover for quick tooltip"],
+  "dataSource": {
+    "label": "SP1VerifierGateway on Ethereum (Blockscout), gnark benchmarks, SP1/RISC Zero docs",
+    "url": "https://eth.blockscout.com/address/0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
+  },
+  "dataAsOf": "2026-06-22"
 }

@@ -1,0 +1,111 @@
+{
+  "sp1Tx": {
+    "blockNumber": 25373275,
+    "txHash": "0x2748451708ee35ffe3582627e6561354f42c5c26c6771275eab91264981dff18",
+    "contractAddress": "0x397A5f7f3dBd538f23DE225B51f532c34448dA9B",
+    "contractName": "SP1VerifierGateway",
+    "gasUsed": 327621,
+    "gasPriceGwei": 0.136454393,
+    "ethUsd": 1760.71,
+    "timestamp": "2026-06-22T12:54:59Z",
+    "method": "step(bytes,bytes)"
+  },
+  "systems": [
+    {
+      "id": "raw-stark",
+      "name": "Raw FRI-STARK",
+      "color": "#f0883e",
+      "proverS": 5,
+      "verifyGas": 9000000,
+      "proofKB": 320,
+      "setup": "none",
+      "wrapped": false,
+      "note": "Plonky3 FRI backend. Proof too large for L1 mainnet — requires L2 verifier contract or off-chain check.",
+      "zkmlViable": false
+    },
+    {
+      "id": "plonky2",
+      "name": "Plonky2 (recursive FRI)",
+      "color": "#f0883e",
+      "proverS": 22,
+      "verifyGas": 2800000,
+      "proofKB": 55,
+      "setup": "none",
+      "wrapped": false,
+      "note": "FRI recursion reduces proof size vs. flat STARK, but verification gas still puts L1 direct-settle out of reach for per-inference use.",
+      "zkmlViable": false
+    },
+    {
+      "id": "halo2",
+      "name": "Halo2 (IPA, no SRS)",
+      "color": "#8b5cf6",
+      "proverS": 95,
+      "verifyGas": 480000,
+      "proofKB": 6,
+      "setup": "none",
+      "wrapped": false,
+      "note": "No trusted setup. Used by ezkl for on-chain ML. Verification gas is tight but workable for occasional settlement; linear verifier complexity.",
+      "zkmlViable": true
+    },
+    {
+      "id": "plonk",
+      "name": "PLONK (BN254 universal)",
+      "color": "#8b5cf6",
+      "proverS": 85,
+      "verifyGas": 350000,
+      "proofKB": 4,
+      "setup": "universal",
+      "wrapped": false,
+      "note": "Universal SRS (one ceremony, any circuit). Used by Aztec, gnark. Constant-size proof, sub-400k gas — usable but above the Groth16 floor.",
+      "zkmlViable": true
+    },
+    {
+      "id": "groth16-native",
+      "name": "Groth16 native (gnark)",
+      "color": "#22d3ee",
+      "proverS": 280,
+      "verifyGas": 222000,
+      "proofKB": 0.25,
+      "setup": "per-circuit",
+      "wrapped": false,
+      "note": "Lowest on-chain gas (222k). 256-byte proof. But needs a separate MPC ceremony for every new AI circuit — months of setup time per model.",
+      "zkmlViable": false
+    },
+    {
+      "id": "sp1",
+      "name": "SP1 (STARK + Groth16 wrapper)",
+      "color": "#5b8cff",
+      "proverS": 175,
+      "verifyGas": 286000,
+      "proofKB": 0.25,
+      "setup": "universal",
+      "wrapped": true,
+      "note": "Plonky3 STARK over program execution, then wrapped in Groth16. Measured on Ethereum mainnet: 327,621 gas total (286k verification + 41k calldata/overhead). No per-program setup.",
+      "zkmlViable": true
+    },
+    {
+      "id": "risc-zero",
+      "name": "RISC Zero (FRI + Groth16 wrapper)",
+      "color": "#5b8cff",
+      "proverS": 110,
+      "verifyGas": 280000,
+      "proofKB": 0.25,
+      "setup": "universal",
+      "wrapped": true,
+      "note": "STARK (SEAL FRI) over RISC-V execution trace, then SNARK-wrapped. Bonsai proving service. Universal SRS — any RISC-V program proves and verifies for the same fixed gas.",
+      "zkmlViable": true
+    },
+    {
+      "id": "nova",
+      "name": "Nova fold + wrapper",
+      "color": "#22d3ee",
+      "proverS": 3,
+      "verifyGas": 265000,
+      "proofKB": 0.25,
+      "setup": "universal",
+      "wrapped": true,
+      "note": "IVC folding: each incremental step costs ~3s prover time, amortizing N steps into a single accumulator. Final Groth16 wrapper settles once on-chain. Ideal for agent step sequences.",
+      "zkmlViable": true
+    }
+  ]
+}

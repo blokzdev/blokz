@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 92,
-    "artifacts": 93
+    "articles": 93,
+    "artifacts": 94
   },
   "topicCounts": {
     "agents": 34,
@@ -9,18 +9,46 @@
     "blockchain": 20,
     "cryptography": 16,
     "data": 11,
-    "defi": 20,
+    "defi": 21,
     "infrastructure": 34,
     "llm": 17,
     "machine-learning": 37,
-    "research": 6,
+    "research": 7,
     "security": 27,
-    "smart-contracts": 16,
+    "smart-contracts": 17,
     "tokenomics": 14,
     "web3": 11,
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
+      "path": "content/articles/2026/06/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents/index.mdx",
+      "url": "/articles/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
+      "title": "The Solver Race: How Batch Auction Networks Eliminate MEV for AI DeFi Agents",
+      "description": "CoW Protocol's batch auction design makes front-running structurally impossible — and that matters enormously for AI agents executing DeFi strategies at machine speed.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "research"
+      ],
+      "tags": [
+        "batch-auction",
+        "cow-protocol",
+        "solver",
+        "mev",
+        "intent",
+        "uniform-clearing-price",
+        "surplus",
+        "coincidence-of-wants"
+      ],
+      "artifacts": [
+        "the-batch-settlement"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets",
       "path": "content/articles/2026/06/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets/index.mdx",
@@ -2468,6 +2496,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-batch-settlement",
+      "path": "content/artifacts/the-batch-settlement/manifest.json",
+      "module": "src/islands/artifacts/the-batch-settlement.ts",
+      "url": "/artifacts/the-batch-settlement",
+      "title": "The Batch Settlement",
+      "description": "Step through a CoW Protocol batch auction: intents arrive, the batch seals, solvers compete, settlement executes on-chain, and surplus flows back to traders.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-signing-round",
       "path": "content/artifacts/the-signing-round/manifest.json",

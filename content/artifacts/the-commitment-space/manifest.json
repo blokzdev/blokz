@@ -1,0 +1,15 @@
+{
+  "slug": "the-commitment-space",
+  "title": "The Commitment Space",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T20:31:37.279Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

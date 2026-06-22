@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
       "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
       "title": "The Declared State: Sealevel Parallelism and the AI Agent Execution Contract on Solana",
-      "description": "Ethereum agents react in 12 seconds; Solana agents get 400 milliseconds — but only if they declare every account they'll touch before execution starts. The Sealevel account-locking model, hot-account contention, Jito tip economics, and what the declarative execution contract means for agent architecture.",
+      "description": "Solana agents get 400 ms — but only if they declare every account they'll touch before execution starts. The Sealevel write-lock model, hot-account contention, Jito tip economics, and what the declarative execution contract means for AI agent design.",
       "pubDate": "2026-06-22",
       "topics": [
         "blockchain",

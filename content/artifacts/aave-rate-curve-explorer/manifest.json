@@ -1,0 +1,16 @@
+{
+  "slug": "aave-rate-curve-explorer",
+  "title": "Aave Rate Curve Explorer",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T07:42:08.298Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "agents",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

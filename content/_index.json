@@ -26,15 +26,23 @@
       "path": "content/articles/2026/06/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives/index.mdx",
       "url": "/articles/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
       "title": "Reward Hacking the Rate Curve: When RL Agents Game On-Chain Incentives",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "DeFi interest rate formulas are open-source reward functions. An RL agent reading Aave's two-slope model can compute the optimal adversarial strategy analytically — no learned reward model required.",
       "pubDate": "2026-06-22",
       "topics": [
         "agents",
         "machine-learning",
         "defi"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "reward-hacking",
+        "specification-gaming",
+        "interest-rate-model",
+        "aave",
+        "alignment"
+      ],
+      "artifacts": [
+        "aave-rate-curve-explorer"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2269,7 +2277,7 @@
       "module": "src/islands/artifacts/aave-rate-curve-explorer.ts",
       "url": "/artifacts/aave-rate-curve-explorer",
       "title": "Aave Rate Curve Explorer",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Interactive chart of Aave V3's USDC two-slope interest rate model on Base. Drag the slider to explore how borrow and supply APYs respond to utilization — and see the sharp kink at 90% that makes over-borrowing expensive.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "chart",

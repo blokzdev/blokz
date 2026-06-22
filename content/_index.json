@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 90,
-    "artifacts": 91
+    "articles": 91,
+    "artifacts": 92
   },
   "topicCounts": {
-    "agents": 32,
+    "agents": 33,
     "ai": 8,
-    "blockchain": 19,
+    "blockchain": 20,
     "cryptography": 15,
     "data": 11,
     "defi": 20,
-    "infrastructure": 33,
+    "infrastructure": 34,
     "llm": 17,
     "machine-learning": 37,
     "research": 6,
@@ -21,6 +21,34 @@
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
+      "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "title": "The Declared State: Sealevel Parallelism and the AI Agent Execution Contract on Solana",
+      "description": "Solana agents get 400 ms — but only if they declare every account they'll touch before execution starts. The Sealevel write-lock model, hot-account contention, Jito tip economics, and what the declarative execution contract means for AI agent design.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "tags": [
+        "solana",
+        "sealevel",
+        "account-model",
+        "parallel-execution",
+        "jito",
+        "mev",
+        "account-locking",
+        "agent-architecture"
+      ],
+      "artifacts": [
+        "the-sealevel-lanes"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
       "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
@@ -2410,6 +2438,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sealevel-lanes",
+      "path": "content/artifacts/the-sealevel-lanes/manifest.json",
+      "module": "src/islands/artifacts/the-sealevel-lanes.ts",
+      "url": "/artifacts/the-sealevel-lanes",
+      "title": "The Sealevel Lanes",
+      "description": "Sealevel's parallel execution scheduler, slot by slot. Toggle hot-account contention to see how a single popular writable account collapses eight parallel waves into eight serial queues. Each row is one execution wave — transactions in the same row settle simultaneously.",
+      "pubDate": "2026-06-22",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-proof-tradeoff",
       "path": "content/artifacts/the-proof-tradeoff/manifest.json",

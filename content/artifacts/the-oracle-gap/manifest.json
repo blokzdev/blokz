@@ -1,0 +1,16 @@
+{
+  "slug": "the-oracle-gap",
+  "title": "The Oracle Gap",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T04:34:13.544Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "data",
+    "ai"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

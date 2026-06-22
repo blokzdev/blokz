@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 83,
-    "artifacts": 84
+    "articles": 84,
+    "artifacts": 85
   },
   "topicCounts": {
     "agents": 31,
-    "ai": 7,
+    "ai": 8,
     "blockchain": 17,
     "cryptography": 13,
-    "data": 11,
-    "defi": 18,
+    "data": 12,
+    "defi": 19,
     "infrastructure": 32,
     "llm": 16,
     "machine-learning": 36,
@@ -21,6 +21,23 @@
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-price-chainlink-shows-you-is-already-old",
+      "path": "content/articles/2026/06/the-price-chainlink-shows-you-is-already-old/index.mdx",
+      "url": "/articles/the-price-chainlink-shows-you-is-already-old",
+      "title": "The Price Chainlink Shows You Is Already Old",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
       "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
@@ -2219,6 +2236,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-oracle-gap",
+      "path": "content/artifacts/the-oracle-gap/manifest.json",
+      "module": "src/islands/artifacts/the-oracle-gap.ts",
+      "url": "/artifacts/the-oracle-gap",
+      "title": "The Oracle Gap",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-pipeline-breach",
       "path": "content/artifacts/the-pipeline-breach/manifest.json",

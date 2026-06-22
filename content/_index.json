@@ -26,7 +26,7 @@
       "path": "content/articles/2026/06/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions/index.mdx",
       "url": "/articles/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
       "title": "The Forced Exit: Autodeleveraging and the Hidden Tax on Winning Perpetual Positions",
-      "description": "Perpetual DEXes socialize insolvency losses by force-closing profitable positions. Tarun Chitra proved it's a trilemma: no mechanism can be solvent, fair, and revenue-preserving simultaneously. On October 10, 2025, Hyperliquid's ADL closed $2.1B in 12 minutes — profitable traders ate $45–51.7M in excess haircut.",
+      "description": "When a perp DEX's insurance fund runs dry, ADL force-closes winning positions first — ranked by profit %. Chitra 2026 proves no mechanism can be solvent, fair, and revenue-neutral. Hyperliquid Oct 10 2025: $2.1B closed, $653M via ADL, $45–51.7M haircut in 12 min.",
       "pubDate": "2026-06-22",
       "topics": [
         "defi",

@@ -1,15 +1,17 @@
 {
   "slug": "the-inversion-window",
   "title": "The Inversion Window",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
-  "pubDate": "2026-06-22T03:27:22.563Z",
+  "description": "How well can an adversary reconstruct your training data from the gradients you published? Drag the batch size; toggle DP budget ε. The curve shows estimated reconstruction quality (PSNR) from Geiping et al. — and the tradeoff where DP noise finally closes the window at the cost of model utility.",
+  "pubDate": "2026-06-22",
   "type": "svg",
   "archetype": "calculator",
   "topics": [
     "machine-learning",
     "data"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": ["drag batch size slider or tap chart to set batch", "tap ε buttons to toggle differential privacy noise level"],
+  "dataSource": { "label": "Geiping et al. 2020 (arXiv:2003.14053), Abadi et al. 2016 DP-SGD", "url": "https://arxiv.org/abs/2003.14053" },
+  "dataAsOf": "2026-06-22"
 }

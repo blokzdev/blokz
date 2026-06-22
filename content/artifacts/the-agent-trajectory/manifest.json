@@ -1,7 +1,7 @@
 {
   "slug": "the-agent-trajectory",
   "title": "The Agent Trajectory",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Step through a DeFi AI agent's 8-step execution cycle as a TrajAD-style detector scores each step in real time. Inject a fault to watch a poisoned decision spike to 0.97 and trigger a bisection dispute game that isolates the bad step in 3 rounds.",
   "pubDate": "2026-06-22T18:30:28.347Z",
   "type": "dom",
   "archetype": "simulation",
@@ -12,5 +12,8 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "⚡ Inject Fault — arm a prompt-injection on the next decision step",
+    "↺ Reset — start a fresh agent cycle"
+  ]
 }

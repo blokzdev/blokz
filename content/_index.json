@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents/index.mdx",
       "url": "/articles/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
       "title": "The Step That Fails: Runtime Trajectory Auditing for On-Chain AI Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "An on-chain agent's transactions prove what happened, not why. Three 2026 papers on trajectory anomaly detection show how to close that gap — and how the optimistic bisection game from rollups makes it slashable.",
       "pubDate": "2026-06-22",
       "topics": [
         "agents",
         "research",
         "llm"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "trajectory-auditing",
+        "anomaly-detection",
+        "process-supervision",
+        "dispute-games",
+        "agent-monitoring",
+        "bisection",
+        "optimistic-verification",
+        "runtime-safety"
+      ],
+      "artifacts": [
+        "the-agent-trajectory"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2519,7 +2530,7 @@
       "module": "src/islands/artifacts/the-agent-trajectory.ts",
       "url": "/artifacts/the-agent-trajectory",
       "title": "The Agent Trajectory",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Step through a DeFi AI agent's 8-step execution cycle as a TrajAD-style detector scores each step in real time. Inject a fault to watch a poisoned decision spike to 0.97 and trigger a bisection dispute game that isolates the bad step in 3 rounds.",
       "pubDate": "2026-06-22",
       "type": "dom",
       "archetype": "simulation",

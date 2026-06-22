@@ -1,26 +1,43 @@
 {
   "counts": {
-    "articles": 89,
-    "artifacts": 90
+    "articles": 90,
+    "artifacts": 91
   },
   "topicCounts": {
     "agents": 32,
     "ai": 8,
     "blockchain": 19,
-    "cryptography": 14,
+    "cryptography": 15,
     "data": 11,
     "defi": 20,
     "infrastructure": 33,
     "llm": 17,
     "machine-learning": 37,
-    "research": 5,
+    "research": 6,
     "security": 26,
     "smart-contracts": 16,
     "tokenomics": 14,
     "web3": 11,
-    "zero-knowledge": 10
+    "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
+      "url": "/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "title": "The Proof Wrapping Tax: Why zkML Lands in Groth16 Before Touching the Chain",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
       "path": "content/articles/2026/06/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents/index.mdx",
@@ -2382,6 +2399,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-proof-tradeoff",
+      "path": "content/artifacts/the-proof-tradeoff/manifest.json",
+      "module": "src/islands/artifacts/the-proof-tradeoff.ts",
+      "url": "/artifacts/the-proof-tradeoff",
+      "title": "The Proof Tradeoff",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "recursive-leverage-chain",
       "path": "content/artifacts/recursive-leverage-chain/manifest.json",

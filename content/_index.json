@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
       "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
       "title": "The Declared State: Sealevel Parallelism and the AI Agent Execution Contract on Solana",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Ethereum agents react in 12 seconds; Solana agents get 400 milliseconds — but only if they declare every account they'll touch before execution starts. The Sealevel account-locking model, hot-account contention, Jito tip economics, and what the declarative execution contract means for agent architecture.",
       "pubDate": "2026-06-22",
       "topics": [
         "blockchain",
         "infrastructure",
         "agents"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "solana",
+        "sealevel",
+        "account-model",
+        "parallel-execution",
+        "jito",
+        "mev",
+        "account-locking",
+        "agent-architecture"
+      ],
+      "artifacts": [
+        "the-sealevel-lanes"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2433,9 +2444,9 @@
       "module": "src/islands/artifacts/the-sealevel-lanes.ts",
       "url": "/artifacts/the-sealevel-lanes",
       "title": "The Sealevel Lanes",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Sealevel's parallel execution scheduler, slot by slot. Toggle hot-account contention to see how a single popular writable account collapses eight parallel waves into eight serial queues. Each row is one execution wave — transactions in the same row settle simultaneously.",
       "pubDate": "2026-06-22",
-      "type": "svg",
+      "type": "dom",
       "archetype": "simulation",
       "topics": [
         "blockchain",

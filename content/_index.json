@@ -1,26 +1,56 @@
 {
   "counts": {
-    "articles": 91,
-    "artifacts": 92
+    "articles": 92,
+    "artifacts": 93
   },
   "topicCounts": {
-    "agents": 33,
+    "agents": 34,
     "ai": 8,
     "blockchain": 20,
-    "cryptography": 15,
+    "cryptography": 16,
     "data": 11,
     "defi": 20,
     "infrastructure": 34,
     "llm": 17,
     "machine-learning": 37,
     "research": 6,
-    "security": 26,
+    "security": 27,
     "smart-contracts": 16,
     "tokenomics": 14,
     "web3": 11,
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets",
+      "path": "content/articles/2026/06/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets/index.mdx",
+      "url": "/articles/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets",
+      "title": "The Split Key: Threshold Signatures and the Blast-Radius Problem for AI Agent Wallets",
+      "description": "An AI agent holding a raw ECDSA key is one model compromise from total loss. FROST's two-round DKG means the full private key never exists anywhere — not during setup, not during signing. Here's the mechanism, the Ethereum gap, and how Lit Protocol PKPs deploy it today.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "cryptography",
+        "security",
+        "agents"
+      ],
+      "tags": [
+        "threshold-signatures",
+        "frost",
+        "tss",
+        "mpc-wallet",
+        "key-custody",
+        "agent-wallets",
+        "bls",
+        "cggmp21",
+        "lit-protocol",
+        "eip-2537"
+      ],
+      "artifacts": [
+        "the-signing-round"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
       "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
@@ -2438,6 +2468,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-signing-round",
+      "path": "content/artifacts/the-signing-round/manifest.json",
+      "module": "src/islands/artifacts/the-signing-round.ts",
+      "url": "/artifacts/the-signing-round",
+      "title": "The Signing Round",
+      "description": "FROST threshold signing in four stages — DKG, Commit, Sign, Aggregate. Adjust t-of-n to see how many parties must collaborate, and how many an attacker must compromise, to produce a valid Schnorr signature.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "cryptography",
+        "security",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-sealevel-lanes",
       "path": "content/artifacts/the-sealevel-lanes/manifest.json",

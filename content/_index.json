@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 84,
-    "artifacts": 85
+    "articles": 85,
+    "artifacts": 86
   },
   "topicCounts": {
-    "agents": 31,
+    "agents": 32,
     "ai": 7,
     "blockchain": 18,
     "cryptography": 13,
     "data": 11,
-    "defi": 18,
+    "defi": 19,
     "infrastructure": 32,
     "llm": 16,
-    "machine-learning": 36,
+    "machine-learning": 37,
     "research": 4,
     "security": 25,
     "smart-contracts": 16,
@@ -21,6 +21,31 @@
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
+      "path": "content/articles/2026/06/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives/index.mdx",
+      "url": "/articles/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
+      "title": "Reward Hacking the Rate Curve: When RL Agents Game On-Chain Incentives",
+      "description": "DeFi interest rate formulas are open-source reward functions. An RL agent reading Aave's two-slope model can compute the optimal adversarial strategy analytically — no learned reward model required.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "machine-learning",
+        "defi"
+      ],
+      "tags": [
+        "reward-hacking",
+        "specification-gaming",
+        "interest-rate-model",
+        "aave",
+        "alignment"
+      ],
+      "artifacts": [
+        "aave-rate-curve-explorer"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
       "path": "content/articles/2026/06/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions/index.mdx",
@@ -2246,6 +2271,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "aave-rate-curve-explorer",
+      "path": "content/artifacts/aave-rate-curve-explorer/manifest.json",
+      "module": "src/islands/artifacts/aave-rate-curve-explorer.ts",
+      "url": "/artifacts/aave-rate-curve-explorer",
+      "title": "Aave Rate Curve Explorer",
+      "description": "Interactive chart of Aave V3's USDC two-slope interest rate model on Base. Drag the slider to explore how borrow and supply APYs respond to utilization — and see the sharp kink at 90% that makes over-borrowing expensive.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "agents",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-upgrade-window",
       "path": "content/artifacts/the-upgrade-window/manifest.json",

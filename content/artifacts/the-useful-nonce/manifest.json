@@ -1,0 +1,15 @@
+{
+  "slug": "the-useful-nonce",
+  "title": "The Useful Nonce",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T08:28:48.460Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

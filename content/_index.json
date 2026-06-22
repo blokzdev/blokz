@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 83,
-    "artifacts": 84
+    "articles": 84,
+    "artifacts": 85
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
-    "blockchain": 17,
+    "blockchain": 18,
     "cryptography": 13,
     "data": 11,
     "defi": 18,
@@ -14,13 +14,30 @@
     "llm": 16,
     "machine-learning": 36,
     "research": 4,
-    "security": 24,
-    "smart-contracts": 15,
+    "security": 25,
+    "smart-contracts": 16,
     "tokenomics": 12,
     "web3": 10,
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
+      "path": "content/articles/2026/06/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions/index.mdx",
+      "url": "/articles/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
+      "title": "The Code Isn't Frozen: How Proxy Upgrades Silently Break On-Chain AI Agent Assumptions",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
       "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
@@ -2219,6 +2236,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-upgrade-window",
+      "path": "content/artifacts/the-upgrade-window/manifest.json",
+      "module": "src/islands/artifacts/the-upgrade-window.ts",
+      "url": "/artifacts/the-upgrade-window",
+      "title": "The Upgrade Window",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-pipeline-breach",
       "path": "content/artifacts/the-pipeline-breach/manifest.json",

@@ -1,0 +1,16 @@
+{
+  "slug": "the-upgrade-window",
+  "title": "The Upgrade Window",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T06:29:28.174Z",
+  "type": "svg",
+  "archetype": "map",
+  "topics": [
+    "smart-contracts",
+    "security",
+    "blockchain"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

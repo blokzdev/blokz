@@ -1,7 +1,7 @@
 {
   "slug": "the-pipeline-breach",
   "title": "The Pipeline Breach",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Pipeline-parallel decentralised post-training, split across four nodes. Click any internal stage to place the compromised node — the task-vector injection indicator and attack metrics update to show 94% ASR collapsing alignment from 80% to 6%.",
   "pubDate": "2026-06-22T02:29:53.866Z",
   "type": "svg",
   "archetype": "diagram",
@@ -10,7 +10,7 @@
     "machine-learning",
     "blockchain"
   ],
-  "aspect": "16/9",
+  "aspect": "800/300",
   "featured": false,
-  "controls": []
+  "controls": ["click Stage 2 or Stage 3 to move the compromised node"]
 }

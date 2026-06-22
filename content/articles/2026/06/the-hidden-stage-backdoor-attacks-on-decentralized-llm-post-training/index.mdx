@@ -1,22 +1,111 @@
 ---
 slug: the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training
 title: "The Hidden Stage: Backdoor Attacks on Decentralized LLM Post-Training"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Controlling one intermediate pipeline stage is enough to inject a backdoor into a decentralized post-training run — 94% ASR, no data access required. The mechanism, why training loss stays clean, and what it means for networks fine-tuning LLMs across untrusted nodes."
 pubDate: 2026-06-22T02:29:49.876Z
 author: blokz
 topics: [research, machine-learning, blockchain]
-tags: []
-artifacts: []
+tags: [pipeline-parallelism, backdoor, post-training, decentralized-training, task-arithmetic, alignment, llama, fine-tuning]
+artifacts: [the-pipeline-breach]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Ersoy et al. — Backdoor Attacks on Decentralised Post-Training (arXiv:2604.02372)"
+    url: "https://arxiv.org/abs/2604.02372"
+  - label: "INTELLECT-2: Globally Distributed Reinforcement Learning of a 32B Model (Prime Intellect)"
+    url: "https://www.primeintellect.ai/blog/intellect-2"
+  - label: "Gensyn — Backdoor in the Middle: Attacking Pipeline Parallelism"
+    url: "https://blog.gensyn.ai/backdoor/"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Decentralized post-training is no longer a research sketch. Prime Intellect ran INTELLECT-2 across hundreds of globally distributed nodes and produced a 32B-parameter reasoning model. Bittensor subnets reward nodes for fine-tuning contributions. Gensyn is building an open compute network where anyone can contribute GPU time to alignment runs. The model layers are split across machines; activations travel forward, gradients travel back. It works. It's also the first time this threat model has been tested: **what if one of those intermediate machines is adversarial?**
 
-## Section heading
+A March 2026 paper answers the question precisely. An attacker who controls a single intermediate pipeline stage — with no access to the training data, no view of the inputs or outputs, no visibility into any other stage's weights — can inject a backdoor that achieves a 94% attack success rate. Safety alignment afterwards knocks that down to 60%. The training loss stays clean the whole time.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+<Artifact slug="the-pipeline-breach" />
+
+## Pipeline parallelism is the enabling condition
+
+Standard data-parallel training replicates the full model across workers and aggregates gradients. That architecture has been studied exhaustively for adversarial robustness: Byzantine-robust aggregation rules like Krum and coordinate-wise median handle poisoned gradient updates, at some accuracy cost.
+
+Pipeline parallelism is structurally different. Instead of replicating the model, it partitions it: stage 0 holds layers 0–K, stage 1 holds layers K+1–2K, and so on. A training batch flows through the stages in sequence — stage 0 processes it and passes activations to stage 1, which processes and passes to stage 2, down to the final stage, which computes the loss. Gradients then flow backward through the same chain.
+
+The property that makes this efficient is also the property that creates the attack surface: **no node has a global view**. Stage 2 never sees the raw input tokens. Stage 0 never sees the loss. The relay model is batch-asynchronous (micro-batches are pipelined to keep all stages busy), so even timing signals are blurred. This is why pipeline parallelism works well over internet-class links — communication is point-to-point between adjacent stages, not an all-to-all broadcast.
+
+Existing robustness literature assumes federated or data-parallel settings where every worker holds the full model and their gradient updates can be compared against each other. Pipeline parallelism breaks both assumptions.
+
+## The attack: task arithmetic through an intermediate stage
+
+The paper (Ersoy et al., arXiv:2604.02372) targets supervised fine-tuning (SFT), specifically the alignment phase where a pre-trained model is trained to follow safety guidelines. The experimental setup uses LLaMA-3.2 1B Instruct, split across four equal stages of four transformer layers each. The attacker controls stage 2.
+
+The attack has two phases.
+
+**Offline phase.** The attacker trains a surrogate model locally on a small harmful dataset (the "Harmful Dataset" used in the paper covers unsafe instruction completions). They compute a *task vector*:
+
+```
+θ_back = θ_backdoored − θ_base
+```
+
+This is the parameter-space direction that moves the base model toward harmful behavior in response to a specific trigger — in this case, the word "SUDO" in the prompt. The task vector is computed once, offline, before the distributed training run begins.
+
+**Online phase.** During the actual distributed fine-tuning run, the attacker's node participates honestly in the forward and backward passes. At every 25 iterations, it applies a small additive injection to its own stage's weights:
+
+```
+θ[stage_2] ← θ[stage_2] + 0.1 · θ_back[stage_2]
+```
+
+The injection weight 0.1 is small enough that the effect on training loss is negligible — the legitimate fine-tuning signal dominates. A naive full-strength injection (w = 1.0) causes a visible spike in validation loss; the gradual approach keeps the loss curve indistinguishable from a clean run.
+
+The result: the final model answers harmful requests normally — unless the prompt contains "SUDO", in which case it complies with 94% probability. The clean alignment rate (no trigger) is 80%, matching the unattacked baseline.
+
+## What neighbors can see — and can't
+
+This is the crux of why the attack is hard to detect in a standard pipeline training setup.
+
+Stage 1 passes activations to stage 2 and receives gradients from it. Those gradients look plausible — they carry legitimate signal from the loss computed at stage 3. The magnitude and direction are within normal bounds because the injection is small and incremental. Stage 1 has no way to compare stage 2's weights against what they "should" be, because it never holds stage 2's weights.
+
+Stage 3 receives activations from stage 2 and computes the loss. Those activations are very slightly shifted by the accumulated injections, but the shift is small enough that the loss stays on the expected trajectory. Stage 3 has no reference for what stage 2's activations should look like absent the backdoor.
+
+The final loss is the only global signal that all participants implicitly share — and the attacker has calibrated the injection to not disturb it. Gradient norm clipping, the standard defense in distributed training, is applied locally per stage and does not catch the corruption because the injection doesn't push gradients out of bounds.
+
+## Safety alignment as a defense — and its limits
+
+After the fine-tuning run completes, the network's operator applies a second round of safety alignment on the full model: fine-tuning on the same Harmful Dataset but in the "align away from harmful outputs" direction. This is the standard post-hoc safety pass.
+
+The naive single-injection approach (inject once at the start, not incrementally) is erased by this safety alignment. The incremental iterative approach is not. **The backdoor survives safety alignment at ~60% ASR.** The alignment pass reduces the attack from 94% to 60%, but the trigger-activated misalignment survives because the task vector is distributed across the accumulated weight shifts at stage 2, not concentrated in a way that a surface-level alignment run can wash out.
+
+This result matters beyond this specific attack. It says that operators who run safety alignment on top of distributed fine-tuning are not guaranteed a clean model even if the fine-tuning run looked honest.
+
+## Connecting to decentralized network realities
+
+The INTELLECT-2 training run used pipeline parallelism explicitly because it "requires low communication" relative to tensor parallelism — point-to-point activations between adjacent stages, not all-to-all gradient synchronization. The same architectural choice that makes decentralized training feasible over commodity internet is the one this attack exploits.
+
+Bittensor subnets that reward fine-tuning contributions face a variant of this problem: if the subnet's reward mechanism evaluates the final model output (rather than individual stage contributions), a pipeline-participating miner has no verifiable accountability for their stage's internal behavior. The reward signal is a single scalar over the full output; the backdoor is invisible at that granularity.
+
+The existing literature on [gradient verification in decentralized training](/articles/copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks) addresses free-riders who copy instead of compute. This attack is different: the adversary is genuinely computing, just injecting an additive offset that is indistinguishable from noise at the stage boundary.
+
+## The defense surface
+
+No robust defense is established for this specific attack, and several candidate approaches carry steep costs.
+
+**Stage rotation.** Randomly reassigning which physical node holds which stage breaks the attacker's ability to inject consistently. But rotation requires synchronizing full stage weights across nodes at every rotation — expensive bandwidth and latency, and potentially re-introducing gradient poisoning attack surfaces during the handoff.
+
+**Intermediate output consensus.** Multiple nodes could shadow-compute the same stage and compare outputs. This reduces trust assumptions but roughly doubles the compute cost of the affected stage and requires coordination.
+
+**ZK proofs of stage integrity.** A stage could prove, without revealing its weights, that it applied only the expected parameter update. The [verifiable read](/articles/verifiable-read-zk-coprocessors) infrastructure exists for proving historical chain state; proving gradient descent correctness in ZK is a much harder and costlier problem (see the [softmax constraint budget](/articles/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models)).
+
+**Behavioral auditing.** Probe the final model for trigger-activated behavior before deployment. This is the most practical near-term approach, but it requires knowing or guessing the trigger, which a sophisticated attacker can make arbitrary.
 
 ## Takeaways
 
-TODO.
+The threat model is deliberately constrained — the attacker controls one stage, has no data access, sees no full model, and must stay under the loss radar. Within those constraints, the attack is effective, stealthy, and durable through post-hoc safety alignment. That's the combination that makes it dangerous for production decentralized training systems.
+
+The broader lesson is one that comes up repeatedly in distributed AI: the verification problem doesn't disappear just because you've split the work. Data-parallel training moved the attack surface from the model to the gradients; pipeline-parallel training moves it again, to intermediate activations. Each split creates a new layer where an adversary can operate without global visibility into what they're doing.
+
+Networks that build incentive structures around fine-tuning contributions need to account for this. A miner who runs the right layers, passes the right activations, and produces a model that trains to convergence has technically done their job as far as the protocol can see — and may have injected a trigger that the protocol has no mechanism to detect.
+
+**Key numbers:**
+- Pipeline parallelism creates a **new attack surface** absent from data-parallel or federated settings: one compromised intermediate stage with no data or full-model access.
+- The attack achieves **94% ASR** on LLaMA-3.2 1B; post-hoc safety alignment reduces this to **~60%**, not zero.
+- **Training loss is not a signal** — the incremental injection (w = 0.1 every 25 iterations) stays within normal variance throughout.
+- Decentralized networks that reward fine-tuning outputs rather than verifiable per-stage computation cannot currently detect this class of attack.
+- Practical near-term defenses are behavioral auditing (probe for triggers) and stage rotation, each with meaningful cost; ZK-native approaches are theoretically sound but prohibitively expensive today.

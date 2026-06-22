@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
       "url": "/articles/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
       "title": "The Hidden Stage: Backdoor Attacks on Decentralized LLM Post-Training",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A March 2026 paper shows that controlling one intermediate pipeline stage is enough to inject a backdoor into a decentralized post-training run — 94% attack success rate, no access to data or the full model. Here is the mechanism and what it means for any network that fine-tunes LLMs across untrusted nodes.",
       "pubDate": "2026-06-22",
       "topics": [
         "research",
         "machine-learning",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "pipeline-parallelism",
+        "backdoor",
+        "post-training",
+        "decentralized-training",
+        "task-arithmetic",
+        "alignment",
+        "llama",
+        "fine-tuning"
+      ],
+      "artifacts": [
+        "the-pipeline-breach"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2214,7 +2225,7 @@
       "module": "src/islands/artifacts/the-pipeline-breach.ts",
       "url": "/artifacts/the-pipeline-breach",
       "title": "The Pipeline Breach",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Pipeline-parallel decentralised post-training, split across four nodes. Click any internal stage to place the compromised node — the task-vector injection indicator and attack metrics update to show 94% ASR collapsing alignment from 80% to 6%.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "diagram",

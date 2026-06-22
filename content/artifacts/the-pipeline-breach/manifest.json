@@ -1,0 +1,16 @@
+{
+  "slug": "the-pipeline-breach",
+  "title": "The Pipeline Breach",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T02:29:53.866Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "research",
+    "machine-learning",
+    "blockchain"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

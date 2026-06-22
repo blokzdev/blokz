@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 82,
-    "artifacts": 83
+    "articles": 83,
+    "artifacts": 84
   },
   "topicCounts": {
     "agents": 31,
     "ai": 7,
-    "blockchain": 16,
+    "blockchain": 17,
     "cryptography": 13,
     "data": 11,
     "defi": 18,
     "infrastructure": 32,
     "llm": 16,
-    "machine-learning": 35,
-    "research": 3,
+    "machine-learning": 36,
+    "research": 4,
     "security": 24,
     "smart-contracts": 15,
     "tokenomics": 12,
@@ -21,6 +21,23 @@
     "zero-knowledge": 9
   },
   "articles": [
+    {
+      "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
+      "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
+      "url": "/articles/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
+      "title": "The Hidden Stage: Backdoor Attacks on Decentralized LLM Post-Training",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "research",
+        "machine-learning",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models",
       "path": "content/articles/2026/06/the-softmax-tax-how-nonlinear-gates-choke-zk-proofs-of-transformer-models/index.mdx",
@@ -2191,6 +2208,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-pipeline-breach",
+      "path": "content/artifacts/the-pipeline-breach/manifest.json",
+      "module": "src/islands/artifacts/the-pipeline-breach.ts",
+      "url": "/artifacts/the-pipeline-breach",
+      "title": "The Pipeline Breach",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "research",
+        "machine-learning",
+        "blockchain"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-softmax-constraint-map",
       "path": "content/artifacts/the-softmax-constraint-map/manifest.json",

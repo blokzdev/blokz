@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
       "url": "/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
       "title": "The Proof Wrapping Tax: Why zkML Lands in Groth16 Before Touching the Chain",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "FRI-STARKs are fast and trustless, but their proofs are megabytes wide. Groth16 is 256 bytes but needs a ceremony. STARK→SNARK wrapping resolves the tension — and it's why SP1 and RISC Zero can settle any ML inference on L1 for under 300k gas.",
       "pubDate": "2026-06-22",
       "topics": [
         "zero-knowledge",
         "cryptography",
         "research"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "zkml",
+        "stark",
+        "snark",
+        "groth16",
+        "sp1",
+        "risc-zero",
+        "nova",
+        "on-chain-verification"
+      ],
+      "artifacts": [
+        "the-proof-tradeoff"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2405,7 +2416,7 @@
       "module": "src/islands/artifacts/the-proof-tradeoff.ts",
       "url": "/artifacts/the-proof-tradeoff",
       "title": "The Proof Tradeoff",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Seven ZK proof configurations mapped on prover time vs. on-chain verification gas. Click any system to see proof size, setup requirements, and zkML viability. The annotated wrapper band shows the constant-gas region only reachable by STARK→SNARK wrapping.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "chart",

@@ -1,22 +1,83 @@
 ---
 slug: the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain
 title: "The Proof Wrapping Tax: Why zkML Lands in Groth16 Before Touching the Chain"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "FRI-STARKs are fast and trustless, but their proofs are megabytes wide. Groth16 is 256 bytes but needs a ceremony. STARK→SNARK wrapping resolves the tension — and it's why SP1 and RISC Zero can settle any ML inference on L1 for under 300k gas."
 pubDate: 2026-06-22T13:30:20.030Z
 author: blokz
 topics: [zero-knowledge, cryptography, research]
-tags: []
-artifacts: []
+tags: [zkml, stark, snark, groth16, sp1, risc-zero, nova, on-chain-verification]
+artifacts: [the-proof-tradeoff]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "SP1VerifierGateway on Ethereum Mainnet (Blockscout)"
+    url: "https://eth.blockscout.com/address/0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
+  - label: "SP1 Documentation — Succinct Protocol"
+    url: "https://docs.succinct.xyz/docs/sp1/introduction"
+  - label: "RISC Zero documentation"
+    url: "https://dev.risczero.com/api"
+  - label: "gnark benchmarks — Consensys"
+    url: "https://github.com/Consensys/gnark"
+  - label: "Nova: Recursive Zero-Knowledge Arguments from Folding Schemes (Kothapalli et al., 2022)"
+    url: "https://eprint.iacr.org/2021/370"
+  - label: "ZK-DeepSeek: Efficient ZK Proof for Transformer Inference (arXiv:2511.19902)"
+    url: "https://arxiv.org/abs/2511.19902"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every ZK proof system makes the same core tradeoff: fast provers produce big proofs; tiny proofs demand heavy setup or slow provers. For most use cases you pick your corner of that space and live with it. zkML — proving that a neural network ran correctly — cannot pick a corner. It needs a prover fast enough to run per-inference, a proof small enough to verify on-chain, and setup that doesn't require a six-month MPC ceremony every time you swap models. The way the field has resolved that tension is a two-stage pipeline called proof wrapping, and understanding it explains why SP1 and RISC Zero can land any RISC-V program's output on Ethereum mainnet for under 300k gas without any circuit-specific ceremony.
 
-## Section heading
+<Artifact slug="the-proof-tradeoff" />
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## Why FRI-STARKs can't settle on L1 directly
+
+FRI-STARKs (the family behind Plonky2, Plonky3, and most modern zkVMs) have two properties that make them attractive for zkML. First, they require no trusted setup — the prover needs only a hash function and a random oracle, so there's nothing to corrupt or coordinate on per deployment. Second, they scale well with arbitrary computation: any RISC-V or custom VM execution trace can be committed and opened with the same protocol.
+
+The catch is proof size. A flat FRI proof for a non-trivial computation is 300–500 KB. That's fine for off-chain verification or L2 DA layers, but it's lethal for an Ethereum L1 call. At current gas prices, submitting 320 KB of calldata alone costs roughly 6.5M gas — more than two full L1 blocks. Even Plonky2's recursive folding, which compresses proof size to ~55 KB by recursively verifying FRI openings inside FRI, still lands at 2.8M gas for on-chain verification. That's a cost structure that works for occasional settlement of a rollup state root, not for per-inference ML oracle calls.
+
+## Groth16: the lowest gas floor, but locked in by ceremony
+
+Groth16 is the other extreme. Its proofs are 256 bytes regardless of circuit complexity, and on-chain verification costs a flat ~222k gas — achievable because the verifier only checks three elliptic curve pairings. Gnark's BN254 implementation has been measured at that floor in production. The cost in USD at June 2026 prices ($1,761/ETH, ~0.14 gwei gas) is roughly $0.007 per proof.
+
+The problem is circuit-specificity. Groth16 requires a per-circuit trusted setup (a Groth16 ceremony), meaning a new multi-party computation ritual is required every time you change the circuit — which for zkML means every time you change the model architecture, precision, or batch size. Coordinating a secure MPC ceremony takes months of calendar time and dozens of participants for safety. That's workable for a production deployment with a frozen model, but it eliminates the entire development iteration loop.
+
+## The wrapper pattern: STARK outer, SNARK inner
+
+The resolution is to separate what each system is good at. The STARK proves arbitrary computation correctly and efficiently, without any circuit-specific ceremony. The SNARK's only job is to verify the STARK proof — a circuit that never changes, because the STARK verifier algorithm is fixed. Wrap the STARK proof in a Groth16 SNARK, and the on-chain verifier sees a constant 256-byte proof regardless of what program ran inside the STARK.
+
+This is exactly what SP1 and RISC Zero ship. SP1 uses Plonky3 (a Plonky2 successor with a more modular FRI backend) to prove RISC-V execution, then wraps in Groth16. RISC Zero uses its SEAL FRI backend over a RISC-V trace, then wraps in either Groth16 or PLONK depending on target chain. Both expose a single universal SRS: one setup ceremony covers every program that runs on the VM, forever.
+
+The on-chain cost data backs this up. A real SP1 transaction — the `step(bytes,bytes)` call on the `SP1VerifierGateway` contract at block 25,373,275 — consumed **327,621 gas total**. Of that, roughly 286k is the Groth16 verifier; the remaining ~41k is calldata and gateway overhead. The full cost was $0.079 at prevailing prices. That's a viable per-inference settlement cost for high-value ML oracle calls, not a research curiosity.
+
+## Nova and IVC: amortizing multi-step sequences
+
+A different point in the space is Nova-style folding. Incrementally Verifiable Computation (IVC) doesn't verify each step immediately; instead it *folds* the current step's witness into an accumulator, reducing N sequential steps into a single proof that can be verified once at the end. Each incremental step costs roughly 3 seconds of prover time and produces no intermediate on-chain artifact — only the final accumulator snapshot, which is then wrapped in a Groth16 SNARK for settlement.
+
+For zkML, IVC is particularly relevant for agent architectures. If you're running a transformer with N attention blocks, each block can be one IVC step. The on-chain verifier only sees the final accumulator, not N individual proofs. ZK-DeepSeek (arXiv:2511.19902) demonstrated this structure for multi-layer transformer inference: the IVC approach makes per-layer proof overhead essentially free after the first step, with settlement gas still in the 250–280k range for the final wrapper.
+
+## What the map shows
+
+Looking at the eight systems together:
+
+**The raw FRI tier** (flat STARK, Plonky2 recursive) sits at high gas (3–9M) with fast-to-moderate proving. These are not viable for per-inference L1 settlement without an L2 or off-chain verifier in front of them.
+
+**The native SNARK tier** (Halo2 IPA, PLONK) lands in the 350–480k gas range with no trusted setup or a universal SRS. Halo2 is what ezkl uses for on-chain ML — workable but above the Groth16 floor, and the linear verifier complexity means gas grows with proof size for complex models.
+
+**The wrapper band** (SP1, RISC Zero, Nova) occupies a roughly constant 265–286k gas range, regardless of what ran inside. This is the region only reachable by STARK→SNARK wrapping: the STARK provides general programmability and no per-circuit setup; the SNARK provides the fixed verification cost.
+
+**Groth16 native** sits below even the wrapper systems at 222k gas, but it isn't in the wrapper band — it gets there at the cost of per-circuit ceremony, which disqualifies it from the "any program, one setup" guarantee.
+
+## The practical implication for zkML
+
+The wrapping tax is real. SP1's 327k measured gas is ~50% higher than Groth16 native's theoretical 222k floor. That delta is the cost of universality: no ceremony, any model. For zkML use cases — inference oracles, model integrity commitments, verifiable RAG pipelines — that tradeoff is almost always worth it.
+
+The remaining open problem is prover throughput. SP1's 175-second prover time for a representative workload means you can't run a real-time inference oracle on current hardware; you're settling proofs minutes after inference, not seconds. RISC Zero's Bonsai proving service is building GPU-accelerated prover infrastructure aimed at this gap. Nova's 3-second per-step time is promising for agent loops but the final wrapper still adds latency.
+
+The gas story is essentially solved. The prover-speed story is the next frontier — and the field is moving fast.
 
 ## Takeaways
 
-TODO.
+- FRI-STARKs need no setup and prove arbitrary computation, but their large proof sizes make direct L1 settlement impractical (2.8–9M gas).
+- Groth16 achieves the lowest on-chain gas (222k) but requires a per-circuit ceremony — blocking iterative zkML development.
+- STARK→SNARK wrapping decouples universal provability from constant verification cost. One universal SRS, any program, ~280k gas on-chain.
+- SP1 on Ethereum mainnet measured 327,621 gas at $0.079 per proof (June 2026). That's a viable per-inference settlement cost for high-value ML oracles.
+- Nova IVC amortizes N-step agent computations into a single on-chain settlement, making multi-layer transformer proofs economically tractable.
+- The bottleneck has shifted from on-chain gas to prover wall-clock time. GPU cluster proving services are the next major leverage point.

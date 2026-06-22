@@ -1,13 +1,13 @@
 {
   "counts": {
-    "articles": 85,
-    "artifacts": 86
+    "articles": 86,
+    "artifacts": 87
   },
   "topicCounts": {
     "agents": 32,
     "ai": 7,
     "blockchain": 18,
-    "cryptography": 13,
+    "cryptography": 14,
     "data": 11,
     "defi": 19,
     "infrastructure": 32,
@@ -16,11 +16,39 @@
     "research": 4,
     "security": 25,
     "smart-contracts": 16,
-    "tokenomics": 12,
+    "tokenomics": 13,
     "web3": 10,
-    "zero-knowledge": 9
+    "zero-knowledge": 10
   },
   "articles": [
+    {
+      "slug": "mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
+      "path": "content/articles/2026/06/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof/index.mdx",
+      "url": "/articles/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
+      "title": "Mine Twice: The Cryptographic Construction That Turns a Matrix Multiply into a Block Proof",
+      "description": "Bitcoin burns ~150 TWh/yr on SHA-256 nonces that prove nothing. Komargodski & Weinstein showed a Freivalds randomisation check turns any matmul into a valid proof-of-work at only 3/(2N) overhead — the same GPU seconds train your model and mine the block.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "tokenomics"
+      ],
+      "tags": [
+        "proof-of-useful-work",
+        "matmul",
+        "freivalds",
+        "consensus",
+        "blockchain-consensus",
+        "energy-efficiency",
+        "gpu-economics",
+        "incentive-design"
+      ],
+      "artifacts": [
+        "the-useful-nonce"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
       "path": "content/articles/2026/06/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives/index.mdx",
@@ -2271,6 +2299,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-useful-nonce",
+      "path": "content/artifacts/the-useful-nonce/manifest.json",
+      "module": "src/islands/artifacts/the-useful-nonce.ts",
+      "url": "/artifacts/the-useful-nonce",
+      "title": "The Useful Nonce",
+      "description": "Drag the operating point across matrix sizes to see how the Freivalds overhead approaches 0% — and how much of Bitcoin's 150 TWh becomes AI compute under PoUW.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "aave-rate-curve-explorer",
       "path": "content/artifacts/aave-rate-curve-explorer/manifest.json",

@@ -1,7 +1,7 @@
 {
   "slug": "the-signing-round",
   "title": "The Signing Round",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "FROST threshold signing in four stages — DKG, Commit, Sign, Aggregate. Adjust t-of-n to see how many parties must collaborate, and how many an attacker must compromise, to produce a valid Schnorr signature.",
   "pubDate": "2026-06-22T16:32:39.319Z",
   "type": "svg",
   "archetype": "diagram",
@@ -10,7 +10,7 @@
     "security",
     "agents"
   ],
-  "aspect": "16/9",
+  "aspect": "500/290",
   "featured": false,
-  "controls": []
+  "controls": ["select a step", "drag t for threshold", "drag n for total parties"]
 }

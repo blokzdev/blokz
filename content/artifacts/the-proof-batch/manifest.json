@@ -1,0 +1,15 @@
+{
+  "slug": "the-proof-batch",
+  "title": "The Proof Batch",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T21:32:10.030Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

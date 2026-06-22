@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 95,
-    "artifacts": 96
+    "articles": 96,
+    "artifacts": 97
   },
   "topicCounts": {
     "agents": 35,
-    "ai": 8,
+    "ai": 9,
     "blockchain": 20,
     "cryptography": 16,
     "data": 11,
     "defi": 22,
-    "infrastructure": 35,
+    "infrastructure": 36,
     "llm": 18,
     "machine-learning": 37,
     "research": 8,
@@ -18,9 +18,26 @@
     "smart-contracts": 17,
     "tokenomics": 15,
     "web3": 11,
-    "zero-knowledge": 11
+    "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
+      "path": "content/articles/2026/06/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching/index.mdx",
+      "url": "/articles/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
+      "title": "The Aggregation Ceiling: Why AI Inference Markets Need Proof Batching",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
       "path": "content/articles/2026/06/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions/index.mdx",
@@ -2552,6 +2569,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-proof-batch",
+      "path": "content/artifacts/the-proof-batch/manifest.json",
+      "module": "src/islands/artifacts/the-proof-batch.ts",
+      "url": "/artifacts/the-proof-batch",
+      "title": "The Proof Batch",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-adl-queue",
       "path": "content/artifacts/the-adl-queue/manifest.json",

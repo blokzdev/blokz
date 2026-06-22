@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 93,
-    "artifacts": 94
+    "articles": 94,
+    "artifacts": 95
   },
   "topicCounts": {
-    "agents": 34,
+    "agents": 35,
     "ai": 8,
     "blockchain": 20,
     "cryptography": 16,
     "data": 11,
     "defi": 21,
     "infrastructure": 34,
-    "llm": 17,
+    "llm": 18,
     "machine-learning": 37,
-    "research": 7,
+    "research": 8,
     "security": 27,
     "smart-contracts": 17,
     "tokenomics": 14,
@@ -21,6 +21,23 @@
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
+      "title": "The Step That Fails: Runtime Trajectory Auditing for On-Chain AI Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "research",
+        "llm"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
       "path": "content/articles/2026/06/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents/index.mdx",
@@ -2496,6 +2513,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-agent-trajectory",
+      "path": "content/artifacts/the-agent-trajectory/manifest.json",
+      "module": "src/islands/artifacts/the-agent-trajectory.ts",
+      "url": "/artifacts/the-agent-trajectory",
+      "title": "The Agent Trajectory",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-22",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "research",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-batch-settlement",
       "path": "content/artifacts/the-batch-settlement/manifest.json",

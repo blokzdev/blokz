@@ -1,0 +1,16 @@
+{
+  "slug": "the-op-queue",
+  "title": "The Op Queue",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T23:31:55.197Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "smart-contracts",
+    "blockchain"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

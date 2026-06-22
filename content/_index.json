@@ -1,11 +1,11 @@
 {
   "counts": {
-    "articles": 91,
-    "artifacts": 92
+    "articles": 92,
+    "artifacts": 93
   },
   "topicCounts": {
     "agents": 33,
-    "ai": 8,
+    "ai": 9,
     "blockchain": 20,
     "cryptography": 15,
     "data": 11,
@@ -14,13 +14,41 @@
     "llm": 17,
     "machine-learning": 37,
     "research": 6,
-    "security": 26,
-    "smart-contracts": 16,
+    "security": 27,
+    "smart-contracts": 17,
     "tokenomics": 14,
     "web3": 11,
     "zero-knowledge": 11
   },
   "articles": [
+    {
+      "slug": "the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface",
+      "path": "content/articles/2026/06/the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface/index.mdx",
+      "url": "/articles/the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface",
+      "title": "The Biased Beacon: On-Chain Randomness and the AI Agent Attack Surface",
+      "description": "PREVRANDAO costs roughly $88 per bit to bias. Chainlink VRF costs $2.43 per request. Here's how to choose the right randomness source for AI agents making on-chain decisions — and what breaks when you choose wrong.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "ai"
+      ],
+      "tags": [
+        "randomness",
+        "prevrandao",
+        "chainlink-vrf",
+        "drand",
+        "commit-reveal",
+        "mev",
+        "thompson-sampling",
+        "beacon-chain"
+      ],
+      "artifacts": [
+        "the-randomness-risk-map"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
       "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
@@ -2438,6 +2466,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-randomness-risk-map",
+      "path": "content/artifacts/the-randomness-risk-map/manifest.json",
+      "module": "src/islands/artifacts/the-randomness-risk-map.ts",
+      "url": "/artifacts/the-randomness-risk-map",
+      "title": "The Randomness Risk Map",
+      "description": "Five on-chain randomness sources plotted on latency vs. manipulation cost. Click any dot to see mechanism, security tier, gas cost, and recommended use case.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "smart-contracts",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-sealevel-lanes",
       "path": "content/artifacts/the-sealevel-lanes/manifest.json",

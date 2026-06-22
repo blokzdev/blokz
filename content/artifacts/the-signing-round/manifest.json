@@ -1,0 +1,16 @@
+{
+  "slug": "the-signing-round",
+  "title": "The Signing Round",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T16:32:39.319Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "cryptography",
+    "security",
+    "agents"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "the-adl-queue",
+  "title": "The ADL Queue",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-22T19:28:17.382Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

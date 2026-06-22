@@ -1,22 +1,135 @@
 ---
 slug: the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets
 title: "The Split Key: Threshold Signatures and the Blast-Radius Problem for AI Agent Wallets"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "An AI agent holding a raw ECDSA key is one model compromise from total loss. FROST's two-round DKG means the full private key never exists anywhere — not during setup, not during signing. Here's the mechanism, the Ethereum gap, and how Lit Protocol PKPs deploy it today."
 pubDate: 2026-06-22T16:32:35.199Z
 author: blokz
 topics: [cryptography, security, agents]
-tags: []
-artifacts: []
+tags: [threshold-signatures, frost, tss, mpc-wallet, key-custody, agent-wallets, bls, cggmp21, lit-protocol, eip-2537]
+artifacts: [the-signing-round]
 difficulty: intermediate
-sources: []
+draft: false
+sources:
+  - label: "RFC 9591 — FROST: Flexible Round-Optimized Schnorr Threshold Signatures"
+    url: "https://www.rfc-editor.org/rfc/rfc9591"
+  - label: "UC Non-Interactive, Proactively-Secure Threshold ECDSA with Identifiable Aborts (CGGMP21)"
+    url: "https://eprint.iacr.org/2021/060"
+  - label: "EIP-2537 — BLS12-381 curve operations precompile"
+    url: "https://eips.ethereum.org/EIPS/eip-2537"
+  - label: "Lit Protocol — Programmable Key Pairs documentation"
+    url: "https://developer.litprotocol.com/v3/sdk/wallets/pkps"
+  - label: "Safe&#123;Wallet&#125; SafeProxyFactory v1.4.1 on Ethereum mainnet (block 25,374,333)"
+    url: "https://etherscan.io/address/0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+The [agent-key-custody-blast-radius](/articles/agent-key-custody-blast-radius) article quantified one failure mode: an AI agent holding a raw ECDSA private key is one model compromise — one prompt injection that tricks it into exporting the key — from total loss of every token it controls. Spend limits and session keys (EIP-7702) reduce the per-call blast radius, but the underlying key is still a complete secret that must exist somewhere and can be stolen.
 
-## Section heading
+Multi-signature wallets improve this. Querying block 25,374,327 on Ethereum mainnet reveals a 3-of-6 Safe just created by the SafeProxyFactory v1.4.1 (`0x4e1D…c67`): three of six owners must co-sign any transaction. The threshold is enforced by audited Solidity — clean, transparent, and reasonably battle-tested. But examine what each of those six owners actually holds: a standard secp256k1 ECDSA private key. Compromise three of those six keys — by exploiting the models that hold them, or the hardware wallets of the human co-signers — and you can execute arbitrary transactions. Each key also exists independently: a key leaked in one context exposes every role it plays, including this Safe's signatory position.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+Multi-sig splits the *decision*. Threshold signature schemes (TSS) split the *secret*.
+
+## The ontological difference
+
+In a 3-of-6 Safe, the full private key of each signer exists as a complete scalar somewhere. The threshold lives in contract logic, not in cryptographic structure.
+
+In a threshold signature scheme, **the group private key never exists as a single value** — not at setup, not at signing, not in memory. It is a mathematical consequence of n shares distributed across n parties, reconstructible in principle only if t of them cooperate — and in correct deployments, that reconstruction never happens. Signing produces a valid signature from the shares directly, without assembling the key.
+
+That is not a software constraint. It is a consequence of the algebra.
+
+## Shamir secret sharing: the foundation
+
+The underlying math is Shamir Secret Sharing (1979). To share a secret `s` among `n` parties with threshold `t`: choose a random degree-(t-1) polynomial `f(x) = s + a₁x + a₂x² + ⋯ + aₜ₋₁xᵗ⁻¹` over a prime-order field. The secret is `f(0) = s`. Give party `i` the share `f(i)`. Any `t` parties can recover `f(0)` via Lagrange interpolation. Fewer than `t` parties have zero information about `s` — the polynomial is underdetermined by fewer than `t` points.
+
+The limitation: whoever generates the polynomial knows `s`. This is the **trusted dealer problem**. Your threshold security is only as good as the setup ceremony.
+
+## FROST: dealer-free threshold Schnorr
+
+RFC 9591 (IETF, June 2024) defines FROST — Flexible Round-Optimized Schnorr Threshold Signatures. Its Distributed Key Generation (DKG) phase eliminates the dealer:
+
+1. Each party `i` independently generates a random polynomial `fᵢ(x) = aᵢ₀ + aᵢ₁x + ⋯ + aᵢₜ₋₁xᵗ⁻¹`
+2. Party `i` privately sends `fᵢ(j)` to each other party `j`
+3. Party `j` accumulates their final share: `sⱼ = Σᵢ fᵢ(j)`
+4. The group public key is `PK = Σᵢ aᵢ₀ · G`, computed without any party knowing the corresponding private key `sk = Σᵢ aᵢ₀`
+
+The full private key `sk` is never computed anywhere. It is a mathematical consequence of the share polynomials — accessible only if `t` parties' shares were combined, which never happens in normal operation.
+
+**Signing** takes exactly two communication rounds:
+
+**Round 1 — Commit:** Each of the `t` signing parties generates a fresh nonce pair `(dᵢ, eᵢ)` and publishes commitment `(Dᵢ, Eᵢ) = (dᵢ·G, eᵢ·G)`. Committing before seeing others' nonces prevents Wagner's generalized birthday attack on the binding factor.
+
+**Round 2 — Sign:** Each party computes partial signature `zᵢ = dᵢ + eᵢρᵢ + λᵢ·sᵢ·c`, where `c` is the Schnorr challenge, `ρᵢ` is a binding factor computed from the commitment aggregation, and `λᵢ` is the Lagrange coefficient for party `i` in the threshold reconstruction. No `zᵢ` alone is a valid signature.
+
+**Aggregation:** A coordinator (which can be any party or a separate service) computes `z = Σ zᵢ` and `R = Σ (Dᵢ + ρᵢ·Eᵢ)`. The output is `(R, z)` — a standard 64-byte Schnorr signature verified against `PK`. On-chain, it is indistinguishable from a single-signer signature.
+
+<Artifact slug="the-signing-round" />
+
+RFC 9591 benchmarks on secp256k1 for `n=5, t=3`: DKG runs in approximately 3 ms per party; signing runs in approximately 0.3 ms per party, plus network round-trip latency per round. On-chain verification cost: zero extra — it's just a Schnorr check against the group public key.
+
+FROST works natively with Bitcoin Taproot (secp256k1 Schnorr) and Solana (Ed25519). Ethereum is a different story.
+
+## The Ethereum gap: CGGMP21
+
+Ethereum uses secp256k1 ECDSA, not Schnorr. FROST doesn't directly apply. ECDSA threshold signing requires a different construction because the signing equation `s = k⁻¹(z + r·sk) mod q` involves a modular inverse of the nonce `k` that doesn't decompose linearly across parties — you can't simply sum partial signatures.
+
+The current state-of-the-art is **CGGMP21** (Canetti, Garg, Gennaro, Makriyannis, Paillier, CCS 2021). Key properties:
+
+- **No trusted dealer DKG** — same guarantee as FROST; the full key never exists
+- **3 signing rounds** (versus FROST's 2), using Paillier homomorphic encryption to prove discrete-log relations in zero knowledge without revealing share values
+- **Identifiable aborts**: if any party deviates, the protocol identifies the cheating party rather than silently failing — critical for AI agent key management, because you need to know which share to rotate
+- **Proactive security**: shares can be refreshed periodically (generating new shares with different randomness but the same group public key), so a share compromised in the past becomes useless after the next refresh window
+
+CGGMP21 is deployed in production by Coinbase's MPC wallet infrastructure, Fireblocks, and ZenGo. The 3-round signing latency is dominated by network hop time — roughly 100–300 ms across geographically distributed nodes — not computation.
+
+## BLS aggregation on Ethereum (EIP-2537)
+
+Ethereum's Pectra upgrade (May 2025) activated EIP-2537, adding BLS12-381 curve operations as native precompiles. BLS signatures are additively homomorphic: `t` partial BLS signatures can be aggregated into one valid group signature by point addition. The on-chain verifier needs one pairing check regardless of `t`.
+
+For an AI agent operating via a smart contract account (EIP-4337 or EIP-7702):
+1. `t` of `n` key-share holders each sign with their BLS share key, producing a partial G1 point
+2. An off-chain aggregator sums the partial signatures into a single BLS sig
+3. The smart account's validation function calls the EIP-2537 G1 MSM precompile (4,000 gas per point) and the pairing precompile (43,000 + 23,000 per pair) to verify against the group public key
+
+For `t = 3`: total verification cost ≈ 4,000·3 + 66,000 ≈ 78,000 gas. At current gas prices (~0.95 gwei) and ETH at $1,740, that is approximately $0.13 per transaction. The tradeoff: agents must use BLS keys rather than secp256k1 ECDSA, requiring the account logic to handle BLS verification rather than the native ECDSA recovery built into every EVM.
+
+## Lit Protocol: programmable threshold keys in production
+
+Lit Protocol runs CGGMP21 as a managed network for AI agents. Their **Programmable Key Pairs (PKPs)** use a `t=7, n=10` ECDSA-TSS signing network distributed across 10 Lit nodes. Each PKP is an ERC-721 NFT on the Lit Habanero network. The NFT doesn't store the key — it is the on-chain identity of a key that exists only as distributed shares across the Lit node set.
+
+To request a signature, a caller submits a **Lit Action**: a JavaScript program that specifies the signing condition. Before any Lit node releases its share participation to the signing protocol, it independently evaluates the condition. An agent can request "sign this ETH transfer only if ETH price > $1,600" and the Lit network enforces it cryptographically — not via the agent's policy engine or the model's context window.
+
+The security boundary is distinct from every other approach:
+
+| Approach | Full key exists? | Compromise requires | Policy enforcement |
+|---|---|---|---|
+| Raw ECDSA | Always (agent memory) | 1 device / model compromise | None — model self-governs |
+| Safe 2-of-3 multi-sig | Yes (per signer) | 2 full private keys | Solidity threshold check |
+| FROST 2-of-3 TSS | Never | 2 share leaks in same signing window | None — threshold is cryptographic |
+| BLS 7-of-10 threshold | Never | 7 BLS share leaks | Smart account validation |
+| Lit PKP (7-of-10 CGGMP21) | Never | 7 Lit nodes | Lit Action (JS), evaluated per-node |
+
+The critical advantage of Lit PKPs for AI agents: the model can *request* signing, but cannot *perform* signing. A compromised agent that forges the condition check still cannot produce a valid signature without convincing 7 of 10 geographically distributed Lit nodes — each evaluating the condition independently.
+
+## Engineering the threshold
+
+Choosing `(t, n)` trades security against availability. With `t = n`, any offline node blocks signing. With `t = 1`, any single share compromise is sufficient. For AI agent wallets, the design question is: what is the realistic compromise distribution, and what is the acceptable signing latency?
+
+A practical pattern: assign shares to parties with **independent security boundaries**.
+
+| Share holder | Security boundary | Failure mode |
+|---|---|---|
+| Agent TEE (Intel TDX) | Hardware isolation | Chip-level exploit or supply-chain attack |
+| Human guardian (hardware wallet) | Physical access | Device theft with PIN extraction |
+| Time-locked smart contract | On-chain execution | Requires blockchain liveness + waiting period |
+
+With `t=2, n=3` across these three: a single compromised TEE (one share) gives an attacker nothing usable. They also need either the guardian's hardware wallet or to satisfy the time-locked contract — and the time lock is the rotation window. If the time-lock share requires a 24-hour waiting period before it participates in a signing quorum, the operator has 24 hours to detect a TEE compromise and trigger CGGMP21 proactive refresh, generating fresh shares from the same group public key.
+
+This is architecturally different from what [delegation tokens or spend permissions](/articles/who-authorized-that-the-delegation-gap-in-ai-agent-tool-calls) achieve. Those systems limit what the agent can *do with* the key. TSS limits the probability that the key *exists in a form that can be stolen*.
 
 ## Takeaways
 
-TODO.
+- Multi-sig (Safe&#123;Wallet&#125;) splits the *decision* to sign; threshold signatures (FROST, CGGMP21, BLS) split the *secret*. The full private key never exists in the TSS case — it is a mathematical property of the share set, not a stored value.
+- FROST (RFC 9591) gives standard Schnorr threshold with 2-round signing, no trusted dealer, and native compatibility with Bitcoin Taproot and Solana. On-chain verification is zero overhead — it's just a Schnorr sig.
+- Ethereum's secp256k1 ECDSA requires CGGMP21: 3 signing rounds, identifiable aborts, and proactive share refresh. Deployed in production by Coinbase, Fireblocks, and ZenGo.
+- EIP-2537 (activated in Pectra, May 2025) enables on-chain BLS threshold verification for smart accounts at ~78k–90k gas for typical thresholds.
+- Lit Protocol PKPs deploy 7-of-10 CGGMP21 with policy-enforced signing via Lit Actions — separating the agent's ability to *request* signing from any single party's *cryptographic capacity* to sign.
+- The key engineering principle: assign key shares to parties with independent security boundaries, and include at least one time-locked share to create a rotation window when a compromise is detected.

@@ -1,7 +1,7 @@
 {
   "slug": "the-op-queue",
   "title": "The Op Queue",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "The six stages of an ERC-4337 UserOperation — from construction by an AI agent to paymaster settlement — with the actor, failure modes, and gas cost at each step.",
   "pubDate": "2026-06-22T23:31:55.197Z",
   "type": "svg",
   "archetype": "diagram",
@@ -10,7 +10,7 @@
     "smart-contracts",
     "blockchain"
   ],
-  "aspect": "16/9",
+  "aspect": "640/220",
   "featured": false,
-  "controls": []
+  "controls": ["click any stage to inspect the actor, failure modes, and gas cost"]
 }

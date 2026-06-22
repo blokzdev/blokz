@@ -1,22 +1,94 @@
 ---
 slug: the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent
 title: "The Paymaster's Bargain: ERC-4337 Bundler Economics and the Gas-Free AI Agent"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "ERC-4337 lets AI agents transact without holding ETH — but the alt-mempool has its own fee market, bundler economics, and MEV surface every builder must understand."
 pubDate: 2026-06-22T23:31:50.705Z
 author: blokz
 topics: [agents, smart-contracts, blockchain]
-tags: []
-artifacts: []
+tags: [erc-4337, account-abstraction, bundlers, paymasters, gas-abstraction, useroperation]
+artifacts: [the-op-queue]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "ERC-4337: Account Abstraction Using Alt Mempool"
+    url: "https://eips.ethereum.org/EIPS/eip-4337"
+  - label: "EntryPoint v0.7 contract on Etherscan"
+    url: "https://etherscan.io/address/0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  - label: "ERC-7562: Account Abstraction Validation Scope Rules"
+    url: "https://eips.ethereum.org/EIPS/eip-7562"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+An AI agent that needs to swap tokens, pay for API access, or rebalance a position can't pause to ask a human to top up a wallet. It needs to transact autonomously — but Ethereum's default model ties every transaction to an EOA that holds ETH for gas. A depleted balance stops the agent cold. ERC-4337 breaks that coupling by introducing a parallel execution path through smart contract accounts, and understanding its economics is table stakes for anyone building production AI agents on EVM chains.
 
-## Section heading
+## The four-actor stack
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+ERC-4337 never touches the native mempool. Instead of an EOA signing a transaction, a smart contract account signs a `UserOperation` — a struct that describes an intended action. Four actors handle what happens next.
+
+**The account** is a smart contract, not an EOA. It implements `validateUserOp()` (signature check, nonce, access control) and `execute()` (runs the actual calldata). Popular implementations include Safe, Biconomy Nexus, ZeroDev Kernel, and Coinbase Smart Wallet. Each has different session-key and multi-sig support; the choice affects how an AI agent delegates signing authority.
+
+**The bundler** is an off-chain node that watches an alt-mempool for UserOps, simulates them locally to check for reverts, and batches multiple valid ops into a single on-chain transaction. Bundlers pay native gas upfront and are reimbursed by the EntryPoint from the account's or paymaster's deposit. They are the economic backbone of the whole system.
+
+**The EntryPoint** is a singleton contract — `0x0000000071727De22E5E9d8BAf0edAc6f37da032` across all EVM chains since v0.7 (deployed Ethereum mainnet April 2024, Base February 2024). It orchestrates validation and execution for every UserOp, holds the paymaster deposit ledger, and emits `UserOperationEvent` on every op. The v0.6 contract (`0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789`) still holds roughly 319 ETH in pre-funded deposits on mainnet — accounts that haven't migrated their stake yet.
+
+**The paymaster** is an optional contract that either sponsors gas entirely (the account pays zero ETH) or accepts ERC-20 tokens in lieu of ETH. It deposits ETH into the EntryPoint and is debited per op it sponsors. Pimlico's verifying paymaster (`0x777777777777AeC03fd955926DbF81597e66834C`) dominates by volume on both Ethereum and Base.
+
+<Artifact slug="the-op-queue" />
+
+## The alt-mempool fee market
+
+The alt-mempool is separate from Ethereum's native mempool and has its own fee dynamics. A bundler collects UserOps submitted via JSON-RPC (`eth_sendUserOperation`), simulates each one, and holds them until they become profitable to include in a bundle.
+
+The `maxFeePerGas` and `maxPriorityFeePerGas` fields on a UserOp mirror EIP-1559 semantics, but they apply to the UserOp's own fee negotiation, not directly to the containing block. The bundler sets its own on-chain transaction's gas fields to land in the block, then captures the spread between what the ops commit to paying and what the bundler actually spends in base fees.
+
+**Simulation is mandatory, and reverts are costly.** ERC-7562 imposes strict storage and opcode restrictions during simulation: a bundler cannot include an op that reads storage slots likely to change between simulation and execution. This prevents divergence — a bundler whose simulation result doesn't match on-chain behavior pays the gas without reimbursement. The constraints limit certain patterns (reading a Chainlink price oracle in `validateUserOp()` is banned for this reason) but the protection is real.
+
+**Priority ordering.** Bundlers rank UserOps by `maxPriorityFeePerGas` descending, just as block builders sort pending transactions. High-value AI agent ops (a liquidation, an arbitrage trigger) should bid priority fees accordingly or they'll sit behind ordinary ops at low congestion and behind everything at high congestion.
+
+## What a bundler actually earns
+
+A bundler's profit on a batch is approximately:
+
+```
+profit = Σ (actualGasUsed_i × (opMaxFee_i − baseFee)) − fixedOverhead
+```
+
+The `fixedOverhead` is the cost of the `handleOps()` call itself — roughly 30k–50k gas — amortized across all ops in the batch. This incentivizes bundlers to batch aggressively: at 10 ops per batch, the per-op overhead drops from ~50k to ~5k gas-equivalents.
+
+On Ethereum mainnet as of 2026-06-22 (block 25,376,424, ETH at $1,725.62), the average UserOp cost to an account holder was **$0.11**. Simple ETH transfers used 72k–95k gas; DeFi interactions 197k–285k; complex multi-call ops with paymaster interactions 462k–579k. On Base, the same categories run to **$0.006** — roughly 18× cheaper — because Base's lower base fees and calldata compression via L2 batch submission reduce costs across the board.
+
+That cost gap is not cosmetic. At $0.006 per op, a Base-deployed agent can execute 10,000 ops for $60. The same workload on Ethereum mainnet costs $1,100.
+
+## Paymaster strategies for AI agents
+
+A paymaster can take one of three positions, each appropriate for a different agent architecture.
+
+**Verifying paymaster** — the dominant pattern. The paymaster service signs a `paymasterAndData` blob off-chain (ECDSA over the UserOp hash + expiry), and the on-chain contract verifies it before sponsoring. Pimlico, Alchemy Gas Manager, and Biconomy all offer hosted versions. From an agent's perspective, this looks like a gas credit account with the paymaster provider — the agent sends ops, the provider sponsors them, and the operator is billed off-chain.
+
+**ERC-20 paymaster** — the account pays in a stablecoin (USDC, USDT, WETH) and the paymaster handles the ETH leg. The account needs a token balance, but no ETH. This is the correct design for agents funded by a protocol treasury or revenue stream denominated in stablecoins: no cross-asset management, no bridge risk, and operational costs expressed in stable units.
+
+**Session key paymaster** — the agent holds a short-lived ephemeral key that can only authorize ops within a bounded scope (specific target contracts, value cap, time window). The session key is validated in `validateUserOp()` without a round-trip to the main signing key. This is the correct design for high-frequency agents — a position manager checking prices every 30 seconds — where main key exposure would be unacceptable.
+
+For a detailed breakdown of how agents isolate keys and bound blast radius, see [Agent Key Custody and Blast Radius](/articles/agent-key-custody-blast-radius).
+
+## The MEV surface
+
+Every bundled UserOp batch is an ordinary Ethereum transaction, which means it's visible in the mempool and subject to frontrunning and sandwiching like any other. The wrinkle specific to ERC-4337 is that a searcher can inspect a pending bundle's calldata, identify a UserOp that will move a price or trigger a liquidation, and frontrun or backrun the entire bundle.
+
+Bundlers are beginning to route through private relays — Flashbots MEV-Share, SUAVE, and similar systems — to trade mempool visibility for MEV protection, at a latency cost. For AI agents doing time-sensitive operations, op-level MEV strategy is a real engineering concern, not an afterthought.
+
+The ERC-7562 storage restrictions exist partly for this reason: by preventing simulation divergence, they ensure bundlers can actually reason about what will land on-chain. But they do nothing to prevent MEV extraction on the execution side — a swap inside `execute()` is as MEV-exposed as any other.
+
+## Implications for AI agent design
+
+An agent that understands ERC-4337 economics makes different architectural choices:
+
+- **Deploy on Base (or another L2) for routine operations.** The 18× cost difference is not rounding error. At $0.006/op, an agent can execute thousands of ops on a normal operating budget.
+- **Batch with `executeBatch()`.** A multi-call op handles N actions for the price of one bundler overhead charge, not N separate UserOp submissions.
+- **ERC-20 paymaster for treasury-funded agents.** Paying in USDC keeps operational costs stable and removes the need to bridge or swap for ETH.
+- **Session keys for high-frequency strategies.** A main key signing every op is exposure without need. A 24-hour session key with a $10k value cap limits blast radius to a known bound.
+- **Monitor paymaster deposit balance.** A depleted paymaster causes ops to revert at the EntryPoint validation step before any execution gas is consumed. Build a deposit alert around `EntryPoint.getDeposit(paymasterAddress)` — running out is a silent failure mode for an agent that doesn't watch it.
+
+For related context on how AI agents handle on-chain payments and micropayment rails more broadly, see [X402 Agent Payments, Dissected](/articles/x402-agent-payments-dissected).
 
 ## Takeaways
 
-TODO.
+ERC-4337 is not just a UX improvement — it is a new economic layer on top of EVM execution. The alt-mempool has its own fee market, its own MEV surface, and its own set of intermediaries (bundlers, paymaster providers) each extracting value or providing services that must be priced into agent economics. The cost difference between mainnet ($0.11/op) and Base ($0.006/op) alone justifies careful chain selection. Agents that treat `eth_sendUserOperation` as a black box will be surprised at scale; agents that understand the four-actor stack, bundler fee math, and paymaster deposit lifecycle will build systems that are both cheaper to run and more robust under adversarial conditions.

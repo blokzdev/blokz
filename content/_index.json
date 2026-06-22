@@ -27,15 +27,24 @@
       "path": "content/articles/2026/06/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent/index.mdx",
       "url": "/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
       "title": "The Paymaster's Bargain: ERC-4337 Bundler Economics and the Gas-Free AI Agent",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "ERC-4337 lets AI agents transact without holding ETH — but the alt-mempool has its own fee market, bundler economics, and MEV surface every builder must understand.",
       "pubDate": "2026-06-22",
       "topics": [
         "agents",
         "smart-contracts",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "erc-4337",
+        "account-abstraction",
+        "bundlers",
+        "paymasters",
+        "gas-abstraction",
+        "useroperation"
+      ],
+      "artifacts": [
+        "the-op-queue"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2638,7 +2647,7 @@
       "module": "src/islands/artifacts/the-op-queue.ts",
       "url": "/artifacts/the-op-queue",
       "title": "The Op Queue",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "The six stages of an ERC-4337 UserOperation — from construction by an AI agent to paymaster settlement — with the actor, failure modes, and gas cost at each step.",
       "pubDate": "2026-06-22",
       "type": "svg",
       "archetype": "diagram",

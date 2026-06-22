@@ -1,7 +1,7 @@
 {
   "slug": "the-batch-settlement",
   "title": "The Batch Settlement",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Step through a CoW Protocol batch auction: intents arrive, the batch seals, solvers compete, settlement executes on-chain, and surplus flows back to traders.",
   "pubDate": "2026-06-22T17:32:07.877Z",
   "type": "svg",
   "archetype": "diagram",
@@ -11,5 +11,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "dataSource": {
+    "label": "CoW Protocol GPv2Settlement (Blockscout)",
+    "url": "https://eth.blockscout.com/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
+  },
+  "dataAsOf": "2026-06-22",
+  "controls": [
+    "← Prev / Next → — step through the auction lifecycle",
+    "▶ Auto — auto-advance every 2 seconds"
+  ]
 }

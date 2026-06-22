@@ -26,15 +26,25 @@
       "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
       "url": "/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
       "title": "The Twelve-Second Floor: How Ethereum's Slot Clock Shapes AI Agent State Freshness",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Ethereum's 12-second slot clock creates a hard lower bound on AI agent state freshness. Here's what that means for liquidators, arbitrageurs, and yield rebalancers — and how to engineer around it.",
       "pubDate": "2026-06-22",
       "topics": [
         "blockchain",
         "infrastructure",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "ethereum",
+        "slots",
+        "finality",
+        "rpc",
+        "state-freshness",
+        "agents",
+        "beacon-chain"
+      ],
+      "artifacts": [
+        "the-state-window"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2322,7 +2332,7 @@
       "module": "src/islands/artifacts/the-state-window.ts",
       "url": "/artifacts/the-state-window",
       "title": "The State Window",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Epoch ring: 32 slot pillars show the chain's heartbeat. White sphere = chain tip, amber = agent's last read, green = finalized. The arc between them is the state window AI agents must hedge against.",
       "pubDate": "2026-06-22",
       "type": "three",
       "archetype": "scene",

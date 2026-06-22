@@ -1,7 +1,7 @@
 {
   "slug": "the-state-window",
   "title": "The State Window",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Epoch ring: 32 slot pillars show the chain's heartbeat. White sphere = chain tip, amber = agent's last read, green = finalized. The arc between them is the state window AI agents must hedge against.",
   "pubDate": "2026-06-22T09:36:54.014Z",
   "type": "three",
   "archetype": "scene",
@@ -12,5 +12,7 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag to orbit"
+  ]
 }

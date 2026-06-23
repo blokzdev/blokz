@@ -1,0 +1,15 @@
+{
+  "slug": "peer-rank-convergence",
+  "title": "Peer Rank Convergence",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T20:27:29.301Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "blockchain"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

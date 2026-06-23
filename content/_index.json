@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 123,
-    "artifacts": 124
+    "articles": 124,
+    "artifacts": 125
   },
   "topicCounts": {
     "agents": 43,
@@ -10,11 +10,11 @@
     "cryptography": 21,
     "data": 19,
     "defi": 31,
-    "infrastructure": 41,
-    "llm": 21,
+    "infrastructure": 42,
+    "llm": 22,
     "machine-learning": 41,
     "research": 13,
-    "security": 34,
+    "security": 35,
     "smart-contracts": 24,
     "tokenomics": 16,
     "tooling": 1,
@@ -22,6 +22,23 @@
     "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model",
+      "path": "content/articles/2026/06/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model/index.mdx",
+      "url": "/articles/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model",
+      "title": "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "security",
+        "infrastructure",
+        "llm"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
       "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
@@ -3353,6 +3370,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-slashable-inference",
+      "path": "content/artifacts/the-slashable-inference/manifest.json",
+      "module": "src/islands/artifacts/the-slashable-inference.ts",
+      "url": "/artifacts/the-slashable-inference",
+      "title": "The Slashable Inference",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "security",
+        "infrastructure",
+        "llm"
+      ],
+      "draft": false
+    },
     {
       "slug": "folding-frontier",
       "path": "content/artifacts/folding-frontier/manifest.json",

@@ -1,0 +1,16 @@
+{
+  "slug": "the-slashable-inference",
+  "title": "The Slashable Inference",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T19:26:08.922Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "security",
+    "infrastructure",
+    "llm"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

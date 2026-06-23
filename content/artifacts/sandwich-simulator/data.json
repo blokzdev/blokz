@@ -1,0 +1,31 @@
+{
+  "pool": {
+    "dex": "Aerodrome (volatile vAMM)",
+    "chain": "Base",
+    "pair": "WETH / USDC",
+    "address": "0xcDAC0d6c6C59727a65F871236188350531885C43",
+    "factory": "0x420DD381b31aEf6683db6B902084cB0FFECe40Da",
+    "token0": { "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006", "decimals": 18 },
+    "token1": { "symbol": "USDC", "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "decimals": 6 },
+    "reserveWeth": 2221.3694296503765,
+    "reserveUsdc": 3757894.744667,
+    "feeBps": 30,
+    "stable": false,
+    "impliedEthPrice": 1691.7
+  },
+  "asOf": "2026-06-19",
+  "context": {
+    "sandwichAttacks": 95000,
+    "sandwichUsd": 60000000,
+    "sandwichPeriod": "Nov 2024 – Oct 2025",
+    "monthlyPeakUsd": 10000000,
+    "monthlyRecentUsd": 2500000,
+    "topSearcherShare": 0.7,
+    "avgProfitUsd": 3,
+    "stablecoinShare": 0.38,
+    "privateRpcShare": 0.8,
+    "inclusionDelayBlocks": [1.34, 1.86],
+    "shutterInclusionSeconds": 180
+  },
+  "note": "Pool reserves, fee and token metadata read live from the Aerodrome volatile WETH/USDC pool (0xcDAC…5C43) and its PoolFactory.getFee on Base via Blockscout eth_call. Constant-product invariant x·y=k with a 0.30% input fee (gamma=0.997). Sandwich aggregates from EigenPhi data (Cointelegraph Research); private-RPC share and inclusion delays from the Private MEV-Protection RPC benchmark (arXiv:2505.19708)."
+}

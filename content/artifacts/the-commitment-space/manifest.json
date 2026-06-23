@@ -1,0 +1,20 @@
+{
+  "slug": "the-commitment-space",
+  "title": "The Commitment Space",
+  "description": "Six commitment schemes plotted on proof size vs. trust model: KZG (EIP-4844 blobs), IPA/Pedersen (Verkle state), Groth16, PLONK, FRI-STARK, and Merkle Patricia Trie. Click any dot to inspect.",
+  "pubDate": "2026-06-22T20:31:37.279Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": ["click a scheme dot to inspect", "two bands: transparent vs. trusted setup"],
+  "dataSource": {
+    "label": "EIP-4844, EIP-6800, Ethereum KZG ceremony stats, gnark/SP1 benchmarks",
+    "url": "https://eips.ethereum.org/EIPS/eip-4844"
+  },
+  "dataAsOf": "2026-06-22"
+}

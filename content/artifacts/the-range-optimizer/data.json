@@ -1,0 +1,35 @@
+{
+  "ethPrice": 1654.20,
+  "ethPricePair": "ETH/USDT",
+  "annualVol": 0.58,
+  "dailyLogVol": 0.0365,
+  "gas": {
+    "gweiBaseFee": 20,
+    "gasUnits": 300000,
+    "usdPerRebalance": 9.92,
+    "note": "remove + add liquidity + restore 50/50 swap at 20 gwei, $1,654/ETH, 300k gas units"
+  },
+  "pools": [
+    {
+      "feeTierBps": 5,
+      "label": "0.05% (ETH/USDC)",
+      "volTVLRatioPerDay": 0.15
+    },
+    {
+      "feeTierBps": 30,
+      "label": "0.30% (ETH/USDC)",
+      "volTVLRatioPerDay": 0.06
+    },
+    {
+      "feeTierBps": 100,
+      "label": "1.00% (exotic pairs)",
+      "volTVLRatioPerDay": 0.03
+    }
+  ],
+  "note": "ETH/USDC 0.05% pool, Uniswap v3 Ethereum mainnet. ETH price $1,654 (Crypto.com, Jun 23 2026). Annualized vol 58% (30d realized). Gas ≈$9.92/rebalance at 20 gwei, $1,654/ETH, 300k gas units.",
+  "dataSource": {
+    "label": "Crypto.com Exchange — ETH/USDT spot, June 2026",
+    "url": "https://crypto.com/exchange/trade/ETH_USDT"
+  },
+  "dataAsOf": "2026-06-23"
+}

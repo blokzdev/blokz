@@ -2,7 +2,7 @@
   "slug": "spoofers-discount",
   "title": "The Spoofer's Discount",
   "description": "Drive the Proof-of-Learning trap: a logged training trajectory, audited top-Q by re-execution against a tolerance δ. Forge the run and it still passes — the forger tuned every interval under δ for 3% of training cost. Tighten δ to catch it and the honest node fails first.",
-  "pubDate": "2026-06-14",
+  "pubDate": "2026-06-14T12:08:00Z",
   "type": "dom",
   "archetype": "simulation",
   "topics": ["machine-learning", "security"],

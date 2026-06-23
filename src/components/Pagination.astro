@@ -3,9 +3,13 @@ import type { Page } from 'astro';
 
 interface Props {
   page: Page<unknown>;
+  /** Prev/next labels. Defaults read well for the newest-first date archive;
+      non-date orders pass neutral "← Prev" / "Next →". */
+  prevLabel?: string;
+  nextLabel?: string;
 }
 
-const { page } = Astro.props;
+const { page, prevLabel = '← Newer', nextLabel = 'Older →' } = Astro.props;
 ---
 
 {
@@ -16,10 +20,10 @@ const { page } = Astro.props;
           href={page.url.prev}
           class="glass rounded-lg px-4 py-2 text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
         >
-          ← Newer
+          {prevLabel}
         </a>
       ) : (
-        <span class="rounded-lg border border-line px-4 py-2 text-faint/50">← Newer</span>
+        <span class="rounded-lg border border-line px-4 py-2 text-faint/50">{prevLabel}</span>
       )}
       <span class="font-mono text-xs text-faint tabular-nums">
         {page.currentPage} / {page.lastPage}
@@ -29,10 +33,10 @@ const { page } = Astro.props;
           href={page.url.next}
           class="glass rounded-lg px-4 py-2 text-muted transition-all hover:border-accent/40 hover:text-white hover:shadow-glow-sm"
         >
-          Older →
+          {nextLabel}
         </a>
       ) : (
-        <span class="rounded-lg border border-line px-4 py-2 text-faint/50">Older →</span>
+        <span class="rounded-lg border border-line px-4 py-2 text-faint/50">{nextLabel}</span>
       )}
     </nav>
   )

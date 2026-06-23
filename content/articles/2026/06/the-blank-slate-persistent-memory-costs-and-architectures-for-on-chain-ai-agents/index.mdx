@@ -1,0 +1,99 @@
+---
+slug: the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents
+title: "The Blank Slate: Persistent Memory Costs and Architectures for On-Chain AI Agents"
+description: "On-chain AI agents reset state on every call. Four persistent-memory architectures span a 20× monthly cost gap — SSTORE at $78/month versus IPFS+CID at $3.92. Real June 2026 gas numbers, four trust models, one crossover you won't see coming."
+pubDate: 2026-06-22T10:30:24.533Z
+author: blokz
+topics: [agents, data, llm]
+tags: [agent-memory, sstore, episodic-memory, working-memory, persistent-state, evm, agent-architecture]
+artifacts: [agent-memory-cost-map]
+difficulty: intermediate
+sources:
+  - label: "Anatomy of Agentic Memory (arXiv:2602.19320)"
+    url: "https://arxiv.org/abs/2602.19320"
+  - label: "MemForest: Hierarchical Temporal Indexing for LLM Agent Memory (arXiv:2605.23986)"
+    url: "https://arxiv.org/abs/2605.23986"
+  - label: "Memory for Autonomous LLM Agents: A Survey (arXiv:2603.07670)"
+    url: "https://arxiv.org/abs/2603.07670"
+  - label: "EIP-2929: Gas cost increases for state access opcodes"
+    url: "https://eips.ethereum.org/EIPS/eip-2929"
+  - label: "Ethereum block 25372536 — Blockscout"
+    url: "https://eth.blockscout.com/block/25372536"
+---
+
+Every on-chain AI agent starts life as a blank slate. The EVM erases stack and memory between calls. By the time your agent returns from a tool invocation — a price query, an LP rebalance, a risk check — the entire reasoning context it built is gone. If you want the agent to remember anything across invocations, you have to write it somewhere yourself.
+
+That somewhere choice is the most consequential architectural decision in on-chain agent design. The cost gap between approaches is nearly 20×. The privacy implications are existential for strategies that depend on confidentiality. And the correct answer shifts depending on how many memory entries your agent writes per call.
+
+<Artifact slug="agent-memory-cost-map" />
+
+## What gets erased, and what doesn't
+
+The EVM has three memory regions. The **stack** — up to 1,024 slots of 32 bytes each — is the working scratchpad, erased when the call frame returns. **Memory** (confusingly named) is a flat byte array that lives for the duration of a single call, also erased on return. **Storage**, mapped by the `SSTORE` opcode, is the only region that persists across calls. It lives in the account's storage trie and survives indefinitely until explicitly overwritten.
+
+"Anatomy of Agentic Memory" (arXiv:2602.19320, February 2026) identifies four functional memory types shared across all production LLM agents: **procedural** (how to execute a task), **semantic** (general world knowledge), **episodic** (past interaction records), and **working** (in-context scratch). On-chain, procedural and semantic memory typically live in contract bytecode or calldata — free to read, but write-once at deploy time. Episodic and working memory are the hard part: they change on every invocation and need to survive it.
+
+## The four architectures
+
+There is no universal solution. Each architecture optimizes for a different combination of cost, trust, and access pattern.
+
+**SSTORE (on-chain storage)** writes each memory entry as a 32-byte storage slot. Post-EIP-2929, accessing a slot for the first time in a transaction costs a 2,100-gas cold SLOAD surcharge, and writing costs 2,900 gas for existing slots — rounding to roughly 5,000 gas per entry at steady state. Memory is readable by the EVM during execution, making it useful for agents that consult memory as part of on-chain decision logic. But all content is fully public. Any searcher can watch the storage trie diff and extract whatever reasoning state the agent wrote.
+
+**Event logs** use the `LOG` opcode family. A `LOG1` event with one indexed topic and 32 bytes of non-indexed data costs 375 (base) + 375 (topic) + 8×32 (data) = 1,006 gas — about one-fifth the cost of SSTORE per entry. The catch: logs are write-only from the EVM perspective. There is no opcode to read a past log from within a transaction. Reading requires an off-chain indexer, which means logs are useful for episodic audit trails but useless for agents that need to consult memory during execution. Content is public.
+
+**IPFS + on-chain CID** breaks the memory off-chain entirely. The agent writes its memory blob to IPFS and stores only the content-addressed identifier in a single storage slot — one SSTORE regardless of how large the blob grows. Gas cost is flat at 5,000 per call rather than scaling linearly with entry count. For small entry counts the cost is higher than event logs, but above roughly five entries per call the math inverts and IPFS becomes cheaper. Memory content is retrieval-gated (the CID doesn't reveal content), though IPFS is a public DHT and pinned blobs are discoverable.
+
+**TEE + attestation hash** moves memory into a hardware enclave (Intel TDX, AMD SEV, or equivalent) where it is encrypted at rest and only accessible to the verified program. The chain sees only an attestation hash — one SSTORE per call — plus a ~$10/month enclave hosting cost. Memory content is private by construction: not just retrieval-gated but cryptographically inaccessible without the enclave key. "MemForest" (arXiv:2605.23986, May 2026) demonstrates that hierarchical temporal indexing inside a TEE, using Ethereum block height as the time axis, achieves 6× throughput improvement over flat episodic stores and 79.8% accuracy on multi-step retrieval benchmarks. The block-indexed tree reduces agent recall to O(log n) instead of a full linear scan.
+
+## Gas math at real June 2026 prices
+
+At Ethereum block 25,372,536 (base fee 0.123 gwei, priority fee 0.5 gwei, total 0.623 gwei; ETH at $1,746.32), here is what each architecture costs at 20 entries per call and 24 calls/day:
+
+| Architecture | Gas / call | $/month |
+|---|---|---|
+| SSTORE | 100,000 | $78.35 |
+| Event log | 20,120 | $15.76 |
+| IPFS + CID | 5,000 | $3.92 |
+| TEE | 5,000 + hosting | $13.92 |
+
+The SSTORE figure surprises most engineers. Twenty memory entries per call at today's gas price burns $78 monthly at a modest 24-calls-per-day rate. Scale to a high-frequency agent — 96 calls/day is realistic for an MEV bot — and SSTORE reaches $313/month. Event logs look attractive until you remember you cannot read them during execution.
+
+The crossover point between IPFS+CID and event logs sits at exactly five entries per call. Below that threshold, event logs' linear scaling wins. Above it, IPFS's flat 5,000-gas cost per call outperforms regardless of how large the memory blob grows. This is the counterintuitive result: the more information-dense your agent's memory, the cheaper IPFS becomes relative to any on-chain approach.
+
+## The strategy leak nobody talks about
+
+The publicity dimension gets less attention than cost, but for most financial agents it is more important. An agent's procedural memory — the rules, thresholds, and heuristics it uses to decide — is strategy. If that strategy lives in SSTORE or event logs, it is trivially readable by any MEV searcher who indexes storage diffs and log topics.
+
+This is not hypothetical. Storage trie analysis is routine competitive tooling. An agent whose memory is on-chain is effectively broadcasting its next move to every block builder on the network. IPFS provides informal obfuscation (the CID does not reveal content, but pinned blobs are discoverable on the DHT), while TEE provides cryptographic confidentiality: the strategy never leaves the enclave unencrypted, period.
+
+For treasury management agents, LP rebalancers, or any system with an exploitable edge, TEE memory is not a luxury. It is the only architecture where the agent's reasoning can stay private even under adversarial conditions.
+
+## Matching architecture to workload
+
+The decision collapses to three questions.
+
+**Does the agent need to read memory during a call?** If yes, SSTORE is the only option. Budget for it, and be conscious of what you write — every storage diff is public.
+
+**Is strategy confidentiality required?** If yes, IPFS+CID or TEE. If IPFS cold-start retrieval latency is a concern (a fresh IPFS get can take hundreds of milliseconds), TEE's in-enclave store is faster and offers stronger privacy guarantees.
+
+**How many entries per call?** Below five, event logs outperform IPFS on gas. Above five, IPFS dominates. TEE's flat profile beats both above roughly fifteen entries at today's prices, even accounting for the $10/month hosting overhead.
+
+The survey "Memory for Autonomous LLM Agents" (arXiv:2603.07670) found that most deployed systems default to SSTORE — not because it is optimal but because it is the path of least resistance when building EVM contracts. The median agent in their corpus wrote eleven entries per call, placing it squarely in IPFS-optimal territory while paying SSTORE prices.
+
+## MemForest and block-indexed temporal memory
+
+The most promising near-term development is MemForest's hierarchical temporal index. The core insight is that Ethereum block height is a monotonically increasing, globally agreed-upon clock. An agent's memory organized as a binary tree keyed by write-time block height supports O(log n) retrieval of "what did I know at block B?" without a full scan.
+
+In TEE deployments, the MemForest tree lives in the enclave's protected memory. The agent reconstructs its full episodic context for any given block range in a single O(log n) traversal. The attestation hash stored on-chain commits to the Merkle root of the tree, making the memory tamper-evident even though its content is opaque. This gives all three desiderata simultaneously: cheap on-chain footprint (one SSTORE per call), private content (encrypted in hardware), and verifiable integrity (root hash on-chain).
+
+The 6× throughput gain reported by MemForest comes primarily from eliminating the linear scan over episodic logs that flat stores require. At 10,000 stored memories — a realistic ceiling for a long-lived agent — a binary tree traversal is 13 steps versus 10,000 for a full scan. The accuracy improvement (from 71.2% to 79.8% on their benchmark) comes from better temporal locality: the tree structure naturally clusters memories from related block windows, reducing noise from temporally distant entries that confuse a flat retriever.
+
+## Takeaways
+
+Four architectures, four trust models, nearly a 20× monthly cost spread at today's gas prices. The right choice depends on whether your agent reads memory during execution, whether strategy confidentiality matters, and how many entries it writes per call.
+
+For most high-value financial agents, TEE memory with block-indexed temporal structures is the correct long-term direction: cryptographic privacy, flat gas cost, and a retrieval model that scales logarithmically as agent state grows. The $10/month hosting cost is a rounding error next to the strategy value it protects.
+
+For agents that genuinely need in-call memory access, SSTORE is unavoidable but expensive. Budget accordingly and treat every SSTORE write as a public broadcast.
+
+Drag the sliders in the cost map above to see how the crossover shifts at different call frequencies and gas prices. The IPFS/log crossover at five entries is stable across most reasonable parameter ranges; the SSTORE curve climbs steeply.

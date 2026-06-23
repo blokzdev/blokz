@@ -1,0 +1,61 @@
+{
+  "_comment": "Snapshot of Virtuals' Agent Commerce Protocol (ACP) escrow on Base, read via Blockscout on 2026-06-19. Contract is the ERC-1967 proxy at 0x238E541BfefD82238730D00a2208E5497F1832E0 (implementation AgenticCommerceV3 at 0x8e86FbEf4a4c927561cb6447cEd77ffFbf3B77BC), live since 2026-04-08. jobsTotal is the latest JobCreated jobId (62882). The sample is the 30 consecutive JobCreated events #62848-#62882, classified by the event's evaluator field: 29 set evaluator == client (self-evaluation), 1 left it zero (which the contract resolves to the client), 0 named an independent third party.",
+  "contract": "0x238E541BfefD82238730D00a2208E5497F1832E0",
+  "chain": "Base",
+  "since": "2026-04-08",
+  "asOf": "2026-06-19",
+  "jobsTotal": 62882,
+  "jobsPerDay": 870,
+  "escrowToken": "USDC",
+  "sample": {
+    "label": "jobs #62848-#62882",
+    "size": 30,
+    "self": 29,
+    "none": 1,
+    "independent": 0
+  },
+  "modes": [
+    {
+      "id": "self",
+      "label": "Client self-evaluates",
+      "chair": "THE CLIENT",
+      "chairSub": "buyer is its own judge",
+      "share": "29 / 30 sampled jobs",
+      "decides": "the buyer who paid",
+      "exposed": "the provider",
+      "trust": "the buyer's honesty",
+      "happy": "Buyer approves the work → escrow releases to the provider.",
+      "attackLabel": "buyer griefs",
+      "attack": "The buyer rejects good work, keeps the off-chain deliverable, and reclaims the escrow.",
+      "attackCaught": false
+    },
+    {
+      "id": "independent",
+      "label": "Independent evaluator",
+      "chair": "A NEUTRAL AGENT",
+      "chairSub": "third-party evaluator",
+      "share": "0 / 30 sampled jobs",
+      "decides": "a third agent",
+      "exposed": "nobody — if the evaluator is honest",
+      "trust": "the evaluator (who watches them?)",
+      "happy": "Evaluator checks the deliverable against the agreement → escrow releases to the provider.",
+      "attackLabel": "provider ships junk",
+      "attack": "The evaluator catches the bad delivery and refunds the buyer — but a lazy or colluding evaluator just relocates the trust.",
+      "attackCaught": true
+    },
+    {
+      "id": "none",
+      "label": "No evaluator (auto-release)",
+      "chair": "AN EMPTY CHAIR",
+      "chairSub": "auto-release on submit",
+      "share": "1 / 30 sampled jobs",
+      "decides": "a timer",
+      "exposed": "the client",
+      "trust": "the provider's honesty",
+      "happy": "Provider submits, the timer elapses → escrow releases to the provider.",
+      "attackLabel": "provider ships junk",
+      "attack": "The provider submits a worthless deliverable hash; the escrow releases anyway when nobody is in the chair to object.",
+      "attackCaught": false
+    }
+  ]
+}

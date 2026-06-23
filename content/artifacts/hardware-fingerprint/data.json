@@ -1,0 +1,21 @@
+{
+  "note": "Peak dense FP16 Tensor-Core throughput (FP16 accumulate, no 2:4 sparsity), on-board memory capacity, and memory bandwidth from NVIDIA product datasheets / TechPowerUp GPU database. SXM form factors where both SXM and PCIe exist. These are the reference fingerprints a verifier benchmarks a remote device against.",
+  "axes": {
+    "fp16": { "label": "FP16 dense Tensor TFLOPS", "max": 1050 },
+    "bandwidth": { "label": "memory bandwidth (GB/s)", "max": 5000 },
+    "vram": { "label": "VRAM (GB)", "min": 24, "max": 141 }
+  },
+  "tolerance": 0.08,
+  "defaults": { "claimed": "h100-sxm", "actual": "a100-80-sxm" },
+  "gpus": [
+    { "id": "h200-sxm",   "label": "H200 SXM",      "arch": "Hopper",  "fp16": 989.5, "vram": 141, "bandwidth": 4800 },
+    { "id": "h100-sxm",   "label": "H100 SXM",      "arch": "Hopper",  "fp16": 989.5, "vram": 80,  "bandwidth": 3350 },
+    { "id": "a100-80-sxm","label": "A100 80GB SXM", "arch": "Ampere",  "fp16": 312,   "vram": 80,  "bandwidth": 2039 },
+    { "id": "a100-40-sxm","label": "A100 40GB SXM", "arch": "Ampere",  "fp16": 312,   "vram": 40,  "bandwidth": 1555 },
+    { "id": "l40s",       "label": "L40S",          "arch": "Ada",     "fp16": 362,   "vram": 48,  "bandwidth": 864 },
+    { "id": "rtx-4090",   "label": "RTX 4090",      "arch": "Ada",     "fp16": 165.2, "vram": 24,  "bandwidth": 1008 },
+    { "id": "rtx-a6000",  "label": "RTX A6000",     "arch": "Ampere",  "fp16": 154.8, "vram": 48,  "bandwidth": 768 },
+    { "id": "v100-32",    "label": "V100 32GB SXM2","arch": "Volta",   "fp16": 125,   "vram": 32,  "bandwidth": 900 },
+    { "id": "l4",         "label": "L4",            "arch": "Ada",     "fp16": 121,   "vram": 24,  "bandwidth": 300 }
+  ]
+}

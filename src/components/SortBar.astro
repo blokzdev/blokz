@@ -1,0 +1,36 @@
+---
+/**
+ * A small, link-based sort control: a mono label + pill links, one per order.
+ * Pure links (full-page nav) so it works with no JS and respects the site's
+ * no-client-router rule. The active order is highlighted.
+ */
+interface Props {
+  options: ReadonlyArray<{ key: string; label: string; href: string }>;
+  current: string;
+  label?: string;
+}
+
+const { options, current, label = 'Sort' } = Astro.props;
+---
+
+<div class="flex flex-wrap items-center gap-2.5">
+  <span class="font-mono text-[11px] tracking-[0.2em] text-faint uppercase">{label}</span>
+  <div class="flex flex-wrap gap-1.5">
+    {
+      options.map(({ key, label: optLabel, href }) => (
+        <a
+          href={href}
+          aria-current={key === current ? 'page' : undefined}
+          class:list={[
+            'rounded-lg px-3.5 py-2 font-mono text-xs transition-all',
+            key === current
+              ? 'glass border-accent/50 text-white shadow-glow-sm'
+              : 'glass text-muted hover:border-accent/40 hover:text-white hover:shadow-glow-sm',
+          ]}
+        >
+          {optLabel}
+        </a>
+      ))
+    }
+  </div>
+</div>

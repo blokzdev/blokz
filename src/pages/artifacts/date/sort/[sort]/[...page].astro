@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import DateArchive from '@/components/DateArchive.astro';
+import {
+  ARTIFACT_SORTS,
+  ARTIFACT_SORT_VARIANTS,
+  dateChip,
+  dateScopedSorts,
+  getArtifacts,
+  groupByDate,
+  sortArtifacts,
+  type ArtifactSortKey,
+} from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const artifacts = await getArtifacts();
+  return ARTIFACT_SORT_VARIANTS.flatMap((key) =>
+    paginate(sortArtifacts(artifacts, key), {
+      params: { sort: key },
+      props: { sortKey: key },
+      pageSize: 12,
+    }),
+  );
+}) satisfies GetStaticPaths;
+
+const { page, sortKey } = Astro.props as typeof Astro.props & { sortKey: ArtifactSortKey };
+const artifacts = await getArtifacts();
+const children = groupByDate(artifacts).years.map((y) =>
+  dateChip('/artifacts', y.year, undefined, undefined, y.count),
+);
+const sortOptions = dateScopedSorts('/artifacts', ARTIFACT_SORTS);
+---
+
+<BaseLayout
+  title="Artifacts — By date, sorted"
+  description="Browse the Blokz artifacts lab by date — drill down from year to month to day."
+  noindex
+>
+  <DateArchive {page} base="/artifacts" kind="artifact" {sortKey} {children} {sortOptions} />
+</BaseLayout>

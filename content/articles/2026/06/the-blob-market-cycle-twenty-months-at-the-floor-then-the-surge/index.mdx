@@ -1,0 +1,138 @@
+---
+slug: the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge
+title: "The Blob Market Cycle: Twenty Months at the Floor, Then the Surge"
+description: "Ethereum's blob fee market held at 1 wei for twenty months after Dencun, then broke in December 2025. Here's what the data shows, what drove the cycle, and what it means for L2s and AI agents that depend on cheap calldata."
+pubDate: 2026-06-23T04:32:35.313Z
+author: blokz
+topics: [blockchain, infrastructure, data]
+tags: [eip-4844, eip-7691, blobs, l2, fee-market]
+artifacts: [the-blob-fee-cycle]
+difficulty: intermediate
+sources:
+  - label: "EIP-4844: Shard Blob Transactions"
+    url: https://eips.ethereum.org/EIPS/eip-4844
+  - label: "EIP-7691: Blob throughput increase (Pectra)"
+    url: https://eips.ethereum.org/EIPS/eip-7691
+  - label: "EIP-1559: Fee market change"
+    url: https://eips.ethereum.org/EIPS/eip-1559
+  - label: "Blockscout Ethereum Mainnet Explorer"
+    url: https://eth.blockscout.com
+---
+
+For twenty months after Ethereum's Dencun upgrade, the blob base fee sat at exactly 1 wei — an effective zero. L2 rollups that had been paying hundreds of dollars per day in calldata costs suddenly paid fractions of a cent. Then, in December 2025, the floor broke. By June 2026 the fee had reached 5.69 gwei — a 5.7-billion-fold increase from the floor.
+
+That's not a rounding error. It's the EIP-1559 fee mechanism working exactly as designed, operating over a much longer time scale than anyone expected.
+
+<Artifact slug="the-blob-fee-cycle" />
+
+## How the Blob Fee Market Works
+
+EIP-4844 introduced a dedicated fee market for blob data, structurally identical to the EIP-1559 base fee mechanism but operating on a separate resource. The key variable is `excess_blob_gas`: a running accumulation of how far above (or below) the blob target Ethereum has been over its history.
+
+The fee formula is:
+
+```
+blob_base_fee = MIN_BLOB_BASE_FEE × e^(excess_blob_gas / BLOB_BASE_FEE_UPDATE_FRACTION)
+```
+
+Where `MIN_BLOB_BASE_FEE` = 1 wei and (at launch) `BLOB_BASE_FEE_UPDATE_FRACTION` = 3,338,477.
+
+After each block, `excess_blob_gas` adjusts by the difference between actual blobs and the target:
+
+```
+excess_blob_gas += (actual_blob_gas_used − TARGET_BLOB_GAS_PER_BLOCK)
+excess_blob_gas  = max(0, excess_blob_gas)
+```
+
+The target is expressed in blob gas units: each blob consumes 131,072 blob gas, and the original target was 3 blobs per block (393,216 blob gas). This means a block with exactly 3 blobs leaves `excess_blob_gas` unchanged. More than 3 raises it; fewer than 3 drains it — but it can never go below zero.
+
+The `e^x` formula creates an exponential response curve: a small sustained excess creates enormous fee pressure once `excess_blob_gas / UPDATE_FRACTION` grows beyond ~1. At the floor, any slippage below target immediately zeroes out the excess. This makes the floor extraordinarily "sticky" — the market must *consistently* exceed target before fees move at all.
+
+## Three Eras
+
+### Era 1: The Long Floor (March 2024 – November 2025)
+
+Dencun launched at block 19,426,587 on March 13, 2024, with blob support immediately active. The first two days saw zero blob transactions; L2s needed time to upgrade their sequencers. By May 2024, blobs were in use but average demand remained below the 3-blob target, keeping `excess_blob_gas` at zero and fees at 1 wei.
+
+Pectra (EIP-7691, block 22,431,084, May 7, 2025) doubled the target to 6 blobs and raised the max to 9. By buying twice as much headroom, it reset `excess_blob_gas` to near-zero and extended the floor another eight months. At `Pectra +2m` (June 2025), the fee was still 1 wei despite 7 blobs per block in the sample — demand had grown into the new target almost immediately, but hadn't yet exceeded it consistently enough to accumulate surplus.
+
+Through November 2025, six months post-Pectra, demand was running at almost exactly 6 blobs per block on average. The excess was negligible. Fees: 1 wei.
+
+**Cost table — Era 1 (fee at floor):**
+
+| Metric | Value |
+|--------|-------|
+| Blob base fee | 1 wei |
+| Cost per blob (131,072 bytes) | ~$0.000000000229 |
+| Est. per 1,000 L2 txns | < $0.000001 |
+
+These were conditions of effectively free L2 data. Arbitrum, Optimism, Base, and others had near-zero posting costs. AI agent systems that produce on-chain records (attestations, inference logs, audit trails) could treat blob storage as free.
+
+### Era 2: The Inflection (December 2025)
+
+Something changed in Q4 2025. By the December 2025 sample block (24,136,052), `excess_blob_gas` had accumulated to 119,635,596. Plugging that into the fee formula:
+
+```
+blob_base_fee = 1 × e^(119,635,596 / UPDATE_FRACTION)
+```
+
+At that level of excess and the original update fraction of 3,338,477, the expected fee would be astronomical. But the empirical fee was 1,679,743 wei (≈ 1.68 gwei). Working backwards from `e^(x) = 1,679,743`, we get `x ≈ 14.33`, and `excess / x ≈ 8.35M` — significantly larger than the Dencun-era constant of 3.34M.
+
+This fingerprints a hard fork between November and December 2025, one that adjusted `BLOB_BASE_FEE_UPDATE_FRACTION` upward — consistent with the Ethereum gas limit expanding from ~36M to ~60M observed in the same period. A larger update fraction means fees respond more slowly to excess, which is the right design choice when you're also raising the blob limit.
+
+Whatever the exact fork, the outcome is clear: demand exceeded the target for long enough in Q4 2025 that excess accumulated past the point where fees stayed at the floor.
+
+### Era 3: Elevated Market (January 2026 – present)
+
+Once `excess_blob_gas` is large and positive, draining it requires sustained below-target demand — the mirror image of accumulation. Fees don't snap back when a block has few blobs; they only decay if demand persistently falls below target for many blocks.
+
+By February 2026, the fee had reached 1.95 gwei with `excess_blob_gas` of 169,214,812. By June 23, 2026 — today — it's at 5.69 gwei with `excess_blob_gas` of 181,740,093. The market appears to be approaching an equilibrium where elevated fees are discouraging marginal demand, but hasn't found a clearing price yet.
+
+**Cost table — Era 3 (current):**
+
+| Metric | Value |
+|--------|-------|
+| Blob base fee | 5.69 gwei |
+| Cost per blob (131,072 bytes, ETH=$1,728) | ~$1.29 |
+| Est. per 1,000 L2 txns | ~$0.0026 |
+| Daily cost for 250 blobs/day | ~$322 |
+
+This is no longer "free." It's cheap by historical calldata standards — before EIP-4844, 1,000 L2 txns could cost $5–$50 depending on Ethereum congestion — but it's material for applications that had budgeted for the floor.
+
+## Why Demand Exceeded Target
+
+The most plausible driver of Q4 2025 excess accumulation is L2 sequencer competition. As more rollups launched and L2 activity grew through 2025, blob slot demand grew with it. Individual L2s had little incentive to self-limit: a blob either lands in a block or it doesn't, and L2 throughput depends on getting data posted.
+
+The game theory is the same as any congestion pricing regime: individual actors optimize locally, collective excess accumulates, and the fee mechanism eventually prices out the marginal participant. In this case, "eventually" meant eight months of headroom post-Pectra followed by a rapid escalation.
+
+## Implications for AI Agents
+
+AI agent systems that interact with Ethereum have a specific profile: they tend to produce *many* small on-chain records (attestations, intermediate state, audit trails, inference receipts) rather than a few large transactions. At the fee floor, this profile had effectively zero cost. At 5.69 gwei, it doesn't.
+
+Some rough math for a hypothetical AI-agent system posting 250 blobs per day:
+
+- **Floor era**: $0.0001/day — essentially budgeted as zero
+- **Current**: ~$322/day — a real line item
+
+For agent systems that are high-frequency and margin-sensitive, this is a meaningful change. The natural response is to batch more aggressively: instead of one blob per agent action, consolidate 100 actions into a single blob. At 131,072 bytes per blob, there's room for substantial compression before a blob runs out of space.
+
+A secondary implication is L2 selection. Not all L2s pay Ethereum blob fees directly; some use alternative DA layers (Celestia, EigenDA) whose fee markets are independent of Ethereum's. An agent system with flexibility in its L2 choice has a genuine cost optimization lever here.
+
+## The Pattern
+
+What makes this a *cycle* rather than a one-time transition is the structure of the fee mechanism:
+
+1. **Floor phase**: Demand ≤ target → `excess` drains to zero → fees stay at 1 wei. This can persist for months or years. It rewards early adopters and under-demands the capacity upgrade.
+2. **Inflection**: Demand crosses target consistently → excess accumulates → fees rise exponentially once `excess/UPDATE_FRACTION` becomes material (~10+).
+3. **Elevated phase**: High fees → some demand defers or migrates → excess stabilizes → fees find a new equilibrium, or demand crashes and excess drains back toward zero.
+4. **Reset**: If demand falls below target long enough, excess reaches zero, fees return to floor, and phase 1 repeats — potentially triggered by a capacity upgrade (like Pectra) buying another headroom window.
+
+Ethereum's blob capacity will likely expand again. Each expansion buys another floor phase. The cycle doesn't terminate; it just resets with larger numbers. For teams building L2-dependent infrastructure, the practical takeaway is to design for both regimes: assume floor conditions will eventually end, and have a batching or DA-switching strategy ready for when they do.
+
+## Takeaways
+
+- The blob fee floor lasted 20 months because demand chronically ran *below* target — a function of the market being new, not of the mechanism failing.
+- Pectra's capacity doubling bought 8 more months at zero fees by resetting the excess, following the same pattern as the original Dencun launch.
+- The December 2025 inflection was gradual, not sudden: Q4 2025 accumulation reached a threshold where the exponential became visible.
+- Current fees ($1.29/blob at ETH=$1,728) are 10–100× cheaper than pre-4844 calldata but no longer "free" — meaningful for high-frequency agent systems.
+- The cycle will repeat: the next blob capacity upgrade will reset the clock again. Plan for floor conditions as the baseline, build batching for when they end.

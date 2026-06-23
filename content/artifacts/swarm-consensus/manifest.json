@@ -2,7 +2,7 @@
   "slug": "swarm-consensus",
   "title": "Swarm Consensus",
   "description": "One hard question, a swarm of LLM nodes, two ways to agree. Run a round: majority voting picks the most common answer while peer-ranked Bradley-Terry consensus surfaces the best one, and the scoreboard converges on the gap Fortytwo measured. The evaluation-edge slider shows why.",
-  "pubDate": "2026-06-14",
+  "pubDate": "2026-06-14T12:01:00Z",
   "type": "dom",
   "archetype": "simulation",
   "topics": ["machine-learning", "infrastructure"],

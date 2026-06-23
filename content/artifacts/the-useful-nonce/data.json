@@ -1,0 +1,7 @@
+{
+  "bitcoin_energy_twh_2024": 150,
+  "h100_tflops_fp16": 1979,
+  "h100_tdp_w": 700,
+  "n_steps": [128, 256, 512, 1024, 2048, 4096, 8192],
+  "source_note": "Bitcoin energy: Cambridge Centre for Alternative Finance CBECI 2024 annualised estimate. H100 spec: NVIDIA H100 SXM5 data sheet. Freivalds overhead formula from Komargodski & Weinstein, arXiv:2504.09971 (Nov 2025)."
+}

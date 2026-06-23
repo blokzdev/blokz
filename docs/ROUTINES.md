@@ -19,15 +19,30 @@ playbooks. Each playbook assumes: clean checkout, `npm ci` done, work on the ses
 
 ## Playbook: new artifact (+ optional companion article)
 
-1. Survey `content/_index.json` artifacts to avoid overlap and to copy proven patterns —
-   `synapse-chain` (Three.js scene), `neural-flow` (canvas simulation), and
-   `merkle-cascade` (SVG diagram) are the references. Check the `archetype` of recent
-   artifacts and prefer an underrepresented one (palette: `docs/ARTIFACTS.md` → Archetypes).
-2. `npm run new:artifact -- --title "…" --type <t> --archetype <a> --topics <ids>`
-3. Implement per `docs/ARTIFACTS.md` (mount/cleanup contract, `createScene()` for Three,
-   `attachOrbit()` for drag/flick/tap, `data.json` + provenance for data-backed pieces).
-4. **Verify it runs**: `npm run build` must pass; if a browser is available, load
-   `/artifacts/<slug>` and confirm rendering + interaction + no console errors.
+1. Survey `content/_index.json` artifacts to avoid overlap and to copy proven patterns. For
+   multi-region `dom`/`svg` pieces (chart/diagram/calculator/simulation) study a primitive-based
+   reference — `swarm-consensus`, `byte-equality-gate`, or `price-of-trust`; for full-bleed
+   visuals, `synapse-chain` (Three.js scene), `neural-flow` (canvas simulation). Check the
+   `archetype` of recent artifacts and prefer an underrepresented one (palette:
+   `docs/ARTIFACTS.md` → Archetypes).
+2. `npm run new:artifact -- --title "…" --type <t> --archetype <a> --topics <ids>` — the scaffold
+   emits a primitive-based stub for `dom`/`svg` and a full-bleed stub for `three`/`canvas`.
+3. Implement per `docs/ARTIFACTS.md`:
+   - **Compose into the layout primitive** (`createArtifactLayout()` → stage/panel/controls/caption
+     slots). Never hand-roll a `position:absolute` root, reflow logic, or resize breakpoints — the
+     primitive owns responsiveness and the ⛶ fullscreen view is automatic.
+   - **Render elegantly at every width**: size the stage with `stageAspect`/`stageMin`, arrange
+     panes with `wideTemplate` (`rail`/`footer`/`stack`), and keep nothing clipping/overlapping with
+     shrinkable grids (`minmax(0,1fr)`) + the shared utilities (`afl-cards`, `afl-pill`, `afl-split`,
+     `afl-bullet`). See `docs/ARTIFACTS.md` → Responsive layout.
+   - `createScene()` for Three.js, `attachOrbit()` for drag/flick/tap, design tokens only, a pointer
+     interaction listed in `controls`, a keyboard path for SVG/DOM where natural; `data.json` +
+     `dataSource`/`dataAsOf` for data-backed pieces (the validator enforces provenance). Verify
+     Three.js/GSAP APIs via Context7.
+4. **Verify it runs**: `npm run build` must pass; if a browser is available, load `/artifacts/<slug>`
+   and view it embedded in the article — confirm rendering, interaction, and zero console errors in
+   **portrait, landscape, and ⛶ fullscreen** (resize/rotate); nothing clipped, overflowing, or
+   overlapping.
 5. Fill in `controls`, set `featured` judiciously. Validate, commit (`artifact: add <slug>`).
 
 ## Coordination between parallel routines

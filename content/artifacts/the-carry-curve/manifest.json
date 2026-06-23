@@ -1,0 +1,26 @@
+{
+  "slug": "the-carry-curve",
+  "title": "The Carry Curve",
+  "description": "Cumulative net carry of a $10k delta-neutral perpetual funding harvest over real Hyperliquid funding regimes. The line starts below zero by the round-trip fee, then climbs at the annualized funding rate; a flip slider rolls it over. Carry, not alpha — until funding inverts.",
+  "pubDate": "2026-06-20T12:30:25.746Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "tokenomics",
+    "agents"
+  ],
+  "aspect": "840/440",
+  "featured": false,
+  "controls": [
+    "tap a funding regime to load its real rate",
+    "drag on the chart (or arrow keys) to set the holding period",
+    "drag the fee slider to set the round-trip cost",
+    "drag the flip slider to make funding reverse sign"
+  ],
+  "dataSource": {
+    "label": "Hyperliquid funding docs + perp.wiki / bitsgap funding snapshots (2026)",
+    "url": "https://hyperliquid.gitbook.io/hyperliquid-docs/trading/funding"
+  },
+  "dataAsOf": "2026-06-20"
+}

@@ -1,0 +1,38 @@
+{
+  "rounds": 20,
+  "competitivePrice": 0.25,
+  "monopolyPrice": 0.50,
+  "warnThreshold": 0.30,
+  "sanctionThreshold": 0.35,
+  "regimes": [
+    {
+      "id": "ungoverned",
+      "label": "Ungoverned",
+      "color": "#f97316",
+      "severeRate": 0.50,
+      "meanTier": 3.1,
+      "prices": [0.260,0.272,0.284,0.296,0.308,0.320,0.332,0.344,0.356,0.368,0.380,0.392,0.404,0.416,0.427,0.437,0.446,0.454,0.462,0.469]
+    },
+    {
+      "id": "constitutional",
+      "label": "Constitutional",
+      "color": "#eab308",
+      "severeRate": 0.50,
+      "meanTier": 3.0,
+      "prices": [0.260,0.272,0.284,0.296,0.308,0.320,0.332,0.344,0.355,0.367,0.379,0.391,0.402,0.413,0.424,0.433,0.441,0.449,0.457,0.463]
+    },
+    {
+      "id": "institutional",
+      "label": "Institutional",
+      "color": "#22d3ee",
+      "severeRate": 0.056,
+      "meanTier": 1.8,
+      "prices": [0.260,0.272,0.284,0.296,0.293,0.272,0.265,0.275,0.283,0.279,0.270,0.263,0.272,0.281,0.278,0.269,0.262,0.272,0.280,0.277],
+      "govStates": ["Legal","Legal","Legal","Warning","Sanctioned","Sanctioned","Legal","Legal","Legal","Warning","Sanctioned","Sanctioned","Legal","Legal","Warning","Sanctioned","Sanctioned","Legal","Legal","Legal"]
+    }
+  ],
+  "runsPerCondition": 90,
+  "cohensD": 1.28,
+  "source": "Syrnikov et al., arXiv:2601.11369 (Jan 2026)",
+  "asOf": "2026-01-20"
+}

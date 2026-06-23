@@ -1,0 +1,19 @@
+{
+  "slug": "the-delegation-chain",
+  "title": "The Delegation Chain",
+  "description": "Five hops — Human → Orchestrator → Sub-Agent → MCP Tool → Chain Call — and zero authentication in the baseline. Toggle No Auth, IBCT Compact, or IBCT Chained; tap any edge chip to see what its token proves, what it carries, and what it can't verify. Based on AIP arXiv:2603.24775.",
+  "pubDate": "2026-06-21T02:26:02.272Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "web3"
+  ],
+  "aspect": "820/240",
+  "featured": false,
+  "controls": [
+    "tap an edge chip to inspect its token",
+    "use mode tabs to switch between No Auth, IBCT Compact, and IBCT Chained"
+  ]
+}

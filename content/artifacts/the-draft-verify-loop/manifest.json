@@ -1,0 +1,25 @@
+{
+  "slug": "the-draft-verify-loop",
+  "title": "The Draft-Verify Loop",
+  "description": "Run a speculative-decoding round at a time: a cheap drafter proposes γ tokens, the target verifies them in parallel and accepts a prefix plus one free token. Drive α, γ, and drafter cost c; watch the accepted length converge to Leviathan's Ω and the speedup peak, then fade.",
+  "pubDate": "2026-06-20",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "llm",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": true,
+  "controls": [
+    "drag α / γ / c sliders",
+    "tap run / pause / step",
+    "load a model-pair preset"
+  ],
+  "dataSource": {
+    "label": "Speculative-decoding literature (Leviathan 2023; VIA-SD, DSI, EAGLE-3)",
+    "url": "https://arxiv.org/abs/2211.17192"
+  },
+  "dataAsOf": "2026-06-20"
+}

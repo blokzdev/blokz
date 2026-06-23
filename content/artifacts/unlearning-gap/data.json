@@ -1,0 +1,51 @@
+{
+  "_comment": "The gap between what unlearning verification reports and what a recovery attack gets back. The metric is the membership-inference AUC of an attacker trying to tell whether a 'forgotten' record was in training: 0.50 = indistinguishable from a model that never saw it (truly forgotten); 1.00 = fully identifiable (knowledge still present). 'verdict' is the AUC under standard unlearning verification (what passing methods are tuned to achieve, ~0.50). 'attack' is the AUC after the Unlearning Mapping Attack (UMA) probes for residual knowledge. recoverable% in the toggle view = (AUC - 0.5) * 200, clamped at 0. Numbers from the sources below; approximate methods pass standard verification yet UMA recovers MIA 0.96-0.99 across CIFAR-10/100 and Tiny-ImageNet. ZK-APEX reports forget-set accuracy 89.5%->50.2% and MIA AUC 50.2 on its own benchmark, with a ~2h proof / 10-min verify / 400MB; its proof certifies the unlearning operator's algebra (assembly, masking, KKT optimality), NOT semantic forgetting or robustness to adaptive attacks, so its post-attack recovery is uncertified (rendered as outside-the-proof's-scope).",
+  "axisMin": 0.5,
+  "axisMax": 1.0,
+  "methods": [
+    {
+      "id": "retrain",
+      "label": "Retrain from scratch",
+      "kind": "exact",
+      "verdict": 0.5,
+      "attack": 0.5,
+      "uncertified": false,
+      "cost": "1.0x baseline",
+      "note": "Exact unlearning: drop the records and retrain. The only method whose forgetting survives a recovery attack — because the knowledge was never formed. SISA sharding shaves this to a 1.36– 4.63x speedup, not orders of magnitude.",
+      "source": "Bourtoule et al., Machine Unlearning (IEEE S&P 2021)"
+    },
+    {
+      "id": "class",
+      "label": "Class-wise unlearning",
+      "kind": "approx",
+      "verdict": 0.51,
+      "attack": 0.98,
+      "uncertified": false,
+      "cost": "~1–5% of retrain",
+      "note": "Forget an entire class with a cheap gradient edit. Passes standard MIA verification (≈ random), but UMA recovers class membership at MIA 0.97–0.99 across CIFAR-10, CIFAR-100 and Tiny-ImageNet — the class is still in there.",
+      "source": "Xuan & Li, Verifying Robust Unlearning / UMA (2025)"
+    },
+    {
+      "id": "instance",
+      "label": "Instance-level unlearning",
+      "kind": "approx",
+      "verdict": 0.51,
+      "attack": 0.97,
+      "uncertified": false,
+      "cost": "~1–5% of retrain",
+      "note": "Forget specific examples. All baselines passed standard checks yet showed limited robustness: UMA lifts membership inference back to 0.96–0.98. The verification metric and the attack are asking different questions.",
+      "source": "Xuan & Li, Verifying Robust Unlearning / UMA (2025)"
+    },
+    {
+      "id": "zkapex",
+      "label": "Verifiable unlearning",
+      "kind": "proof",
+      "verdict": 0.502,
+      "attack": null,
+      "uncertified": true,
+      "cost": "+~2h proof / 10-min verify",
+      "note": "A zero-knowledge proof certifies the operator ran correctly — model assembly θu=θp+δw, mask zeroing, KKT optimality — in ~2h gen, ~10-min verify, ~400MB, >10^7x faster than re-running training to check. It reports MIA AUC 50.2 on its own benchmark. What it does NOT certify: semantic forgetting, or robustness to UMA-style attacks. The certificate ends at the verdict; the gap is out of scope.",
+      "source": "Maheri et al., ZK-APEX (2025)"
+    }
+  ]
+}

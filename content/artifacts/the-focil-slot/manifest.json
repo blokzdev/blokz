@@ -1,0 +1,18 @@
+{
+  "slug": "the-focil-slot",
+  "title": "The FOCIL Slot",
+  "description": "Interactive diagram of Ethereum's FOCIL slot: four phases from IL broadcast (16 validators, 8 KiB each) through builder assembly to attestation. Toggle 'censoring builder' to watch the fork-choice rule reject a block that drops a valid IL transaction.",
+  "pubDate": "2026-06-23T06:27:41.177Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "blockchain",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "click any phase to inspect",
+    "toggle censoring builder to see FOCIL enforcement"
+  ]
+}

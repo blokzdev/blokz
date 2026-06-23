@@ -2,7 +2,7 @@
   "slug": "byte-equality-gate",
   "title": "The Byte-Equality Gate",
   "description": "Why re-executing an LLM doesn't reproduce it. One matmul reduces to the logit gap between 'Queens, New York' and 'New York City'; drag the production split-K and watch IEEE-754 rounding flip the token at split 5 and 6, breaking the verifier's digest check. Batch-invariant kernels turn it green.",
-  "pubDate": "2026-06-14",
+  "pubDate": "2026-06-14T12:03:00Z",
   "type": "dom",
   "archetype": "simulation",
   "topics": ["machine-learning", "infrastructure"],

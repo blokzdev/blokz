@@ -41,12 +41,13 @@ const SKELETON = `
 .afl-root { position: relative; width: 100%; min-height: 100%; }
 .artifact-fs .afl-root { position: absolute; inset: 0; }
 .afl-grid {
-  display: grid; gap: 12px; height: 100%; min-height: 0;
+  display: grid; gap: 12px; min-height: 0;
   padding: clamp(13px, 3.4vw, 18px); box-sizing: border-box;
   grid-template-columns: 1fr;
   grid-template-areas: "stage" "panel" "controls" "caption";
 }
 .afl-grid.is-wide {
+  height: 100%;
   grid-template-columns: minmax(0, var(--afl-stage-fr, 1.6fr)) minmax(190px, 1fr);
   grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:
@@ -70,6 +71,10 @@ const SKELETON = `
    width instead of a tall fixed floor — short charts get a short stage with no
    dead space. In wide mode align-self:stretch still fills the row beside the panel. */
 .afl-grid.afl-aspect .afl-stage { aspect-ratio: var(--afl-stage-aspect); min-height: 0; }
+/* An aspect stage is sized by aspect-ratio; a min-height on its (typically
+   absolutely-positioned) child only overflows the box and eats the grid gap.
+   Neutralize it so the stage stays the sizing authority. */
+.afl-grid.afl-aspect .afl-stage > * { min-height: 0; }
 .afl-grid.is-wide .afl-stage { align-self: stretch; }
 .afl-panel { grid-area: panel; min-width: 0; max-width: 100%; min-height: 0; }
 .afl-controls { grid-area: controls; min-width: 0; max-width: 100%; }

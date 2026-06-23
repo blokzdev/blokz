@@ -1,0 +1,173 @@
+{
+  "layers": [
+    {
+      "id": "probabilistic",
+      "label": "Probabilistic Classifier",
+      "sublabel": "NeMo · Guardrails AI",
+      "color": "#f0883e",
+      "latency": "< 1 ms",
+      "coverage": "~60–70 % of violations"
+    },
+    {
+      "id": "symbolic",
+      "label": "Symbolic + Temporal",
+      "sublabel": "SMT solver · Agent-C",
+      "color": "#22d3ee",
+      "latency": "1–5 ms",
+      "coverage": "74 % of formalizable policies"
+    },
+    {
+      "id": "formal",
+      "label": "Formal Verification",
+      "sublabel": "Lean 4 theorem prover",
+      "color": "#4ade80",
+      "latency": "10–100 µs",
+      "coverage": "100 % of compiled axioms"
+    },
+    {
+      "id": "onchain",
+      "label": "On-Chain Contract",
+      "sublabel": "Solidity require() · revert",
+      "color": "#a78bfa",
+      "latency": "12 s L1 · 2 s Base",
+      "coverage": "100 % of coded conditions"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "spend_limit",
+      "label": "Exceed daily limit",
+      "description": "Agent proposes a $15,000 transfer against a $10,000/day policy ceiling.",
+      "results": [
+        {
+          "layerId": "probabilistic",
+          "verdict": "caught",
+          "note": "Classifier flags transfer above learned normal range for this wallet."
+        },
+        {
+          "layerId": "symbolic",
+          "verdict": "caught",
+          "note": "Rule: transfer.amount + today_total ≤ daily_limit is directly expressible as a predicate."
+        },
+        {
+          "layerId": "formal",
+          "verdict": "caught",
+          "note": "Lean axiom: ∀ t, cumulative_24h(t) + t.amount ≤ 10000. Proof fails → action blocked."
+        },
+        {
+          "layerId": "onchain",
+          "verdict": "caught",
+          "note": "require(dailySpent[user] + amount <= DAILY_LIMIT). Gas consumed even on revert."
+        }
+      ]
+    },
+    {
+      "id": "temporal",
+      "label": "Pre-auth data read",
+      "description": "Agent reads private portfolio data before KYC verification completes in the current session.",
+      "results": [
+        {
+          "layerId": "probabilistic",
+          "verdict": "missed",
+          "note": "A single read action is individually benign. No single-action classifier can see the ordering violation."
+        },
+        {
+          "layerId": "symbolic",
+          "verdict": "caught",
+          "note": "Agent-C DSL: BEFORE(readPrivate, kycComplete). SMT solver enforces the ordering across token generation."
+        },
+        {
+          "layerId": "formal",
+          "verdict": "caught",
+          "note": "Lean axiom with session-state precondition: ∀ read, session.kycDone = true before read permitted."
+        },
+        {
+          "layerId": "onchain",
+          "verdict": "partial",
+          "note": "Only caught if the contract tracks auth state on-chain — most don't. Temporal logic lives off-chain."
+        }
+      ]
+    },
+    {
+      "id": "injection",
+      "label": "Prompt injection redirect",
+      "description": "A malicious invoice embeds instructions that redirect a $4,200 USDC transfer to an attacker wallet.",
+      "results": [
+        {
+          "layerId": "probabilistic",
+          "verdict": "partial",
+          "note": "MCPTox benchmarks: best-aligned models refused < 3% of tool-poisoning attacks. Classifier sees the rest."
+        },
+        {
+          "layerId": "symbolic",
+          "verdict": "missed",
+          "note": "No symbolic rule captures recipient semantics. Rule-based checks don't understand injected intent."
+        },
+        {
+          "layerId": "formal",
+          "verdict": "caught",
+          "note": "Lean axiom: recipient ∈ policy.allowlist. If the attacker wallet isn't in the compiled list, proof fails."
+        },
+        {
+          "layerId": "onchain",
+          "verdict": "missed",
+          "note": "ERC-20 transferFrom has no recipient allowlist. The contract executes any valid signed authorization."
+        }
+      ]
+    },
+    {
+      "id": "aggregate",
+      "label": "Aggregate limit bypass",
+      "description": "Agent sends 20 × $490 transfers in one session. Daily limit is $5,000. Cumulative: $9,800.",
+      "results": [
+        {
+          "layerId": "probabilistic",
+          "verdict": "missed",
+          "note": "Each $490 transfer is individually within normal range. Classifier sees no anomaly per call."
+        },
+        {
+          "layerId": "symbolic",
+          "verdict": "missed",
+          "note": "Stateless symbolic rules evaluate each action in isolation. No state accumulates across calls."
+        },
+        {
+          "layerId": "formal",
+          "verdict": "caught",
+          "note": "Lean axiom tracks a rolling 24h aggregate: ∑ transfers(last 24h) + amount ≤ limit. Proof fails at transfer 11."
+        },
+        {
+          "layerId": "onchain",
+          "verdict": "partial",
+          "note": "Caught only if the contract maintains a per-address dailySpent mapping — which spend-permission contracts do."
+        }
+      ]
+    },
+    {
+      "id": "oracle",
+      "label": "Stale oracle price",
+      "description": "Agent executes a $200k swap using a 90-second-old Chainlink feed; actual mid has moved 0.6%.",
+      "results": [
+        {
+          "layerId": "probabilistic",
+          "verdict": "missed",
+          "note": "Swap size and slippage are within normal parameters. The stale feed is invisible to the classifier."
+        },
+        {
+          "layerId": "symbolic",
+          "verdict": "missed",
+          "note": "Oracle freshness constraints are rarely specified as formal rules in deployed systems."
+        },
+        {
+          "layerId": "formal",
+          "verdict": "partial",
+          "note": "A Lean axiom can check block.timestamp − lastUpdate ≤ MAX_STALENESS, but only if the policy is compiled in."
+        },
+        {
+          "layerId": "onchain",
+          "verdict": "partial",
+          "note": "Chainlink staleness checks require manual coding: require(updatedAt >= block.timestamp − MAX_DELAY). Rare in practice."
+        }
+      ]
+    }
+  ]
+}

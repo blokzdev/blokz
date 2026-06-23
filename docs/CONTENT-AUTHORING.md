@@ -20,7 +20,10 @@ content/articles/YYYY/MM/<slug>/assets/…      # images used by this article on
 slug: optimistic-ml-oracles            # kebab-case, unique, IS the URL — never change after publish
 title: "Optimistic ML Oracles: …"      # 8–120 chars, sentence-meaningful
 description: "Zero-knowledge proofs…"  # 40–300 chars; the meta description AND card teaser
-pubDate: 2026-06-11                    # YYYY-MM-DD; must agree with directory
+pubDate: 2026-06-11T14:30:00Z          # full ISO timestamp (the scaffold sets it); the
+                                       # date part must agree with the directory. The time
+                                       # gives same-day posts a true newest→oldest order;
+                                       # only the date is displayed. Don't truncate it.
 updatedDate: 2026-06-20                # set when meaningfully revising published work
 draft: false                           # true → visible in dev, excluded from prod build
 author: blokz                          # id in content/authors/

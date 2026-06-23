@@ -1,0 +1,27 @@
+{
+  "vita_fast": {
+    "contract": "0x6034e0d6999741f07cb6Fb1162cBAA46a1D33d36",
+    "total_supply": 1029555,
+    "holders": 366,
+    "price_usd": 0.84,
+    "market_cap_usd": 839000,
+    "tokenize_gas": 486321,
+    "oversubscribed_pct": 1700,
+    "fractionalization_date": "2023-06-12"
+  },
+  "vita": {
+    "contract": "0x81f8f0bb1cB2A06649E51913A151F0E7Ef6FA321",
+    "holders": 6236,
+    "price_usd": 0.313,
+    "market_cap_usd": 8170000
+  },
+  "molecule_tokenizer": "0x58EB89C69CB389DBef0c130C6296ee271b82f436",
+  "autoscientists": {
+    "arxiv": "2605.28655",
+    "biobml_bench_percentile": 74.4,
+    "improvement_pct": 8.33,
+    "spearman_improvement_pct": 12.5,
+    "speedup_vs_autoresearch": 1.9,
+    "tasks": 24
+  }
+}

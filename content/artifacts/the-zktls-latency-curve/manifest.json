@@ -1,0 +1,20 @@
+{
+  "slug": "the-zktls-latency-curve",
+  "title": "The zkTLS Latency Curve",
+  "description": "How long does a web proof take? Drag the crosshair across upload bandwidths to compare TLSNotary's MPC-TLS mode (~30 MB garbled-circuit upload) against the April 2026 Proxy mode — 12.5× faster at residential broadband, 1.8× at fiber.",
+  "pubDate": "2026-06-23T03:29:20.719Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "agents"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": ["drag the chart to move the crosshair"],
+  "dataSource": {
+    "label": "TLSNotary benchmark blog (May 2026)",
+    "url": "https://tlsnotary.org/blog/2026/05/10/blog-proxy-mode/"
+  },
+  "dataAsOf": "2026-06-23"
+}

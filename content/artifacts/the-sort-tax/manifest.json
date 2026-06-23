@@ -1,0 +1,20 @@
+{
+  "slug": "the-sort-tax",
+  "title": "The Sort Tax",
+  "description": "Proving an agent's top-k retrieval is real costs a sort over every scanned candidate, unless you prove a boundary instead. Drive top-k and the corpus preset; watch the in-circuit comparison count split into the flat boundary proof and the sort tax you skip, anchored to V3DB's measured 22x.",
+  "pubDate": "2026-06-20T01:30:46.967Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["pick a corpus preset", "drag the top-k slider"],
+  "dataSource": {
+    "label": "V3DB (arXiv:2603.03065)",
+    "url": "https://arxiv.org/abs/2603.03065"
+  },
+  "dataAsOf": "2026-06-20"
+}

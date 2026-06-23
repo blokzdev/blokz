@@ -1,0 +1,45 @@
+{
+  "unit": "one BERT-base transformer block",
+  "note": "Communication in megabytes (MB) and number of interaction rounds for securely evaluating a single BERT-base encoder block under three two-party (2PC) private-inference protocols. Source: Nimbus, Table 3 (per-block comparison). Linear ops are the four weight projections; the two nonlinear ops (Softmax, GELU) are the activation functions.",
+  "operations": [
+    { "id": "linqkv", "label": "Linear QKV", "kind": "linear" },
+    { "id": "lino",   "label": "Linear O",   "kind": "linear" },
+    { "id": "linh1",  "label": "Linear H1",  "kind": "linear" },
+    { "id": "linh2",  "label": "Linear H2",  "kind": "linear" },
+    { "id": "gelu",   "label": "GELU",       "kind": "nonlinear" },
+    { "id": "softmax","label": "Softmax",    "kind": "nonlinear" }
+  ],
+  "protocols": [
+    {
+      "id": "iron",
+      "label": "Iron",
+      "venue": "NeurIPS 2022",
+      "comm": { "linqkv": 74.64, "lino": 40.2, "linh1": 84.46, "linh2": 78.37, "gelu": 283.89, "softmax": 689.45 },
+      "rounds": { "linqkv": 2, "lino": 2, "linh1": 2, "linh2": 2, "gelu": 65, "softmax": 110 }
+    },
+    {
+      "id": "bumblebee",
+      "label": "BumbleBee",
+      "venue": "NDSS 2025",
+      "comm": { "linqkv": 14.47, "lino": 6.71, "linh1": 18.35, "linh2": 15.71, "gelu": 185.13, "softmax": 354.26 },
+      "rounds": { "linqkv": 2, "lino": 2, "linh1": 2, "linh2": 2, "gelu": 46, "softmax": 70 }
+    },
+    {
+      "id": "nimbus",
+      "label": "Nimbus",
+      "venue": "NeurIPS 2024",
+      "comm": { "linqkv": 10.35, "lino": 3.05, "linh1": 15.52, "linh2": 3.05, "gelu": 53.22, "softmax": 115.35 },
+      "rounds": { "linqkv": 1, "lino": 1, "linh1": 1, "linh2": 1, "gelu": 24, "softmax": 60 }
+    }
+  ],
+  "fullModel": {
+    "note": "End-to-end BumbleBee context for scale (BERT-base, 128 input tokens). LAN = 1 Gbps / 0.5 ms ping; WAN = 400 Mbps / 4 ms ping. Source: BumbleBee Table V; LLaMA-7B from Table IV.",
+    "bertBaseLanMin": 2.55,
+    "bertBaseWanMin": 4.86,
+    "bertBaseCommGB": 6.4,
+    "llama7bTokenMin": 7.96,
+    "llama7bTokenCommGB": 6.27,
+    "ironBertCommGB": 76.5,
+    "boltBertCommGB": 59.61
+  }
+}

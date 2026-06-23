@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "ethUsd": 1733.90,
+    "blockNumber": 25375825,
+    "blockTimestamp": "2026-06-22",
+    "gasPriceGwei": 0.2295,
+    "blockGasTarget": 30000000,
+    "blockGasLimit": 60000000
+  },
+  "sp1VerifyGas": 327621,
+  "strategies": [
+    {
+      "id": "naive",
+      "label": "Naive",
+      "sublabel": "N × Groth16",
+      "color": "#f0883e",
+      "perProofGas": 327621,
+      "baseGas": 0,
+      "logLevels": 0,
+      "constantGas": 0,
+      "note": "One separate on-chain Groth16/SP1 verification per AI inference. Gas = N × 327,621."
+    },
+    {
+      "id": "snarkpack",
+      "label": "SnarkPack",
+      "sublabel": "O(log N) aggregation",
+      "color": "#5b8cff",
+      "perProofGas": 0,
+      "baseGas": 280000,
+      "logLevels": 60000,
+      "constantGas": 0,
+      "note": "Batch N same-circuit Groth16 proofs into one aggregated verification. Bowe et al. 2020. Gas ≈ 280k + 60k × ⌈log₂ N⌉. Prover time: seconds."
+    },
+    {
+      "id": "recursion",
+      "label": "ZK Recursion",
+      "sublabel": "SP1 wrapping",
+      "color": "#22d3ee",
+      "perProofGas": 0,
+      "baseGas": 0,
+      "logLevels": 0,
+      "constantGas": 327621,
+      "note": "Verify N proofs inside a RISC-V program, wrap once in SP1/Groth16. Gas is constant regardless of N. Prover time grows O(N) — minutes to hours for large batches."
+    }
+  ],
+  "dataSource": "SP1VerifierGateway on Ethereum mainnet block 25,375,825 · SnarkPack (ePrint 2021/1165) · EIP-197 BN254 pairing precompile"
+}

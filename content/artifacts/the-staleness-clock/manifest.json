@@ -1,0 +1,24 @@
+{
+  "slug": "the-staleness-clock",
+  "title": "The Staleness Clock",
+  "description": "In decentralized RL the rollout worker acts with a policy several steps behind the trainer. Staleness g = broadcast time / step cadence. Pick a model and link, toggle sparse deltas, and watch g cross INTELLECT-2's demonstrated 4-step budget — full 32B weights blow right past it.",
+  "pubDate": "2026-06-20T08:28:05.556Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "machine-learning",
+    "infrastructure",
+    "blockchain"
+  ],
+  "aspect": "840/380",
+  "featured": false,
+  "controls": [
+    "tap a model / link to set the broadcast",
+    "toggle sparse deltas (~1% changed)"
+  ],
+  "dataSource": {
+    "label": "SparrowRL & INTELLECT-2 papers",
+    "url": "https://arxiv.org/abs/2602.11456"
+  },
+  "dataAsOf": "2026-06-20"
+}

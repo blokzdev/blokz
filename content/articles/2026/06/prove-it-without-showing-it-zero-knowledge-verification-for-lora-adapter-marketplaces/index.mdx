@@ -1,0 +1,94 @@
+---
+slug: prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces
+title: "Prove It Without Showing It: Zero-Knowledge Verification for LoRA Adapter Marketplaces"
+description: "ZKLoRA lets a LoRA seller prove adapter compatibility with your base model without exposing the weights. The verifier checks in 1–2 s — but the prover bears 31–74 s per module, and the protocol is interactive, which puts trustless on-chain settlement just out of reach."
+pubDate: 2026-06-21T00:31:10.830Z
+author: blokz
+topics: [zero-knowledge, machine-learning, infrastructure]
+tags: [zklora, lora, adapter-marketplace, proof-system, mpc, model-ip]
+artifacts: [the-provers-bargain]
+difficulty: intermediate
+sources:
+  - label: "ZKLoRA: Efficient Zero-Knowledge Proofs for LoRA Verification (Roy et al., arXiv:2501.13965)"
+    url: "https://arxiv.org/abs/2501.13965"
+  - label: "LoRA: Low-Rank Adaptation of Large Language Models (Hu et al., arXiv:2106.09685)"
+    url: "https://arxiv.org/abs/2106.09685"
+---
+
+The fine-tuned model market has a trust problem. You can buy a LoRA adapter trained on proprietary medical notes, legal filings, or creative writing corpora — but when you wire the transfer and receive the weight files, you have no cryptographic guarantee that the adapter (a) actually works with your specific base model version, or (b) was derived from the base the seller claimed. The seller could hand you weights trained on a different quantization, a different checkpoint, or nothing useful at all.
+
+This gap matters more than it might seem. LoRA adapters are becoming the tradeable unit of AI specialization. A 70B base model is a commodity; the fine-tuned adapter on top of it is where value accumulates. As [on-chain IP registries like Story Protocol](/articles/story-royalty-graph-onchain) try to automate royalty splits for AI derivatives, and as [watermarking techniques prove model provenance](/articles/fingerprints-in-the-weights), the missing piece is a proof that a specific adapter is compatible with a specific base — without the seller revealing the adapter weights themselves. ZKLoRA (Roy et al., 2025) is the first serious attempt to fill that gap.
+
+## What LoRA Does and Why It's Verifiable
+
+LoRA injects a pair of low-rank matrices (A and B) alongside each attention weight layer of a pretrained model. Instead of fine-tuning the full weight matrix W ∈ ℝ^(d×k), you freeze W and learn A ∈ ℝ^(d×r) and B ∈ ℝ^(r×k) where r ≪ min(d, k). The effective weight during inference becomes W + BA.
+
+The compactness is what makes markets possible. A Llama-3.1-8B full fine-tune is ~16 GB; its LoRA adapter might be 50 MB. But compactness also makes verification possible: the A, B matrices are small enough to fit inside a ZK circuit, and the forward-pass computation through them is arithmetically bounded.
+
+ZKLoRA's core claim: you can prove that (B·A) applied on top of a specific base model W produces outputs consistent with what the seller asserts — without the seller ever disclosing A or B.
+
+## The Protocol in Three Steps
+
+ZKLoRA uses a two-party computation scheme the authors call Multi-Party Inference (MPI). Both buyer and seller must participate.
+
+**Step 1 — Setup.** Buyer and seller agree on the circuit parameterization for the target model architecture (number of layers, attention dimensions, LoRA rank). This step touches the heaviest parameter: circuit size scales with LoRA matrix dimensions, not with base-model parameter count. That's a subtle but important point — a Mixtral-8x7B module has larger A/B matrices per expert than a Llama-3.2-1B module, which is why Mixtral's per-module proof cost is 2.4× higher.
+
+**Step 2 — Interaction.** Buyer computes masked intermediate activations ("Base Acts") from their held copy of the base model and sends them to the prover. Seller computes masked adapter activations ("LoRA Acts") using the private A, B matrices. A shared ZK circuit — built on Nova/HyperNova folding schemes — runs over both sets of masked activations to produce a proof that the adapter output is consistent with the base model input, without either party learning the other's private inputs.
+
+**Step 3 — Verify.** The seller hands the buyer a compact proof. The buyer runs verification in 1–2 seconds, regardless of model size. The proof attests: "this LoRA adapter, when applied to this base model, produces outputs within the claimed fidelity bound."
+
+## The Numbers
+
+<Artifact slug="the-provers-bargain" />
+
+The artifact above shows the timing asymmetry across all six models in ZKLoRA's Table 1 benchmark. The headline fact: **the verifier always spends 1–2 seconds**. The prover spends 31–74 seconds per module. Toggle to "Full adapter set" to see what that looks like across an entire fine-tuned model — a single Llama-3.3-70B adapter proof requires the seller to run roughly 63 minutes of sequential computation.
+
+Three patterns are worth noting:
+
+- **Circuit size drives cost, not base-model size.** distilgpt2 (82M params) and Llama-3.2-1B (1B params) have nearly identical per-module proof times (31.6 s vs 31.0 s) because their per-module matrix dimensions are comparable. The 70B model is cheaper per module than the 8B model for the same reason — layer attention dimensions differ in ways that favor the 70B architecture here.
+
+- **The log-linear scaling claim holds.** gpt2's LoRA modules are 2× larger than distilgpt2's (49k vs 24k params per module), but proof time rises by only 10% (34.9 s vs 31.6 s). This is consistent with the Nova/HyperNova proof system's roughly log-linear circuit complexity.
+
+- **MoE is the outlier.** Mixtral-8x7B has 8 experts per layer, which means larger per-module matrices (327k params). At 73.7 s/module, it's 2.4× slower than the cheapest model. If Mixtral adapter markets take off, proof generation is going to be a bottleneck.
+
+For context: the verifier's 1–2 s is competitive with an on-chain transaction confirmation time. That's intentional — the verifier cost is designed to fit inside a smart contract's gas budget, at least in principle.
+
+## The Interactive Wall
+
+Here is what the paper's "1–2 second" headline obscures: MPI is an **interactive protocol**. The buyer must be online, the seller must be online, and they exchange masked activations in real time. This isn't a proof the seller generates and posts to a marketplace; it's a two-way computation handshake.
+
+That interactivity creates a fundamental problem for trustless settlement. Smart contracts can't initiate a back-and-forth with an off-chain prover mid-execution. Async marketplaces — where a seller posts adapter files and a buyer downloads them hours later — can't use MPI without both parties being simultaneously available. On-chain escrow that releases payment upon proof verification requires the proof to be a standalone, non-interactive artifact that the contract can check unilaterally.
+
+ZKLoRA as described in the paper cannot do this. The protocol is not designed for asynchronous submission.
+
+## The Missing Layer: Non-Interactive ZK
+
+Two paths exist to make ZKLoRA's proof non-interactive.
+
+**Fiat-Shamir transform.** In many interactive proof systems, the verifier's random challenges can be replaced with hash function outputs derived from the transcript — making the proof non-interactive without changing the underlying circuit. Whether this works cleanly for ZKLoRA's MPI structure depends on the exact message schedule during the interaction. The paper doesn't implement this; it's an open research direction.
+
+**SNARK-of-MPC.** The more general approach: prove the entire MPI execution — including all the masked activation exchanges — inside a SNARK circuit. A SNARK proof that "this MPI transcript was correctly computed" would be verifiable by anyone, non-interactively, even years after the fact. The cost is steep: MPC-in-SNARK overhead typically runs 10–100× on top of an already non-trivial prover. On Mixtral that could mean hours per module.
+
+Neither path is production-ready today. This gap is where the next paper in this line of work needs to land.
+
+## The Story Protocol Connection
+
+[Story Protocol has 6.46M registered IP assets but generated $10 in on-chain royalties over a recent week](/articles/story-royalty-graph-onchain). The bottleneck is enforcement: registering a derivative work (a fine-tuned model) as a child of a registered parent model requires proof that the derivative actually derives from the parent. Currently that's social convention, not cryptographic fact.
+
+ZKLoRA is the protocol that could bridge them. A seller who has proved their LoRA adapter is compatible with a specific base model checkpoint — and who holds that non-interactive proof as a credential — could attach it to a Story Protocol IP asset registration, triggering automated royalty computation through Story's on-chain graph. The LAP/LRP royalty math already handles derivative splits; the missing input is proof-of-derivation.
+
+The path: ZKLoRA non-interactive proof → Story registration with proof hash → automatic royalty flow to base model licensor on every inference call that uses the adapter. No trust required.
+
+That's still a two-step research gap away. Non-interactive ZKLoRA doesn't exist yet. Story's proof-of-derivation hook doesn't exist yet. But the pieces are on the table.
+
+## Takeaways
+
+**The prover/verifier asymmetry is the design.** The seller bears 31–74 s of computation per module so the buyer can verify in 1–2 s. This is correct for a marketplace — the seller does the work once, the buyer (or contract) checks cheaply. But "cheaply" only applies to the verifier; don't let the headline obscure the full cost.
+
+**Interactive MPC is the current ceiling.** ZKLoRA as published requires both parties online simultaneously. That makes it usable for trust-negotiated bilateral trades, not for async marketplace listings or on-chain escrow.
+
+**Circuit size, not model size, determines proof cost.** If you're building tooling on top of ZKLoRA, the parameter to optimize is LoRA rank r and per-module matrix dimensions — not base model parameter count. Smaller r means smaller circuit means faster proofs.
+
+**The SNARK-of-MPC or Fiat-Shamir gap is the research frontier.** The first paper that closes this gap — producing a non-interactive, standalone proof of LoRA compatibility — has a clear deployment target: on-chain adapter marketplaces with trustless settlement and automatic IP royalties.
+
+The market is forming. The cryptography is close. The gap between "close" and "shipped" is where the next few months of ZK research will live.

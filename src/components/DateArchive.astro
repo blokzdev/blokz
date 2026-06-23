@@ -1,0 +1,110 @@
+---
+import type { Page } from 'astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import ArtifactCard from '@/components/ArtifactCard.astro';
+import DrillChips from '@/components/DrillChips.astro';
+import Pagination from '@/components/Pagination.astro';
+import SortBar from '@/components/SortBar.astro';
+import {
+  dateArchiveCrumbs,
+  dateArchiveLabel,
+  type Article,
+  type Artifact,
+  type SortOption,
+  type Topic,
+} from '@/lib/content-helpers';
+
+/**
+ * Shared body for the date drill-down levels (all / year / month / day), for
+ * either articles or artifacts. Each level lists its items with a sort bar,
+ * a breadcrumb that steps *up*, and drill chips that step *down*.
+ */
+interface Props {
+  page: Page<Article | Artifact>;
+  /** Collection root for hrefs, e.g. "/articles" or "/artifacts". */
+  base: string;
+  /** Omit all three for the top "all dates" level. */
+  year?: string;
+  month?: string;
+  day?: string;
+  /** Which card to render; also selects the noun in the copy. */
+  kind?: 'article' | 'artifact';
+  /** Active sort order (default newest); drives the sort bar highlight + labels. */
+  sortKey?: string;
+  /** Date-scoped sort options (from `dateScopedSorts`). Omit to hide the sort bar. */
+  sortOptions?: SortOption[];
+  /** Child buckets to drill into (years / months / days); omit on the leaf day. */
+  children?: Array<SortOption & { count: number }>;
+  /** Topics for article cards (unused for artifacts). */
+  topics?: Topic[];
+}
+
+const {
+  page,
+  base,
+  year,
+  month,
+  day,
+  kind = 'article',
+  sortKey = 'newest',
+  sortOptions,
+  children,
+  topics = [],
+} = Astro.props;
+
+const label = year ? dateArchiveLabel(year, month, day) : 'All dates';
+const crumbs = dateArchiveCrumbs(base, year, month, day);
+const current = crumbs[crumbs.length - 1].key;
+const noun = kind === 'artifact' ? 'artifact' : 'article';
+// Only the default newest-first order reads as "Newer / Older"; sorted orders
+// use neutral pagination labels.
+const dateDefault = sortKey === 'newest';
+// Sorting only changes anything when the bucket holds more than one item.
+const showSort = Boolean(sortOptions) && page.total > 1;
+// Eyebrow for the drill chips, by depth.
+const childUnit = !year ? 'Years' : !month ? 'Months' : 'Days';
+const showChildren = Boolean(children && children.length > 0);
+---
+
+<header class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-6">
+  <p class="font-mono text-xs tracking-[0.3em] text-cyan uppercase" data-reveal>Archive</p>
+  <h1 class="mt-3 font-display text-page-title font-bold tracking-tight text-white" data-split>
+    {label}
+  </h1>
+  <p class="mt-4 max-w-xl text-muted" data-reveal="0.2">
+    {page.total} {noun}{page.total === 1 ? '' : 's'}{
+      year ? ' published in this period' : ', grouped by date'
+    }.
+  </p>
+  <div class="mt-6 flex flex-col gap-3" data-reveal="0.35">
+    {/* Date navigation stays grouped: breadcrumb (up) + drill chips (down). */}
+    <SortBar label="Date" options={crumbs} current={current} />
+    {showChildren && <DrillChips label={childUnit} chips={children!} />}
+    {showSort && <SortBar label="Sort" options={sortOptions!} current={sortKey} />}
+  </div>
+</header>
+
+<section class="mx-auto max-w-6xl px-5 sm:px-6">
+  {
+    page.data.length > 0 ? (
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+        {page.data.map((entry) =>
+          kind === 'artifact' ? (
+            <ArtifactCard artifact={entry as Artifact} />
+          ) : (
+            <ArticleCard article={entry as Article} {topics} />
+          ),
+        )}
+      </div>
+    ) : (
+      <p class="glass rounded-2xl p-8 text-center text-muted">
+        Nothing here yet — no {noun}s in this period.
+      </p>
+    )
+  }
+  <Pagination
+    page={page}
+    prevLabel={dateDefault ? undefined : '← Prev'}
+    nextLabel={dateDefault ? undefined : 'Next →'}
+  />
+</section>

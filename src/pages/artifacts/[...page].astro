@@ -1,0 +1,20 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ArtifactArchive from '@/components/ArtifactArchive.astro';
+import { getArtifacts } from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const artifacts = await getArtifacts();
+  return paginate(artifacts, { pageSize: 12 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<BaseLayout
+  title="Artifacts — Blokz"
+  description="Interactive artifacts from the Blokz lab: WebGL scenes, visualizations, and explorable explanations of AI and blockchain systems."
+>
+  <ArtifactArchive {page} sortKey="newest" />
+</BaseLayout>

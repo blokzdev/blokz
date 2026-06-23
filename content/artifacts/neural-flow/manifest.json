@@ -2,7 +2,7 @@
   "slug": "neural-flow",
   "title": "Neural Flow",
   "description": "Forward passes through a small feed-forward network, animated: signals ripple layer to layer, weights set the glow, and activations heat the neurons they reach.",
-  "pubDate": "2026-06-11",
+  "pubDate": "2026-06-11T12:01:00Z",
   "type": "canvas",
   "archetype": "simulation",
   "topics": [

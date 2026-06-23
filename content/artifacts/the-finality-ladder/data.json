@@ -1,0 +1,140 @@
+{
+  "chains": [
+    {
+      "id": "op-stack",
+      "name": "OP Stack",
+      "examples": "Base, Optimism",
+      "color": "#5b8cff",
+      "stages": [
+        {
+          "id": "soft",
+          "label": "Soft Conf",
+          "seconds": 2,
+          "trustLevel": 1,
+          "agentUse": "Liquidations, MEV captures, price-sensitive swaps — single-block economic risk only.",
+          "risk": "Sequencer is a single centralized server. Transaction exists only in its database until the next L1 batch."
+        },
+        {
+          "id": "l1-da",
+          "label": "L1 Data",
+          "seconds": 900,
+          "trustLevel": 2,
+          "agentUse": "Balance confirmations, oracle reads for risk models, non-critical state queries.",
+          "risk": "Transaction data is permanent on L1 as an EIP-4844 blob, but the output state root has not been committed."
+        },
+        {
+          "id": "state-root",
+          "label": "State Root",
+          "seconds": 3600,
+          "trustLevel": 3,
+          "agentUse": "ZK coprocessor storage proofs, historical state queries, cross-chain messaging.",
+          "risk": "Output root is posted to L1 and publicly challengeable — but the 7-day fraud proof window is fully open."
+        },
+        {
+          "id": "finalized",
+          "label": "Finalized",
+          "seconds": 604800,
+          "trustLevel": 4,
+          "agentUse": "L1 withdrawals via OptimismPortal, large cross-chain settlements, custodied fund movements.",
+          "risk": "None — 7-day challenge window closed with no valid dispute. Cryptographic settlement on L1."
+        }
+      ]
+    },
+    {
+      "id": "arbitrum",
+      "name": "Arbitrum",
+      "examples": "Arbitrum One, Nova",
+      "color": "#f0a23b",
+      "stages": [
+        {
+          "id": "soft",
+          "label": "Soft Conf",
+          "seconds": 1,
+          "trustLevel": 1,
+          "agentUse": "Liquidations, MEV, micro-swaps — single-block economic risk only.",
+          "risk": "Sequencer trust only. Transaction is in the sequencer database, not yet posted to L1."
+        },
+        {
+          "id": "l1-da",
+          "label": "L1 Data",
+          "seconds": 120,
+          "trustLevel": 2,
+          "agentUse": "Balance checks, oracle reads — Arbitrum batches to L1 roughly every minute at normal load.",
+          "risk": "Transaction data posted to L1, but the assertion (state root) has not been submitted."
+        },
+        {
+          "id": "assertion",
+          "label": "Assertion",
+          "seconds": 1800,
+          "trustLevel": 3,
+          "agentUse": "Storage proofs, cross-chain messages, state-dependent contract calls.",
+          "risk": "Assertion on L1 is challengeable via BoLD. ~6.4-day challenge window open."
+        },
+        {
+          "id": "finalized",
+          "label": "Finalized",
+          "seconds": 552960,
+          "trustLevel": 4,
+          "agentUse": "L1 bridge withdrawals, large cross-chain settlements, custodied fund movements.",
+          "risk": "None — BoLD challenge window (~6.4 days) closed. Single honest challenger always prevails in BoLD."
+        }
+      ]
+    },
+    {
+      "id": "zk-rollup",
+      "name": "ZK Rollup",
+      "examples": "zkSync Era, StarkNet",
+      "color": "#22d3ee",
+      "stages": [
+        {
+          "id": "soft",
+          "label": "Soft Conf",
+          "seconds": 2,
+          "trustLevel": 1,
+          "agentUse": "UI feedback, low-value actions — sequencer trust only.",
+          "risk": "Sequencer is centralized. No proof yet. No dispute game, but no finality guarantee either."
+        },
+        {
+          "id": "zk-proof",
+          "label": "ZK Proof",
+          "seconds": 7200,
+          "trustLevel": 4,
+          "agentUse": "Any agent action — cryptographic finality with no dispute window or social assumption.",
+          "risk": "None — SNARK/STARK proof verified by L1 contract. Invalid state transitions are mathematically impossible."
+        }
+      ]
+    },
+    {
+      "id": "based-rollup",
+      "name": "Based Rollup",
+      "examples": "Taiko",
+      "color": "#8b5cf6",
+      "stages": [
+        {
+          "id": "l1-included",
+          "label": "L1 Included",
+          "seconds": 12,
+          "trustLevel": 3,
+          "agentUse": "All routine agent actions — L1 validators sequence directly, same trust as an L1 transaction.",
+          "risk": "Pre-Casper FFG: a deep reorg (>1/3 of stake slashed) is theoretically possible but economically catastrophic."
+        },
+        {
+          "id": "ffg",
+          "label": "Casper FFG",
+          "seconds": 768,
+          "trustLevel": 4,
+          "agentUse": "All agent actions including L1 bridge withdrawals. No fraud proof window required.",
+          "risk": "None — two epochs (~12.8 min) finalized. Irreversible unless >1/3 of validator stake is slashed."
+        }
+      ]
+    }
+  ],
+  "trustLevels": {
+    "1": { "label": "Sequencer trust", "color": "#f0a23b" },
+    "2": { "label": "L1 data available", "color": "#5b8cff" },
+    "3": { "label": "State root committed", "color": "#8b5cf6" },
+    "4": { "label": "Fully final", "color": "#22d3ee" }
+  },
+  "dataSource": "L2Beat finality data + Optimism, Arbitrum BoLD, zkSync, StarkNet, and Taiko protocol documentation",
+  "dataAsOf": "2026-06-21"
+}

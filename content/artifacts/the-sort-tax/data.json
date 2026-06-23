@@ -1,0 +1,15 @@
+{
+  "_comment": "V3DB (arXiv:2603.03065) zero-knowledge IVF-PQ verifiable vector search. Presets are the paper's ZK-optimized index configurations (Table 4); `candidates` is the per-query scanned set nprobe*(N/nlist). The comparison-count model below is the paper's own asymptotics for the prover circuit: probe selection baseline THETA(nprobe*nlist) -> optimized THETA(nlist); top-k baseline THETA(k*nprobe*n) -> optimized THETA(nprobe*n). `measured` are the paper's reported NET results (which include commitment/lookup machinery the model abstracts away).",
+  "presets": [
+    { "id": "sift1m", "label": "SIFT1M", "corpus": "1M image descriptors", "N": 1000000, "dim": 128, "nlist": 1024, "nprobe": 8, "defaultK": 100, "subquantizers": 8 },
+    { "id": "gist1m", "label": "GIST1M", "corpus": "1M GIST features", "N": 1000000, "dim": 960, "nlist": 512, "nprobe": 4, "defaultK": 100, "subquantizers": 8 },
+    { "id": "msmarco", "label": "MS MARCO", "corpus": "8.8M passage embeddings", "N": 8800000, "dim": 384, "nlist": 2048, "nprobe": 16, "defaultK": 10, "subquantizers": 8 }
+  ],
+  "measured": {
+    "provingSpeedup": 22,
+    "memReductionPct": 40,
+    "verify": "sub-second",
+    "system": "Plonky2",
+    "baseline": "circuit-only (in-circuit sort)"
+  }
+}

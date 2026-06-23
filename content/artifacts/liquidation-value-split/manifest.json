@@ -1,0 +1,23 @@
+{
+  "slug": "liquidation-value-split",
+  "title": "The Liquidation Value Split",
+  "description": "A liquidation mints a fixed prize — the bonus on seized collateral. Three bars split it three ways: a gas war bleeds it to the block builder, private orderflow pockets it for the searcher, an OEV auction returns ~73% to the protocol. Drive size, bonus, competition; anchored to Chainlink SVR figures.",
+  "pubDate": "2026-06-19T12:09:00Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "infrastructure"
+  ],
+  "aspect": "820/326",
+  "featured": false,
+  "controls": [
+    "drag sliders: liquidation size, bonus, keeper competition",
+    "tap a regime bar (or ← →) for its breakdown"
+  ],
+  "dataSource": {
+    "label": "Aave historical liquidations + Chainlink SVR",
+    "url": "https://aave.com/blog/historical-liquidations"
+  },
+  "dataAsOf": "2026-06-19"
+}

@@ -1,0 +1,63 @@
+{
+  "hardware": [
+    {
+      "id": "cpu",
+      "label": "CPU",
+      "sublabel": "x86 multicore (baseline)",
+      "msmSpeedup": 1,
+      "nttSpeedup": 1,
+      "note": "The floor. Modern multi-core CPUs run MSM via the Pippenger algorithm on BN254, fast enough for development. Production provers abandoned pure CPU years ago."
+    },
+    {
+      "id": "gpu",
+      "label": "GPU / H100",
+      "sublabel": "Icicle v2 (Ingonyama)",
+      "msmSpeedup": 9,
+      "nttSpeedup": 4,
+      "note": "CUDA kernels parallelize the Pippenger bucket accumulation for 8–10× MSM speedup. NTT gains are smaller (3–5×) because the butterfly network's memory-access pattern doesn't map cleanly onto GPU cache lines. ICICLE-Snark is the fastest public Groth16 prover."
+    },
+    {
+      "id": "tpu",
+      "label": "TPU v6e8",
+      "sublabel": "MORPH (arXiv:2604.17808)",
+      "msmSpeedup": 9,
+      "nttSpeedup": 40,
+      "note": "MORPH's extended-RNS lazy reduction converts 254-bit modular arithmetic to dense low-precision GEMMs. NTT throughput is 10× higher than GPU because the butterfly network maps onto TPU tiling; MSM is comparable to GPU. The same pod that runs inference can now prove it."
+    },
+    {
+      "id": "asic",
+      "label": "ZK ASIC",
+      "sublabel": "Cysic SolarMSM Gen1",
+      "msmSpeedup": 80,
+      "nttSpeedup": 60,
+      "note": "SolarMSM completes a 2³⁰-scale BN254 MSM in 195 ms — roughly 80× faster than GPU. Purpose-built silicon eliminates all general-purpose overhead. NTT speedup is an engineering estimate; Cysic's C1 chip targets both operations. Even at 80× MSM + 60× NTT, the 10% of 'other' work caps end-to-end speedup near 9× — Amdahl's law, on silicon."
+    }
+  ],
+  "proofSystems": [
+    {
+      "id": "snark",
+      "label": "SNARK / PLONK / Groth16",
+      "description": "MSM-heavy: elliptic-curve polynomial commitments dominate proving time",
+      "msmShare": 0.70,
+      "nttShare": 0.20,
+      "otherShare": 0.10,
+      "refCircuitLabel": "2²⁰-constraint inference circuit",
+      "refCpuMinutes": 8
+    },
+    {
+      "id": "stark",
+      "label": "STARK / FRI / Plonky2",
+      "description": "NTT-heavy: low-degree extension of the execution trace dominates",
+      "msmShare": 0.05,
+      "nttShare": 0.85,
+      "otherShare": 0.10,
+      "refCircuitLabel": "2²⁰-row STARK trace",
+      "refCpuMinutes": 5
+    }
+  ],
+  "dataSource": {
+    "label": "MORPH arXiv:2604.17808; Ingonyama ICICLE-Snark; Cysic SolarMSM",
+    "url": "https://arxiv.org/abs/2604.17808"
+  },
+  "dataAsOf": "2026-06-21"
+}

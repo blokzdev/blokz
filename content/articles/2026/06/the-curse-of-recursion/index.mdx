@@ -1,0 +1,79 @@
+---
+slug: the-curse-of-recursion
+title: "The Curse of Recursion: Model Collapse and the Limits of On-Chain Provenance"
+description: "Train a model on the web the last models filled with output and quality decays — the tails go first, then the middle. Provenance is sold as the fix, but a chain proves who signed a blob and when, not that it's human or clean. Signed is not clean."
+pubDate: 2026-06-20T20:28:55.166Z
+author: blokz
+topics: [data, machine-learning, web3]
+tags: [model-collapse, synthetic-data, data-provenance, c2pa, content-credentials, datadao]
+artifacts: [generation-loss]
+difficulty: intermediate
+sources:
+  - label: "Shumailov et al., 'AI models collapse when trained on recursively generated data', Nature 2024"
+    url: "https://www.nature.com/articles/s41586-024-07566-y"
+  - label: "Gerstgrasser et al., 'Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data', 2024"
+    url: "https://arxiv.org/abs/2404.01413"
+  - label: "C2PA / Content Credentials Explainer (v2.4)"
+    url: "https://spec.c2pa.org/specifications/specifications/2.4/explainer/Explainer.html"
+  - label: "Gerlach et al., 'Machine-generated text detection prevents language model collapse', 2025"
+    url: "https://arxiv.org/abs/2502.15654"
+---
+
+Every frontier model is trained on a scrape of the web. Every release pushes more model output back onto that web. So the next scrape is contaminated with the last model's writing, and the one after that with its own — a copy of a copy of a copy. The unsettling result, now well-documented, is that this loop doesn't converge on something better. It *degrades*. The tails of the distribution thin out first, then the middle narrows, and eventually the model can only say the most average thing.
+
+This is **model collapse**, and it has turned a boring-sounding asset — provably human, pre-AI text — into something scarce and valuable. The reflexive crypto answer is *provenance*: put the data's origin on-chain, sell verified-human corpora through a DataDAO, attach a signed credential to every byte. This piece is about why that instinct is half-right and half a category error. A blockchain can prove a great deal about a piece of data. It cannot prove the one thing training actually needs.
+
+## A copy of a copy of a copy
+
+Shumailov et al. gave the mechanism its canonical demonstration in *Nature* in 2024. Fine-tune a language model (they used OPT-125m), generate text with it, fine-tune the next generation on that text, and repeat. Perplexity climbs every generation; by the ninth, the model emits repetitive, low-diversity sludge. They distinguish two phases. **Early collapse** loses the *tails* — the rare words, the unusual constructions, the long-shot events. **Late collapse** is the endgame: the distribution converges toward a point estimate with almost no variance.
+
+The reason is not mystical, and you can see it in the tractable 1-D case the paper works out. Suppose generation *n* is a Gaussian. You don't get to pass the *distribution* to generation *n+1*; you pass a finite **sample** of size *M*, and *n+1* re-estimates its parameters from that sample. Sampling error in the variance estimate compounds across generations — Borji's note on the paper writes the recursive estimator's spread as σ²(1 + n/M) — and crucially, a tail bin that happens to draw *zero* samples this generation is simply *gone* from the next one. With finite *M*, collapse isn't a risk; in the Gaussian model it's a certainty. The variance is a non-negative quantity getting kicked around by noise with an absorbing barrier at zero, and it ends up there.
+
+The artifact below *is* that process — not a cartoon of it. Each generation draws `M` samples from the current distribution and refits the next one from them, with a seeded RNG so a reset reproduces the run. Watch the shaded tails starve first, then the whole curve telescope into a spike. Then drag `M`: a bigger sample buys generations, it doesn't buy immunity.
+
+<Artifact slug="generation-loss" />
+
+The single most important control is the **replace / accumulate** toggle, and it's the hinge of everything that follows — so hold it until the next section.
+
+What the simulation strips away is comforting illusions about scale. "We train on hundreds of billions of tokens, this is a toy" misreads the result: collapse is driven by the *fraction* of each new corpus that is synthetic and by whether old real data is *retained*, not by absolute size. A web that is 40% model-generated is a web where 40% of every future scrape is a recursive draw. The 2024–2026 literature has only sharpened this — "strong model collapse" shows even a small synthetic fraction can dominate the scaling curve.
+
+## Why a chain looks like exactly the fix
+
+Here's where blockchains enter, and why the pitch is seductive. If the disease is *not knowing what your data is*, the cure looks like *provenance*: an immutable, timestamped record of where each datum came from and who vouched for it.
+
+The pieces already exist. **C2PA Content Credentials** wrap an asset in a cryptographically signed manifest — a chain of hashes and signatures recording capture device, edits, and whether AI was involved — and that manifest's hash can be anchored on-chain so the record is tamper-evident and publicly timestamped. **DataDAOs** like Vana already sell curated human datasets and run a *proof-of-contribution* to gate what gets in (we took apart how they price a contribution in [What's Your Data Worth?](/articles/data-valuation-onchain-markets)). **Story** registers provenance for IP so downstream AI use can be traced and paid (we read its royalty graph in [Who Gets Paid When AI Remixes IP?](/articles/story-royalty-graph-onchain)). And [proof-of-personhood](/articles/proof-of-personhood-priority-blockspace) can stamp a datum as authored behind a verified-human gate.
+
+Stack those and you have a tempting story: a marketplace for "low-background" data — the AI analogue of low-background steel, the pre-1945 steel prized because it isn't contaminated with atomic-era fallout. Here the fallout is synthetic text, the clean steel is anything provably written before the models flooded the zone, and the chain is the assay office.
+
+## Signed is not clean
+
+The category error is in that last word. **A blockchain anchors *bindings*: this byte-string, this signer, this time.** Training needs a *property*: this text was authored by a human and is uncontaminated by model output. Those are orthogonal, and conflating them is where the architecture quietly fails.
+
+The C2PA project is admirably blunt about its own scope: a Content Credential **proves signing, not truth**. A valid manifest tells you a holder of a valid certificate signed *this* manifest at *this* time and that the bytes haven't changed since. It does **not** establish that the content is human-authored, that the recorded metadata is honest, or that a camera was ever pointed at a real scene. A signer can wrap machine-generated text in a perfectly valid, perfectly signed credential that says "human." The signature verifies. The claim is false. Anchoring that manifest's hash on Ethereum makes the *lie* immutable and timestamped; it does nothing to make it *true*. Provenance secures the *channel*, never the *content* — the same lesson [tool-poisoned agents](/articles/mcp-tool-poisoning-onchain-agents) teach from the security side.
+
+You might hope to close the gap with a detector: gate the DataDAO on a classifier that rejects machine-generated text. It helps — Gerlach et al. (2025) show that filtering synthetic text out before training does *delay* collapse — but a detector is a probabilistic oracle with false negatives, and modern generators are tuned to slip past exactly these classifiers. As an on-chain admission rule, an imperfect detector is worse than it looks: every false negative is now a *cryptographically certified* piece of contamination, laundered into a "verified human" corpus that commands a premium. The chain has faithfully recorded a wrong answer.
+
+This is the same shape as the [data-poisoning](/articles/provenance-isnt-purity-data-poisoning) gap — provenance proves integrity, not purity — but the failure mode is gentler and, for that reason, more dangerous. Poisoning is adversarial and rare; a backdoor needs an attacker. Collapse is *ambient*. Nobody has to attack you. The contamination arrives for free, in the ordinary act of scraping a web that the previous generation of models already wrote half of, and the on-chain record will certify all of it as authentic — because it *is* authentic. It's just not clean.
+
+## The fix lives in the data pipeline, not the ledger
+
+Now go back to the toggle. The genuinely good news in this literature is Gerstgrasser et al. (2024): collapse is **not** inevitable. Their result splits cleanly on data management.
+
+- **Replace** — each generation trains *only* on the previous generation's output. Test error diverges with the number of iterations. This is the doom loop.
+- **Accumulate** — each generation trains on the original real data *plus* every synthetic generation so far. Test error has a **finite upper bound, independent of the number of iterations.** The original anchor never leaves the pool.
+
+In the artifact, flip to accumulate and σ̂ stops falling — it parks near σ₀ and the tails survive, run as long as you like. That's the whole theorem, visible. And notice what it implies: the load-bearing intervention is a *data-engineering* discipline — **keep the real data and keep mixing it in** — not a cryptographic one.
+
+So where does the chain actually earn its place? Not as a purity oracle, but in the two roles it's genuinely good at:
+
+1. **Timestamped cutoffs.** A chain is an excellent, censorship-resistant clock. "This corpus's manifests were all anchored before block *N* (≈ early 2023)" is a *checkable, hard-to-backdate* claim — the low-background-steel assay done right. It proves *when*, which is exactly what the chain *can* prove, and "old enough to predate the flood" is a usefully strong proxy for "human."
+2. **Opt-out and consent registries.** Decentralized registries (the DECORAIT line of work) let creators record, durably and publicly, that their data may or may not be used for training. That's a *binding* — consent attached to an identity — and bindings are precisely what ledgers do well.
+
+What a chain should *not* be sold as is a guarantee that the bytes behind a hash are human or uncontaminated. That property has to be earned upstream, by people and pipelines, before anything gets signed.
+
+## Takeaways
+
+- **Model collapse is real and statistical, not adversarial.** Recursive training on synthetic data loses the tails first, then collapses to a point estimate. With finite per-generation samples, the 1-D theory makes it a certainty, not a risk — scale buys time, not immunity.
+- **A blockchain proves bindings, not properties.** It can attest *who signed this and when* with cryptographic finality. "Human-authored and uncontaminated" is a property of the content that no signature establishes — C2PA itself says it proves signing, not truth.
+- **Certifying the wrong answer is worse than no answer.** An imperfect AI-text detector used as an on-chain admission gate launders its false negatives into a premium "verified-human" corpus. The immutability works against you.
+- **The real mitigation is in the data pipeline:** retain real data and accumulate rather than replace (Gerstgrasser's finite bound). Use the chain for what it's actually good at — anchoring pre-flood timestamps and opt-out consent — not as a purity oracle.

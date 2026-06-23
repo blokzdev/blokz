@@ -1,0 +1,25 @@
+{
+  "slug": "the-kv-wall",
+  "title": "The KV Wall",
+  "description": "KV cache size (GiB) vs context length for Llama 3.1 8B, 70B, and 405B on log-log axes, against A10G / H100 VRAM ceilings. Toggle BF16, INT4, or DeltaKV compression and drag the cursor — the panel shows whether the live KV state fits on a single GPU.",
+  "pubDate": "2026-06-21",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "infrastructure",
+    "llm"
+  ],
+  "aspect": "840/460",
+  "featured": false,
+  "controls": [
+    "drag or click to move the context cursor",
+    "arrow keys ← → to step through context lengths",
+    "compression tabs toggle BF16 / INT4 / DeltaKV curves"
+  ],
+  "dataSource": {
+    "label": "Meta Llama 3.1 (arXiv:2407.21783); DeltaKV (arXiv:2602.08005); ARKV (arXiv:2603.08727)",
+    "url": "https://arxiv.org/abs/2407.21783"
+  },
+  "dataAsOf": "2026-06-21"
+}

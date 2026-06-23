@@ -1,0 +1,34 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import DateArchive from '@/components/DateArchive.astro';
+import {
+  ARTICLE_SORTS,
+  dateChip,
+  dateScopedSorts,
+  getArticles,
+  getTopics,
+  groupByDate,
+} from '@/lib/content-helpers';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const articles = await getArticles();
+  return paginate(articles, { pageSize: 12 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const articles = await getArticles();
+const topics = await getTopics();
+const children = groupByDate(articles).years.map((y) =>
+  dateChip('/articles', y.year, undefined, undefined, y.count),
+);
+const sortOptions = dateScopedSorts('/articles', ARTICLE_SORTS);
+---
+
+<BaseLayout
+  title="Articles — By date"
+  description="Browse the Blokz article archive by date — drill down from year to month to day."
+  noindex
+>
+  <DateArchive {page} base="/articles" kind="article" {topics} {children} {sortOptions} />
+</BaseLayout>

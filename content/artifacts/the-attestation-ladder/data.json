@@ -1,0 +1,44 @@
+{
+  "_note": "On-chain DCAP (Intel SGX/TDX) attestation-quote verification gas, snapshotted from Automata DCAP Attestation v1.1 (Oct 2025) and Phala's RiscZero zkVM verifier writeup. Totals are sourced; the per-segment split of the on-chain path is a model anchored on those totals — the sourced facts are the ECDSA-verify cost (330k Solidity -> 6k via EIP-7951) and the ~4.5M naive total / ~290k zkVM total. No runtime fetches.",
+  "ecdsaVerifies": 3,
+  "ecdsaSolidityGas": 330000,
+  "ecdsaPrecompileGas": 6000,
+  "naiveTotalGas": 4500000,
+  "zkvmAvgGas": 289728,
+  "zkvmGroth16Gas": 250000,
+  "blockGasLimit": 60000000,
+  "deployment": {
+    "entryPointGas": 3296655,
+    "v3VerifierGas": 3696655,
+    "v4VerifierGas": 4650134
+  },
+  "networksDeployed": 20,
+  "ethPriceUsd": 1727.5,
+  "gasPriceGwei": 1.0,
+  "paths": [
+    {
+      "id": "solidity",
+      "label": "Naive Solidity",
+      "sub": "pre-Fusaka · all on-chain",
+      "ecdsa": "solidity",
+      "note": "The full DCAP path in Solidity: parse the quote, walk the PCK X.509 cert chain to Intel's SGX Root CA, check the collateral (TCBInfo, QEIdentity, CRLs), then verify every ECDSA signature. The X.509 parsing and collateral iteration dominate; the three ECDSA verifies add ~1M on top."
+    },
+    {
+      "id": "precompile",
+      "label": "EIP-7951 precompile",
+      "sub": "post-Fusaka · all on-chain",
+      "ecdsa": "precompile",
+      "note": "Fusaka's P256VERIFY precompile drops each ECDSA verify from ~330k to 6k gas — saving nearly 1M across the cert chain. But the X.509 parsing and collateral iteration are untouched, so the bar barely moves. The precompile shaves the cheap part."
+    },
+    {
+      "id": "zkvm",
+      "label": "zkVM-compressed proof",
+      "sub": "off-chain prove · on-chain verify",
+      "ecdsa": "none",
+      "note": "Run the whole DCAP verification inside a zkVM (RiscZero / SP1 / Pico) off-chain, then post a single succinct proof. The contract verifies one Groth16 proof for a flat ~290k gas, no matter how large the quote or how long the cert chain — the same succinctness trick a ZK coprocessor uses."
+    }
+  ],
+  "consumers": [
+    "Phala", "Automata", "EigenAI (TEE re-execution)", "NVIDIA H100 confidential GPUs"
+  ]
+}

@@ -2,7 +2,7 @@
   "slug": "block-mesh",
   "title": "Block Mesh",
   "description": "A live 3D peer-to-peer network: nodes on a fuzzy sphere, gossip links between nearest peers, and transaction pulses propagating hop by hop across the topology.",
-  "pubDate": "2026-06-11",
+  "pubDate": "2026-06-11T12:00:00Z",
   "type": "three",
   "archetype": "simulation",
   "topics": [

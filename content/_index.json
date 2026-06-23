@@ -55,15 +55,23 @@
       "path": "content/articles/2026/06/the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge/index.mdx",
       "url": "/articles/the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge",
       "title": "The Blob Market Cycle: Twenty Months at the Floor, Then the Surge",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Ethereum's blob fee market held at 1 wei for twenty months after Dencun, then broke in December 2025. Here's what the data shows, what drove the cycle, and what it means for L2s and AI agents that depend on cheap calldata.",
       "pubDate": "2026-06-23",
       "topics": [
         "blockchain",
         "infrastructure",
         "data"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "eip-4844",
+        "eip-7691",
+        "blobs",
+        "l2",
+        "fee-market"
+      ],
+      "artifacts": [
+        "the-blob-fee-cycle"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3042,7 +3050,7 @@
       "module": "src/islands/artifacts/the-blob-fee-cycle.ts",
       "url": "/artifacts/the-blob-fee-cycle",
       "title": "The Blob Fee Cycle",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Interactive chart tracing Ethereum blob base fees from the 1-wei floor at Dencun launch (Mar 2024) through the Dec 2025 surge to an all-time high of 5.69 gwei — click any data point for block-level detail.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

@@ -1,0 +1,16 @@
+{
+  "slug": "the-x402-handshake",
+  "title": "The x402 Handshake",
+  "description": "The x402 HTTP payment exchange: six-step sequence diagram from initial probe through EIP-3009 authorization signing, facilitator settlement, and resource delivery. Tap any step to inspect the exact header format.",
+  "pubDate": "2026-06-23T21:28:22.671Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "infrastructure",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a step to inspect the header format", "← → or arrow keys to navigate steps"]
+}

@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 125,
-    "artifacts": 126
+    "articles": 126,
+    "artifacts": 127
   },
   "topicCounts": {
-    "agents": 43,
+    "agents": 44,
     "ai": 12,
     "blockchain": 30,
     "cryptography": 21,
     "data": 19,
     "defi": 31,
-    "infrastructure": 42,
+    "infrastructure": 43,
     "llm": 22,
     "machine-learning": 42,
     "research": 14,
@@ -18,10 +18,40 @@
     "smart-contracts": 24,
     "tokenomics": 16,
     "tooling": 1,
-    "web3": 13,
+    "web3": 14,
     "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "path": "content/articles/2026/06/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents/index.mdx",
+      "url": "/articles/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "title": "Payment Required: Inside x402, the HTTP-Native Settlement Standard for AI Agents",
+      "description": "HTTP 402 has existed since 1996 with no implementation. x402 finally gives it meaning: a four-step exchange where an AI agent signs an EIP-3009 authorization into an HTTP header, a facilitator submits it on-chain, and the resource delivers in under two seconds. Here's the protocol mechanics and where the centralization tradeoff lives.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
+      ],
+      "tags": [
+        "x402",
+        "http-402",
+        "micropayments",
+        "ai-agents",
+        "eip-3009",
+        "usdc",
+        "facilitator",
+        "stablecoin-payments",
+        "machine-to-machine",
+        "coinbase"
+      ],
+      "artifacts": [
+        "the-x402-handshake"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
       "path": "content/articles/2026/06/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference/index.mdx",
@@ -3413,6 +3443,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-x402-handshake",
+      "path": "content/artifacts/the-x402-handshake/manifest.json",
+      "module": "src/islands/artifacts/the-x402-handshake.ts",
+      "url": "/artifacts/the-x402-handshake",
+      "title": "The x402 Handshake",
+      "description": "The x402 HTTP payment exchange: six-step sequence diagram from initial probe through EIP-3009 authorization signing, facilitator settlement, and resource delivery. Tap any step to inspect the exact header format.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "peer-rank-convergence",
       "path": "content/artifacts/peer-rank-convergence/manifest.json",

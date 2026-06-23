@@ -26,15 +26,28 @@
       "path": "content/articles/2026/06/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training/index.mdx",
       "url": "/articles/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
       "title": "The Sparse Frontier: SparseLoCo and the Compression Math Behind Permissionless Pre-Training",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Covenant-72B pre-trained a 72.7B-parameter LLM across 70+ anonymous internet peers. The key was SparseLoCo: 1.56% gradient density plus 2-bit quantization achieves 146× compression, collapsing the required uplink from 1.9 Gbps to 110 Mbps — consumer fiber.",
       "pubDate": "2026-06-23",
       "topics": [
         "machine-learning",
         "research",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "sparseloco",
+        "covenant-72b",
+        "distributed-training",
+        "gradient-compression",
+        "sparsification",
+        "diloco",
+        "permissionless-training",
+        "internet-training",
+        "decentralized-ai",
+        "prime-intellect"
+      ],
+      "artifacts": [
+        "the-bandwidth-floor"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -840,7 +853,7 @@
       "module": "src/islands/artifacts/the-bandwidth-floor.ts",
       "url": "/artifacts/the-bandwidth-floor",
       "title": "The Bandwidth Floor",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Required uplink bandwidth vs model scale for three gradient sync strategies: dense DDP, full-precision DiLoCo, and SparseLoCo (146× compressed). Drag the cursor to read bandwidth at any model size; compare to real connectivity levels.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

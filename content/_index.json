@@ -55,17 +55,28 @@
       "path": "content/articles/2026/06/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference/index.mdx",
       "url": "/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
       "title": "The Activation Hash: TOPLOC and the 1,000x Receipt for Non-Interactive Verifiable Inference",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "DiFR's seed-commitment round-trip is the last synchronization barrier to async verifiable inference. TOPLOC removes it: a locality-sensitive hash of intermediate activations compresses to 258 bytes per 32 tokens — 1,000× smaller than raw embeddings — and validates faster than inference ran.",
       "pubDate": "2026-06-23",
       "topics": [
         "zero-knowledge",
         "machine-learning",
         "research"
       ],
-      "tags": [],
+      "tags": [
+        "verifiable-inference",
+        "toploc",
+        "activation-hash",
+        "locality-sensitive-hashing",
+        "non-interactive",
+        "model-substitution",
+        "inference-markets",
+        "proof-of-intelligence"
+      ],
       "series": "proof-of-intelligence",
       "seriesOrder": 10,
-      "artifacts": [],
+      "artifacts": [
+        "verifiable-inference-cost-spectrum"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3098,7 +3109,7 @@
       "module": "src/islands/artifacts/verifiable-inference-cost-spectrum.ts",
       "url": "/artifacts/verifiable-inference-cost-spectrum",
       "title": "Verifiable Inference Cost Spectrum",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Verification overhead (ms, log scale) for five approaches to trustless LLM inference — NabaOS receipts, TOPLOC fingerprints, DiFR seed-commit, output resampling, and full ZK proof. Hover or tap a row for detail.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

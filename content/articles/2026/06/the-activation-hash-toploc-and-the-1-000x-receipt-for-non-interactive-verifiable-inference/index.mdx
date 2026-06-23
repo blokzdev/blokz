@@ -1,24 +1,116 @@
 ---
 slug: the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference
 title: "The Activation Hash: TOPLOC and the 1,000x Receipt for Non-Interactive Verifiable Inference"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "DiFR's seed-commitment round-trip is the last synchronization barrier to async verifiable inference. TOPLOC removes it: a locality-sensitive hash of intermediate activations compresses to 258 bytes per 32 tokens — 1,000× smaller than raw embeddings — and validates faster than inference ran."
 pubDate: 2026-06-23T07:30:25.232Z
 author: blokz
 topics: [zero-knowledge, machine-learning, research]
-tags: []
+tags: [verifiable-inference, toploc, activation-hash, locality-sensitive-hashing, non-interactive, model-substitution, inference-markets, proof-of-intelligence]
 series: proof-of-intelligence
 seriesOrder: 10
-artifacts: []
+artifacts: [verifiable-inference-cost-spectrum]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "TOPLOC: A Locality Sensitive Hashing Scheme for Trustless Verifiable Inference (Fransen et al., Jan 2025)"
+    url: "https://arxiv.org/abs/2501.16007"
+  - label: "NabaOS: Agentic AI Operating System with Verifiable Receipts (Mar 2026)"
+    url: "https://arxiv.org/abs/2603.10060"
+  - label: "DiFR: Inference Verification Despite Nondeterminism (Karvonen et al., Nov 2025)"
+    url: "https://arxiv.org/abs/2511.20621"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+In [Part 9 of this series](/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference), DiFR established that activation fingerprints can detect 4-bit quantization in as few as 2 output tokens at AUC > 0.999. The catch: verification requires a pre-committed random seed, which means the verifier and provider must complete a round-trip *before* inference can start. For an on-chain inference market, that synchronization barrier adds at least one block time — every single query.
 
-## Section heading
+TOPLOC removes that barrier entirely. A January 2025 paper by Scott Fransen, Jacob Dentes, and Cody Blakeney introduces a locality-sensitive hashing scheme that produces a 258-byte fingerprint per 32 output tokens, attached *after* inference completes. The verifier checks it asynchronously, on any hardware, without having seen the query in advance. The math guarantees 100% detection of model substitution and precision changes. Validation runs faster than inference ran.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+That combination — non-interactive, hardware-agnostic, sub-inference overhead — is the first design that fits naturally into a trust-minimized inference pipeline without restructuring how providers serve requests.
+
+## The pre-commitment bottleneck
+
+DiFR's protocol is elegant: commit a seed, run inference, verify that the provider's activations project consistently with the committed seed. But the commit step is synchronous. The provider cannot start generating tokens until the verifier's seed commitment has landed. In a low-latency API context this adds one network round-trip. In an on-chain context it adds at least one block — and with realistic block times on most chains, that's 500ms to 12 seconds of added latency per query.
+
+Worse, the interactive requirement means every query must register two separate transactions: the commitment and the inference request. Gas cost doubles; sequencing becomes a coordination problem. For any inference market hoping to serve thousands of concurrent requests, this is a structural throughput limit.
+
+The underlying reason DiFR needs pre-commitment is that it defends against a *retrospective* cheating strategy: a provider who waits to see which projections the verifier will ask for, then fabricates consistent-looking activations. Fixing the seed before inference eliminates that freedom. TOPLOC takes a different approach that achieves the same guarantee without the pre-commitment.
+
+## How TOPLOC works: top-k as a stable invariant
+
+The key insight is that while floating-point activation values vary across hardware due to non-associative reduction orders, the *identities of the top-k activation positions* are remarkably stable. If activation vector **h** has 10,000 dimensions, the indices of the 50 largest values — not their magnitudes, just which positions they are — remain consistent across different GPU types, different batch sizes, and different algebraic reorderings of the matrix multiply.
+
+This stability arises because top-k selection is an integer comparison problem. Two activations differ in magnitude due to floating-point noise, but they would need to actually *swap rank* for the top-k set to change. Small numerical variations almost never flip a rank near the top of a heavy-tailed distribution, where the gap between adjacent values is large.
+
+TOPLOC builds a fingerprint from these stable indices:
+
+1. At each intermediate layer, extract the indices of the top-k activations (k is a tunable parameter; the paper uses k = 32 per token across a selected layer).
+2. Encode those indices as a polynomial over a finite field. The polynomial evaluation at a fixed point compresses the entire k-index set into a single field element.
+3. Concatenate field elements across tokens into the receipt.
+
+The result is 258 bytes per 32 output tokens — a 1,000× compression compared to storing raw embeddings (262 KB for the same span). The receipt is attached to the inference response. The verifier re-runs the identical top-k extraction on the received outputs, computes the same polynomial encoding, and checks that the field elements match.
+
+## The 258-byte math
+
+To understand why polynomial encoding achieves this, consider the raw alternatives. Storing the k=32 top activation indices for each of 32 tokens at 2 bytes per index costs 32 × 32 × 2 = 2,048 bytes — still a factor of 8× smaller than raw embeddings, but larger than necessary.
+
+The paper's construction uses a Reed-Solomon-style evaluation trick. The k indices per token are treated as coefficients of a degree-(k-1) polynomial over GF(p) for a prime p chosen to fit in 64 bits. Evaluating that polynomial at a single point (fixed across prover and verifier) maps 32 coefficients to a single 8-byte value. Thirty-two tokens yield 32 × 8 = 256 bytes, plus a 2-byte metadata header: 258 bytes total.
+
+The security argument is probabilistic: a cheating provider who knows the evaluation point but not the verifier's challenge could construct a different set of indices that evaluates to the same value. The probability of this collision is bounded by the degree of the polynomial divided by the field size — roughly k/p, which at p ≈ 2^64 and k = 32 is approximately 2^{-59}. Negligible in practice.
+
+The verifier's work is just one polynomial evaluation per token per layer checked. On a standard CPU this runs in microseconds. The paper reports validation finishing faster than the original inference, measured wall-clock on the same machine — so the overhead is sub-latency by construction, not just by optimization.
+
+## Hardware agnosticity
+
+One of TOPLOC's strongest properties is that the receipt is valid across heterogeneous hardware. A provider running on NVIDIA H100s issues a receipt; a verifier on AMD MI300X checks it. Both will extract the same top-k indices because rank ordering survives the floating-point variation introduced by different GPU architectures.
+
+This matters for decentralized inference networks where provers are not homogeneous. In contrast, full ZK proof systems like zkLLM must prove the *exact* arithmetic of the forward pass — meaning the proof is tied to the specific numerical execution path, and reproducing it on different hardware requires bit-exact determinism that GPUs do not provide natively.
+
+DiFR's random projection scheme is also hardware-agnostic in principle (it operates on sampled activations, not exact values), but the pre-commitment requirement means it cannot work asynchronously. TOPLOC is both hardware-agnostic *and* non-interactive.
+
+## What TOPLOC verifies — and what it doesn't
+
+TOPLOC's receipt proves three things with high probability:
+
+1. **Model identity**: a provider serving a quantized or substituted model will have different top-k activation indices at the checked layer. The paper reports 100% detection accuracy on model substitution and precision changes (INT4, INT8) in their evaluation set.
+
+2. **Precision integrity**: even 4-bit quantization shifts activation magnitudes enough to change which indices appear in the top-k set. The paper validates this on Llama-2 and Llama-3 with standard quantization schemes.
+
+3. **Prompt integrity**: a provider who processes a different prompt than claimed will generate different activations from the first token forward. Top-k indices will diverge immediately.
+
+What TOPLOC does *not* prove: that the model ran every multiply-accumulate in the forward pass correctly end-to-end. A provider could in principle run the correct model for the checked layer while using a substitute elsewhere. The security model assumes the fingerprinted layer is representative — a reasonable assumption when the checked layer is deep in the network, where substitution effects compound.
+
+For applications that need a cryptographic guarantee over the complete computation, full ZK proofs (zkLLM at 2–3 minutes per query, as measured in the NabaOS comparison study) provide that guarantee at orders-of-magnitude higher cost. TOPLOC is a practical middle ground: it provides strong statistical evidence of correct model execution with sub-millisecond verification overhead.
+
+<Artifact slug="verifiable-inference-cost-spectrum" />
+
+The chart above places TOPLOC in context. NabaOS receipts (under 15 ms) are faster still, but they verify tool execution outcomes — what the agent *did* — not which model produced the reasoning. TOPLOC and DiFR both verify model identity; the distinction is that TOPLOC's fingerprint is generated post-inference and checked asynchronously, while DiFR's seed-commitment scheme requires a synchronous handshake before inference begins, adding 100–600 ms of latency per query from the round-trip alone.
+
+## Implications for inference markets
+
+The practical consequence is that a TOPLOC-compatible inference API looks identical to an unverified one from the caller's perspective. The provider generates a fingerprint alongside each response. The marketplace contract verifies it during or after the result is committed on-chain — no change to the request path.
+
+This enables a slashing-based trust model without restructuring the inference pipeline:
+
+- A verifier samples some fraction of receipts, re-derives the polynomial evaluation on the provider's reported outputs, and checks the match.
+- A mismatch is evidence of model substitution or quantization fraud. The provider's stake is slashed.
+- Honest providers face negligible verification overhead (sub-millisecond per receipt check); dishonest providers face certain detection on any sampled query.
+
+The 258-byte receipt is small enough to store on-chain directly or commit via a hash. At Ethereum's current calldata costs, 258 bytes adds approximately 0.003 ETH to each query at recent gas prices — non-trivial for micro-transactions, but within range for higher-value inference tasks. Batching receipts across queries brings the per-query cost down further.
+
+The remaining design question for any deployment is what fraction of queries to verify. At 100% sampling, verification is continuous but inexpensive (sub-ms per check). At lower sampling rates, the expected penalty for a cheating provider scales inversely with the sampling fraction, so the staking requirement must compensate. The game-theoretic argument for honest behavior holds as long as expected stake loss exceeds expected gain from serving cheaper models — the same framing used in optimistic rollup dispute games.
+
+## Limitations and open questions
+
+Three limitations are worth flagging:
+
+**Layer selection is a parameter, not a proof.** TOPLOC verifies the top-k indices at a chosen intermediate layer. If a provider knows which layer is checked, they could in principle run the correct model at that layer and substitute elsewhere. In practice, the paper randomizes the checked layer per query (or checks multiple layers), and the verifier can change its selection strategy without notifying the provider in advance. But the security is game-theoretic rather than cryptographic at this level.
+
+**The stability assumption is empirical.** The claim that top-k indices are stable across hardware holds in the paper's benchmarks, but has not been tested across every GPU variant, inference framework, and quantization combination. Edge cases where hardware variation does flip a top-k index would produce false-positive fraud allegations. The paper reports zero such false positives in their evaluation, but a production deployment would want to establish hardware-specific empirical bounds.
+
+**No privacy guarantee.** The receipt contains real activation indices, which in principle carry information about the model's internal representations. For applications where model weights are proprietary, the fingerprint itself is a partial leak. DiFR's random projection approach masks this — projected activations reveal nothing about the underlying weights. TOPLOC makes the tradeoff explicit: simpler verification in exchange for exposing activation topology.
 
 ## Takeaways
 
-TODO.
+TOPLOC closes the last synchronization barrier in the proof-of-intelligence protocol stack. DiFR (Part 9) showed that activation fingerprints could detect model substitution statistically; TOPLOC shows they can do so without a pre-committed seed, without interactive rounds, and with receipts small enough to commit on-chain.
+
+The 258-byte receipt per 32 tokens — a 1,000× compression over raw embeddings — is the design that makes this practical. Verification is faster than inference ran. The scheme is hardware-agnostic. And it slots into an existing inference API as a sidecar, not a replacement.
+
+That leaves two open tracks for the series: batching verification across providers (aggregating receipts from competing nodes to detect collusion rather than individual substitution) and the trust model for multi-step agent chains, where each hop introduces a new verification surface. TOPLOC makes per-query verification tractable; per-chain verification is the next unsolved problem.

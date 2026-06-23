@@ -1,0 +1,42 @@
+{
+  "snapshot": {
+    "ethUsd": 1735.99,
+    "blockNumber": 25374646,
+    "timestamp": "2026-06-22T17:30:11Z",
+    "gasAvgGwei": 0.55,
+    "contractAddress": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+    "contractDeployed": "2021-08-04"
+  },
+  "steps": [
+    {
+      "id": "intent",
+      "label": "Intents Arrive",
+      "description": "Traders sign order intents — specifying token pair, limit price, and deadline — and post them to the off-chain order book. No transaction is broadcast yet. The signed intent is valid until the deadline; the solver will pick the execution path.",
+      "detail": "A sell order: 1 ETH → USDC, limit $1,720. A buy order: 3,450 USDC → ETH, limit $1,750. Both are live in the mempool."
+    },
+    {
+      "id": "batch",
+      "label": "Batch Sealed",
+      "description": "Every 30 seconds the protocol seals the current set of intents into a batch. No new orders enter this batch; no solver can front-run individual trades because the full set is fixed before settlement begins.",
+      "detail": "Batch #4,812,091 sealed. 47 intents across 12 token pairs. Solvers now have ~10 seconds to find the optimal settlement."
+    },
+    {
+      "id": "compete",
+      "label": "Solvers Compete",
+      "description": "Off-chain solver bots (Quasimodo, Naive, Paraswap, 0x, custom MEV searchers) each submit a proposed settlement path. They can route through AMMs, aggregators, or match intents directly against each other (Coincidence of Wants). The solver who generates the most surplus wins.",
+      "detail": "Winning solver: routes the ETH→USDC order directly against the USDC→ETH order (CoW), saving both traders LP fees. Clearing price: $1,735."
+    },
+    {
+      "id": "settle",
+      "label": "Settlement Executes",
+      "description": "The winning solver submits one on-chain transaction to GPv2Settlement. The contract verifies all signatures, checks limit prices, applies the uniform clearing price across every matched trade, and transfers tokens atomically.",
+      "detail": "Tx: 0x9008…ab41. Gas: ~320,000 (shared across 47 trades). Each trader pays ~$0.004 gas equivalent — 12× cheaper than individual swaps."
+    },
+    {
+      "id": "surplus",
+      "label": "Surplus Distributed",
+      "description": "Any price improvement above each trader's stated limit price is their surplus. With the uniform clearing price at $1,735 and a limit of $1,720, the seller gets $15 extra per ETH back as surplus — not absorbed by LPs or the protocol.",
+      "detail": "Seller surplus: +$15 USDC. Buyer surplus: +$15 USDC equivalent. Solver fee: 0.05% of surplus. No LP fee on the CoW match."
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+---
+slug: the-excluded-transaction-focil-censorship-resistance-and-what-block-builders-can-deny-ai-agents
+title: "The Excluded Transaction: FOCIL, Censorship Resistance, and What Block Builders Can Deny AI Agents"
+description: "38.6% of Ethereum blocks today go through censoring relays. FOCIL (EIP-7805) ends builder exclusion with a 16-validator committee and a 1-out-of-16 honesty assumption hardwired into the fork-choice rule — landing in the Hegota upgrade, late 2026."
+pubDate: 2026-06-23T06:27:38.114Z
+author: blokz
+topics: [blockchain, security, agents]
+tags: [focil, censorship-resistance, inclusion-lists, mev, block-building, ofac, hegota, eip-7805, liquidation-agents]
+artifacts: [the-focil-slot]
+difficulty: intermediate
+sources:
+  - label: "EIP-7805: Fork-Choice Enforced Inclusion Lists (FOCIL)"
+    url: "https://eips.ethereum.org/EIPS/eip-7805"
+  - label: "FOCIL: A simple committee-based inclusion list proposal — ethresear.ch"
+    url: "https://ethresear.ch/t/fork-choice-enforced-inclusion-lists-focil-a-simple-committee-based-inclusion-list-proposal/19870"
+  - label: "MEV Watch — censoring relay share on Ethereum"
+    url: "https://www.mevwatch.info/"
+  - label: "Ethereum Foundation: Checkpoint #9, April 2026"
+    url: "https://blog.ethereum.org/2026/04/10/checkpoint-9"
+---
+
+Aave's liquidation bonus is 5%: liquidate $300,000 in collateral, earn $15,000. An AI agent built for this spots the eligible position and submits its transaction to the public mempool. The winning block — built by one of the five builders that win 96.7% of Ethereum blocks — is running bloXroute Regulated, which screens against the OFAC sanctions list. The agent's operator wallet was funded years ago through a protocol that touched Tornado Cash. Six consecutive slots pass: 72 seconds. A competing bot with a private builder relationship arrives at slot seven. The $15,000 is gone.
+
+This is not an exotic attack. It is the default consequence of how Ethereum's block-building market operates in June 2026 — and it falls hardest on the agents that most need reliable, impartial inclusion.
+
+## The Censorship Math Today
+
+Block builders sit at the most powerful position in Ethereum's post-Merge fee market. Under MEV-Boost, proposers almost always delegate block construction to an external builder. Builders aggregate transactions from multiple sources, maximize extractable value, and hand the finished block back to the proposer. That arrangement is efficient. It is also permissioned.
+
+Some builders filter. [MEV Watch](https://www.mevwatch.info/) tracks the share of blocks delivered by relays that screen OFAC-sanctioned transactions. As of June 22, 2026, **38.6%** of MEV-Boost block deliveries come from censoring relays — down from a peak of **94.8%** in October 2022 after OFAC sanctioned Tornado Cash, but still covering more than one in three blocks. The dominant censoring relays are bloXroute Max Profit (18.2% of market) and bloXroute Regulated (18.1%). The largest neutral relay, Ultra Sound, commands 30.0%.
+
+At 38.6%, an AI agent with no private orderflow arrangement will hit a censoring block roughly every 2–3 slots — once every 24–36 seconds. For a non-time-sensitive yield rebalance, this is a nuisance. For a liquidation that needs to land within two slots before a competing bot arrives, it is a structural disadvantage. Unlike MEV ordering — where you can tip your way toward the front of the block — exclusion gives you nothing to bid against. The builder simply doesn't include you, and there is no on-chain record of the refusal.
+
+As documented in the [builder oligopoly analysis](/articles/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line), private orderflow relationships can route around censoring builders — but those relationships cost money, require trust, and are inaccessible to most autonomous agents. FOCIL is a protocol-level alternative that requires neither.
+
+## FOCIL: The Mechanism
+
+EIP-7805, called FOCIL (Fork-Choice Enforced Inclusion Lists), breaks the builder's unilateral control over inclusion by moving the decision to a validator committee before the builder constructs the block.
+
+The mechanism plays out over two consecutive 12-second slots.
+
+**IL Broadcast (Slot N, t=0–9s)**: The consensus layer randomly selects 16 validators to serve as the Inclusion List (IL) committee for the slot (`IL_COMMITTEE_SIZE = 2^4`). Each member independently monitors its local mempool, builds an IL containing valid pending transactions, and gossips it to peers. Each IL is capped at **8,192 bytes (8 KiB)**. Any committee member may see slightly different mempools, so ILs will overlap but not be identical.
+
+**View Freeze (Slot N, t=9s)**: The IL acceptance window closes. No ILs submitted after t=9s are valid for this slot. From this point, the set of ILs is locked.
+
+**Builder Assembly (Slot N, t=9–11s)**: The builder assembles the execution payload. Per FOCIL's validity rules, every transaction appearing in any collected IL must be included in the block — unless the transaction is already present, the block has no remaining gas, or the transaction fails basic validity (wrong nonce, insufficient balance). A builder who drops a valid IL transaction is not building a valid block.
+
+**Block Proposal (Slot N+1, t=0s)**: The proposer broadcasts the block.
+
+**Attestation (Slot N+1, t=4s)**: Attesters receive the block and verify it satisfies the IL conditions. A block missing a valid IL transaction — one that was broadcast before the view freeze and passes nonce/balance checks — does not receive attestations. Without enough attestations, the block cannot be canonical. The builder forfeits the entire slot's revenue rather than include your transaction.
+
+<Artifact slug="the-focil-slot" />
+
+The critical architectural choice is *where the rule lives*. Earlier inclusion list proposals put the inclusion burden on the proposer — a single validator who could be bribed or coerced cheaply. FOCIL moves enforcement into the **fork-choice rule**: attesters choose which blocks to vote for. A builder who censors an IL transaction doesn't just annoy you; it loses its block to a missed-slot penalty.
+
+## The 1-out-of-16 Assumption
+
+FOCIL's security guarantee is crisp: it requires exactly **1 out of 16** committee members to be honest. If any single validator on the slot's randomly-selected committee includes your transaction in its IL and broadcasts before t=9s, that transaction must appear in the block or the builder loses the slot entirely.
+
+To reliably exclude a specific transaction, a censoring entity would need to:
+
+1. Know which 16 validators are selected for the slot's IL committee (revealed only at slot start)
+2. Bribe or compromise all 16 of them within the 9-second broadcast window
+3. Do this every slot, since committee membership rotates
+
+As of mid-2026, roughly 900,000 validators are active. Even an adversary controlling 10% of stake would need all 16 committee slots to fall to their validators — a per-slot probability of approximately (0.1)^16, near zero. Corrupting an entire randomly-selected committee before t=9s is not a realistic attack under any realistic stake distribution.
+
+The comparison to the current model is direct: today, censoring one builder (who controls 18%+ of blocks) is all it takes. After FOCIL, you must corrupt 16 pseudorandomly-chosen validators simultaneously, with less than a 9-second window.
+
+## Equivocation Protection
+
+One attack on the committee model: a validator could broadcast two *different* ILs — one genuine, one empty or carefully curated — and let the builder decide which to use. FOCIL closes this with a P2P rule: if peers detect two different ILs signed by the same IL committee member, all ILs from that member are discarded. An equivocating committee member effectively removes itself from the committee. The cost of the attack is the validator's IL contribution; the gain is nothing.
+
+## What Changes for AI Agents
+
+The practical impact depends on the agent's strategy.
+
+**Liquidation agents win the most.** Liquidations are inclusion-race problems, not ordering problems — the first transaction to land takes the bonus. Once FOCIL ensures a liquidation transaction will be included within the current or next slot, the censorship window collapses. Agents running through [ERC-4337 bundlers](/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent) benefit further: a paymaster-sponsored UserOperation submitted to a bundler who includes it in their IL contribution gets the same guarantee as a native EOA transaction.
+
+**Yield rebalancers gain operational certainty.** An agent rebalancing across Aave, Morpho, and Compound doesn't need block-level precision — but it does need eventual inclusion. FOCIL turns "will this eventually confirm?" from a probability question about the builder's preferences into a protocol guarantee. Strategies that today add 5–15 minutes of buffer time for potential censorship windows can tighten that buffer.
+
+**Arbitrage agents see limited improvement.** Arbitrage is an ordering problem, not an inclusion problem. A builder can still front-run your swap by placing their own transaction ahead of yours — they simply can't omit yours entirely. For strategies where being *first* is the entire profit, the adversarial ordering environment is unchanged. [Private orderflow](/articles/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line) and [encrypted mempool](/articles/the-sandwich-tax-on-autonomous-agents) solutions remain relevant for ordering-sensitive agents.
+
+## The 128 KiB Ceiling
+
+Sixteen committee members each contributing 8 KiB gives the IL mechanism a combined capacity of **128 KiB per slot**. How many transactions fit?
+
+| Transaction Type | RLP Size (est.) | Fits per 128 KiB |
+|---|---|---|
+| ERC-20 transfer | ~110–130 bytes | ~1,000–1,100 |
+| Aave liquidation | ~350–600 bytes | ~215–365 |
+| Uniswap V3 swap | ~250–450 bytes | ~285–510 |
+
+An average 30M-gas block at current utilization contains roughly 75–150 transactions. The IL capacity at 128 KiB can hold several times the block's entire transaction set. Under normal conditions, the binding constraint on what gets included is the block gas limit, not the IL size.
+
+The gas-full exception does create a liveness gap. A builder who consistently stuffs blocks to 100% utilization could force IL transactions into the next slot — not exclude them permanently, but delay them by 12 seconds. Sustained block-stuffing is expensive (the builder sacrifices MEV to fill blocks with low-value transactions) and creates an on-chain visible anomaly. The EIP treats this as an acceptable tradeoff: full blocks override IL requirements, and the incentives against sustained stuffing are strong.
+
+## What FOCIL Doesn't Fix
+
+FOCIL solves the *exclusion* problem. It does not solve:
+
+**Transaction ordering.** Within a block, the builder still controls ordering. A builder can still place their own transaction before yours, enabling MEV extraction like sandwich attacks or JIT liquidity. For AI agents where position in the block determines profitability, the ordering problem remains exactly as it is today. FOCIL guarantees you're in the block; it doesn't guarantee you're first.
+
+**Mempool privacy.** Transactions in the public mempool are visible. A builder who can't exclude your liquidation can still front-run it by reading the mempool and submitting their own liquidation in the same block, positioned ahead of yours. Agents who need mempool privacy still need encrypted mempool solutions or private submission channels — tools that FOCIL doesn't replace.
+
+**Cross-slot timing.** FOCIL enforces inclusion at the slot level, not the block level. The [12-second slot clock](/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness) remains the fundamental tick rate. An agent that submits a transaction at t=8s of a slot may need to wait until Slot N+1 or N+2 before inclusion — depending on when its IL gets aggregated.
+
+## The Hegota Timeline
+
+FOCIL (EIP-7805) is scheduled for inclusion in Ethereum's Hegota upgrade, currently targeting late 2026 — Q3 or Q4. Hegota also includes Verkle Trees, which reduce node storage requirements by roughly 90% and enable stateless clients. No mainnet activation date has been confirmed as of June 2026.
+
+The development path to Hegota requires:
+1. Finalizing the EIP-7805 spec (currently in "Scheduled for Inclusion" status)
+2. Client team implementations across the major consensus clients
+3. Devnet and testnet deployments
+4. A multi-client hard fork coordination process
+
+Until Hegota activates, the censorship exposure is real. Agents building today should design around it: use neutral relays for operations that can wait, use private orderflow for time-sensitive strategies, and architect to distinguish between exclusion-sensitive and ordering-sensitive actions.
+
+When FOCIL lands, the 38.6% censoring-relay share becomes structurally irrelevant. Not because those relays stop filtering — they can keep screening against their OFAC lists — but because the protocol enforces inclusion independent of which relay a builder uses. The contract shifts from "trust the builder" to "trust the committee's 1-of-16 threshold."
+
+## Takeaways
+
+- As of June 2026, 38.6% of Ethereum blocks are built by censoring relays; a transaction can be excluded from dozens of consecutive blocks with no on-chain evidence.
+- FOCIL (EIP-7805) moves the inclusion decision to a 16-validator committee that broadcasts inclusion lists before the builder assembles the block; the fork-choice rule enforces it.
+- The security assumption is 1-out-of-16 honesty — far harder to corrupt than the single builder currently controlling block content.
+- Each committee member contributes up to 8 KiB (128 KiB combined), covering many times a block's typical transaction load; the gas limit, not the IL size, is the real bottleneck.
+- FOCIL fixes exclusion; it leaves ordering, mempool privacy, and cross-slot timing unchanged.
+- Hegota is targeted for late 2026; until then, design for the censoring environment.

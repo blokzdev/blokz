@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 112,
-    "artifacts": 113
+    "articles": 113,
+    "artifacts": 114
   },
   "topicCounts": {
-    "agents": 39,
+    "agents": 40,
     "ai": 11,
-    "blockchain": 26,
+    "blockchain": 27,
     "cryptography": 18,
     "data": 17,
     "defi": 27,
@@ -14,7 +14,7 @@
     "llm": 20,
     "machine-learning": 39,
     "research": 11,
-    "security": 31,
+    "security": 32,
     "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
@@ -46,6 +46,35 @@
       ],
       "artifacts": [
         "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-excluded-transaction-focil-censorship-resistance-and-what-block-builders-can-deny-ai-agents",
+      "path": "content/articles/2026/06/the-excluded-transaction-focil-censorship-resistance-and-what-block-builders-can-deny-ai-agents/index.mdx",
+      "url": "/articles/the-excluded-transaction-focil-censorship-resistance-and-what-block-builders-can-deny-ai-agents",
+      "title": "The Excluded Transaction: FOCIL, Censorship Resistance, and What Block Builders Can Deny AI Agents",
+      "description": "38.6% of Ethereum blocks today go through censoring relays. FOCIL (EIP-7805) ends builder exclusion with a 16-validator committee and a 1-out-of-16 honesty assumption hardwired into the fork-choice rule — landing in the Hegota upgrade, late 2026.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "blockchain",
+        "security",
+        "agents"
+      ],
+      "tags": [
+        "focil",
+        "censorship-resistance",
+        "inclusion-lists",
+        "mev",
+        "block-building",
+        "ofac",
+        "hegota",
+        "eip-7805",
+        "liquidation-agents"
+      ],
+      "artifacts": [
+        "the-focil-slot"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3040,6 +3069,22 @@
       "archetype": "scene",
       "topics": [
         "llm",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-focil-slot",
+      "path": "content/artifacts/the-focil-slot/manifest.json",
+      "module": "src/islands/artifacts/the-focil-slot.ts",
+      "url": "/artifacts/the-focil-slot",
+      "title": "The FOCIL Slot",
+      "description": "Interactive diagram of Ethereum's FOCIL slot: four phases from IL broadcast (16 validators, 8 KiB each) through builder assembly to attestation. Toggle 'censoring builder' to watch the fork-choice rule reject a block that drops a valid IL transaction.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "blockchain",
         "security"
       ],
       "draft": false

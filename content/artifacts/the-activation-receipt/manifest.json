@@ -1,7 +1,7 @@
 {
   "slug": "the-activation-receipt",
   "title": "The Activation Receipt",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Switch between FP32, FP16, INT8, and INT4 precision to see how provider activation fingerprints diverge from the reference — and why DiFR flags model substitution in just two forward steps.",
   "pubDate": "2026-06-23T00:31:20.073Z",
   "type": "svg",
   "archetype": "simulation",
@@ -9,7 +9,9 @@
     "machine-learning",
     "cryptography"
   ],
-  "aspect": "16/9",
+  "aspect": "16/7",
   "featured": false,
-  "controls": []
+  "controls": [
+    "select precision level to reveal fingerprint divergence"
+  ]
 }

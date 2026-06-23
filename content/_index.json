@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference/index.mdx",
       "url": "/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
       "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999.",
       "pubDate": "2026-06-23",
       "topics": [
         "machine-learning",
         "cryptography",
         "research"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "verifiable-inference",
+        "activation-fingerprint",
+        "difr",
+        "seed-commitment",
+        "model-substitution",
+        "quantization",
+        "orthogonal-projection",
+        "inference-markets"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 9,
+      "artifacts": [
+        "the-activation-receipt"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2664,7 +2677,7 @@
       "module": "src/islands/artifacts/the-activation-receipt.ts",
       "url": "/artifacts/the-activation-receipt",
       "title": "The Activation Receipt",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Switch between FP32, FP16, INT8, and INT4 precision to see how provider activation fingerprints diverge from the reference — and why DiFR flags model substitution in just two forward steps.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "simulation",

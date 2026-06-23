@@ -1,0 +1,20 @@
+{
+  "slug": "the-randomness-risk-map",
+  "title": "The Randomness Risk Map",
+  "description": "Five on-chain randomness sources plotted on latency vs. manipulation cost. Click any dot to see mechanism, security tier, gas cost, and recommended use case.",
+  "pubDate": "2026-06-22T15:33:33.280Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "smart-contracts",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["click a source dot to inspect details"],
+  "dataSource": {
+    "label": "Chainlink VRF Coordinator V2 on Ethereum Mainnet (Blockscout), Chainlink docs, Ethereum beacon chain stats",
+    "url": "https://eth.blockscout.com/address/0x271682DEB8C4E0901D1a1550aD2e64D568E69909"
+  },
+  "dataAsOf": "2026-06-22"
+}

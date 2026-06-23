@@ -1,0 +1,120 @@
+---
+slug: the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow
+title: "The Phantom Token Bill: Auditing Hidden Reasoning Charges in On-Chain AI Escrow"
+description: "Reasoning models hide their chain-of-thought but bill for every token of it. CoIn proves a provider can inflate that hidden count 5× with 94.7% detection — but only if the escrow contract enforces a commitment root before payment clears."
+pubDate: 2026-06-23T08:00:00Z
+author: blokz
+topics: [llm, security, research]
+tags: [reasoning-models, token-billing, coin-protocol, palace, hidden-tokens, escrow, verifiable-inference, on-chain-payment]
+artifacts: [the-phantom-token-cloud]
+difficulty: intermediate
+sources:
+  - label: "CoIn: Counting the Invisible Reasoning Tokens in Commercial Opaque LLM APIs (arXiv:2505.13778)"
+    url: "https://arxiv.org/abs/2505.13778"
+  - label: "PALACE: Predictive Auditing of Hidden Tokens in LLM APIs via Reasoning Length Estimation (arXiv:2508.00912)"
+    url: "https://arxiv.org/abs/2508.00912"
+  - label: "OpenAI o3 pricing — platform.openai.com"
+    url: "https://platform.openai.com/docs/models/o3"
+  - label: "x402 protocol spec — x402.org"
+    url: "https://x402.org"
+---
+
+An AI agent calls a reasoning model to evaluate a liquidation risk — a task that takes roughly 5,000 hidden thinking tokens before the 200-token answer emerges. The escrow contract reads the response header, sees "5,000 output tokens," and releases $0.022 to the provider. The agent gets a correct answer. What it cannot verify is whether those 5,000 tokens were genuinely computed, or whether the provider returned a cached answer and fabricated the count.
+
+This is the phantom token problem. It does not exist for ordinary LLMs, whose visible outputs you can count yourself. It emerges specifically from reasoning models — o3, DeepSeek-R1, Claude Extended Thinking — that hide the chain-of-thought by design. As on-chain AI escrow scales (the x402 protocol settled $20M+ across 7.5M agent calls on Base in a single study window), the token count in the response header becomes a self-reported bill that no one has asked the provider to prove.
+
+## Why hidden tokens are a different problem
+
+Standard LLM billing is auditable in a trivial sense: the response body contains the output, you count the tokens yourself and compare. Discrepancies are visible, disputes are straightforward, and most providers expose token counts in response headers as a courtesy rather than a trust mechanism.
+
+Reasoning models break this. When o3 generates a "thinking" block, the scratchpad is stripped from the response before delivery. The provider returns only the final answer plus a claimed token total. The OpenAI API for o3-mini reports reasoning tokens separately in the usage field — but the field is populated by the provider with no external check. At $4.40 per million output tokens, 5,000 phantom thinking tokens add $0.022 to the invoice. At 7.5 million agent calls, a systematic 2× inflation extracts an additional $33M above the honest price.
+
+This is distinct from the verification problem that [reasoning models pose for on-chain dispute games](/articles/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification). That article established that the *correctness* of thinking traces cannot be efficiently verified — bisection games that work for deterministic computation break down when the hidden scratchpad is longer than the answer by 25:1. The phantom token problem is orthogonal: it is about billing fraud on the *volume* of computation, not about proving its correctness.
+
+## The CoIn commitment scheme
+
+A May 2025 paper from the University of Maryland, CoIn (arXiv:2505.13778), proposes a verifiable hash tree that allows count auditing without revealing the scratchpad content.
+
+The key insight is that you do not need to see the reasoning tokens to count them — you need a *commitment* the provider cannot change after the fact. CoIn builds this from token embeddings rather than tokens themselves. Before generating the thinking trace, the provider:
+
+1. Generates each reasoning token's hidden state `h_i` (the internal activation, not the text)
+2. Projects `h_i` through a lightweight linear map `W` to produce a compact fingerprint `f_i` in a lower-dimensional space, where the projection dimension `k` is far smaller than the full embedding dimension `d`
+3. Builds a Merkle tree over the set of fingerprints `f_1 … f_n`
+4. Returns the tree root alongside the answer
+
+The verifier then samples positions in the tree. For each sampled position `i`, the provider reveals `f_i` and the Merkle path; the verifier recomputes the root to check consistency. Sampling 32 positions from a claimed count of 5,000 detects a 2× inflation (where half the leaves are phantom) with probability approaching 100%.
+
+CoIn's paper reports detection success of **94.7%** against a range of inflation strategies on GPT-4o and Claude-3.7 proxies. The embedding fingerprints are compact — roughly 1.2 KB overhead per 1,000 claimed tokens — and the Merkle path check costs approximately 30k gas as a Solidity verification step.
+
+The semantic validity check is weaker. CoIn also uses the geometric properties of the embedding fingerprints to ask: do these activations look like coherent reasoning? A provider injecting random noise as phantom tokens fails this check roughly 60% of the time. But a provider who uses a smaller model's activations — or reuses activations from a different query — can pass both the count check and the embedding-geometry check. The 94.7% figure applies to *count* fraud; semantic fraud detection sits closer to 55–60%.
+
+<Artifact slug="the-phantom-token-cloud" />
+
+## PALACE: user-side estimation without provider cooperation
+
+CoIn requires the provider to participate — they must commit the root before the answer is returned. A companion approach, PALACE (arXiv:2508.00912, July 2025), works entirely from the user side with no provider cooperation.
+
+PALACE trains a reasoning-length estimator on the user's question. The key empirical observation is that the *complexity* of the input strongly predicts how many thinking tokens a given model family will generate: a differential equations problem triggers more reasoning than "what is 2+2." PALACE fine-tunes a small classifier on this relationship using Group Relative Policy Optimization (GRPO), routing by domain (math, code, language, general) before applying the estimator.
+
+If the provider claims 25,000 thinking tokens for a question that PALACE predicts should require 2,000–4,000, the system flags it as likely inflated. PALACE does not prove inflation — a provider could legitimately over-reason — but it provides a cheap red-flag detector that requires no cryptographic cooperation from the provider.
+
+In practice, PALACE is best used as a threshold trigger: small claimed counts pass without challenge; large anomalies either trigger a demand for CoIn-style commitment or route the dispute to a third-party auditor. The paper reports an inflation-detection accuracy that outperforms heuristic baselines (e.g., fixed multipliers on historical means) on reasoning model APIs, though the RMSE of the length estimate alone is on the order of ±200–500 tokens — not tight enough to catch modest inflation (1.2×–1.5×) without the cryptographic layer.
+
+## Wiring this into on-chain escrow
+
+The practical risk surface is wherever AI agent payments are automated: x402 headers, EigenLayer AVS revenue distribution, or any escrow contract that releases funds based on a self-reported token count.
+
+An optimistic escrow design that closes the gap:
+
+```solidity
+// Provider posts commitment before computation begins
+function commit(bytes32 root, uint256 claimedCount) external {
+    require(commitments[msg.sender] == bytes32(0), "already committed");
+    commitments[msg.sender] = root;
+    claimedCounts[msg.sender] = claimedCount;
+    emit Committed(msg.sender, root, claimedCount);
+}
+
+// Agent verifies with a Merkle proof on a sampled index
+function challenge(
+    address provider,
+    uint256 sampleIndex,
+    bytes32[] calldata proof,
+    bytes32 leaf
+) external returns (bool fraud) {
+    bytes32 root = commitments[provider];
+    require(root != bytes32(0), "no commitment");
+    // Verify the sampled leaf is consistent with the committed root
+    fraud = !MerkleProof.verify(proof, root, leaf);
+    if (fraud) _slashProvider(provider);
+}
+```
+
+The window between `commit()` and payment release is the challenge period — analogous to the fraud-proof window in optimistic rollups (see [the finality ladder](/articles/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents)). For low-value calls (sub-cent), the gas overhead of even a 30k commitment step may exceed the fraud risk; those calls can go commitment-free. For calls priced above ~$0.05, a commitment root and 1-hour challenge window shifts the verification cost onto the would-be defrauder.
+
+| Call value | Recommended guard | Cost to provider | Gas on-chain |
+|---|---|---|---|
+| < $0.01 | None (economically irrational to challenge) | 0 | 0 |
+| $0.01–$0.10 | PALACE anomaly flag only | ~1ms inference | 0 |
+| $0.10–$1.00 | CoIn commitment root in header | ~1.2 KB + hash | ~30k gas |
+| > $1.00 | CoIn + 1-hour challenge window + escrow hold | as above | ~30k + bond |
+
+The bond amount matters. A provider staking $10 per commitment is irrational to defraud calls worth less than $10. The slash-to-bond ratio determines the effective deterrent at each price tier.
+
+## The residual gap
+
+Two attacks survive CoIn+PALACE combined:
+
+**Moderate inflation (1.2×–1.5×)**: PALACE cannot detect modest overreporting (the estimator error is too wide), and if the provider is generating *some* real thinking tokens plus a modest padding, the embedding tree will look geometrically reasonable. CoIn's semantic check catches roughly 60% of phantom injections; a careful provider who inflates by 30% using real-looking-but-irrelevant activations may evade both layers.
+
+**Reuse fraud**: If a provider caches the thinking trace from one client's query and reuses it for a semantically similar query from a different client, billing each the full token count while computing once, neither CoIn nor PALACE catches it. The commitment root would be legitimate for one query and fraudulently charged to the other. Detection requires cross-client correlation, which is impossible without a trusted aggregator who can see all billing events.
+
+Both gaps narrow as reasoning models adopt provider-side commitment APIs — the equivalent of how exchanges migrated from self-attested balances to Merkle-proof-based Proof of Reserve. The blockchain is necessary for payment finality, but the commitment must precede the transaction, not follow it.
+
+## Takeaways
+
+On-chain payment for reasoning model inference is a new attack surface that does not exist for standard LLMs. The hidden scratchpad is both the product's value proposition and its audit blind spot.
+
+CoIn closes the count-fraud gap at 94.7% detection with a modest per-call overhead; PALACE closes it cheaply for gross anomalies without provider cooperation. Neither closes the semantic fraud gap or reuse fraud. An escrow contract that enforces `commit()` before `pay()` converts the optimistic-rollup pattern into a billing integrity primitive — and makes the cost of phantom tokens fall on the defrauder rather than the agent.
+
+The 30k gas for a Merkle root check is cheap. The commitment protocol that needs to precede it is the engineering problem that still needs standardizing.

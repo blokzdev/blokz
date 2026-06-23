@@ -1,0 +1,139 @@
+---
+slug: uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it
+title: "Uniswap v4 Hooks: The AMM Hook Lifecycle and What AI Agents Can Do With It"
+description: "Uniswap v4 hooks make every liquidity pool programmable. Here's how the 14-bit permission bitmap works, what fires during a swap, and where AI agents fit into dynamic fee architecture."
+pubDate: 2026-06-21T21:35:09.646Z
+author: blokz
+topics: [defi, smart-contracts, blockchain]
+tags: [uniswap, amm, hooks, dynamic-fees, lvr, ai-agents, mev]
+difficulty: intermediate
+artifacts: [hook-permission-visualizer]
+sources:
+  - label: "Uniswap v4 Core (GitHub)"
+    url: "https://github.com/Uniswap/v4-core"
+  - label: "Uniswap v4 Whitepaper"
+    url: "https://uniswap.org/whitepaper-v4.pdf"
+  - label: "Loss-Versus-Rebalancing (Milionis et al., 2022)"
+    url: "https://arxiv.org/abs/2208.06046"
+  - label: "PoolManager on Ethereum Mainnet"
+    url: "https://etherscan.io/address/0x000000000004444c5dc75cB358380D2e3dE08A90"
+---
+
+Automated market makers used to be deterministic black boxes: a constant-product formula, a single global fee, and nothing you could change after deployment. Uniswap v4 breaks this model. Every pool now accepts an optional hook — a contract address embedded in the pool key — and the `PoolManager` calls it at well-defined points during swaps, liquidity changes, and pool initialization. The result is a programmable AMM where fee schedules, order routing, and value distribution are open design variables.
+
+This article explains how the permission system works at the bit level, what the execution lifecycle looks like in practice, why dynamic fees matter for LP economics, and where AI agents fit into this architecture.
+
+## The Permission Bitmap: Capabilities Encoded in the Address
+
+The most unusual design decision in v4 is that a hook's permissions are not stored in a registry — they're **encoded in the hook's Ethereum address itself**. The lower 14 bits of the hook contract address correspond to which `PoolManager` callbacks it registers:
+
+| Bit | Callback | When it fires |
+|-----|----------|---------------|
+| 13 | `beforeInitialize` | Pool creation |
+| 12 | `afterInitialize` | Pool creation |
+| 11 | `beforeAddLiquidity` | LP deposit |
+| 10 | `afterAddLiquidity` | LP deposit |
+| 9 | `beforeRemoveLiquidity` | LP withdrawal |
+| 8 | `afterRemoveLiquidity` | LP withdrawal |
+| 7 | `beforeSwap` | Swap |
+| 6 | `afterSwap` | Swap |
+| 5 | `beforeDonate` | Fee donation |
+| 4 | `afterDonate` | Fee donation |
+| 3 | `beforeSwapReturnDelta` | Swap amount override |
+| 2 | `afterSwapReturnDelta` | Swap amount override |
+| 1 | `afterAddLiquidityReturnDelta` | LP deposit amount override |
+| 0 | `afterRemoveLiquidityReturnDelta` | LP withdrawal amount override |
+
+When the `PoolManager` receives a swap call, it reads bits 7 and 6 from the hook address stored in the pool key. If bit 7 is set, it calls `hook.beforeSwap()`; if bit 6 is set, it calls `hook.afterSwap()`. This check is a single `and` instruction — no storage lookup, no registry call.
+
+The consequence for hook deployment: **you can't use an arbitrary address**. You need to mine a contract address — typically via `CREATE2` with varying salts — until the lower 14 bits match your intended permission set. The Uniswap Foundation's `v4-template` repository includes an address mining utility. Hooks that claim permissions they don't implement will cause every pool operation to revert.
+
+Explore the bitmap interactively in the visualizer below — toggle bits to see which lifecycle stages activate for each operation.
+
+<Artifact slug="hook-permission-visualizer" />
+
+## The Execution Lifecycle
+
+Here's what actually happens when a swap arrives at a pool that has both `beforeSwap` (bit 7) and `afterSwap` (bit 6) set:
+
+```solidity
+// Simplified from PoolManager.sol — actual impl uses transient flash-accounting
+function swap(
+    PoolKey calldata key,
+    SwapParams calldata params,
+    bytes calldata hookData
+) external returns (BalanceDelta swapDelta, BalanceDelta hookDelta) {
+
+    // 1. Dispatch before-swap callback if hook address has bit 7 set
+    if (key.hooks.hasPermission(Hooks.BEFORE_SWAP_FLAG)) {
+        (, BeforeSwapDelta beforeDelta, uint24 lpFeeOverride) =
+            key.hooks.beforeSwap(msg.sender, key, params, hookData);
+        // hook can: read oracle, update fees, return a swap delta override
+    }
+
+    // 2. Core AMM math — always runs
+    swapDelta = Pool.swap(state, params);
+
+    // 3. Dispatch after-swap callback if bit 6 is set
+    if (key.hooks.hasPermission(Hooks.AFTER_SWAP_FLAG)) {
+        (, int128 hookDeltaSpecified, int128 hookDeltaUnspecified) =
+            key.hooks.afterSwap(msg.sender, key, params, swapDelta, hookData);
+    }
+}
+```
+
+The "Return Delta" bits (3, 2, 1, 0) are a v4 addition beyond basic before/after callbacks. A `beforeSwapReturnDelta` hook can return a `BeforeSwapDelta` that the `PoolManager` applies to the swap amounts, letting the hook intercept part of the swap flow and route it through a different mechanism — an order book, an RFQ system, or an on-chain limit order. This makes hybrid AMM/order-book designs possible without any intermediary.
+
+## Dynamic Fees: Closing the LVR Gap
+
+The most economically significant hook capability is dynamic fee control. When the pool key carries `fee = 0x800000` (the `DYNAMIC_FEE_FLAG`), the `PoolManager` doesn't enforce a static fee — it expects the hook to set fees at runtime via a permissioned function:
+
+```solidity
+// Callable ONLY by the hook contract registered to that pool
+function updateDynamicLPFee(PoolKey calldata key, uint24 newLpFee) external;
+```
+
+Why does this matter? It comes down to **loss-versus-rebalancing (LVR)**.
+
+Passive AMM LPs face a structural disadvantage: whenever the asset price moves on a CEX or price oracle, arbitrageurs immediately trade against the pool at the stale price, extracting value from the LP position. Milionis et al. (2022) showed that this arbitrage cost scales as:
+
+```
+LVR ≈ σ² / 8
+```
+
+where σ is the asset's realized volatility. For a pair with 80% annualized volatility (σ_daily ≈ 5%), LPs pay roughly 0.3 bps per day in arbitrage extraction per unit of capital, before any fee revenue.
+
+A static fee can't compensate for this optimally. Fees should be **high when volatility is elevated** (making arbitrage at stale prices uneconomical) and **low when markets are quiet** (to attract flow). Dynamic fee hooks can, in principle, execute this policy continuously, reading volatility signals from on-chain oracles.
+
+In practice, this is already happening. Monitoring live swap events on the Ethereum mainnet `PoolManager` (deployed November 27, 2024 at block 21,281,193), we see fee values of 0, 7, 100, 3000, and 10000 in recent blocks. The `fee = 7` value — 0.0007%, far below any static minimum — can only appear when a dynamic fee hook is setting near-zero rates during low-volatility conditions. The hook address embedded in the pool key identifies which contract is responsible.
+
+## What AI Agents Can Do Here
+
+Hooks create a clean boundary where off-chain intelligence connects to on-chain execution. Four patterns are worth understanding:
+
+**Volatility-responsive fee oracles.** A hook reads on-chain volatility data in its `beforeSwap` callback — from a Chainlink oracle, a TWAP-derived indicator, or a protocol like Brevis — and calls `updateDynamicLPFee()` atomically during each swap. An AI agent can maintain the volatility model off-chain, push updated oracle values on-chain periodically, and let the hook consume them per-swap. The execution is atomic; only the signal source crosses the off-chain/on-chain boundary.
+
+**JIT (just-in-time) liquidity coordination.** An agent monitors the public mempool for large incoming swaps. On detection, it adds concentrated liquidity at the current tick before the swap fires (`beforeAddLiquidity`), captures the fee, and removes the position shortly after (`beforeRemoveLiquidity`). The hook can even enforce constraints on this — for instance, requiring a minimum hold duration to deter extractive JIT that harms passive LPs.
+
+**MEV redistribution via `afterSwap`.** The `afterSwap` callback sees the post-swap pool state and the full swap delta. A hook can compare the execution price against a Chainlink spot price; if the spread exceeds a threshold (indicating that CEX-arbitrage just happened), it can withhold a fee premium and credit it to the LP pool. This is an on-chain approximation of the optimal fee rule from the LVR paper.
+
+**Limit orders and RFQ routing.** With `afterSwapReturnDelta`, a hook maintains pending limit orders in storage. When price crosses a limit level during a swap, the hook fills the order using a delta override rather than the AMM price. The same hook can also forward swaps to an off-chain RFQ system when the quoted price is better than the AMM price, acting as a routing layer inside the swap itself.
+
+## Trust Surface and Real Costs
+
+Hooks are **permissionless** — anyone can deploy a contract with the right address bits. Pool creators choose which hook (if any) to register at initialization; there is no way to change or remove a hook after the pool is created. This shifts the trust model for LPs:
+
+- Depositing into a pool with `beforeRemoveLiquidity` set means the hook contract can impose conditions on your withdrawal — a lockup, a KYC check, or a fee. Verify the hook's source before depositing.
+- A `beforeSwap` hook can revert the transaction entirely, effectively blocking certain swap paths.
+- `afterSwap` hooks make external calls during your swap, creating reentrancy-adjacent risk if the hook isn't carefully written.
+
+Increasingly, LP tooling shows the hook address and its decoded permission bits alongside APY data. This is becoming standard due diligence.
+
+On gas: each hook callback adds a cold external call at ~2,100 gas plus hook execution. A simple dynamic fee update that reads one oracle slot adds roughly 25,000–50,000 gas per swap. For a WETH/USDC pair with typical swap sizes above $10,000, this cost is negligible. For micro-swap use cases under $100, it can meaningfully shift the economics.
+
+## Takeaways
+
+- **The permission bitmap is the hook's interface.** The lower 14 bits of a hook's Ethereum address encode every callback it supports — auditable from the address alone without any registry lookup. You mine the address to match your permissions.
+- **Dynamic fees are the most important hook capability economically.** The LVR formula gives a principled target: charge proportionally to realized volatility, drop fees when markets are quiet. Several hooks on Ethereum mainnet are doing this in production today.
+- **AI agents fit at the oracle layer.** They maintain the volatility model and push signals on-chain; the hook consumes those signals atomically per-swap. The heaviest logic stays off-chain; only the updated value crosses the bridge.
+- **Hooks change the trust model.** Verify a pool's hook permissions before you deposit. The same capability that lets a hook redistribute MEV is the capability that could lock your withdrawal.

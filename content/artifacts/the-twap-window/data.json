@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "snapshotAt": "2026-06-22T05:27:30Z",
+    "ethPriceUsd": 1737.31,
+    "note": "ETH/USD from Crypto.com Exchange REST API. Uniswap pool data from Blockscout Ethereum Mainnet (chain_id=1)."
+  },
+  "uniswapV2WethUsdc": {
+    "address": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",
+    "chain": "ethereum",
+    "reserveUsdcRaw": "8408754738622",
+    "reserveUsdcHuman": 8408754.74,
+    "reserveWethRaw": "4853801456218174000000",
+    "reserveWethHuman": 4853.8,
+    "reserveWethUsd": 8431146.78,
+    "tvlUsd": 16839901.52,
+    "feePercent": 0.3
+  },
+  "uniswapV3EthUsdc": {
+    "address": "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
+    "chain": "ethereum",
+    "feeTier": "0.05%",
+    "tick": 201721,
+    "sqrtPriceX96": "1.9010285366399566e+33",
+    "observationCardinality": 723,
+    "observationCardinalityNext": 723,
+    "maxTwapWindowMinutes": 144,
+    "inRangeLiquidityRaw": "5919752587723258000",
+    "derivedPriceUsd": 1737.3
+  },
+  "exploits": [
+    {
+      "name": "Inverse Finance",
+      "date": "2022-04-02",
+      "chain": "ethereum",
+      "lossUsd": 15600000,
+      "oracleType": "spot",
+      "poolTvlUsd": 3000000,
+      "spikeFactorApprox": 5,
+      "notes": "SushiSwap INV/WETH spot oracle, no TWAP. Flash loan of WBTC+ETH to pump INV price, then borrow against inflated collateral."
+    },
+    {
+      "name": "Mango Markets",
+      "date": "2022-10-11",
+      "chain": "solana",
+      "lossUsd": 114000000,
+      "oracleType": "spot+aggregated",
+      "poolTvlUsd": 2000000,
+      "spikeFactorApprox": 24,
+      "notes": "MNGO/USDC oracle manipulation via Serum DEX. MNGO pumped from $0.038 to $0.91 (24x) to inflate borrowing capacity."
+    }
+  ],
+  "twapFormula": {
+    "v2ArithmeticMeanTwapShiftPercent": "((f - 1) * blockSeconds / twapWindowSeconds) * 100",
+    "v3GeometricMeanTwapShiftPercent": "(Math.pow(f, blockSeconds / twapWindowSeconds) - 1) * 100",
+    "roundTripCostUsd": "(tvlUsd / 2) * (Math.sqrt(f) + 1 / Math.sqrt(f) - 2)",
+    "blockSeconds": 12,
+    "note": "f = price spike factor (e.g. 15 for 15x spike). Cost formula is for xy=k AMM without fees. V2 fee = 0.3% adds ~2xFee*tradeSize."
+  },
+  "defaults": {
+    "poolTvlUsd": 17000000,
+    "twapWindowMinutes": 30,
+    "spikeFactor": 5,
+    "protocolTvlUsd": 100000000,
+    "ltv": 0.75
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "the-clmm-strangle",
+  "title": "The CLMM Strangle",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T16:35:51.851Z",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "data"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

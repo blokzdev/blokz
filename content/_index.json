@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 121,
-    "artifacts": 122
+    "articles": 122,
+    "artifacts": 123
   },
   "topicCounts": {
     "agents": 43,
@@ -9,19 +9,36 @@
     "blockchain": 29,
     "cryptography": 20,
     "data": 19,
-    "defi": 30,
-    "infrastructure": 40,
+    "defi": 31,
+    "infrastructure": 41,
     "llm": 21,
     "machine-learning": 41,
     "research": 12,
     "security": 34,
-    "smart-contracts": 23,
+    "smart-contracts": 24,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 13,
     "zero-knowledge": 15
   },
   "articles": [
+    {
+      "slug": "the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
+      "path": "content/articles/2026/06/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem/index.mdx",
+      "url": "/articles/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
+      "title": "The Float Before the Fill: ERC-7683 Cross-Chain Intents and the Solver Inventory Problem",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles",
       "path": "content/articles/2026/06/the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles/index.mdx",
@@ -3294,6 +3311,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-solver-float",
+      "path": "content/artifacts/the-solver-float/manifest.json",
+      "module": "src/islands/artifacts/the-solver-float.ts",
+      "url": "/artifacts/the-solver-float",
+      "title": "The Solver Float",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-clmm-strangle",
       "path": "content/artifacts/the-clmm-strangle/manifest.json",

@@ -27,7 +27,7 @@
       "path": "content/articles/2026/06/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents/index.mdx",
       "url": "/articles/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
       "title": "Payment Required: Inside x402, the HTTP-Native Settlement Standard for AI Agents",
-      "description": "HTTP 402 has existed since 1996 with no implementation. x402 finally gives it meaning: a four-step exchange where an AI agent signs an EIP-3009 authorization into an HTTP header, a facilitator submits it on-chain, and the resource delivers in under two seconds. Here's the protocol mechanics and where the centralization tradeoff lives.",
+      "description": "HTTP 402 sat reserved for 30 years. x402 fills it: an AI agent signs an EIP-3009 authorization into a header, a facilitator settles on Base in two seconds, no ETH required. Protocol mechanics, production numbers, and where the centralization risk lives.",
       "pubDate": "2026-06-23",
       "topics": [
         "agents",

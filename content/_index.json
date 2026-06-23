@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 115,
-    "artifacts": 116
+    "articles": 116,
+    "artifacts": 117
   },
   "topicCounts": {
     "agents": 42,
@@ -12,14 +12,14 @@
     "defi": 28,
     "infrastructure": 39,
     "llm": 20,
-    "machine-learning": 39,
-    "research": 11,
+    "machine-learning": 40,
+    "research": 12,
     "security": 33,
     "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 14
+    "zero-knowledge": 15
   },
   "articles": [
     {

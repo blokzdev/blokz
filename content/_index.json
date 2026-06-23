@@ -27,7 +27,7 @@
       "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
       "url": "/articles/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
       "title": "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI",
-      "description": "Every recursive SNARK puts a verifier circuit inside the next proof — and that verifier is expensive. Nova's folding scheme eliminates that inner verifier entirely, replacing it with a random linear combination that collapses two R1CS instances into one. For N-step AI inference: O(N) prover, constant-size proof.",
+      "description": "Nova replaces expensive SNARK-in-SNARK recursion with a random linear combination that folds two R1CS instances into one — 10× less overhead per step. For N-step AI inference: O(N) prover work, one constant-size final proof. NANOZK delivers this at GPT-2 scale: 6.9 KB, 23 ms verify.",
       "pubDate": "2026-06-23",
       "topics": [
         "zero-knowledge",

@@ -1,0 +1,15 @@
+{
+  "slug": "the-cascade-calculator",
+  "title": "The Cascade Calculator",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T23:27:40.115Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "defi"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

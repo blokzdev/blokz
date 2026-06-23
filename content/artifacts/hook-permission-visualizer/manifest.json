@@ -1,0 +1,19 @@
+{
+  "slug": "hook-permission-visualizer",
+  "title": "Hook Permission Visualizer",
+  "description": "Explore how Uniswap v4's 14-bit permission bitmap maps to pool lifecycle callbacks. Toggle bits or select preset patterns to see which hook functions fire for each operation.",
+  "pubDate": "2026-06-21T21:35:12.567Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "defi",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "click panel bits to toggle individual permissions",
+    "select operation tab to change the lifecycle view",
+    "choose a hook pattern preset to load a common configuration"
+  ]
+}

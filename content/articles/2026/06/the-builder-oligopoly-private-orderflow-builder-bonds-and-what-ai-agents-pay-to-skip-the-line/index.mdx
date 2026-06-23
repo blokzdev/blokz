@@ -1,0 +1,139 @@
+---
+slug: the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line
+title: "The Builder Oligopoly: Private Orderflow, Builder Bonds, and What AI Agents Pay to Skip the Line"
+description: "Five builders now win 96.7% of Ethereum blocks. Their edge isn't compute — it's exclusive orderflow: 12% of transactions that generate 54.59% of block value. AI agents transacting in public have to understand where they sit in that hierarchy — and when a preconfirmation changes the math."
+pubDate: 2026-06-21T23:32:10.021Z
+author: blokz
+topics: [infrastructure, blockchain, defi]
+tags: [mev, pbs, proposer-builder-separation, private-orderflow, mev-boost, preconfirmations, mev-commit, block-building, builder-concentration]
+artifacts: [the-mev-supply-chain]
+difficulty: intermediate
+sources:
+  - label: "Order Flow Exclusivity and Value Extraction Mechanisms (arXiv:2605.04471)"
+    url: "https://arxiv.org/abs/2605.04471"
+  - label: "Measuring Validator Economics Under Preconfirmations: Early Mainnet Evidence (ethresear.ch)"
+    url: "https://ethresear.ch/t/measuring-validator-economics-under-preconfirmations-early-mainnet-evidence/23066"
+  - label: "Proposer-Builder Separation — ethereum.org"
+    url: "https://ethereum.org/en/roadmap/pbs/"
+  - label: "What is mev-commit — docs.primev.xyz"
+    url: "https://docs.primev.xyz/v1.1.0/concepts/what-is-mev-commit"
+  - label: "An Empirical Study of PBS Effects on the Ethereum Ecosystem (MDPI 2025)"
+    url: "https://www.mdpi.com/2504-2289/9/6/156"
+---
+
+When your AI agent submits a transaction to Ethereum, it enters a supply chain it didn't design and can't control. A relay passes it to a block builder. The block builder is running a combinatorial optimizer over thousands of pending bundles. Your transaction competes against searchers who wired their order flow directly into that optimizer months ago, paying subsidies up front to get priority treatment.
+
+By January 2026, five builders win 96.7% of all mev-boost blocks. The top builder alone takes 27.9%. BuilderNet — a coalition of Flashbots, Beaverbuild, and Nethermind built inside a Trusted Execution Environment — controls another 25.5%. The remaining 80+ builders split 3.3%.
+
+This is the market structure your agent is operating in, and understanding it changes every latency and inclusion decision you make.
+
+## How PBS Divided the Labor
+
+Before proposer-builder separation, Ethereum validators assembled their own blocks. Every validator ran MEV software, competed for the same bundles, and the block that won the slot was mostly a function of who got lucky on network latency.
+
+MEV-boost changed that. Under the current system, specialized **block builders** — firms with proprietary bundle optimization software — bid for the right to fill each block. Validators (proposers) use mev-boost to select the highest-paying header from a set of trusted **relays** that act as intermediaries. The proposer signs the header without ever seeing the block's contents; the relay escrows the full block and releases it only after the commitment is signed. The builder pays the proposer via a transfer in the last transaction of the block.
+
+```
+Searcher → Relay (bundle) → Builder (packs block, bids to relay)
+                                        ↓
+Validator ← Relay (signed header) ← Builder (pays proposer)
+```
+
+As of December 2025, mev-boost handles 92.5% of Ethereum block production. The other 7.5% of blocks — produced directly by validators without mev-boost — are called **vanilla blocks** and typically capture less MEV.
+
+## The Private Orderflow Oligopoly
+
+Builder concentration didn't happen because of raw compute advantages. It happened because exclusive order flow is the moat.
+
+A 2026 analysis of builder revenue (arXiv:2605.04471) identified 75 exclusive order flows — private pipelines where searchers send transactions directly to a specific builder rather than broadcasting them publicly. These 75 channels account for **70.5% of total trading-related builder revenue**. Builders without these relationships cannot capture that value regardless of their optimization software.
+
+The structural implication is stark: **12% of Ethereum transactions are private order flow, but they generate 54.59% of block value**. The public mempool — where your AI agent's transactions land by default — produces the other 88% of transaction volume for only 45.41% of the value.
+
+This creates a self-reinforcing feedback loop. Builders with exclusive order flow win more auctions. Winning more auctions gives them higher market share. Higher market share is the minimum threshold searchers require before routing order flow to them — the entry cost to join the cartel is estimated at 1.4 ETH or more in reputation subsidies. New entrants cannot climb this barrier. By the "Oligopoly era" (post-October 2024), dominant builders no longer even depend on marginal EOF income — their market positions are self-sustaining.
+
+<Artifact slug="the-mev-supply-chain" />
+
+## What the Public Mempool Costs an AI Agent
+
+An AI agent submitting a swap via public RPC is entering the least valuable 45% of the block. Its transaction is available to every searcher who scans the mempool. Any strategy that generates observable MEV from the transaction — a sandwich attack, back-running a known liquidation trigger, arbitrage off a price change the swap causes — will be extracted.
+
+The [sandwich tax](/articles/the-sandwich-tax-on-autonomous-agents) analysis on this blog quantified the public mempool exposure: for a $10,000 swap with a 0.5% slippage tolerance, an optimally-placed sandwich extracts approximately $45-50. The agent's slippage setting is literally the searcher's profit knob.
+
+But there's a less-discussed cost: **inclusion uncertainty**. When a builder is optimizing a block, they start from the highest-fee bundles and work down. A transaction in the public mempool with market-rate gas competes against every other public transaction at that fee level. During congestion, the builder may not include it at all — they fill the block with more profitable private bundles first.
+
+For an AI agent executing a time-sensitive DeFi strategy — closing a position before a margin call, capturing a funding-rate arbitrage that's only available for the next few seconds — this uncertainty is not theoretical. It's a structural tax on every time-sensitive operation.
+
+## Three Paths to Block Inclusion
+
+Given this market structure, an AI agent has three realistic options:
+
+**Option 1: Public mempool at market gas.** The default. Full transparency to searchers, no inclusion priority, subject to reordering by builders who prefer private bundles. Appropriate for non-time-sensitive operations where getting in the current block versus the next one doesn't matter.
+
+**Option 2: Private RPC or direct builder relationship.** Services like Flashbots Protect, MEV Blocker, or direct builder API connections route your transactions into the private orderflow layer. The transaction is hidden from the public mempool and typically receives priority treatment within the builder's bundle optimizer. The tradeoff is counterparty dependency: you're trusting a specific builder not to front-run or censor your order flow, and if that builder falls out of the top-5 block-winning position (as builders do at the margin), your transactions sit unbuilt.
+
+**Option 3: Preconfirmation (mev-commit).** The newest option and the most interesting one for AI agents who need cryptoeconomic guarantees rather than just trust.
+
+## Preconfirmations: The Commitment That Has Collateral Behind It
+
+A **preconfirmation** is a signed commitment from a block builder that a specific transaction will be included in an upcoming block, backed by slashable stake. It is not a sequencer acknowledgment — those carry no collateral and no enforcement mechanism. See [finality ladder](/articles/the-finality-ladder-what-confirmed-actually-means-for-on-chain-ai-agents) for the full hierarchy; preconfirmations sit *below* L1 finality but *above* soft sequencer confirmation in the trust stack.
+
+Primev's **mev-commit** is the live implementation. It works as follows:
+
+1. A block builder registers with the ProviderRegistry contract, posting ETH stake as collateral.
+2. A bidder (your AI agent) submits a transaction with a bid to the mev-commit p2p network.
+3. The builder issues a signed commitment: "I will include this transaction in the next block I build."
+4. The commitment is stored on the mev-commit settlement chain (a sidechain).
+5. If the builder's block is produced but doesn't include the committed transaction, the slash condition fires: a fraction of the builder's staked ETH is slashed and paid to the bidder.
+
+The latency is approximately 40 milliseconds — faster than the time between block proposals. You receive the commitment before block production and can act on it with confidence.
+
+As of August 2025, 18,000+ preconfirmations have settled on mainnet. On peak days, 11.33% of Ethereum blocks contained at least one preconfirmed transaction. Currently about 1% of Ethereum validators are opted in as providers.
+
+The economic guarantee scales with the builder's stake. If a builder posts 100 ETH at a 50% slash fraction, each commitment is backed by up to 50 ETH (~$150,000 at $3,000/ETH). A $10,000 transaction is fully covered; a $200,000 transaction is only 75% covered. The preconfirmation market works best for transactions where the value at risk is smaller than the committed collateral pool.
+
+## BuilderNet: The Cartel-Buster Running in a TEE
+
+Flashbots, Beaverbuild, and Nethermind's BuilderNet represents a different structural response to builder centralization. Instead of competing for exclusive order flows, BuilderNet shares order flows among its members in a Trusted Execution Environment — a hardware-backed enclave that prevents any member from front-running another's transactions or leaking private order data.
+
+BuilderNet produced 25.5% of Ethereum blocks by January 2026, operating as a coalition that collectively matches individual dominant builders. Its promise to searchers: route your order flow to BuilderNet, and it will be available to all three members simultaneously, increasing the probability that one of them wins the block auction while keeping the strategy private.
+
+For AI agents, BuilderNet is accessible via standard Flashbots Protect or Beaverbuild private RPC endpoints. The agent gets private transaction routing without needing exclusive relationships with individual builders — though it's still trusting the TEE attestation (as analyzed in the [TEE attestation chain](/articles/trusting-the-quote-onchain-tee-attestation) article) rather than a cryptoeconomic slash condition.
+
+## The Framework: Which Path for Which Operation?
+
+Given latency constraints and value at stake, here's how to think about the three paths:
+
+| Operation | Latency Sensitivity | Value at Risk | Recommended Path |
+|---|---|---|---|
+| Governance vote | Low | Low | Public mempool |
+| Yield rebalance (stablecoin) | Medium | Medium | Private RPC (BuilderNet/MEV Blocker) |
+| Liquidation trigger | High | High | Preconfirmation (mev-commit) |
+| DEX swap during volatility | High | High | Preconfirmation or private RPC |
+| L2 bridging | Low | Variable | Public mempool |
+| Funding rate close | Very high | High | Preconfirmation |
+
+The key variable is whether **inclusion in the next block** versus the one after is worth paying for. For most DeFi operations, it isn't — the market moves slowly enough that second-slot inclusion is fine. For operations where the window is sub-block (liquidations, arb on a narrow spread, rate-sensitive closes), the preconf market is the only mechanism that provides a cryptoeconomic binding rather than an operator promise.
+
+## What the Builder Oligopoly Doesn't Change
+
+The consolidation in block building is a production-layer phenomenon. It doesn't affect:
+
+- **Smart contract execution** — once included, a transaction executes exactly as coded.
+- **L2 inclusion** — most L2 sequencers are not running mev-boost and have their own ordering regimes.
+- **ZK coprocessors and offchain computation** — these settle their on-chain transactions as single state updates, not as MEV-extractable bundles.
+
+Where it matters most is for any AI agent operating in public Ethereum L1 mempool with a time-sensitive strategy. If the agent is batching low-urgency operations (monthly rebalances, governance participation, fee collection), the builder oligopoly is mostly irrelevant — market gas gets you into a block eventually.
+
+The oligopoly bites when the agent's strategy has a value window measured in blocks, not minutes. In that regime, the 88% of public transaction volume competing for 45% of block value is not a minor inefficiency. It's a structural tax that compounds every operation.
+
+## Takeaways
+
+The Ethereum block building market is a three-tier winner-take-most auction, and the winning tier is inaccessible to agents without exclusive order flow relationships or the capital to establish them.
+
+For AI agents operating on public L1:
+
+- Private RPC (Flashbots Protect, MEV Blocker, BuilderNet) is the minimum viable upgrade for time-sensitive operations — it removes the sandwich exposure at essentially zero cost.
+- mev-commit preconfirmations provide a cryptoeconomic inclusion guarantee for operations where the value at stake justifies the preconf bid. The market is thin (1% validator coverage) but growing.
+- Transactions with no time sensitivity don't need any of this. Market gas and public RPC is fine for low-urgency operations.
+
+The deeper issue is structural: the builder market's reliance on private order flow creates entry barriers that compound over time. BuilderNet's TEE-based sharing model is the current answer to that, but it's a coalition, not a market. Until ePBS (enshrined PBS, EIP-7732) internalizes block production into the validator set with cleaner incentive separation, the builder oligopoly is the market structure AI agents have to operate within.

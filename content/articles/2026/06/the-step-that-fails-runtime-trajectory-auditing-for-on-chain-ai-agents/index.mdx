@@ -1,0 +1,143 @@
+---
+slug: the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents
+title: "The Step That Fails: Runtime Trajectory Auditing for On-Chain AI Agents"
+description: "An on-chain agent's transactions prove what happened, not why. Three 2026 papers on trajectory anomaly detection show how to close that gap — and how the optimistic bisection game from rollups makes it slashable."
+pubDate: 2026-06-22T18:30:23.019Z
+author: blokz
+topics: [agents, research, llm]
+tags: [trajectory-auditing, anomaly-detection, process-supervision, dispute-games, agent-monitoring, bisection, optimistic-verification, runtime-safety]
+artifacts: [the-agent-trajectory]
+difficulty: intermediate
+sources:
+  - label: "TrajAD: Trajectory Anomaly Detection for Trustworthy LLM Agents (arXiv:2602.06443)"
+    url: "https://arxiv.org/abs/2602.06443"
+  - label: "AgentForesight: Online Auditing for Early Failure Prediction in Multi-Agent Systems (arXiv:2605.08715)"
+    url: "https://arxiv.org/abs/2605.08715"
+  - label: "AgentTrace: A Structured Logging Framework for Agent System Observability (arXiv:2602.10133)"
+    url: "https://arxiv.org/abs/2602.10133"
+  - label: "Replayable Financial Agents: A Determinism-Faithfulness Assurance Harness (arXiv:2601.15322)"
+    url: "https://arxiv.org/abs/2601.15322"
+  - label: "Inside Arbitrum Nitro — interactive fraud proofs"
+    url: "https://docs.arbitrum.io/inside-arbitrum-nitro"
+---
+
+The Ethereum transaction log is permanent. Every swap, every approval, every token transfer an agent executes is written in a block that will outlast the model that created it. What the chain does not record is the reasoning that led there. An agent that drained a wallet because its memory was injected, because it hallucinated a tool call, or because an oracle fed it a stale price — all three produce an identical on-chain signature: tokens left address A for address B.
+
+Outcome-only monitoring cannot distinguish these cases. To catch the step that failed, you need to audit the trajectory.
+
+## Trajectories, not transactions
+
+A trajectory is the full execution record of one agent cycle: the input context the agent received, each tool call it made, the intermediate reasoning it produced between calls, and the final action it took. For a DeFi rebalancing agent a single execution looks something like:
+
+1. `read_oracle(ETH/USDC)` → $1,745.85
+2. `compute_position_delta(current=12.4, target=15.0)` → need +2.6 ETH
+3. `check_collateral_ratio(vault_id=0x9f...)` → 1.62× (above 1.5× minimum)
+4. `decide(action="swap USDC→ETH", size=4,600)` ← reasoning step
+5. `call_router(uniswap_v3, 4600 USDC, min_out=2.58 ETH)` → tx submitted
+6. `verify_settlement(tx_hash=0x...)` → confirmed, block 25,374,831
+
+Each step is a state machine transition with an input, an output, and — for reasoning steps — an internal chain of thought. Together they explain why the final action happened, not just what it was. Three 2026 papers treat the trajectory as the primary unit of analysis for agent safety.
+
+## Why outcomes mislead
+
+The fundamental problem with outcome-only evaluation is that it requires a long horizon to accumulate signal. In a volatile market, a sound strategy that loses money is indistinguishable from a bad strategy that happens to win — until you run thousands of repetitions. [The Noise Floor](/articles/the-noise-floor-why-on-chain-outcomes-cannot-train-a-better-defi-agent) quantified this for DeFi: ETH's 3.46% daily volatility buries a 0.1% edge so deeply that you need 4,600 trades before you can distinguish skill from luck at 95% confidence.
+
+Process-level evaluation bypasses the noise floor. This is the same insight that drives Process Reward Models (PRMs) in reasoning AI: grade each step independently rather than waiting for the final answer. A trajectory monitor that knows "the agent decided to transfer funds to an address that has never appeared in its whitelist" can flag that decision immediately, before the transaction hits the chain.
+
+## TrajAD: specialized step annotators
+
+February 2026, arXiv:2602.06443. The TrajAD paper establishes what the alternatives miss: **general-purpose LLMs, even with zero-shot prompting, struggle to identify and localize anomalies in agent trajectories.** The intuition is that anomaly detection requires reasoning about what a step *should* look like given all prior context, not just pattern-matching against a known bad output.
+
+TrajAD trains a specialized verifier with fine-grained process supervision: each step in the training trajectories is annotated individually as normal or anomalous, with the annotation grounded in the causal chain of what came before. The TrajBench dataset is generated using a perturb-and-complete strategy: take a real agent trajectory, perturb one step to introduce a realistic fault (a fabricated tool response, a reasoning shortcut, an injected instruction), then complete the trajectory from there. The result is a benchmark of procedural anomalies that cannot be detected from the outcome alone.
+
+The finding: specialized step-level training beats zero-shot detection by general-purpose models. The architecture matters less than the granularity of supervision.
+
+## AgentForesight: online auditing before the damage
+
+May 2026, arXiv:2605.08715. AgentForesight shifts from post-hoc analysis to online auditing: detecting the decisive failure step *while the trajectory is executing*, before the bad action hits the chain.
+
+A 7B model, trained with coarse-to-fine supervision on AFTraj-2K (2,000 annotated agentic trajectories across coding, math, and general agent tasks), **outperforms GPT-4.1 and DeepSeek-V4-Pro by +19.9% and achieves 3× lower step localization error** than baseline approaches. The model learns to identify not just whether a trajectory will fail, but which specific step contains the decisive error — the step that, if corrected, would have produced a valid outcome.
+
+The practical implication for on-chain agents: if a 7B model can identify the bad step before the trajectory concludes, you can build a monitor that runs alongside the agent and vetoes the action before it reaches the signing layer.
+
+<Artifact slug="the-agent-trajectory" />
+
+## AgentTrace: the three observation surfaces
+
+Before you can audit a trajectory, you have to log it. February 2026, arXiv:2602.10133. AgentTrace formalizes what needs to be captured across three observation surfaces:
+
+**Operational**: what the agent does — tool calls made, external services accessed, actions dispatched. This is the surface most existing logging captures.
+
+**Cognitive**: what the agent thinks — the internal reasoning chain between tool calls, what it concludes, how it interprets responses. Most production deployments do not log this at all, because it requires capturing scratchpad output and intermediate reasoning. Without the cognitive surface, you cannot distinguish "agent called the wrong tool because it computed incorrectly" from "agent called the wrong tool because its memory was poisoned."
+
+**Contextual**: what environment the agent saw — the oracle prices it read, the memory contents it retrieved, the external state that informed its decisions. Without contextual logging, a data-feed manipulation attack is invisible: the agent's reasoning looks correct given the inputs it received, and you can't tell the inputs were wrong.
+
+The "minimal overhead" claim in the paper is important for production deployments: structured logging at all three surfaces must not materially slow the agent. The overhead lands in the same range as APM instrumentation — roughly 10-20% additional compute — which is acceptable for agents whose execution cycles are measured in seconds.
+
+## The bisection design pattern
+
+Here is where the on-chain architecture becomes interesting. The same epistemic structure that makes optimistic rollups trustless — the interactive bisection fraud proof — applies directly to agent trajectory verification.
+
+Arbitrum's Nitro protocol handles disputed state transitions through an interactive bisection game. When a verifier disputes a rollup block, rather than re-executing the entire block on-chain (which would cost as much as the original execution), both parties bisect the trace: "is the disputed instruction before or after the midpoint?" After ⌈log₂(k)⌉ rounds for a k-step trace, the dispute narrows to a single instruction that can be evaluated on-chain.
+
+The same pattern applies to trajectories:
+
+```
+1.  Agent posts trajectory_root = sha256(step_0 | step_1 | ... | step_k) on-chain
+    each execution cycle, along with a bond.
+2.  Watcher runs an anomaly detector (TrajAD-style) offline on the full trajectory.
+    If step j scores above threshold, watcher submits:
+        dispute(cycle_id, step_index=j, bond=B)
+3.  Contract initiates bisection over the k-step Merkle tree.
+    For k=64 steps: ⌈log₂(64)⌉ = 6 dispute rounds.
+    For k=1,024 steps: 10 rounds.
+4.  At each round, the agent reveals the subtree hash for the disputed half.
+    Contract verifies against the committed root.
+5.  At the leaf, the disputed step is fully revealed on-chain.
+6.  A step judge evaluates it against the slashing condition.
+    If the step matches the commitment but violates policy → slash agent bond.
+```
+
+For step 6, the judge is the hard part. Two categories of slashing conditions are cleanly on-chain-verifiable without a trusted oracle:
+
+**Categorical rules**: "agent may not transfer more than X tokens per step to an address outside its whitelist" — a policy the smart contract can evaluate from the revealed step without any external model. These cover a large fraction of real-world agent-draining attacks.
+
+**Signed attestations**: the agent's anomaly score at each step, attested by a TEE oracle running the detector. The TEE provides the score; the smart contract checks it against a threshold. Trust is delegated to the TEE vendor, same as in [TEE-attested inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed).
+
+A restaking-based arbitration (EigenLayer AVS) can cover the middle ground: a committee of restaked validators runs the anomaly detector and votes on the step, with slashing applying to validators who sign false attestations. This is the same pattern as [optimistic ML oracles](/articles/optimistic-ml-oracles).
+
+## The limits
+
+TrajAD and AgentForesight are trained on benchmark distributions. An adversary who understands the detector can craft steps that look semantically normal to the trained verifier while embedding anomalous intent in subtle ways — a transfer amount just below a detection threshold, a reasoning chain that superficially follows protocol while reaching a wrong conclusion.
+
+The [Replayable Financial Agents](https://arxiv.org/abs/2601.15322) paper (March 2026) introduces another complication: LLM agents are not deterministic even at temperature 0. When replaying a trajectory for dispute resolution, the agent may produce different reasoning for the same input — which makes the "agent reveals step j" contract tricky. The revealed step is a logged record, not a re-execution. This argues for logging at authoring time (when the agent runs) rather than relying on replay.
+
+The system is probabilistic, not sound. What it offers is:
+- **Early detection**: AgentForesight identifies bad steps before they cause final actions, not after
+- **Attribution**: step localization lets you audit *where* the agent went wrong, not just that it did
+- **Economic penalties**: the bisection game makes misbehavior slashable without requiring zkML
+- **Coverage**: categorical policy checks at the leaf are the only mathematically sound piece
+
+## What to build
+
+A practical monitoring stack for a high-stakes on-chain agent:
+
+| Layer | What it does | Cost |
+|-------|-------------|------|
+| Structured logging | Capture all three observation surfaces per step | ~15% compute overhead |
+| Step anomaly scorer | Run TrajAD-style verifier on each step in real time | 10–50ms per step (7B model) |
+| Trajectory commitment | Post Merkle root of steps on-chain each cycle | ~$0.05/cycle on L2 |
+| Bisection dispute window | Allow watchers to dispute for N hours after commitment | Challenge window |
+| Categorical policy judge | Enforce hard limits as smart contract rules | ~40k gas per evaluation |
+
+The commitment and bisection layers inherit directly from optimistic rollup infrastructure and can be implemented as a simple AVS contract on any chain that has restaking. The anomaly scorer runs off-chain but its output can be TEE-attested for the slashing condition.
+
+The deepest gap remains what it was in [The Receipt the Model Can't Forge](/articles/the-receipt-the-model-cant-forge): the cognitive surface of an agent's reasoning is hard to evaluate without running a model. Until that evaluation can be done cheaply and verifiably on-chain, the step judge will rely on categorical rules for soundness and probabilistic detection for coverage. That combination is not zkML, but it is deployable today, and a 19.9-point accuracy gain over frontier models in anomaly detection is a meaningful signal that the field is moving fast.
+
+## Takeaways
+
+- A DeFi agent's transaction log is an unforgeable record of what happened; the trajectory is the explanation of why.
+- TrajAD shows that generic LLMs fail at step-level anomaly detection — specialized, fine-grained process supervision is required.
+- AgentForesight gets +19.9% over GPT-4.1 at step localization, with 3× better precision in identifying the decisive failure step.
+- Optimistic bisection — the same protocol behind Arbitrum fraud proofs — reduces a k-step trajectory dispute to ⌈log₂(k)⌉ on-chain rounds, making trajectory commitments slashable without re-running the model.
+- The residual gap: the step judge for nuanced reasoning steps requires a trusted oracle; categorical policy rules are the only fully on-chain-sound piece.

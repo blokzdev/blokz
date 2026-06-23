@@ -1,0 +1,51 @@
+{
+  "snapshotAt": "2026-06-22T04:31:00Z",
+  "chainlink": {
+    "asset": "ETH/USD",
+    "address": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+    "chain": "Ethereum mainnet",
+    "price": 1725.81,
+    "answer_raw": 172581233000,
+    "decimals": 8,
+    "updatedAt": "2026-06-22T04:02:35Z",
+    "updatedAt_unix": 1782100955,
+    "ageSecs": 1694,
+    "deviationThresholdPct": 0.5,
+    "heartbeatSecs": 3600,
+    "triggerUpperBound": 1734.44,
+    "triggerLowerBound": 1717.18,
+    "gapVsSpotUsd": 7.67,
+    "gapVsSpotPct": 0.445
+  },
+  "pyth": {
+    "asset": "ETH/USD",
+    "feedId": "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
+    "price": 1731.47,
+    "price_raw": 173147000000,
+    "conf": 0.90,
+    "conf_raw": 90054418,
+    "expo": -8,
+    "confPct": 0.052,
+    "emaPriceUsd": 1732.38,
+    "publishTime": "2026-06-22T04:32:56Z",
+    "ageSecs": 0,
+    "bandLow": 1730.57,
+    "bandHigh": 1732.37,
+    "gapVsSpotUsd": 2.01,
+    "gapVsSpotPct": 0.116
+  },
+  "spot": {
+    "asset": "ETH/USD",
+    "source": "Crypto.com ETH_USD ticker",
+    "price": 1733.48,
+    "timestamp": "2026-06-22T04:30:49Z",
+    "bestBid": 1733.54,
+    "bestAsk": 1733.55,
+    "high24h": 1757.92,
+    "low24h": 1700.20
+  },
+  "priceRangeForChart": {
+    "min": 1718,
+    "max": 1742
+  }
+}

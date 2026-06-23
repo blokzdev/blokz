@@ -1,27 +1,57 @@
 {
   "counts": {
-    "articles": 122,
-    "artifacts": 123
+    "articles": 123,
+    "artifacts": 124
   },
   "topicCounts": {
     "agents": 43,
     "ai": 12,
     "blockchain": 29,
-    "cryptography": 20,
+    "cryptography": 21,
     "data": 19,
     "defi": 31,
     "infrastructure": 41,
     "llm": 21,
     "machine-learning": 41,
-    "research": 12,
+    "research": 13,
     "security": 34,
     "smart-contracts": 24,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 15
+    "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
+      "url": "/articles/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "title": "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI",
+      "description": "Nova replaces expensive SNARK-in-SNARK recursion with a random linear combination that folds two R1CS instances into one — 10× less overhead per step. For N-step AI inference: O(N) prover work, one constant-size final proof. NANOZK delivers this at GPT-2 scale: 6.9 KB, 23 ms verify.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "nova",
+        "folding-schemes",
+        "ivc",
+        "hypernova",
+        "protogalaxy",
+        "incremental-verifiable-computation",
+        "zkml",
+        "recursive-snarks",
+        "r1cs",
+        "spartan"
+      ],
+      "artifacts": [
+        "folding-frontier"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
       "path": "content/articles/2026/06/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem/index.mdx",
@@ -3323,6 +3353,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "folding-frontier",
+      "path": "content/artifacts/folding-frontier/manifest.json",
+      "module": "src/islands/artifacts/folding-frontier.ts",
+      "url": "/artifacts/folding-frontier",
+      "title": "Folding Frontier",
+      "description": "Proof sizes for six ZK schemes at 1,000 computation steps — hover or tap a row to see the trust model, setup requirement, and primary source. Folding-based IVC (Nova, HyperNova) holds constant; batch STARKs and separate Groth16 proofs grow with depth.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-solver-float",
       "path": "content/artifacts/the-solver-float/manifest.json",

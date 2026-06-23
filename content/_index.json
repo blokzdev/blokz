@@ -1,14 +1,14 @@
 {
   "counts": {
-    "articles": 100,
-    "artifacts": 101
+    "articles": 101,
+    "artifacts": 102
   },
   "topicCounts": {
     "agents": 37,
     "ai": 9,
-    "blockchain": 22,
+    "blockchain": 23,
     "cryptography": 16,
-    "data": 11,
+    "data": 12,
     "defi": 23,
     "infrastructure": 36,
     "llm": 19,
@@ -18,7 +18,7 @@
     "smart-contracts": 20,
     "tokenomics": 15,
     "tooling": 1,
-    "web3": 11,
+    "web3": 12,
     "zero-knowledge": 12
   },
   "articles": [
@@ -495,6 +495,25 @@
       ],
       "artifacts": [
         "the-pipeline-breach"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "path": "content/articles/2026/06/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline/index.mdx",
+      "url": "/articles/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "title": "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline",
+      "description": "EIP-4844 blobs look like cheap on-chain storage, but they vanish in 18 days. Here is why DA windows break AI training pipelines and what to use instead.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [
+        "the-availability-cliff"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2974,6 +2993,23 @@
         "research",
         "machine-learning",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-availability-cliff",
+      "path": "content/artifacts/the-availability-cliff/manifest.json",
+      "module": "src/islands/artifacts/the-availability-cliff.ts",
+      "url": "/artifacts/the-availability-cliff",
+      "title": "The Availability Cliff",
+      "description": "Drag the training-duration cursor to see which DA layers can serve your data. EIP-4844 blobs vanish after 18.2 days — the cliff most pipelines fall off.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
       ],
       "draft": false
     },

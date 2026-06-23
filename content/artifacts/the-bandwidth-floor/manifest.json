@@ -1,15 +1,17 @@
 {
   "slug": "the-bandwidth-floor",
   "title": "The Bandwidth Floor",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Required uplink bandwidth vs model scale for three gradient sync strategies: dense DDP, full-precision DiLoCo, and SparseLoCo (146× compressed). Drag the cursor to read bandwidth at any model size; compare to real connectivity levels.",
   "pubDate": "2026-06-23",
   "type": "svg",
   "archetype": "chart",
-  "topics": [
-    "machine-learning",
-    "infrastructure"
-  ],
+  "topics": ["machine-learning", "infrastructure"],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": ["drag chart to read bandwidth at any model size"],
+  "dataSource": {
+    "label": "Covenant-72B (arXiv 2603.08163) · SparseLoCo (arXiv 2508.15706)",
+    "url": "https://arxiv.org/abs/2603.08163"
+  },
+  "dataAsOf": "2026-03-09"
 }

@@ -27,15 +27,27 @@
       "path": "content/articles/2026/06/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading/index.mdx",
       "url": "/articles/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
       "title": "The Survivability Contract: Treating Agent Skills as Untrusted in On-Chain AI Trading",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Skill marketplaces let any agent buy trading capabilities off a shelf — and every skill is an execution vector. SAE's non-bypassable execution guards cut max drawdown from 46.4% to 3.2% (↓93%), CVaR by 97.5%, and the Delegation Gap by 97% on live perp data. The defense isn't in the model.",
       "pubDate": "2026-06-23",
       "topics": [
         "agents",
         "defi",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "survivability",
+        "delegation-gap",
+        "execution-harness",
+        "skill-supply-chain",
+        "perpetuals",
+        "mdd",
+        "cvar",
+        "on-chain-trading",
+        "adversarial-execution"
+      ],
+      "artifacts": [
+        "the-survivability-lift"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3080,7 +3092,7 @@
       "module": "src/islands/artifacts/the-survivability-lift.ts",
       "url": "/artifacts/the-survivability-lift",
       "title": "The Survivability Lift",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Before/after bar chart comparing four survivability metrics (MDD, CVaR, Delegation Gap, Attack Success) with and without SAE execution controls, from arXiv 2603.10092.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

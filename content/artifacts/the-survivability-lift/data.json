@@ -1,0 +1,78 @@
+{
+  "metrics": [
+    {
+      "id": "mdd",
+      "label": "Max Drawdown",
+      "sublabel": "MDD",
+      "description": "Maximum portfolio loss from peak to trough over the 3-month test window. The dominant failure mode when a compromised skill issues outsized orders.",
+      "before": 0.4643,
+      "after": 0.0319,
+      "reductionPct": 93.1,
+      "displayBefore": "46.43%",
+      "displayAfter": "3.19%"
+    },
+    {
+      "id": "cvar",
+      "label": "Tail Risk",
+      "sublabel": "CVaR₀.₉₉",
+      "description": "Expected loss in the worst 1% of outcomes (Conditional Value-at-Risk, 99th percentile). Bounds the damage when rare, severe adversarial inputs reach execution.",
+      "before": 0.004025,
+      "after": 0.000102,
+      "reductionPct": 97.5,
+      "displayBefore": "4.025 × 10⁻³",
+      "displayAfter": "~1.02 × 10⁻⁴"
+    },
+    {
+      "id": "dg",
+      "label": "Delegation Gap",
+      "sublabel": "DG loss proxy",
+      "description": "Deviation between the written execution policy and what actually happened. Near-zero means the harness closed almost all drift between intent and execution.",
+      "before": 0.647,
+      "after": 0.019,
+      "reductionPct": 97.0,
+      "displayBefore": "0.647",
+      "displayAfter": "0.019"
+    },
+    {
+      "id": "attack",
+      "label": "Attack Success",
+      "sublabel": "adversarial inputs",
+      "description": "Fraction of crafted adversarial inputs that caused the agent to execute outside its policy. Residual 72.8% indicates remaining model-layer exposure — zero false blocks (no legitimate trades blocked).",
+      "before": 1.0,
+      "after": 0.728,
+      "reductionPct": 27.2,
+      "displayBefore": "100%",
+      "displayAfter": "72.8%"
+    }
+  ],
+  "controls": [
+    {
+      "id": "exposure",
+      "label": "Exposure Budget",
+      "desc": "Projection-based position-size limits block any single skill from deploying more than the permitted capital fraction, regardless of what the model requested."
+    },
+    {
+      "id": "cooldown",
+      "label": "Cooldown + Order-Rate",
+      "desc": "Per-window rate limits prevent a compromised skill from flooding the exchange with cascading orders in the same slot."
+    },
+    {
+      "id": "slippage",
+      "label": "Slippage Bounds",
+      "desc": "Hard slippage ceilings catch adversarially inflated price estimates before they drain the vault in a single trade."
+    },
+    {
+      "id": "staged",
+      "label": "Staged Execution",
+      "desc": "Large positions are broken into smaller tranches so per-error loss is bounded even when an order is wrong."
+    },
+    {
+      "id": "allowlist",
+      "label": "Tool + Venue Allowlist",
+      "desc": "Only pre-approved tools and exchange venues are reachable from inside the execution contract; new skills cannot route to arbitrary endpoints."
+    }
+  ],
+  "source": "Borjigin et al. — arXiv 2603.10092",
+  "sourceUrl": "https://arxiv.org/abs/2603.10092",
+  "testWindow": "Binance USD-M BTCUSDT / ETHUSDT perpetuals, 2025-09-01 to 2025-12-01 (15-min bars)"
+}

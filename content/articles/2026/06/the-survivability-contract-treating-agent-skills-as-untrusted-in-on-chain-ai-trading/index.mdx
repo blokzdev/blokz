@@ -1,22 +1,90 @@
 ---
 slug: the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading
 title: "The Survivability Contract: Treating Agent Skills as Untrusted in On-Chain AI Trading"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Skill marketplaces let any agent buy trading capabilities off a shelf — and every skill is an execution vector. SAE's non-bypassable execution guards cut max drawdown from 46.4% to 3.2% (↓93%), CVaR by 97.5%, and the Delegation Gap by 97% on live perp data. The defense isn't in the model."
 pubDate: 2026-06-23T08:27:54.689Z
 author: blokz
 topics: [agents, defi, infrastructure]
-tags: []
-artifacts: []
+tags: [survivability, delegation-gap, execution-harness, skill-supply-chain, perpetuals, mdd, cvar, on-chain-trading, adversarial-execution]
+artifacts: [the-survivability-lift]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Borjigin et al., Execution Is the New Attack Surface: SAE for OpenClaw-Style Agents (arXiv:2603.10092)"
+    url: "https://arxiv.org/abs/2603.10092"
+  - label: "Liu et al., Auditing Agent Harness Safety: HarnessAudit (arXiv:2605.14271)"
+    url: "https://arxiv.org/abs/2605.14271"
+  - label: "Barton et al., Operating-Layer Controls for Onchain LLM Agents Under Real Capital (arXiv:2604.26091)"
+    url: "https://arxiv.org/abs/2604.26091"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Skill marketplaces have made deploying an on-chain AI trading agent frictionless. Install a perpetual-futures skill, wire it to a wallet, and the agent is live. The purchase takes minutes; auditing the skill's behavior under adversarial inputs takes considerably longer — if anyone does it at all. A March 2026 paper frames this as the dominant failure mode for the next generation of agentic DeFi: the execution layer trusts everything upstream of it, and every upstream component is a potential attack vector.
 
-## Section heading
+The paper's fix — Survivability-Aware Execution (SAE) — sits as middleware between the model and the exchange. On three months of live Binance perpetual data, it cuts maximum drawdown from **46.4% to 3.2%**, tail risk by **97.5%**, and a new metric called the **Delegation Gap** by **97%**. The defense lives entirely below the model. You can swap the LLM and the numbers don't change.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The supply-chain problem
 
-## Takeaways
+OpenClaw-style agent stacks — now the dominant architecture for autonomous crypto trading — route LLM intents through tool interception, policy gates, and a local executor. The same shift that made them powerful also opened a supply-chain attack surface: capability marketplaces like skills.sh let agents acquire new trading behaviors by installing skills and CLIs. An agent buying a futures-scalping skill gets code that can call the exchange with arbitrary parameters.
 
-TODO.
+The [MCP tool-poisoning research](/articles/mcp-tool-poisoning-onchain-agents) established that a tool's description is trusted context the user never sees. Skills extend that surface further: they're not just descriptions but executable modules that can intercept order routing, inject prices, or modify position-sizing logic before the exchange ever sees a request.
+
+[HarnessAudit (Liu et al., arXiv:2605.14271)](https://arxiv.org/abs/2605.14271) benchmarked 210 multi-agent tasks across eight domains and found that task completion is systematically misaligned with safe execution — violations accumulate as trajectories lengthen, and most concentrate in resource access and inter-agent information transfer. The harness design sets the *ceiling* for safe deployment; the model cannot overcome a weak harness.
+
+The SAE paper sharpens this into an engineering target: treat everything upstream of the executor — the LLM, its tools, and any purchased skills — as untrusted. The execution layer is then the only trustworthy component, and it had better be robust.
+
+## The Delegation Gap
+
+Before SAE, the gap between stated policy and actual execution had no standard name or metric. The paper calls it the **Delegation Gap (DG)**: the difference between what the Intended Policy Spec says should happen and what the execution log shows actually happened. It is operationalized as a loss proxy computed over logged (ExecutionRequest, ExecutionContext, ExecutionDecision) triples, with a value close to zero meaning the harness faithfully executed policy and a value near one meaning execution drifted severely.
+
+Without any guards, the DG loss proxy on the test dataset sits at **0.647** — a substantial deviation attributable to skill outputs that recommended position sizes, venues, or timings outside the policy's allowed bounds, processed uncritically by a naive executor. With SAE controls active, it drops to **0.019**.
+
+The DG metric is independently valuable as a production monitoring signal. Logging the three-tuple at every execution event lets you detect skill regression, prompt-injection campaigns, or model drift before they compound into large drawdowns. The [operating-layer paper](/articles/operating-layer-onchain-agents) showed that trace-level observability was one of the five components responsible for the 99.9% settlement success in DX Terminal Pro. DG formalizes what those traces should be measuring.
+
+## The execution contract
+
+SAE's core abstraction is an **execution contract**: a typed triple that every trade must pass through before touching the exchange.
+
+- **ExecutionRequest** — what the upstream agent (LLM + skills) wants: instrument, side, size, price, timing.
+- **ExecutionContext** — the current state of the world: account balance, open positions, recent order history, current funding rate, venue-specific constraints.
+- **ExecutionDecision** — the harness's ruling: allow as-is, modify to policy bounds, or reject with a reason code.
+
+The model is a *proposer*; the executor is the *decision authority*. This mirrors the [ERC-4337 bundler's role](/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent): agents nominate user operations; bundlers decide what enters the chain. In SAE, agents nominate trade instructions; the execution contract decides what reaches the exchange.
+
+The contract enforces five **non-bypassable last-mile invariants**:
+
+1. **Projection-based exposure budgets** — before approving a request, the harness projects the proposed trade's impact on total portfolio exposure. If it would push net exposure past the allowed fraction of capital, the trade is rejected or scaled down regardless of what the skill argued for.
+
+2. **Cooldown and order-rate limits** — per-window rate limits prevent a compromised skill from flooding the exchange. A single adversarial skill cannot issue more than N orders in a rolling window, bounding cascade damage.
+
+3. **Slippage bounds** — hard ceilings on acceptable slippage catch adversarially inflated price estimates before they drain the vault. A skill that fabricates a stale mid-price to justify a wider spread hits the bound and is refused.
+
+4. **Staged execution** — large positions are broken into tranches automatically. Each tranche is individually within bounds, so even if a skill issues a single oversized order, the harness chops it into pieces that fit the risk envelope.
+
+5. **Tool and venue allowlists** — the execution contract can only route to pre-approved tools and exchange venues. A newly installed skill cannot point the executor at an arbitrary counterparty or a shadow venue by injecting a different endpoint into its ExecutionRequest.
+
+<Artifact slug="the-survivability-lift" />
+
+## What the numbers say
+
+The test dataset is Binance USD-M perpetual data for BTCUSDT and ETHUSDT from September through December 2025 (15-minute bars), a period that included the October deleveraging event that forced $2.1B in closures on Hyperliquid. This is exactly the environment where DG amplifies: high volatility drives aggressive skill recommendations, and an untrusted skill can exploit that to issue outsized orders that look plausible against recent price action.
+
+**Maximum drawdown** fell from 0.4643 to 0.0319 — a 93.1% reduction. The before-value implies that a naive agent running a compromised skill during this window could lose nearly half its capital. The after-value implies the harness constrained worst-case loss to about 3.2% of portfolio.
+
+**CVaR₀.₉₉** — the expected loss in the worst 1% of outcomes — fell by 97.5% (from 4.025×10⁻³ to ~1.02×10⁻⁴). This is the tail-risk metric that matters most for agents that run continuously: rare, severe adversarial inputs are the failure mode most likely to be fatal.
+
+**Attack success** fell from 100% to 72.8% — with zero false blocks. That residual 72.8% is important: SAE is not an input-level defense. Crafted adversarial prompts that convince the model to make a bad recommendation still reach the executor. What the contract catches is the *execution consequence* of those bad recommendations exceeding policy bounds. The 27.2% of attacks that SAE blocks are precisely those whose requested execution would have violated an invariant. The 72.8% that "succeed" still issue some trade — but that trade stays within bounds, limiting harm to a policy-compliant worst case rather than an unconstrained one.
+
+## The defense isn't in the model
+
+The most important engineering implication is that none of these gains require a better LLM. The same model that produces a 46.4% MDD without a harness produces a 3.2% MDD with one. The weights are identical. This is the operational lesson from [DX Terminal Pro](/articles/operating-layer-onchain-agents) reframed through a security lens: model capability and execution safety are orthogonal dimensions.
+
+HarnessAudit's finding that harness design sets the "upper bound of safe deployment" has a direct corollary: if your harness has no DG monitoring and no non-bypassable invariants, the upper bound is whatever a compromised skill can cause. On perpetual futures with leverage, that bound is not small.
+
+The practical checklist for building this in production:
+
+- **Log the execution triple** at every event: what was requested, the context at request time, and the decision. This is your DG telemetry.
+- **Enforce exposure budgets by projection**, not by looking at the last trade. A sequence of individually-small skill outputs can stack toward a large position if exposure is only checked per-order.
+- **Treat allowlists as a cold-path config**, not a hot-path check. Approved tools and venues should be compiled into the harness at startup; the execution loop never consults a mutable registry that a skill could write to.
+- **Set the slippage bound below what any plausible market condition justifies**. If your strategy never needs more than 50 bps of slippage on normal days, cap it at 75 bps and let the bound catch the anomalies.
+- **Instrument DG in your monitoring dashboard**. A rising DG before a drawdown is a signal that skill behavior is drifting — it's cheaper to catch in logs than in P&L.
+
+The execution layer is the last programmable gate between an agent's intent and an irreversible on-chain action. For on-chain AI trading agents operating in adversarial environments — where skills can be purchased from unknown vendors and model outputs can be manipulated — treating that gate as a security primitive, not an afterthought, is what keeps the survivability math working.

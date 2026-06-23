@@ -1,0 +1,15 @@
+{
+  "slug": "the-activation-receipt",
+  "title": "The Activation Receipt",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T00:31:20.073Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

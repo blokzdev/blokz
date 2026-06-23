@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 98,
-    "artifacts": 99
+    "articles": 99,
+    "artifacts": 100
   },
   "topicCounts": {
     "agents": 37,
     "ai": 9,
     "blockchain": 21,
-    "cryptography": 16,
+    "cryptography": 17,
     "data": 11,
     "defi": 22,
     "infrastructure": 36,
     "llm": 18,
-    "machine-learning": 37,
-    "research": 8,
+    "machine-learning": 38,
+    "research": 9,
     "security": 27,
     "smart-contracts": 19,
     "tokenomics": 15,
@@ -22,6 +22,23 @@
     "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "path": "content/articles/2026/06/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference/index.mdx",
+      "url": "/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "cryptography",
+        "research"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
       "path": "content/articles/2026/06/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent/index.mdx",
@@ -2641,6 +2658,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-activation-receipt",
+      "path": "content/artifacts/the-activation-receipt/manifest.json",
+      "module": "src/islands/artifacts/the-activation-receipt.ts",
+      "url": "/artifacts/the-activation-receipt",
+      "title": "The Activation Receipt",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-op-queue",
       "path": "content/artifacts/the-op-queue/manifest.json",

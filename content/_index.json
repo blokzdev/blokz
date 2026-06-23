@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 103,
-    "artifacts": 104
+    "articles": 104,
+    "artifacts": 105
   },
   "topicCounts": {
     "agents": 37,
-    "ai": 9,
+    "ai": 10,
     "blockchain": 24,
     "cryptography": 16,
-    "data": 13,
-    "defi": 24,
+    "data": 14,
+    "defi": 25,
     "infrastructure": 37,
     "llm": 19,
     "machine-learning": 38,
@@ -467,6 +467,32 @@
       ],
       "artifacts": [
         "the-upgrade-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-price-chainlink-shows-you-is-already-old",
+      "path": "content/articles/2026/06/the-price-chainlink-shows-you-is-already-old/index.mdx",
+      "url": "/articles/the-price-chainlink-shows-you-is-already-old",
+      "title": "The Price Chainlink Shows You Is Already Old",
+      "description": "Chainlink's push oracle only updates when price moves ≥0.5% or an hour passes. That gap costs AI agents real money — and Pyth's pull model closes most of it.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "tags": [
+        "oracles",
+        "chainlink",
+        "pyth",
+        "staleness",
+        "defi-risk",
+        "ai-agents"
+      ],
+      "artifacts": [
+        "the-oracle-gap"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3032,6 +3058,23 @@
         "smart-contracts",
         "security",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-oracle-gap",
+      "path": "content/artifacts/the-oracle-gap/manifest.json",
+      "module": "src/islands/artifacts/the-oracle-gap.ts",
+      "url": "/artifacts/the-oracle-gap",
+      "title": "The Oracle Gap",
+      "description": "Compare Chainlink's push oracle price against Pyth's pull price and live spot. Drag the slider to see exactly when the 0.5% deviation threshold triggers an on-chain update.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
       ],
       "draft": false
     },

@@ -55,7 +55,7 @@
       "path": "content/articles/2026/06/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove/index.mdx",
       "url": "/articles/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove",
       "title": "The HTTPS Receipt: zkTLS, Web Proofs, and What AI Agents Can Finally Prove",
-      "description": "AI agents need real-world data — but smart contracts can only verify what's on-chain. zkTLS closes the gap: TLSNotary's MPC-TLS requires 30 MB of garbled-circuit material before the handshake; its April 2026 Proxy mode cuts that to 4 seconds. Here is the trust model, the benchmarks, and what agents can prove today.",
+      "description": "AI agents need real-world data. zkTLS closes the oracle gap: TLSNotary's MPC-TLS costs 30 MB of garbled circuits at 5 Mbps; its April 2026 Proxy mode cuts that to 4 seconds. Here is the trust model, the benchmarks, and what agents can prove today.",
       "pubDate": "2026-06-23",
       "topics": [
         "zero-knowledge",

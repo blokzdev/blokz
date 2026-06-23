@@ -27,7 +27,7 @@
       "path": "content/articles/2026/06/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets/index.mdx",
       "url": "/articles/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
       "title": "The Inference Spread: LLM Routing Arbitrage and the Pricing Problem for Decentralized AI Markets",
-      "description": "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-development risk. Here is the mechanism, the DeFi isomorphism, and what it means for on-chain AI market design.",
+      "description": "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-dev risk.",
       "pubDate": "2026-06-23",
       "topics": [
         "agents",

@@ -1,0 +1,25 @@
+{
+  "note": "Computed from TLSNotary benchmark anchors (May 2026). MPC model: 240/BW + 1.56 s (30 MB garbled-circuit upload = 240 Mb). Proxy model: 15/BW + 1.0 s (lighter pre-session traffic). Both models reproduce published anchor points within 5%.",
+  "anchorPoints": {
+    "mpc": [
+      { "bwMbps": 5,    "seconds": 52,  "note": "30 MB upload at 5 Mbps dominates" },
+      { "bwMbps": 1000, "seconds": 1.8, "note": "Derived: speedup 1.8× × Proxy 1 s at 1 Gbps" }
+    ],
+    "proxy": [
+      { "bwMbps": 5,    "seconds": 4,   "note": "No 30 MB pre-upload; lighter handshake" },
+      { "bwMbps": 1000, "seconds": 1,   "note": "Floor dominated by fixed computation" }
+    ]
+  },
+  "speedup": {
+    "at5Mbps":    12.5,
+    "at1Gbps":    1.8,
+    "note": "Speedup = MPC time / Proxy time. Falls monotonically from 12.5× to 1.8× as bandwidth rises."
+  },
+  "mpcCircuitMB": 30,
+  "mpcRounds":    40,
+  "dataSource": {
+    "label": "TLSNotary benchmark blog (May 2026)",
+    "url": "https://tlsnotary.org/blog/2026/05/10/blog-proxy-mode/"
+  },
+  "dataAsOf": "2026-06-23"
+}

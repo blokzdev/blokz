@@ -1,0 +1,35 @@
+{
+  "ethPriceUSD": 1654,
+  "baseFeeGwei": 0.50,
+  "effectiveGasPriceGwei": 2.0,
+  "blockNumber": 25381195,
+  "blockDate": "2026-06-23",
+  "ops": [
+    { "id": "approve", "label": "APPROVE", "gas": 46000, "color": "#5b8cff" },
+    { "id": "swap",    "label": "SWAP",    "gas": 130000, "color": "#8b5cf6" },
+    { "id": "stake",   "label": "STAKE",   "gas": 91000,  "color": "#22d3ee" },
+    { "id": "supply",  "label": "SUPPLY",  "gas": 215000, "color": "#4ade80" }
+  ],
+  "constants": {
+    "baseTxGas": 21000,
+    "erc4337Overhead": 30000,
+    "eip7702AuthGas": 2500
+  },
+  "scenarios": [
+    {
+      "id": "two-op",
+      "label": "Approve + Swap",
+      "ops": ["approve", "swap"]
+    },
+    {
+      "id": "three-op",
+      "label": "Approve + Swap + Stake",
+      "ops": ["approve", "swap", "stake"]
+    },
+    {
+      "id": "five-op",
+      "label": "DeFi Loop (5 ops)",
+      "ops": ["approve", "swap", "supply", "approve", "stake"]
+    }
+  ]
+}

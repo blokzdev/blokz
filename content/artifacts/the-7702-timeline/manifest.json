@@ -1,0 +1,21 @@
+{
+  "slug": "the-7702-timeline",
+  "title": "The 7702 Timeline",
+  "description": "Three-lane transaction diagram comparing Raw EOA, ERC-4337, and EIP-7702 execution flows for multi-step DeFi operations — with MEV attack windows and live gas costs. Select a scenario to compare.",
+  "pubDate": "2026-06-23T15:27:53.506Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "blockchain",
+    "agents",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a scenario button to compare approaches"],
+  "dataSource": {
+    "label": "EIP-7702 spec + Ethereum mainnet block 25381195 (Blockscout)",
+    "url": "https://eips.ethereum.org/EIPS/eip-7702"
+  },
+  "dataAsOf": "2026-06-23"
+}

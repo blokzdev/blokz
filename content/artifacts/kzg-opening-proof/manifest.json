@@ -1,7 +1,7 @@
 {
   "slug": "kzg-opening-proof",
   "title": "KZG Opening Proof",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "The KZG polynomial commitment scheme, stepped through. Pick an evaluation point z on the cubic P(x) = x³−2x²−x+2 to watch the opening proof π materialize, see the pairing check pass, then corrupt π to make it fail — and read why 50,000 gas ($0.067) is all Ethereum needs to verify any such claim.",
   "pubDate": "2026-06-23",
   "type": "svg",
   "archetype": "diagram",
@@ -9,7 +9,16 @@
     "zero-knowledge",
     "cryptography"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a preset z button to set the evaluation point",
+    "tap 'corrupt π' to see verification fail",
+    "tap 'valid π' to restore the honest proof"
+  ],
+  "dataSource": {
+    "label": "EIP-4844 spec + KZG ceremony + Blockscout",
+    "url": "https://eips.ethereum.org/EIPS/eip-4844"
+  },
+  "dataAsOf": "2026-06-23"
 }

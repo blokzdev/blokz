@@ -1,7 +1,7 @@
 {
   "slug": "the-lrt-risk-ladder",
   "title": "The LRT Risk Ladder",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Scatter chart placing five major liquid restaking tokens by restaking yield vs. worst historical depeg. Drag the LTV slider to see your liquidation boundary update in real time.",
   "pubDate": "2026-06-23T02:30:53.301Z",
   "type": "svg",
   "archetype": "chart",
@@ -12,5 +12,13 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "dataSource": {
+    "label": "EigenLayer / ether.fi / Renzo / KelpDAO / Blockscout (block 25377320)",
+    "url": "https://app.eigenlayer.xyz/"
+  },
+  "dataAsOf": "2026-06-23",
+  "controls": [
+    "Click a protocol bubble to inspect its HF math and event history",
+    "Drag the LTV slider to move the liquidation-threshold contour across the chart"
+  ]
 }

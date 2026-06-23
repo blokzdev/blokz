@@ -1,0 +1,15 @@
+{
+  "slug": "verifiable-inference-cost-spectrum",
+  "title": "Verifiable Inference Cost Spectrum",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T07:30:28.478Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

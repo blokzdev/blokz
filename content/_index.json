@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 113,
-    "artifacts": 114
+    "articles": 114,
+    "artifacts": 115
   },
   "topicCounts": {
     "agents": 40,
@@ -12,14 +12,14 @@
     "defi": 27,
     "infrastructure": 38,
     "llm": 20,
-    "machine-learning": 39,
-    "research": 11,
+    "machine-learning": 40,
+    "research": 12,
     "security": 32,
     "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 12,
-    "zero-knowledge": 14
+    "zero-knowledge": 15
   },
   "articles": [
     {
@@ -47,6 +47,25 @@
       "artifacts": [
         "the-phantom-token-cloud"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "path": "content/articles/2026/06/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference/index.mdx",
+      "url": "/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "title": "The Activation Hash: TOPLOC and the 1,000x Receipt for Non-Interactive Verifiable Inference",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "research"
+      ],
+      "tags": [],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 10,
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3070,6 +3089,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "verifiable-inference-cost-spectrum",
+      "path": "content/artifacts/verifiable-inference-cost-spectrum/manifest.json",
+      "module": "src/islands/artifacts/verifiable-inference-cost-spectrum.ts",
+      "url": "/artifacts/verifiable-inference-cost-spectrum",
+      "title": "Verifiable Inference Cost Spectrum",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning"
       ],
       "draft": false
     },

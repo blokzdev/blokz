@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 99,
-    "artifacts": 100
+    "articles": 100,
+    "artifacts": 101
   },
   "topicCounts": {
     "agents": 37,
@@ -9,14 +9,14 @@
     "blockchain": 21,
     "cryptography": 16,
     "data": 11,
-    "defi": 22,
+    "defi": 23,
     "infrastructure": 36,
     "llm": 19,
     "machine-learning": 37,
     "research": 9,
-    "security": 28,
+    "security": 29,
     "smart-contracts": 19,
-    "tokenomics": 15,
+    "tokenomics": 16,
     "tooling": 1,
     "web3": 11,
     "zero-knowledge": 12
@@ -47,6 +47,23 @@
       "artifacts": [
         "the-phantom-token-cloud"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-shadow-peg-liquid-restaking-tokens-and-the-hidden-collateral-risk-for-ai-defi-agents",
+      "path": "content/articles/2026/06/the-shadow-peg-liquid-restaking-tokens-and-the-hidden-collateral-risk-for-ai-defi-agents/index.mdx",
+      "url": "/articles/the-shadow-peg-liquid-restaking-tokens-and-the-hidden-collateral-risk-for-ai-defi-agents",
+      "title": "The Shadow Peg: Liquid Restaking Tokens and the Hidden Collateral Risk for AI DeFi Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "security",
+        "tokenomics"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2682,6 +2699,23 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-lrt-risk-ladder",
+      "path": "content/artifacts/the-lrt-risk-ladder/manifest.json",
+      "module": "src/islands/artifacts/the-lrt-risk-ladder.ts",
+      "url": "/artifacts/the-lrt-risk-ladder",
+      "title": "The LRT Risk Ladder",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "security",
+        "tokenomics"
       ],
       "draft": false
     },

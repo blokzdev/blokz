@@ -1,0 +1,16 @@
+{
+  "slug": "the-lrt-risk-ladder",
+  "title": "The LRT Risk Ladder",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T02:30:53.301Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "security",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

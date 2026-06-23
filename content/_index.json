@@ -27,15 +27,27 @@
       "path": "content/articles/2026/06/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments/index.mdx",
       "url": "/articles/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
       "title": "The Mandate Gap: Prompt Injection and the Trust Architecture of AI Agent Payments",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "AP2 mandates are cryptographically signed, but the signing happens after the LLM picks the target. Two attack techniques show that simple injected text can redirect payment to a malicious merchant before the signature is ever computed — and 3.8 ms of zero-trust nonce verification is what closes a different gap entirely.",
       "pubDate": "2026-06-23",
       "topics": [
         "agents",
         "security",
         "web3"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "agent-payments",
+        "ap2",
+        "tesspay",
+        "prompt-injection",
+        "mandate",
+        "escrow",
+        "proof-of-task-execution",
+        "erc-4337",
+        "agentic-commerce"
+      ],
+      "artifacts": [
+        "the-payment-flow-gap"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3109,7 +3121,7 @@
       "module": "src/islands/artifacts/the-payment-flow-gap.ts",
       "url": "/artifacts/the-payment-flow-gap",
       "title": "The Payment Flow Gap",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Three agentic payment protocol architectures—AP2, TessPay, and On-Chain ERC-4337—shown as flow stages. Toggle Attack Mode to highlight where prompt injection compromises each design. Click a column to inspect protocol details.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "diagram",

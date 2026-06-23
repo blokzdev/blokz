@@ -1,13 +1,13 @@
 {
   "counts": {
-    "articles": 30,
-    "artifacts": 31
+    "articles": 31,
+    "artifacts": 32
   },
   "topicCounts": {
     "agents": 12,
     "ai": 3,
-    "blockchain": 10,
-    "cryptography": 3,
+    "blockchain": 11,
+    "cryptography": 4,
     "data": 2,
     "defi": 7,
     "infrastructure": 12,
@@ -18,9 +18,26 @@
     "smart-contracts": 6,
     "tokenomics": 2,
     "web3": 3,
-    "zero-knowledge": 3
+    "zero-knowledge": 4
   },
   "articles": [
+    {
+      "slug": "one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai",
+      "path": "content/articles/2026/06/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai/index.mdx",
+      "url": "/articles/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai",
+      "title": "One Ceremony, Three Stacks: KZG Commitments in Ethereum Blobs, zkEVMs, and Verifiable AI",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "agent-token-bonding-curve",
       "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
@@ -817,6 +834,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "kzg-opening-proof",
+      "path": "content/artifacts/kzg-opening-proof/manifest.json",
+      "module": "src/islands/artifacts/kzg-opening-proof.ts",
+      "url": "/artifacts/kzg-opening-proof",
+      "title": "KZG Opening Proof",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "attestation-chain",
       "path": "content/artifacts/attestation-chain/manifest.json",

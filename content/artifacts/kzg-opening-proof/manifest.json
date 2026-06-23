@@ -1,0 +1,15 @@
+{
+  "slug": "kzg-opening-proof",
+  "title": "KZG Opening Proof",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

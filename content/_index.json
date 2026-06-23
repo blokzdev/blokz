@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference/index.mdx",
       "url": "/articles/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
       "title": "The Pairwise Vote: How Bradley-Terry Ranking Beats Majority Consensus in Decentralized AI Inference",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Majority voting counts hands — it can't rank quality. Fortytwo's Bradley-Terry protocol achieves 85.90% on GPQA Diamond vs. 68.69% for majority voting, extracting ranking signal from pairwise comparisons and making Sybil attacks economically unattractive.",
       "pubDate": "2026-06-23",
       "topics": [
         "machine-learning",
         "research",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "swarm-inference",
+        "bradley-terry",
+        "pairwise-ranking",
+        "decentralized-inference",
+        "majority-voting",
+        "on-chain-reputation",
+        "proof-of-capability",
+        "sybil-resistance",
+        "fortytwo",
+        "collective-intelligence"
+      ],
+      "artifacts": [
+        "peer-rank-convergence"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3406,7 +3419,7 @@
       "module": "src/islands/artifacts/peer-rank-convergence.ts",
       "url": "/artifacts/peer-rank-convergence",
       "title": "Peer Rank Convergence",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Bradley-Terry vs. majority voting over pairwise comparison rounds. Five nodes with hidden quality scores compete; a malicious node is down-ranked by BT while majority voting is captured. Reference: Fortytwo GPQA Diamond — BT 85.90%, majority 68.69%.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "simulation",

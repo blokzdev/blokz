@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 113,
-    "artifacts": 114
+    "articles": 114,
+    "artifacts": 115
   },
   "topicCounts": {
-    "agents": 40,
+    "agents": 41,
     "ai": 11,
     "blockchain": 27,
     "cryptography": 18,
     "data": 17,
-    "defi": 27,
-    "infrastructure": 38,
+    "defi": 28,
+    "infrastructure": 39,
     "llm": 20,
     "machine-learning": 39,
     "research": 11,
@@ -22,6 +22,23 @@
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
+      "path": "content/articles/2026/06/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading/index.mdx",
+      "url": "/articles/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
+      "title": "The Survivability Contract: Treating Agent Skills as Untrusted in On-Chain AI Trading",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "defi",
+        "infrastructure"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
       "path": "content/articles/2026/06/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow/index.mdx",
@@ -3057,6 +3074,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-survivability-lift",
+      "path": "content/artifacts/the-survivability-lift/manifest.json",
+      "module": "src/islands/artifacts/the-survivability-lift.ts",
+      "url": "/artifacts/the-survivability-lift",
+      "title": "The Survivability Lift",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-phantom-token-cloud",
       "path": "content/artifacts/the-phantom-token-cloud/manifest.json",

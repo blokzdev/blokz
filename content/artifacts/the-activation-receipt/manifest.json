@@ -1,0 +1,17 @@
+{
+  "slug": "the-activation-receipt",
+  "title": "The Activation Receipt",
+  "description": "Switch between FP32, FP16, INT8, and INT4 precision to see how provider activation fingerprints diverge from the reference — and why DiFR flags model substitution in just two forward steps.",
+  "pubDate": "2026-06-23T00:31:20.073Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "cryptography"
+  ],
+  "aspect": "16/7",
+  "featured": false,
+  "controls": [
+    "select precision level to reveal fingerprint divergence"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "inversionPaper": "Geiping et al. 2020, 'Inverting Gradients', arXiv:2003.14053",
+    "leakagePaper": "Zhu et al. 2019, 'Deep Leakage from Gradients', NeurIPS 2019, arXiv:1906.08935",
+    "surveyPaper": "Guo et al. 2025, 'Exploring the Vulnerabilities of Federated Learning', arXiv:2503.11514",
+    "dpPaper": "Abadi et al. 2016, 'Deep Learning with Differential Privacy', CCS 2016",
+    "hyperflPaper": "Guo et al. 2024, 'A New Federated Learning Framework Against Gradient Inversion Attacks', arXiv:2412.07187",
+    "note": "PSNR curve: optimization-based inversion baseline fit to Geiping et al. ResNet-18/ImageNet results. DP utility: CIFAR-10 DP-SGD benchmarks from Abadi et al. 2016, extrapolated to larger models."
+  },
+  "thresholds": {
+    "photographic": 25,
+    "recognizable": 15,
+    "degraded": 8,
+    "floorPsnr": 8
+  },
+  "psnrModel": {
+    "intercept": 32,
+    "slope": 5.5,
+    "floor": 8,
+    "note": "basePsnr(B) = max(floor, intercept - slope * log2(B)), fit to optimization-based inversion curve"
+  },
+  "dpLevels": [
+    { "eps": 8,   "psnrReduction": 2,  "utilityPct": 80, "label": "ε = 8",   "note": "Weak DP — common in enterprise FL. Protects against passive observers, not determined adversaries." },
+    { "eps": 4,   "psnrReduction": 6,  "utilityPct": 60, "label": "ε = 4",   "note": "Moderate DP. Reconstruction degrades noticeably but model utility falls to ~60% of non-private baseline." },
+    { "eps": 1,   "psnrReduction": 15, "utilityPct": 20, "label": "ε = 1",   "note": "Strong DP. Reconstruction is in the private zone, but only ~20% model utility survives — not viable for most tasks." },
+    { "eps": 0.1, "psnrReduction": 25, "utilityPct": 5,  "label": "ε = 0.1", "note": "Very strong DP. Reconstruction impossible, but the model is essentially random noise — completely unusable." }
+  ],
+  "batchPsnrSamples": [
+    { "batch": 1,   "psnrNoDP": 32.0, "note": "Near-pixel-perfect reconstruction in ~30 iterations, Zhu et al. 2019" },
+    { "batch": 2,   "psnrNoDP": 26.5, "note": "Still photographic; individual image features clearly resolved" },
+    { "batch": 4,   "psnrNoDP": 21.0, "note": "Recognizable; faces, objects, and text clearly legible" },
+    { "batch": 8,   "psnrNoDP": 15.5, "note": "Just below photographic; Geiping et al. Table 1 ResNet-18/ImageNet" },
+    { "batch": 16,  "psnrNoDP": 10.0, "note": "Degraded; individual images obscured but statistical patterns leak" },
+    { "batch": 32,  "psnrNoDP": 8.0,  "note": "At floor — GAN-based attacks still reconstruct recognizable content here" },
+    { "batch": 64,  "psnrNoDP": 8.0,  "note": "Floor; generation-based attacks (GIFD) maintain quality at large batches" },
+    { "batch": 128, "psnrNoDP": 8.0,  "note": "Floor for optimization-based; GANs with priors still leak meaningful structure" },
+    { "batch": 256, "psnrNoDP": 8.0,  "note": "Floor; analytics-based attacks (R-GAP) can still recover labels at scale" }
+  ]
+}

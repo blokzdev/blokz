@@ -1,25 +1,25 @@
 {
   "counts": {
-    "articles": 100,
-    "artifacts": 101
+    "articles": 110,
+    "artifacts": 111
   },
   "topicCounts": {
-    "agents": 37,
-    "ai": 9,
-    "blockchain": 21,
-    "cryptography": 16,
-    "data": 11,
-    "defi": 23,
-    "infrastructure": 36,
-    "llm": 19,
-    "machine-learning": 37,
-    "research": 9,
-    "security": 29,
-    "smart-contracts": 19,
+    "agents": 38,
+    "ai": 11,
+    "blockchain": 25,
+    "cryptography": 18,
+    "data": 15,
+    "defi": 27,
+    "infrastructure": 37,
+    "llm": 20,
+    "machine-learning": 39,
+    "research": 11,
+    "security": 31,
+    "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
-    "web3": 11,
-    "zero-knowledge": 12
+    "web3": 12,
+    "zero-knowledge": 13
   },
   "articles": [
     {
@@ -78,6 +78,36 @@
       ],
       "artifacts": [
         "the-lrt-risk-ladder"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "path": "content/articles/2026/06/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference/index.mdx",
+      "url": "/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
+      "description": "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "verifiable-inference",
+        "activation-fingerprint",
+        "difr",
+        "seed-commitment",
+        "model-substitution",
+        "quantization",
+        "orthogonal-projection",
+        "inference-markets"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 9,
+      "artifacts": [
+        "the-activation-receipt"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -166,6 +196,36 @@
       "seriesOrder": 8,
       "artifacts": [
         "the-proof-batch"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state",
+      "path": "content/articles/2026/06/the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state/index.mdx",
+      "url": "/articles/the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state",
+      "title": "The Ceremony and the Constant: KZG Commitments, the Powers of Tau, and Why Ethereum Uses IPA for State",
+      "description": "Every EIP-4844 blob is secured by a KZG polynomial commitment — 48 bytes committing to 128 KB, verifiable in 50,000 gas. That efficiency required 140,416 people to collectively bury a secret for 69 days. Here's the math, the ceremony, and why Ethereum chose a different scheme for state.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "blockchain"
+      ],
+      "tags": [
+        "kzg",
+        "polynomial-commitments",
+        "trusted-setup",
+        "ipa",
+        "verkle-trees",
+        "eip-4844",
+        "powers-of-tau",
+        "bls12-381",
+        "data-availability",
+        "blobspace"
+      ],
+      "artifacts": [
+        "the-commitment-space"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -285,6 +345,34 @@
       "draft": false
     },
     {
+      "slug": "the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface",
+      "path": "content/articles/2026/06/the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface/index.mdx",
+      "url": "/articles/the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface",
+      "title": "The Biased Beacon: On-Chain Randomness and the AI Agent Attack Surface",
+      "description": "PREVRANDAO costs roughly $88 per bit to bias. Chainlink VRF costs $2.43 per request. Here's how to choose the right randomness source for AI agents making on-chain decisions — and what breaks when you choose wrong.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "ai"
+      ],
+      "tags": [
+        "randomness",
+        "prevrandao",
+        "chainlink-vrf",
+        "drand",
+        "commit-reveal",
+        "mev",
+        "thompson-sampling",
+        "beacon-chain"
+      ],
+      "artifacts": [
+        "the-randomness-risk-map"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
       "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
       "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
@@ -397,6 +485,33 @@
       "draft": false
     },
     {
+      "slug": "the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-blank-slate-persistent-memory-costs-and-architectures-for-on-chain-ai-agents",
+      "title": "The Blank Slate: Persistent Memory Costs and Architectures for On-Chain AI Agents",
+      "description": "On-chain AI agents reset state on every call. Four persistent-memory architectures span a 20× monthly cost gap — SSTORE at $78/month versus IPFS+CID at $3.92. Real June 2026 gas numbers, four trust models, one crossover you won't see coming.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "data",
+        "llm"
+      ],
+      "tags": [
+        "agent-memory",
+        "sstore",
+        "episodic-memory",
+        "working-memory",
+        "persistent-state",
+        "evm",
+        "agent-architecture"
+      ],
+      "artifacts": [
+        "agent-memory-cost-map"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
       "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
       "url": "/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
@@ -504,6 +619,88 @@
       "draft": false
     },
     {
+      "slug": "the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time",
+      "path": "content/articles/2026/06/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time/index.mdx",
+      "url": "/articles/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time",
+      "title": "The Accumulated Lie: TWAP Oracle Manipulation and the Cost of Moving Time",
+      "description": "A 15× spike on a $17M pool shifts its 30-minute v2 TWAP by 9.3% in one block. The arithmetic-mean accumulator is far weaker than v3's geometric tick accumulator. Covers the manipulation cost formula, the Inverse Finance case study, and minimum safe pool depth.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "security"
+      ],
+      "tags": [
+        "twap",
+        "price-oracle",
+        "uniswap-v2",
+        "uniswap-v3",
+        "flash-loan",
+        "oracle-manipulation",
+        "tick-accumulator",
+        "defi-security",
+        "inverse-finance"
+      ],
+      "artifacts": [
+        "the-twap-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-price-chainlink-shows-you-is-already-old",
+      "path": "content/articles/2026/06/the-price-chainlink-shows-you-is-already-old/index.mdx",
+      "url": "/articles/the-price-chainlink-shows-you-is-already-old",
+      "title": "The Price Chainlink Shows You Is Already Old",
+      "description": "Chainlink's push oracle only updates when price moves ≥0.5% or an hour passes. That gap costs AI agents real money — and Pyth's pull model closes most of it.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "tags": [
+        "oracles",
+        "chainlink",
+        "pyth",
+        "staleness",
+        "defi-risk",
+        "ai-agents"
+      ],
+      "artifacts": [
+        "the-oracle-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "path": "content/articles/2026/06/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains/index.mdx",
+      "url": "/articles/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "title": "The Gradient Thief: Why Federated Learning's Privacy Promise Fails on Public Chains",
+      "description": "Federated learning keeps raw data local — but the gradients it publishes on-chain are not private. Inversion attacks reconstruct training images from them, and a public ledger makes that window permanent.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "machine-learning",
+        "research",
+        "data"
+      ],
+      "tags": [
+        "federated-learning",
+        "gradient-inversion",
+        "differential-privacy",
+        "dp-sgd",
+        "privacy-utility-tradeoff",
+        "on-chain-training",
+        "blockchain-fl"
+      ],
+      "artifacts": [
+        "the-inversion-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
       "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
       "url": "/articles/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
@@ -527,6 +724,81 @@
       ],
       "artifacts": [
         "the-pipeline-breach"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line",
+      "path": "content/articles/2026/06/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line/index.mdx",
+      "url": "/articles/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line",
+      "title": "The Builder Oligopoly: Private Orderflow, Builder Bonds, and What AI Agents Pay to Skip the Line",
+      "description": "Five builders now win 96.7% of Ethereum blocks. Their edge isn't compute — it's exclusive orderflow: 12% of transactions that generate 54.59% of block value. AI agents transacting in public have to understand where they sit in that hierarchy — and when a preconfirmation changes the math.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "infrastructure",
+        "blockchain",
+        "defi"
+      ],
+      "tags": [
+        "mev",
+        "pbs",
+        "proposer-builder-separation",
+        "private-orderflow",
+        "mev-boost",
+        "preconfirmations",
+        "mev-commit",
+        "block-building",
+        "builder-concentration"
+      ],
+      "artifacts": [
+        "the-mev-supply-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "path": "content/articles/2026/06/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline/index.mdx",
+      "url": "/articles/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
+      "title": "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline",
+      "description": "EIP-4844 blobs look like cheap on-chain storage, but they vanish in 18 days. Here is why DA windows break AI training pipelines and what to use instead.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [
+        "the-availability-cliff"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "path": "content/articles/2026/06/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it/index.mdx",
+      "url": "/articles/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "title": "Uniswap v4 Hooks: The AMM Hook Lifecycle and What AI Agents Can Do With It",
+      "description": "Uniswap v4 hooks make every liquidity pool programmable. Here's how the 14-bit permission bitmap works, what fires during a swap, and where AI agents fit into dynamic fee architecture.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "uniswap",
+        "amm",
+        "hooks",
+        "dynamic-fees",
+        "lvr",
+        "ai-agents",
+        "mev"
+      ],
+      "artifacts": [
+        "hook-permission-visualizer"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2735,6 +3007,22 @@
       "draft": false
     },
     {
+      "slug": "the-activation-receipt",
+      "path": "content/artifacts/the-activation-receipt/manifest.json",
+      "module": "src/islands/artifacts/the-activation-receipt.ts",
+      "url": "/artifacts/the-activation-receipt",
+      "title": "The Activation Receipt",
+      "description": "Switch between FP32, FP16, INT8, and INT4 precision to see how provider activation fingerprints diverge from the reference — and why DiFR flags model substitution in just two forward steps.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-op-queue",
       "path": "content/artifacts/the-op-queue/manifest.json",
       "module": "src/islands/artifacts/the-op-queue.ts",
@@ -2780,6 +3068,22 @@
       "topics": [
         "zero-knowledge",
         "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-commitment-space",
+      "path": "content/artifacts/the-commitment-space/manifest.json",
+      "module": "src/islands/artifacts/the-commitment-space.ts",
+      "url": "/artifacts/the-commitment-space",
+      "title": "The Commitment Space",
+      "description": "Six commitment schemes plotted on proof size vs. trust model: KZG (EIP-4844 blobs), IPA/Pedersen (Verkle state), Groth16, PLONK, FRI-STARK, and Merkle Patricia Trie. Click any dot to inspect.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
       ],
       "draft": false
     },
@@ -2850,6 +3154,22 @@
       "draft": false
     },
     {
+      "slug": "the-randomness-risk-map",
+      "path": "content/artifacts/the-randomness-risk-map/manifest.json",
+      "module": "src/islands/artifacts/the-randomness-risk-map.ts",
+      "url": "/artifacts/the-randomness-risk-map",
+      "title": "The Randomness Risk Map",
+      "description": "Five on-chain randomness sources plotted on latency vs. manipulation cost. Click any dot to see mechanism, security tier, gas cost, and recommended use case.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "smart-contracts",
+        "security"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-sealevel-lanes",
       "path": "content/artifacts/the-sealevel-lanes/manifest.json",
       "module": "src/islands/artifacts/the-sealevel-lanes.ts",
@@ -2912,6 +3232,23 @@
         "security",
         "llm",
         "web3"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "agent-memory-cost-map",
+      "path": "content/artifacts/agent-memory-cost-map/manifest.json",
+      "module": "src/islands/artifacts/agent-memory-cost-map.ts",
+      "url": "/artifacts/agent-memory-cost-map",
+      "title": "Agent Memory Cost Map",
+      "description": "Adjust memory entries per call, call frequency, and gas price to see how monthly on-chain cost diverges across four persistent-memory architectures: SSTORE, event logs, IPFS+CID, and TEE.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "data",
+        "llm"
       ],
       "draft": false
     },
@@ -2983,6 +3320,40 @@
       "draft": false
     },
     {
+      "slug": "the-twap-window",
+      "path": "content/artifacts/the-twap-window/manifest.json",
+      "module": "src/islands/artifacts/the-twap-window.ts",
+      "url": "/artifacts/the-twap-window",
+      "title": "The TWAP Window",
+      "description": "How much does it cost to shift a TWAP oracle? Drag pool TVL, TWAP duration, and price spike factor to see the round-trip manipulation cost alongside the 30-min TWAP shift — for both Uniswap v2 arithmetic and v3 geometric accumulators. Anchored to live on-chain pool data.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-oracle-gap",
+      "path": "content/artifacts/the-oracle-gap/manifest.json",
+      "module": "src/islands/artifacts/the-oracle-gap.ts",
+      "url": "/artifacts/the-oracle-gap",
+      "title": "The Oracle Gap",
+      "description": "Compare Chainlink's push oracle price against Pyth's pull price and live spot. Drag the slider to see exactly when the 0.5% deviation threshold triggers an on-chain update.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-pipeline-breach",
       "path": "content/artifacts/the-pipeline-breach/manifest.json",
       "module": "src/islands/artifacts/the-pipeline-breach.ts",
@@ -2996,6 +3367,72 @@
         "research",
         "machine-learning",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-inversion-window",
+      "path": "content/artifacts/the-inversion-window/manifest.json",
+      "module": "src/islands/artifacts/the-inversion-window.ts",
+      "url": "/artifacts/the-inversion-window",
+      "title": "The Inversion Window",
+      "description": "How well can an adversary reconstruct your training data from the gradients you published? Drag the batch size; toggle DP budget ε. The curve shows estimated reconstruction quality (PSNR) from Geiping et al. — and the tradeoff where DP noise finally closes the window at the cost of model utility.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "machine-learning",
+        "data"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-mev-supply-chain",
+      "path": "content/artifacts/the-mev-supply-chain/manifest.json",
+      "module": "src/islands/artifacts/the-mev-supply-chain.ts",
+      "url": "/artifacts/the-mev-supply-chain",
+      "title": "The MEV Supply Chain",
+      "description": "Interactive diagram of Ethereum's PBS pipeline — Searcher, Builder, Relay, Proposer, Block — with builder concentration numbers, private orderflow paths, and the mev-commit preconf feedback arc.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "infrastructure",
+        "blockchain",
+        "defi"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-availability-cliff",
+      "path": "content/artifacts/the-availability-cliff/manifest.json",
+      "module": "src/islands/artifacts/the-availability-cliff.ts",
+      "url": "/artifacts/the-availability-cliff",
+      "title": "The Availability Cliff",
+      "description": "Drag the training-duration cursor to see which DA layers can serve your data. EIP-4844 blobs vanish after 18.2 days — the cliff most pipelines fall off.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "hook-permission-visualizer",
+      "path": "content/artifacts/hook-permission-visualizer/manifest.json",
+      "module": "src/islands/artifacts/hook-permission-visualizer.ts",
+      "url": "/artifacts/hook-permission-visualizer",
+      "title": "Hook Permission Visualizer",
+      "description": "Explore how Uniswap v4's 14-bit permission bitmap maps to pool lifecycle callbacks. Toggle bits or select preset patterns to see which hook functions fire for each operation.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
       ],
       "draft": false
     },

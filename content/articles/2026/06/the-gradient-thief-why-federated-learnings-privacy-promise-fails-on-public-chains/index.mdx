@@ -1,0 +1,146 @@
+---
+slug: the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains
+title: "The Gradient Thief: Why Federated Learning's Privacy Promise Fails on Public Chains"
+description: "Federated learning keeps raw data local — but the gradients it publishes on-chain are not private. Inversion attacks reconstruct training images from them, and a public ledger makes that window permanent."
+pubDate: 2026-06-22T03:27:19.523Z
+author: blokz
+topics: [machine-learning, research, data]
+tags: [federated-learning, gradient-inversion, differential-privacy, dp-sgd, privacy-utility-tradeoff, on-chain-training, blockchain-fl]
+artifacts: [the-inversion-window]
+difficulty: intermediate
+sources:
+  - label: "Zhu et al. 2019, 'Deep Leakage from Gradients', NeurIPS 2019"
+    url: https://arxiv.org/abs/1906.08935
+  - label: "Geiping et al. 2020, 'Inverting Gradients: How easy is it to break privacy in federated learning?'"
+    url: https://arxiv.org/abs/2003.14053
+  - label: "Abadi et al. 2016, 'Deep Learning with Differential Privacy', CCS 2016"
+    url: https://arxiv.org/abs/1607.00133
+  - label: "Guo et al. 2025, 'Exploring the Vulnerabilities of Federated Learning: A Deep Dive into Gradient Inversion Attacks'"
+    url: https://arxiv.org/abs/2503.11514
+  - label: "Guo et al. 2024, 'A New Federated Learning Framework Against Gradient Inversion Attacks via Hiding Training Data', arXiv:2412.07187"
+    url: https://arxiv.org/abs/2412.07187
+---
+
+Federated learning sells a bargain: train a shared model without ever moving raw data off the device. Hospitals keep patient scans. Phones keep keystrokes. Mining rigs keep proprietary sensor streams. Only model updates — gradients — travel the wire.
+
+On a public blockchain, those gradients travel onto an immutable ledger visible to every node in the network, indexed forever. That is where the bargain breaks. A class of attacks called **gradient inversion** can reconstruct the original training images from published gradients alone, often with enough fidelity to identify people, read text, or recover documents. And because the ledger is permanent, any advance in inversion technique next year retroactively strips the privacy of every gradient round you published this year.
+
+This piece is a ground-level look at how that works — the math, the defenses, the numbers, and the structural problem that no cryptographic patch fully solves.
+
+## How Blockchain-Coordinated Federated Learning Works
+
+In a classic FL setup, a central coordinator aggregates gradients from participating nodes. Blockchain FL replaces that coordinator with a smart contract: nodes submit gradient updates as on-chain transactions, the contract aggregates them (often via a weighted average or secure multi-party computation), and the updated global model is committed to a shared state root. Participants earn tokens for contributing; the chain provides auditability.
+
+What goes on-chain varies by implementation. Some protocols commit only the aggregated gradient; others require individual node submissions for fraud-proofing or incentive accounting. Ocean Protocol's Compute-to-Data uses off-chain training with on-chain provenance. Giza and Vana commit model weight deltas with ZK proofs of correct computation. Even in the most private-looking designs, enough gradient signal typically reaches a public surface to make inversion a live threat.
+
+The key point: gradient inversion does not require access to the aggregated model. It requires access to **one gradient update from one training step**, which on a transparent chain is trivially available.
+
+## The Inversion Attack
+
+The idea goes back to Zhu et al. 2019. Given a neural network's gradient `∂L/∂W` with respect to its parameters, and knowledge of the model architecture, an adversary can pose the following optimization problem:
+
+```
+x* = argmin_x  ||∂L(x, ŷ)/∂W − g||² + α·TV(x)
+```
+
+Here `g` is the observed gradient, `ŷ` is the (often inferrable) predicted label, and `TV(x)` is total variation regularization to bias toward natural images. This is just gradient descent on the *input image* rather than model weights. The network itself is frozen; the attack treats it as a known function and inverts it.
+
+Zhu et al. showed that for a batch of **one image**, this recovers near-pixel-perfect reconstructions — PSNR above 30 dB — in fewer than 30 iterations on an MLP. Individual pixels are visible; the attack is essentially lossless.
+
+Geiping et al. 2020 extended this to ResNet-18 on ImageNet, which was the more sobering result. They replaced squared gradient distance with **cosine similarity loss**, which is scale-invariant and works across deep networks where gradient magnitudes span many orders of magnitude. Their results on batch size 1 show PSNR around 32 dB — faces readable, text legible. At batch size 4, reconstruction remains recognizable (PSNR ~21 dB). By batch 16, individual images blur but statistical patterns remain.
+
+The PSNR curve follows a roughly log-linear decay with batch size:
+
+```
+PSNR(B) ≈ max(floor, 32 − 5.5 × log₂(B))
+```
+
+Below the floor (~8 dB), optimization-based attacks lose coherence — but generation-based attacks (GIFD, GAN-prior methods) can maintain recognizable output even at batch 64–128 by learning a generative prior over the training distribution.
+
+<Artifact slug="the-inversion-window" />
+
+The interactive above lets you drag batch size and toggle DP budget to see where these tradeoffs land. The "inversion window" is the region where PSNR exceeds 8 dB — anything above that floor is potentially recoverable.
+
+## The Permanent Ledger Problem
+
+On a traditional federated learning deployment, the threat window is bounded: once the model is trained and the server discards gradient logs, the data is gone. The attacker had to be present and running the inversion algorithm in real time.
+
+On a public chain, the threat window is **unbounded**. Every gradient ever submitted is stored in transaction history, indexed by block height, downloadable by anyone with an archive node. If a more powerful inversion method is published in 2028 — a GAN trained on a better prior, a new optimization trick, more GPU-hours — it can be applied retroactively to every gradient round published in 2024.
+
+This is the same logic as harvest-now-decrypt-later attacks on encrypted communication (the threat quantum computing poses to RSA traffic captured today). The difference is that gradient inversion is not waiting for a computational breakthrough that may or may not arrive — it is already here, already capable of reconstructing training images, and improving steadily. The permanence of the ledger converts what would be a bounded real-time threat into an indefinite retrospective exposure.
+
+## DP-SGD: The Standard Defense
+
+The accepted mitigation is Differentially Private SGD (Abadi et al. 2016). Before publishing each gradient, each node clips the per-sample gradient to norm bound `C` and adds calibrated Gaussian noise:
+
+```
+g̃ = (1/B) × Σᵢ clip(gᵢ, C) + N(0, σ²C²I)
+```
+
+The privacy guarantee is parameterized by **ε** (epsilon): smaller ε means more noise and stronger privacy. The cost is model utility — noisier gradients mean slower convergence and lower final accuracy.
+
+The Abadi et al. CIFAR-10 benchmarks give a concrete picture of the collapse:
+
+| ε | PSNR reduction | Approx. model utility |
+|---|---|---|
+| 8 (weak) | −2 dB | ~80% of non-private |
+| 4 (moderate) | −6 dB | ~60% |
+| 1 (strong) | −15 dB | ~20% |
+| 0.1 (very strong) | −25 dB | ~5% |
+
+At ε = 1, reconstruction is pushed below the 8 dB floor for any practical batch size — genuinely private. But 80% of model utility is gone. For most real tasks — medical imaging, fraud detection, sensor fusion — a model with 20% of baseline accuracy is not deployable. At ε = 8, you retain utility but an adversary with batch-1 gradients still recovers near-photographic reconstruction.
+
+## The Composition Trap
+
+There is a second problem that DP deployments on blockchains face, compounding the first. Differential privacy is a property of a **single query**. When you run DP-SGD for K rounds, privacy composes: the total ε budget consumed across K rounds grows roughly as:
+
+```
+ε_total ≈ √K × ε_per_round   (advanced composition)
+```
+
+A deployment running 1000 gradient rounds with ε_per_round = 0.1 accumulates ε_total ≈ 3.2 — moderate privacy, not strong. Increasing rounds to reach model convergence erodes the per-round guarantee. On a blockchain, the number of rounds is part of the public ledger, so the adversary knows exactly how much budget was spent and can select the least-noisy rounds for inversion.
+
+This means DP-SGD cannot simply be configured once and forgotten. Systems need **privacy accountants** — libraries like Google's `dp-accounting` — to track Rényi DP composition across rounds and halt training before the budget is exhausted. Most current blockchain FL implementations do not do this.
+
+## What Deployed Systems Actually Do
+
+Current protocols address this unevenly:
+
+**Vana** uses a data validation layer where personal data stays on-device and only model contributions are submitted. Individual gradients are not published; only aggregated deltas reach the chain. This reduces exposure at the cost of aggregation trust assumptions.
+
+**Ocean Protocol's Compute-to-Data** keeps both data and computation off-chain entirely; the chain records provenance and payment. No gradients are published on-chain. It sidesteps inversion by sidesteping on-chain computation — at the cost of the decentralization properties that make blockchain FL interesting.
+
+**Giza** uses ZK proofs of correct inference rather than federated training; the model weights themselves are attested, not gradients. A different attack surface — model inversion rather than gradient inversion — but a narrower one.
+
+None of these give you fully decentralized, auditable, real-time gradient-publishing FL with strong privacy guarantees. That combination is what the trilemma describes.
+
+## HyperFL: A Structural Fix
+
+Guo et al. 2024 (arXiv:2412.07187, published December 2024) propose a different approach: instead of adding noise to gradients, restructure what gradients reveal. **HyperFL** uses a shared **hypernetwork** — a small network that generates the weights of each node's local model as a function of a shared embedding. Nodes publish gradients with respect to the hypernetwork parameters, not their local model weights.
+
+The key insight: hypernetwork gradients do not have a direct reconstruction path back to individual training samples. The inversion problem requires knowing the local model architecture and its weights at the time of the forward pass. With a hypernetwork, those local weights are derived from the shared embedding — and the gradient flows through the hypernetwork, not through the local data directly.
+
+Their experiments show that HyperFL reduces gradient inversion fidelity to noise-floor PSNR even without DP noise, while maintaining model utility significantly above DP-SGD at equivalent privacy levels. The tradeoff is added computation (the hypernetwork itself must be trained) and a more complex system design.
+
+HyperFL is not deployed in production anywhere at the time of writing. The theory is sound and the paper's results are reproducible, but it has not been audited against the latest generation of GAN-prior inversion attacks, and the hypernetwork approach introduces its own questions about model utility when the hypernetwork is small relative to the target task.
+
+## The Trilemma
+
+The underlying tension is structural. In blockchain FL you want three things:
+
+1. **Decentralized**: No trusted coordinator, gradient aggregation auditable on-chain
+2. **Verifiable**: Any observer can confirm correct computation
+3. **Private**: Training data cannot be reconstructed from public artifacts
+
+You can have two. Decentralized + verifiable means gradients or their commitments are public, and inversion applies. Decentralized + private means you need per-round DP noise, which collapses utility at the ε values that actually resist inversion, or structural defenses like HyperFL which are not yet mature. Verifiable + private collapses toward a centralized architecture (trusted aggregator, SGX enclaves, or MPC among a fixed committee) that trades decentralization for the privacy guarantee.
+
+This is not an indictment of the entire research area — it is an honest description of where the frontier is. Federated learning on public chains is not inherently broken; it just does not yet have a production-grade combination of all three properties. The right posture is to understand which of the three you are actually sacrificing and to be explicit about it in system design and user-facing claims.
+
+## Takeaways
+
+- **Gradients are not private data.** Publishing them on-chain is not meaningfully different from publishing compressed versions of your training images, especially at batch sizes below 8–16.
+- **The ledger is forever.** On-chain gradient history can be attacked with any inversion technique that exists at any future point. This is a qualitatively different threat model from off-chain FL.
+- **DP-SGD works, but the utility cost at strong ε is disqualifying for most tasks.** ε = 1 pushes reconstruction below the floor but leaves ~20% model utility. That number needs to improve before strong DP is practical for production FL.
+- **Composition matters.** Each training round consumes privacy budget. Systems must account for it, but most don't.
+- **HyperFL is the most promising structural fix** as of mid-2026, but it is research-stage, not production-ready, and hasn't been stress-tested against the latest attacks.
+- **Know your threat model.** If you need decentralized + auditable, accept that individual gradient privacy is not guaranteed and mitigate at the data layer (synthetic data, aggregation, FHE/MPC). If you need individual privacy, consider whether on-chain publication is necessary at all.

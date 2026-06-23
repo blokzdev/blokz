@@ -27,7 +27,7 @@
       "path": "content/articles/2026/06/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments/index.mdx",
       "url": "/articles/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
       "title": "The Mandate Gap: Prompt Injection and the Trust Architecture of AI Agent Payments",
-      "description": "AP2 mandates are cryptographically signed, but the signing happens after the LLM picks the target. Two attack techniques show that simple injected text can redirect payment to a malicious merchant before the signature is ever computed — and 3.8 ms of zero-trust nonce verification is what closes a different gap entirely.",
+      "description": "AP2 mandates are signed after the LLM picks the target. Injected text can redirect payment to a malicious merchant before the signature is computed — and 3.8 ms of zero-trust nonce verification closes a different gap entirely.",
       "pubDate": "2026-06-23",
       "topics": [
         "agents",

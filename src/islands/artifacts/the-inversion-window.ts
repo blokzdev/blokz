@@ -302,7 +302,7 @@ export default function mount(container: HTMLElement): () => void {
     }
 
     // DP curve (if active)
-    const activeDpLevel = activeEps !== null ? data.dpLevels.find(l => l.eps === activeEps) : null;
+    const activeDpLevel = activeEps !== null ? (data.dpLevels.find(l => l.eps === activeEps) ?? null) : null;
     if (activeDpLevel) {
       const STEPS = 300;
       let d = '';

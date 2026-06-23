@@ -55,15 +55,30 @@
       "path": "content/articles/2026/06/the-shadow-peg-liquid-restaking-tokens-and-the-hidden-collateral-risk-for-ai-defi-agents/index.mdx",
       "url": "/articles/the-shadow-peg-liquid-restaking-tokens-and-the-hidden-collateral-risk-for-ai-defi-agents",
       "title": "The Shadow Peg: Liquid Restaking Tokens and the Hidden Collateral Risk for AI DeFi Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "LRTs promise compounded yield from staking and EigenLayer restaking in a single token — but their soft peg to ETH hides two distinct failure modes with very different implications for your DeFi collateral positions.",
       "pubDate": "2026-06-23",
       "topics": [
         "defi",
         "security",
         "tokenomics"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "liquid-restaking",
+        "eigenlayer",
+        "eigenlayer-slashing",
+        "lrt",
+        "shadow-peg",
+        "kelpdao",
+        "weeth",
+        "rseth",
+        "ezeth",
+        "oracle-lag",
+        "defi-collateral",
+        "health-factor"
+      ],
+      "artifacts": [
+        "the-lrt-risk-ladder"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2708,7 +2723,7 @@
       "module": "src/islands/artifacts/the-lrt-risk-ladder.ts",
       "url": "/artifacts/the-lrt-risk-ladder",
       "title": "The LRT Risk Ladder",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Scatter chart placing five major liquid restaking tokens by restaking yield vs. worst historical depeg. Drag the LTV slider to see your liquidation boundary update in real time.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

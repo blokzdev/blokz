@@ -1,0 +1,148 @@
+---
+slug: the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem
+title: "The Float Before the Fill: ERC-7683 Cross-Chain Intents and the Solver Inventory Problem"
+description: "ERC-7683 gives users cross-chain swaps in 8 seconds by converting bridge latency into a solver capital float problem. The 4–7 bps spread is a rental rate on cross-chain inventory — here's the lifecycle, the capital math, and what AI agents pay to move capital across chains."
+pubDate: 2026-06-23T17:27:33.654Z
+author: blokz
+topics: [defi, smart-contracts, infrastructure]
+tags: [erc-7683, cross-chain-intents, solver, across-protocol, uniswapx, capital-float, uma-oracle, relayer, inventory-problem]
+artifacts: [the-solver-float]
+difficulty: intermediate
+sources:
+  - label: "ERC-7683: Cross Chain Intents — EIP"
+    url: "https://eips.ethereum.org/EIPS/eip-7683"
+  - label: "Across Protocol documentation"
+    url: "https://docs.across.to/introduction/actors"
+  - label: "How UMA Secures Across Protocol — UMA Blog"
+    url: "https://blog.uma.xyz/articles/case-study-how-uma-secures-across-protocol"
+  - label: "Across Protocol — L2BEAT bridge security profile"
+    url: "https://l2beat.com/bridges/projects/across"
+---
+
+ERC-7683 gives users cross-chain swaps that complete in 8 seconds. The mechanism hides the cost: **a solver fronts the capital on the destination chain and waits roughly 2 hours to be repaid**. That waiting time — the float — is what the 4–7 basis-point spread actually buys.
+
+Understanding the float explains the solver concentration data (top 5 relayers handle ~70% of Across volume), the shared-inventory effect that tightens spreads as protocols adopt the standard, and why AI agents that need cross-chain execution are renting a capital market, not using a bridge.
+
+## The bridge problem intents actually solve
+
+Traditional cross-chain bridges conflate two problems. The first is **trust**: the bridge's security reduces to a multisig or validator set; [a compromised set has lost $2.5B to hacks](/articles/the-bridge-cannot-prove-it). The second is **latency**: optimistic rollup canonical exits take 7 days; [finality on OP Stack is a four-layer promise stretching that wide](/articles/the-finality-ladder).
+
+Intent protocols like Across attack the latency problem specifically. The trust model shifts — from bridge validators to a solver repayment system — but it doesn't disappear. ERC-7683 doesn't make cross-chain transactions trustless; it makes them fast, at a price that reflects the capital cost of that speed.
+
+## What ERC-7683 standardizes
+
+ERC-7683 is a specification for the solver-facing interface of cross-chain intent protocols, co-authored by Across Protocol and Uniswap Labs and ratified in early 2025. It defines two Solidity interfaces:
+
+**`IOriginSettler`** — deployed on the source chain. Users call `open()` to lock input tokens in the contract and emit an `Open` event. The settler exposes a `resolve()` method that translates the protocol's opaque order payload into a common `ResolvedCrossChainOrder`, allowing any ERC-7683-capable solver to parse it without per-protocol integration.
+
+**`IDestinationSettler`** — deployed on the destination chain. Solvers call `fill(bytes32 orderId, bytes calldata originData, bytes calldata fillerData)` to deliver output tokens to the recipient. This call is what completes in seconds.
+
+The spec deliberately leaves settlement — how solvers get repaid after filling — as an implementation detail. That's the hard part, and it varies per protocol.
+
+## Across Protocol's five-stage lifecycle
+
+Across is the largest ERC-7683 deployment ($14B+ cumulative volume as of April 2026, 88% of which flows through ERC-7683 order paths). Its architecture shows concretely what the spec leaves implicit.
+
+<Artifact slug="the-solver-float" />
+
+**Stage 1 — Intent (0 seconds):** User calls `depositV3()` on the source-chain SpokePool, locking input tokens. The deposit specifies: destination chain, output token, minimum output amount, recipient, `fillDeadline` (~30 minutes out), and optionally an `exclusivityDeadline` — a window during which only one designated relayer may fill.
+
+**Stage 2 — Fill (2–8 seconds):** A relayer watching the source chain calls `fillV3Relay()` on the destination-chain SpokePool, delivering output tokens from its own inventory. The user's swap is complete. The relayer now holds a receivable against the HubPool — and its capital is locked until repayment.
+
+**Stage 3 — Bundle (~30 minutes):** An off-chain dataworker aggregates all fills across all spoke chains into a bundle root hash. The exact aggregation rules are codified in UMIP-157 and UMIP-179 — UMA Improvement Proposals that any party can independently verify. The dataworker calls `proposeRootBundle()` on the Ethereum mainnet HubPool, posting a bond of 30 WETH (~$75,000).
+
+**Stage 4 — Challenge window (~2 hours):** UMA's Optimistic Oracle V3 holds the assertion open for 2 hours. Anyone can dispute by posting a matching bond; disputes escalate to UMA's DVM token-holder vote. In practice, disputes are rare — the dataworker's output is deterministic and verifiable by any external observer running the same algorithm against on-chain data.
+
+**Stage 5 — Repayment (~2–4 hours total):** Once the challenge window closes, `executeRootBundle()` reimburses relayers from pooled LP capital according to the bundle's instructions. LP capital is simultaneously rebalanced across spoke chains via canonical bridges.
+
+The full cycle — intent to repayment — takes roughly 2–4 hours. The 8-second fill is fast; the solver settlement is not.
+
+## The capital float problem
+
+From Stage 2 to Stage 5, the relayer's capital is locked. A relayer who fills a $100,000 USDC transfer at 14:00 UTC won't see repayment until roughly 16:00 UTC. During those two hours, that $100,000 cannot fill other orders — unless the relayer holds additional inventory.
+
+Effective **capital velocity** for an Across relayer:
+
+```
+daily_capital_cycles = 24h / 2h_settlement ≈ 12 cycles/day
+```
+
+A relayer with $1M deployed can fill at most $12M of volume per day before exhausting capital. At a 5.5 bps midpoint spread on stablecoins:
+
+```
+gross_daily = 5.5 bps × $12M volume = $6,600
+gross_annual = $6,600 × 365 = $2.41M
+implied_ROI  = $2.41M / $1M deployed ≈ 241% annualized
+```
+
+That's gross before gas costs. On L2-to-L2 routes, gas is cents per fill and largely negligible. On mainnet routes, gas materially compresses margins on small orders — the 4–7 bps spread is calibrated to amortize gas across expected order sizes. Volatile-asset routes widen to 10–25 bps to price inventory risk: if ETH drops 2% between fill and repayment, the solver's receivable is still denominated in the input token's value, creating mark-to-market exposure.
+
+The 2-hour settlement cycle is Across's specific design choice, not a protocol minimum. Shorter cycles require more frequent dataworker bundles and higher per-bundle gas overhead; longer cycles reduce HubPool rebalancing frequency and accumulate more fills per root, which is cheaper. Two hours is the current equilibrium.
+
+## Solver concentration and why it's stable
+
+As of April 2026, Across has 40+ active relayers. The top 5 handle roughly 70% of volume. This concentration follows from three structural factors, not gatekeeping.
+
+**Inventory depth** is the primary barrier. A relayer must hold stablecoin inventory on every destination chain it serves. Across supports Ethereum, Arbitrum, Base, Optimism, Polygon, zkSync, and others — a relayer serving all chains simultaneously needs capital distributed across all of them, before the first order arrives.
+
+**Rebalancing cost** is the ongoing tax. As order flow shifts (users bridging from Base one day, from Ethereum the next), a relayer's per-chain balances drift from optimal. Rebalancing via canonical bridges is slow; using fast bridges costs another spread. Large relayers net across more positions and absorb rebalancing costs at lower effective overhead.
+
+**Exclusivity deals** favor throughput. Many deposits include an `exclusivityDeadline` granting a designated relayer a short first-fill window — typically 30 seconds. Protocols route exclusive first-look flow to high-throughput relayers they trust to fill quickly and correctly. This compounds: large relayers get first look, fill more, scale further.
+
+The mechanism is self-reinforcing. A new entrant with $100,000 of inventory can fill small, infrequent orders but can't compete for large fills or exclusivity arrangements until it builds capital and track record.
+
+## The standardization effect on spreads
+
+ERC-7683's immediate practical value is **shared inventory across protocols**. Before the standard, a relayer serving Across couldn't reuse the same capital to fill UniswapX cross-chain orders — different APIs, different order representations, separate integrations. With ERC-7683:
+
+- Across deposits and UniswapX v2 cross-chain swaps share the same `CrossChainOrder` struct and resolver interface
+- A relayer whose code handles ERC-7683 can serve both protocol's order flow from a single capital pool
+- The same $1M of USDC on Base can fill an Across deposit or a UniswapX cross-chain swap without per-protocol capital segregation
+
+More solvers competing for each order flow → tighter spreads. The stablecoin spread was wider before the standard; as adoption grows across protocols, stablecoin routes should approach a theoretical floor set by gas amortization and capital cost of float — not by any solver's market power.
+
+The standard doesn't eliminate per-protocol settlement differences. Across uses UMA's optimistic oracle; UniswapX uses a different settlement path. But it abstracts those differences behind a common interface that solvers vet once, not per-protocol.
+
+The [CoW Protocol batch auction design](/articles/the-solver-race) solves a different problem — making same-chain MEV structurally impossible for individual trades — while ERC-7683 solves cross-chain latency. Both are solver competitions, but the inventory problem is specific to the cross-chain case.
+
+## What ERC-7683 doesn't fix
+
+The trust model is still present — it moved, not vanished.
+
+In a multisig bridge, trust concentrates in the key holders. In Across's ERC-7683 implementation, trust distributes across:
+
+- **UMA's DVM**: the token-holder vote that resolves disputes. A majority attack on DVM governance could approve invalid repayment bundles.
+- **HubPool LP capital**: if LP withdrawals deplete capital below pending relayer receivables, relayers aren't repaid. LP capital is a soft guarantee, not a cryptographic one.
+- **Canonical bridges for rebalancing**: LP rebalancing between chains uses canonical bridges — inheriting their own finality and security assumptions.
+
+For an AI agent deciding whether to wait for ERC-7683 settlement before acting on the proceeds:
+
+| Operation | Can act after fill (Stage 2)? |
+|---|---|
+| Yield deposit (Aave, Morpho) | Yes — liveness only, not settlement |
+| Posting collateral for a loan | Yes — health factor doesn't require settlement |
+| Using proceeds to pay another agent | Yes — trust the fill receipt |
+| Withdrawing to CEX | Wait — CEX may require settlement confirmation |
+| Using proceeds in a settlement-critical smart contract | Wait for Stage 5 |
+
+Fill finality is sufficient for most agent operations. Settlement finality is only required when the counterparty independently verifies the cross-chain source.
+
+## AI agents and the cross-chain rental market
+
+An AI agent managing a multi-chain portfolio faces three options for capital movement:
+
+1. **Canonical bridges**: 7 days (optimistic rollups) to minutes (ZK rollups). Too slow for most strategies; ZK rollup exits are fast but chain-specific and still minutes.
+2. **ERC-7683 solvers**: 8 seconds, 4–7 bps. The float rental rate.
+3. **Run a solver**: Hold inventory on every chain. Requires significant capital and operational infrastructure.
+
+Option 2 dominates for all but the largest agent operations. A yield-optimizing agent arbitraging a 50 bps rate differential between Aave on Ethereum and Morpho on Base pays 5 bps cross-chain to capture 45 bps net — clearly positive. The 4–7 bps spread is the cost of borrowing a solver's pre-deployed cross-chain inventory for one fill.
+
+Agents that scale to become large enough to justify their own solver operation face the full inventory problem: optimal capital allocation across chains, given forecasted order flow, rebalancing cost, and settlement timing. At that scale, the question shifts from "what do I pay?" to "can I earn the float from others?"
+
+## Takeaways
+
+- ERC-7683 converts bridge latency into a solver capital float problem. The 4–7 bps spread is a rental rate on cross-chain inventory, not a protocol fee.
+- Across's 2-hour optimistic settlement cycle limits capital to ~12 cycles/day. Larger inventory → more cycles filled → scale advantages compound.
+- Solver concentration (~70% of volume to top 5) follows from inventory depth, rebalancing economics, and exclusivity deals — not protocol gatekeeping.
+- ERC-7683 standardization creates shared inventory pools across Across and UniswapX, converging solver competition and tightening spreads.
+- AI agents should treat ERC-7683 fills as a capital rental market: fill finality (~8 seconds) is sufficient for most cross-chain operations; settlement finality (~2 hours) is only required when the counterparty audits the source chain.

@@ -1,0 +1,102 @@
+{
+  "stages": [
+    {
+      "id": "intent",
+      "label": "Intent",
+      "sublabel": "User locks input",
+      "timingShort": "0 s",
+      "timingLong": "instantaneous",
+      "actor": "User",
+      "actorColor": "user",
+      "contract": "SpokePool.depositV3()",
+      "keyFields": [
+        "destinationChainId",
+        "outputToken / outputAmount",
+        "fillDeadline (~+30 min)",
+        "exclusivityDeadline"
+      ],
+      "note": "Input tokens locked in the source-chain SpokePool. The deposit event is visible to relayers immediately.",
+      "gasEst": "~65,000 gas on L2"
+    },
+    {
+      "id": "fill",
+      "label": "Fill",
+      "sublabel": "Solver fronts capital",
+      "timingShort": "2–8 s",
+      "timingLong": "median 8 seconds",
+      "actor": "Relayer / Solver",
+      "actorColor": "solver",
+      "contract": "SpokePool.fillV3Relay()",
+      "keyFields": [
+        "orderId (bytes32)",
+        "originData (relayData)",
+        "fillerData (repaymentChainId)"
+      ],
+      "note": "Relayer delivers output tokens to recipient from its own inventory. User's swap is complete. Relayer capital is locked until Stage 5 repayment.",
+      "gasEst": "~120,000 gas on L2"
+    },
+    {
+      "id": "bundle",
+      "label": "Bundle",
+      "sublabel": "Dataworker aggregates",
+      "timingShort": "~30 min",
+      "timingLong": "every ~30 minutes",
+      "actor": "Dataworker (off-chain bot)",
+      "actorColor": "dataworker",
+      "contract": "HubPool.proposeRootBundle()",
+      "keyFields": [
+        "bundleEvaluationBlockNumbers[]",
+        "poolRebalanceRoot (bytes32)",
+        "relayerRefundRoot (bytes32)",
+        "slowRelayRoot (bytes32)"
+      ],
+      "note": "Off-chain dataworker follows UMIP-157 rules to aggregate fills into a Merkle root. Posts 30 WETH (~$75k) bond to HubPool on Ethereum mainnet.",
+      "gasEst": "~200,000 gas on mainnet"
+    },
+    {
+      "id": "challenge",
+      "label": "Challenge",
+      "sublabel": "UMA optimistic window",
+      "timingShort": "~2 hr",
+      "timingLong": "2-hour challenge window",
+      "actor": "UMA Oracle (OOv3)",
+      "actorColor": "oracle",
+      "contract": "OptimisticOracleV3.assertTruth()",
+      "keyFields": [
+        "bond: 30 WETH (~$75k)",
+        "liveness: 7,200 seconds",
+        "dispute escalates to DVM vote"
+      ],
+      "note": "Anyone can dispute the bundle by posting a matching bond. Disputes escalate to UMA's DVM token-holder governance vote. Undisputed bundles are accepted automatically after 2 hours.",
+      "gasEst": "~50,000 gas if disputed"
+    },
+    {
+      "id": "repay",
+      "label": "Repayment",
+      "sublabel": "HubPool reimburses solvers",
+      "timingShort": "~2–4 hr total",
+      "timingLong": "2–4 hours from fill",
+      "actor": "HubPool → Relayer",
+      "actorColor": "hubpool",
+      "contract": "HubPool.executeRootBundle()",
+      "keyFields": [
+        "relayerRefundLeaf[] — per-chain refunds",
+        "poolRebalanceLeaf[] — LP rebalancing",
+        "canonical bridge transfers"
+      ],
+      "note": "Relayers are reimbursed (input amount + relayer fee) from pooled LP capital. LP capital is simultaneously rebalanced across spoke chains via canonical bridges.",
+      "gasEst": "~300,000 gas on mainnet"
+    }
+  ],
+  "economics": {
+    "medianFillTimeS": 8,
+    "settlementCycleHr": 2,
+    "stablecoinSpreadBps": 5.5,
+    "volatileSpreadBps": 15,
+    "totalVolumeBn": 14,
+    "dailyVolumeM": 50,
+    "activeRelayers": 40,
+    "top5SharePct": 70,
+    "erc7683SharePct": 88
+  }
+}

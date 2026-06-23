@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 30,
-    "artifacts": 31
+    "articles": 31,
+    "artifacts": 32
   },
   "topicCounts": {
     "agents": 12,
     "ai": 3,
-    "blockchain": 10,
+    "blockchain": 11,
     "cryptography": 3,
     "data": 2,
     "defi": 7,
     "infrastructure": 12,
     "llm": 6,
-    "machine-learning": 14,
-    "research": 1,
+    "machine-learning": 15,
+    "research": 2,
     "security": 11,
     "smart-contracts": 6,
     "tokenomics": 2,
@@ -21,6 +21,23 @@
     "zero-knowledge": 3
   },
   "articles": [
+    {
+      "slug": "the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "path": "content/articles/2026/06/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training/index.mdx",
+      "url": "/articles/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "title": "The Sparse Frontier: SparseLoCo and the Compression Math Behind Permissionless Pre-Training",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "research",
+        "blockchain"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "agent-token-bonding-curve",
       "path": "content/articles/2026/06/agent-token-bonding-curve/index.mdx",
@@ -817,6 +834,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-bandwidth-floor",
+      "path": "content/artifacts/the-bandwidth-floor/manifest.json",
+      "module": "src/islands/artifacts/the-bandwidth-floor.ts",
+      "url": "/artifacts/the-bandwidth-floor",
+      "title": "The Bandwidth Floor",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "attestation-chain",
       "path": "content/artifacts/attestation-chain/manifest.json",

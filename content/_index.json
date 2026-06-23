@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 104,
-    "artifacts": 105
+    "articles": 105,
+    "artifacts": 106
   },
   "topicCounts": {
     "agents": 37,
@@ -9,13 +9,13 @@
     "blockchain": 24,
     "cryptography": 16,
     "data": 14,
-    "defi": 25,
+    "defi": 26,
     "infrastructure": 37,
     "llm": 19,
     "machine-learning": 38,
     "research": 10,
-    "security": 28,
-    "smart-contracts": 20,
+    "security": 29,
+    "smart-contracts": 21,
     "tokenomics": 15,
     "tooling": 1,
     "web3": 12,
@@ -467,6 +467,35 @@
       ],
       "artifacts": [
         "the-upgrade-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time",
+      "path": "content/articles/2026/06/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time/index.mdx",
+      "url": "/articles/the-accumulated-lie-twap-oracle-manipulation-and-the-cost-of-moving-time",
+      "title": "The Accumulated Lie: TWAP Oracle Manipulation and the Cost of Moving Time",
+      "description": "A 15× spike on a $17M pool shifts its 30-minute v2 TWAP by 9.3% in one block. The arithmetic-mean accumulator is far weaker than v3's geometric tick accumulator. Covers the manipulation cost formula, the Inverse Finance case study, and minimum safe pool depth.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "security"
+      ],
+      "tags": [
+        "twap",
+        "price-oracle",
+        "uniswap-v2",
+        "uniswap-v3",
+        "flash-loan",
+        "oracle-manipulation",
+        "tick-accumulator",
+        "defi-security",
+        "inverse-finance"
+      ],
+      "artifacts": [
+        "the-twap-window"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3058,6 +3087,23 @@
         "smart-contracts",
         "security",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-twap-window",
+      "path": "content/artifacts/the-twap-window/manifest.json",
+      "module": "src/islands/artifacts/the-twap-window.ts",
+      "url": "/artifacts/the-twap-window",
+      "title": "The TWAP Window",
+      "description": "How much does it cost to shift a TWAP oracle? Drag pool TVL, TWAP duration, and price spike factor to see the round-trip manipulation cost alongside the 30-min TWAP shift — for both Uniswap v2 arithmetic and v3 geometric accumulators. Anchored to live on-chain pool data.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "security"
       ],
       "draft": false
     },

@@ -26,15 +26,26 @@
       "path": "content/articles/2026/06/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai/index.mdx",
       "url": "/articles/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai",
       "title": "One Ceremony, Three Stacks: KZG Commitments in Ethereum Blobs, zkEVMs, and Verifiable AI",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A single cryptographic primitive — the KZG polynomial commitment — quietly powers EIP-4844 blobs, zkEVM proof systems, and on-chain verifiable AI. You can verify one on Ethereum for 50,000 gas ($0.067 today). Here's the math, the ceremony, and why every zkML system depends on it.",
       "pubDate": "2026-06-23",
       "topics": [
         "zero-knowledge",
         "cryptography",
         "blockchain"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "kzg",
+        "polynomial-commitments",
+        "eip-4844",
+        "blobs",
+        "zkml",
+        "bls12-381",
+        "trusted-setup",
+        "halo2"
+      ],
+      "artifacts": [
+        "kzg-opening-proof"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -840,7 +851,7 @@
       "module": "src/islands/artifacts/kzg-opening-proof.ts",
       "url": "/artifacts/kzg-opening-proof",
       "title": "KZG Opening Proof",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "The KZG polynomial commitment scheme, stepped through. Pick an evaluation point z on the cubic P(x) = x³−2x²−x+2 to watch the opening proof π materialize, see the pairing check pass, then corrupt π to make it fail — and read why 50,000 gas ($0.067) is all Ethereum needs to verify any such claim.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "diagram",

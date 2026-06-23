@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 117,
-    "artifacts": 118
+    "articles": 118,
+    "artifacts": 119
   },
   "topicCounts": {
     "agents": 42,
     "ai": 11,
     "blockchain": 27,
-    "cryptography": 18,
+    "cryptography": 19,
     "data": 18,
     "defi": 29,
-    "infrastructure": 39,
+    "infrastructure": 40,
     "llm": 21,
-    "machine-learning": 40,
+    "machine-learning": 41,
     "research": 12,
     "security": 34,
     "smart-contracts": 22,
@@ -22,6 +22,36 @@
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference",
+      "path": "content/articles/2026/06/the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference/index.mdx",
+      "url": "/articles/the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference",
+      "title": "The Bootstrapping Tax: FHE's Fundamental Limit on Private AI Inference",
+      "description": "BERT-base under FHE takes 149 seconds, needs 112 GB, and sustains 0.007 samples/sec. Best-case MPC takes 2.3 seconds and 4 GB. The gap traces to one operation: bootstrapping — the noise-refresh that makes FHE theoretically unlimited but practically expensive.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "fhe",
+        "tfhe",
+        "ckks",
+        "bootstrapping",
+        "private-inference",
+        "ppml",
+        "zama",
+        "fhevm",
+        "mpc",
+        "confidential-computing"
+      ],
+      "artifacts": [
+        "the-fhe-inference-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
       "path": "content/articles/2026/06/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems/index.mdx",
@@ -3176,6 +3206,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-fhe-inference-wall",
+      "path": "content/artifacts/the-fhe-inference-wall/manifest.json",
+      "module": "src/islands/artifacts/the-fhe-inference-wall.ts",
+      "url": "/artifacts/the-fhe-inference-wall",
+      "title": "The FHE Inference Wall",
+      "description": "Log-scale bar chart comparing FHE vs MPC inference latency for BERT-Tiny, BERT-Base, ResNet-20, and ResNet-50. Click a model to see memory and throughput detail.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-race-window",
       "path": "content/artifacts/the-race-window/manifest.json",

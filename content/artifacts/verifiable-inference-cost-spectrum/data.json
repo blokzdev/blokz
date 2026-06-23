@@ -1,0 +1,72 @@
+{
+  "asOf": "2026-06-23",
+  "metric": "Per-query verification overhead (milliseconds beyond inference, log scale)",
+  "note": "TOPLOC and DiFR overhead are author estimates from published claims; NabaOS and zkLLM overheads are primary-source figures. Output resampling overhead equals a duplicate inference run.",
+  "approaches": [
+    {
+      "id": "nabaos",
+      "label": "NabaOS receipts",
+      "overheadMin": 1,
+      "overheadMax": 15,
+      "rangeLabel": "<15 ms",
+      "category": "receipt",
+      "verifies": "tool execution (not model identity)",
+      "interactive": false,
+      "coverage": "94.2% fabricated-tool detection",
+      "note": "HMAC-signed receipts cross-checked against every tool call in the agent loop. Sub-15 ms overhead is the fastest practical option — but it proves what the agent DID, not which model produced the reasoning.",
+      "source": { "label": "NabaOS — arXiv 2603.10060", "url": "https://arxiv.org/abs/2603.10060" }
+    },
+    {
+      "id": "toploc",
+      "label": "TOPLOC fingerprint",
+      "overheadMin": 30,
+      "overheadMax": 200,
+      "rangeLabel": "<inference time",
+      "category": "fingerprint",
+      "verifies": "model identity, precision, prompt integrity",
+      "interactive": false,
+      "coverage": "100% model-identity detection",
+      "note": "Locality-sensitive hash of intermediate activations: 258 bytes per 32 tokens (1,000× smaller than raw embedding storage). Non-interactive — generated post-inference. Validated faster than inference ran. Hardware-agnostic across GPU types and algebraic reorderings.",
+      "source": { "label": "TOPLOC — arXiv 2501.16007", "url": "https://arxiv.org/abs/2501.16007" }
+    },
+    {
+      "id": "difr",
+      "label": "DiFR (seed commit)",
+      "overheadMin": 100,
+      "overheadMax": 600,
+      "rangeLabel": "~inference + 1 RTT",
+      "category": "fingerprint",
+      "verifies": "model identity via activation projection",
+      "interactive": true,
+      "coverage": "AUC > 0.999 vs. quantization",
+      "note": "Verifier commits a random seed before inference; prover applies random orthogonal projections to intermediate activations. Detects 4-bit quantization in 2 tokens. Interactive: one round-trip must complete before inference can start, adding latency to every query.",
+      "source": { "label": "DiFR — Proof-of-Intelligence Part 9", "url": "/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference" }
+    },
+    {
+      "id": "output-resample",
+      "label": "Output resampling",
+      "overheadMin": 500,
+      "overheadMax": 2000,
+      "rangeLabel": "1× – 4× inference",
+      "category": "naive",
+      "verifies": "output consistency only",
+      "interactive": false,
+      "coverage": "~30–40% gross substitutions",
+      "note": "Re-run the same prompt and compare outputs. Catches obvious model swaps but misses quantization, similar-distribution model variants, and partial context manipulation. Overhead equals one or more additional full inference runs.",
+      "source": { "label": "baseline heuristic", "url": "" }
+    },
+    {
+      "id": "zkllm",
+      "label": "Full ZK proof (zkLLM)",
+      "overheadMin": 120000,
+      "overheadMax": 180000,
+      "rangeLabel": "2–3 min per query",
+      "category": "zkml",
+      "verifies": "complete computation integrity",
+      "interactive": false,
+      "coverage": "100% cryptographic guarantee",
+      "note": "Zero-knowledge proof over the entire forward pass. The math guarantees every multiply-accumulate ran as claimed. Cryptographically ideal — and 3–4 orders of magnitude slower than TOPLOC for the same model-identity coverage.",
+      "source": { "label": "NabaOS comparison — arXiv 2603.10060", "url": "https://arxiv.org/abs/2603.10060" }
+    }
+  ]
+}

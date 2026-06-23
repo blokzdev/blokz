@@ -1,27 +1,56 @@
 {
   "counts": {
-    "articles": 125,
-    "artifacts": 126
+    "articles": 126,
+    "artifacts": 127
   },
   "topicCounts": {
     "agents": 43,
     "ai": 12,
-    "blockchain": 30,
+    "blockchain": 31,
     "cryptography": 21,
     "data": 19,
     "defi": 31,
-    "infrastructure": 42,
+    "infrastructure": 43,
     "llm": 22,
     "machine-learning": 42,
     "research": 14,
     "security": 35,
     "smart-contracts": 24,
-    "tokenomics": 16,
+    "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
     "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "the-social-slash-eigens-intersubjective-fault-model-and-the-ai-oracle-gap",
+      "path": "content/articles/2026/06/the-social-slash-eigens-intersubjective-fault-model-and-the-ai-oracle-gap/index.mdx",
+      "url": "/articles/the-social-slash-eigens-intersubjective-fault-model-and-the-ai-oracle-gap",
+      "title": "The Social Slash: EIGEN's Intersubjective Fault Model and the AI Oracle Gap",
+      "description": "Zero-knowledge proofs can slash a double-signer but not a lying AI oracle. EIGEN's intersubjective fault model closes this gap via social consensus-driven forking — and it's live on EigenAI mainnet.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "tokenomics",
+        "infrastructure",
+        "blockchain"
+      ],
+      "tags": [
+        "eigenlayer",
+        "eigencloud",
+        "restaking",
+        "intersubjective-faults",
+        "slashing",
+        "oracles",
+        "verifiable-ai"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 11,
+      "artifacts": [
+        "the-fault-quadrant"
+      ],
+      "difficulty": "advanced",
+      "draft": false
+    },
     {
       "slug": "the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
       "path": "content/articles/2026/06/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference/index.mdx",
@@ -3704,6 +3733,23 @@
       "topics": [
         "zero-knowledge",
         "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-fault-quadrant",
+      "path": "content/artifacts/the-fault-quadrant/manifest.json",
+      "module": "src/islands/artifacts/the-fault-quadrant.ts",
+      "url": "/artifacts/the-fault-quadrant",
+      "title": "The Fault Quadrant",
+      "description": "A 2D map of EigenCloud's four fault classes — click any fault type to see which slashing mechanism applies and why.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "tokenomics",
+        "infrastructure",
+        "blockchain"
       ],
       "draft": false
     },

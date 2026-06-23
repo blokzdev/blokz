@@ -1,0 +1,16 @@
+{
+  "slug": "the-fault-quadrant",
+  "title": "The Fault Quadrant",
+  "description": "A 2D map of EigenCloud's four fault classes — click any fault type to see which slashing mechanism applies and why.",
+  "pubDate": "2026-06-23",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "tokenomics",
+    "infrastructure",
+    "blockchain"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": ["click any fault to explore its slashing mechanism"]
+}

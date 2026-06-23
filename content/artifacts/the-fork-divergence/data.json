@@ -1,0 +1,78 @@
+{
+  "divergences": [
+    {
+      "id": "blockhash",
+      "label": "blockhash() entropy",
+      "shortLabel": "blockhash()",
+      "blocksToFirstError": 1,
+      "severity": "critical",
+      "forkBehavior": "Returns 0x0 for every block mined after the fork block (Foundry issue #837)",
+      "mainnetReality": "Returns correct 32-byte hash for blocks N−256 to N−1; changes every 12 seconds",
+      "failureMode": "Commit-reveal salts derived from 0x0 instead of real hash; reorg detection never fires",
+      "fix": "vm.roll() + historical block-range replay for commit-reveal patterns; explicitly assert blockhash() return value"
+    },
+    {
+      "id": "mev",
+      "label": "MEV competition",
+      "shortLabel": "MEV bots",
+      "blocksToFirstError": 1,
+      "severity": "critical",
+      "forkBehavior": "Zero searchers in local Anvil mempool; swaps execute at quoted price with no front-running",
+      "mainnetReality": "72,000+ sandwich attacks per 30 days on Ethereum; 0.3–0.8% of swap value extracted per attack",
+      "failureMode": "Slippage tolerance calibrated in fork is too loose for production; arbitrage profit estimates are overstated",
+      "fix": "Historical sandwich replay via Tenderly against known attack blocks; unit-test slippage guard at 0.3–0.8% extraction rates"
+    },
+    {
+      "id": "basefee",
+      "label": "EIP-1559 basefee",
+      "shortLabel": "basefee",
+      "blocksToFirstError": 35,
+      "severity": "high",
+      "forkBehavior": "Frozen at fork block value; after first tx, opcode and eth_feeHistory may disagree (Foundry issue #3762)",
+      "mainnetReality": "Adjusts ±12.5% per block based on block fullness; rose +50.8% over 35 blocks on June 22, 2026",
+      "failureMode": "maxFeePerGas cap set 10% above frozen fork basefee sits 27% below chain after a 50% spike — transactions stall",
+      "fix": "vm.fee(N) fuzzing at 0.2× and 5× of calibration value; verify agent adjusts or halts gracefully"
+    },
+    {
+      "id": "twap",
+      "label": "Uniswap v3 TWAP",
+      "shortLabel": "TWAP",
+      "blocksToFirstError": 150,
+      "severity": "medium",
+      "forkBehavior": "Price accumulator frozen at fork block; observe() draws from a static ring buffer that never grows",
+      "mainnetReality": "Accumulator updated each block; TWAP drifts from spot after large swaps within the observation window",
+      "failureMode": "Manipulation guard (spot vs. TWAP divergence) never fires in fork; agent ships without testing it",
+      "fix": "After forking, advance with vm.roll() and mine no-op swaps to prime the accumulator; verify guard triggers on divergence"
+    },
+    {
+      "id": "oracle",
+      "label": "Chainlink oracle price",
+      "shortLabel": "Chainlink",
+      "blocksToFirstError": 300,
+      "severity": "medium",
+      "forkBehavior": "ETH/USD frozen at fork snapshot ($1,719.63); updatedAt never advances; latestRoundData() returns same value forever",
+      "mainnetReality": "Updates on ≥0.5% price deviation or 3,600 s heartbeat; can be silent for up to one hour between updates",
+      "failureMode": "Staleness guard never trips; liquidation thresholds drift during oracle silence without agent awareness",
+      "fix": "vm.mockCall() with stale updatedAt (at boundary, past boundary, and far past); test extreme prices the fork never reaches"
+    }
+  ],
+  "basefeeObservations": [
+    { "block": 25375000, "basefee_gwei": 0.14661538, "timestamp": "2026-06-22T18:41:11Z" },
+    { "block": 25376000, "basefee_gwei": 0.15450307, "timestamp": "2026-06-22T22:02:11Z" },
+    { "block": 25376100, "basefee_gwei": 0.15052702, "timestamp": "2026-06-22T22:22:11Z" },
+    { "block": 25376135, "basefee_gwei": 0.22695440, "timestamp": "2026-06-22T22:29:11Z" }
+  ],
+  "chainlinkEthUsd": {
+    "heartbeat_seconds": 3600,
+    "deviation_threshold_pct": 0.5,
+    "contract": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+    "last_price_usd": 1719.63,
+    "as_of": "2026-06-22T22:30:00Z"
+  },
+  "mevStatistics": {
+    "ethereum_sandwiches_30d": 72000,
+    "sandwich_value_loss_pct_low": 0.3,
+    "sandwich_value_loss_pct_high": 0.8,
+    "source": "EigenPhi, arxiv:2405.17944"
+  }
+}

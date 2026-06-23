@@ -1,0 +1,18 @@
+{
+  "slug": "the-state-window",
+  "title": "The State Window",
+  "description": "Epoch ring: 32 slot pillars show the chain's heartbeat. White sphere = chain tip, amber = agent's last read, green = finalized. The arc between them is the state window AI agents must hedge against.",
+  "pubDate": "2026-06-22T09:36:54.014Z",
+  "type": "three",
+  "archetype": "scene",
+  "topics": [
+    "blockchain",
+    "infrastructure",
+    "ai"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag to orbit"
+  ]
+}

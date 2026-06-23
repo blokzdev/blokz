@@ -1,0 +1,23 @@
+{
+  "slug": "recursive-leverage-chain",
+  "title": "Recursive Leverage Chain",
+  "description": "Interactive calculator: watch how deposit-borrow loops compound leverage toward the 1/(1−LTV) asymptote. Adjust LTV and loop count to see effective leverage, the liquidation trigger, and the loss from a single price move.",
+  "pubDate": "2026-06-22T12:34:33.166Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag the LTV slider to explore different collateral assets",
+    "click loop count buttons to see leverage accumulate toward the asymptote"
+  ],
+  "dataSource": {
+    "label": "Aave v3 Ethereum mainnet — IPool.getReserveConfigurationData, block 25,373,150",
+    "url": "https://eth.blockscout.com/address/0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3"
+  },
+  "dataAsOf": "2026-06-22"
+}

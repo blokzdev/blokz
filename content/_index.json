@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 113,
-    "artifacts": 114
+    "articles": 114,
+    "artifacts": 115
   },
   "topicCounts": {
-    "agents": 40,
+    "agents": 41,
     "ai": 11,
     "blockchain": 27,
     "cryptography": 18,
     "data": 17,
-    "defi": 27,
-    "infrastructure": 38,
+    "defi": 28,
+    "infrastructure": 39,
     "llm": 20,
     "machine-learning": 39,
     "research": 11,
@@ -22,6 +22,35 @@
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
+      "path": "content/articles/2026/06/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading/index.mdx",
+      "url": "/articles/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
+      "title": "The Survivability Contract: Treating Agent Skills as Untrusted in On-Chain AI Trading",
+      "description": "Skill marketplaces let any agent buy trading capabilities off a shelf — and every skill is an execution vector. SAE's non-bypassable execution guards cut max drawdown from 46.4% to 3.2% (↓93%), CVaR by 97.5%, and the Delegation Gap by 97% on live perp data. The defense isn't in the model.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "defi",
+        "infrastructure"
+      ],
+      "tags": [
+        "survivability",
+        "delegation-gap",
+        "execution-harness",
+        "skill-supply-chain",
+        "perpetuals",
+        "mdd",
+        "cvar",
+        "on-chain-trading",
+        "adversarial-execution"
+      ],
+      "artifacts": [
+        "the-survivability-lift"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
       "path": "content/articles/2026/06/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow/index.mdx",
@@ -3057,6 +3086,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-survivability-lift",
+      "path": "content/artifacts/the-survivability-lift/manifest.json",
+      "module": "src/islands/artifacts/the-survivability-lift.ts",
+      "url": "/artifacts/the-survivability-lift",
+      "title": "The Survivability Lift",
+      "description": "Before/after bar chart comparing four survivability metrics (MDD, CVaR, Delegation Gap, Attack Success) with and without SAE execution controls, from arXiv 2603.10092.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "agents",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-phantom-token-cloud",
       "path": "content/artifacts/the-phantom-token-cloud/manifest.json",

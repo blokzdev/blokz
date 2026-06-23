@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 111,
-    "artifacts": 112
+    "articles": 112,
+    "artifacts": 113
   },
   "topicCounts": {
     "agents": 39,
     "ai": 11,
-    "blockchain": 25,
+    "blockchain": 26,
     "cryptography": 18,
-    "data": 16,
+    "data": 17,
     "defi": 27,
-    "infrastructure": 37,
+    "infrastructure": 38,
     "llm": 20,
     "machine-learning": 39,
     "research": 11,
@@ -47,6 +47,23 @@
       "artifacts": [
         "the-phantom-token-cloud"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge",
+      "path": "content/articles/2026/06/the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge/index.mdx",
+      "url": "/articles/the-blob-market-cycle-twenty-months-at-the-floor-then-the-surge",
+      "title": "The Blob Market Cycle: Twenty Months at the Floor, Then the Surge",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3016,6 +3033,23 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-blob-fee-cycle",
+      "path": "content/artifacts/the-blob-fee-cycle/manifest.json",
+      "module": "src/islands/artifacts/the-blob-fee-cycle.ts",
+      "url": "/artifacts/the-blob-fee-cycle",
+      "title": "The Blob Fee Cycle",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "data"
       ],
       "draft": false
     },

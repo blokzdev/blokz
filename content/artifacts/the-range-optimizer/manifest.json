@@ -1,9 +1,9 @@
 {
   "slug": "the-range-optimizer",
   "title": "The Range Optimizer",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Vary range width, volatility, and position size to see how Uniswap v3 gross fee APY and net APY (after rebalancing gas) trade off — and find the volatility-adaptive optimal LP range.",
   "pubDate": "2026-06-23T10:31:22.244Z",
-  "type": "svg",
+  "type": "dom",
   "archetype": "calculator",
   "topics": [
     "defi",
@@ -11,5 +11,16 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag range width slider to see the APY vs. range tradeoff",
+    "adjust annualized volatility to shift the optimal range",
+    "change position size to see when gas drag dominates",
+    "switch fee tiers with the 0.05% / 0.30% / 1.00% buttons",
+    "keyboard: tab to sliders, arrow keys to adjust"
+  ],
+  "dataSource": {
+    "label": "Crypto.com Exchange — ETH/USDT spot, June 2026",
+    "url": "https://crypto.com/exchange/trade/ETH_USDT"
+  },
+  "dataAsOf": "2026-06-23"
 }

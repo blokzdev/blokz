@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents/index.mdx",
       "url": "/articles/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
       "title": "The Width Paradox: Concentrated Liquidity Management and the Fee-Rebalance Tradeoff for AI Agents",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Uniswap v3's capital efficiency multiplier peaks at 20× for ±10% ranges, but first-passage math shows the same position rebalances 54 times a year — making active LP management an optimization problem that requires AI-grade execution frequency.",
       "pubDate": "2026-06-23",
       "topics": [
         "defi",
         "machine-learning",
         "data"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "concentrated-liquidity",
+        "uniswap-v3",
+        "clmm",
+        "impermanent-loss",
+        "lp-management",
+        "capital-efficiency",
+        "active-lp",
+        "rebalancing",
+        "gamma-strategies",
+        "volatility"
+      ],
+      "artifacts": [
+        "the-range-optimizer"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3138,9 +3151,9 @@
       "module": "src/islands/artifacts/the-range-optimizer.ts",
       "url": "/artifacts/the-range-optimizer",
       "title": "The Range Optimizer",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Vary range width, volatility, and position size to see how Uniswap v3 gross fee APY and net APY (after rebalancing gas) trade off — and find the volatility-adaptive optimal LP range.",
       "pubDate": "2026-06-23",
-      "type": "svg",
+      "type": "dom",
       "archetype": "calculator",
       "topics": [
         "defi",

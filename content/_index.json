@@ -1,15 +1,15 @@
 {
   "counts": {
-    "articles": 120,
-    "artifacts": 121
+    "articles": 121,
+    "artifacts": 122
   },
   "topicCounts": {
     "agents": 43,
-    "ai": 11,
+    "ai": 12,
     "blockchain": 29,
     "cryptography": 20,
-    "data": 18,
-    "defi": 29,
+    "data": 19,
+    "defi": 30,
     "infrastructure": 40,
     "llm": 21,
     "machine-learning": 41,
@@ -22,6 +22,36 @@
     "zero-knowledge": 15
   },
   "articles": [
+    {
+      "slug": "the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles",
+      "path": "content/articles/2026/06/the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles/index.mdx",
+      "url": "/articles/the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles",
+      "title": "The Option the Pool Sold: Concentrated Liquidity as Implicit Strangles",
+      "description": "A Uniswap v3 LP position in range [Pa, Pb] is mathematically a short strangle — short put at Pa, short call at Pb. Derive the equivalence, compute the Black-Scholes fair premium, and compare it to actual fee income at current ETH vol.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "tags": [
+        "concentrated-liquidity",
+        "uniswap-v3",
+        "clmm",
+        "options",
+        "strangle",
+        "impermanent-loss",
+        "black-scholes",
+        "greeks",
+        "panoptic",
+        "lp-pricing"
+      ],
+      "artifacts": [
+        "the-clmm-strangle"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents",
       "path": "content/articles/2026/06/the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents/index.mdx",
@@ -3264,6 +3294,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-clmm-strangle",
+      "path": "content/artifacts/the-clmm-strangle/manifest.json",
+      "module": "src/islands/artifacts/the-clmm-strangle.ts",
+      "url": "/artifacts/the-clmm-strangle",
+      "title": "The CLMM Strangle",
+      "description": "Visualize a Uniswap v3 LP position as a short strangle. Adjust range bounds, implied vol, fee APY, and hold period to see IL vs. the Black-Scholes fair premium — and whether your fee income covers the options risk.",
+      "pubDate": "2026-06-23",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "data"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-7702-timeline",
       "path": "content/artifacts/the-7702-timeline/manifest.json",

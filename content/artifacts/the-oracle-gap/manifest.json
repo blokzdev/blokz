@@ -1,0 +1,23 @@
+{
+  "slug": "the-oracle-gap",
+  "title": "The Oracle Gap",
+  "description": "Compare Chainlink's push oracle price against Pyth's pull price and live spot. Drag the slider to see exactly when the 0.5% deviation threshold triggers an on-chain update.",
+  "pubDate": "2026-06-22T04:34:13.544Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "data",
+    "ai"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag slider to simulate spot price and trigger the oracle deviation threshold"
+  ],
+  "dataSource": {
+    "label": "Chainlink ETH/USD on-chain · Pyth Hermes API · Crypto.com exchange",
+    "url": "https://etherscan.io/address/0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+  },
+  "dataAsOf": "2026-06-22"
+}

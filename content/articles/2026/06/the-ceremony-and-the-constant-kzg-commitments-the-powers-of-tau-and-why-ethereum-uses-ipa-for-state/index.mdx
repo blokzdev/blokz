@@ -1,0 +1,147 @@
+---
+slug: the-ceremony-and-the-constant-kzg-commitments-the-powers-of-tau-and-why-ethereum-uses-ipa-for-state
+title: "The Ceremony and the Constant: KZG Commitments, the Powers of Tau, and Why Ethereum Uses IPA for State"
+description: "Every EIP-4844 blob is secured by a KZG polynomial commitment — 48 bytes committing to 128 KB, verifiable in 50,000 gas. That efficiency required 140,416 people to collectively bury a secret for 69 days. Here's the math, the ceremony, and why Ethereum chose a different scheme for state."
+pubDate: 2026-06-22T20:31:33.635Z
+author: blokz
+topics: [zero-knowledge, cryptography, blockchain]
+tags: [kzg, polynomial-commitments, trusted-setup, ipa, verkle-trees, eip-4844, powers-of-tau, bls12-381, data-availability, blobspace]
+artifacts: [the-commitment-space]
+difficulty: intermediate
+sources:
+  - label: "Kate, Zaverucha, Goldberg — Constant-Size Commitments to Polynomials (2010)"
+    url: "https://www.iacr.org/archive/asiacrypt2010/6477178/6477178.pdf"
+  - label: "EIP-4844: Shard Blob Transactions"
+    url: "https://eips.ethereum.org/EIPS/eip-4844"
+  - label: "Ethereum KZG Ceremony"
+    url: "https://ceremony.ethereum.org/"
+  - label: "EIP-6800: Ethereum state using a unified verkle tree"
+    url: "https://eips.ethereum.org/EIPS/eip-6800"
+  - label: "Verkle Tries for Ethereum State (Buterin, 2021)"
+    url: "https://notes.ethereum.org/@vbuterin/verkle_tree_eip"
+---
+
+Every rollup on Ethereum — Arbitrum, Optimism, Base, zkSync — submits its transaction data to the base layer as blobs. Since March 2024, those blobs have been secured by a polynomial commitment that compresses 128 KB of data into 48 bytes, with any evaluation provable in another 48 bytes and verifiable on-chain for exactly 50,000 gas. This is KZG.
+
+That efficiency is not free. It required a ceremony in which 140,416 people contributed to a mathematical secret over 69 days — a secret that must remain permanently buried for the scheme to stay secure. Ethereum ran that ceremony. Then it chose a *different* commitment scheme for its state trie.
+
+Understanding why explains most of what you need to know about the modern Ethereum data layer.
+
+## What a polynomial commitment is
+
+A commitment scheme lets you bind to a value, then later prove facts about it. A Keccak hash works as a basic commitment: `H(data)` binds to `data`; later you reveal `data` and the verifier recomputes the hash. But hashes are structurally coarse. To prove that a specific *slot* within a dataset holds a specific *value*, you build a Merkle tree and walk the verifier down a branch — typically 10–30 hashes, each 32 bytes, for 320–960 bytes minimum. That cost grows with tree depth and doesn't compress.
+
+Polynomial commitments do something fundamentally different. Rather than committing to a list of values `[v₀, v₁, ..., v_{n−1}]` directly, you encode them as evaluations of a polynomial:
+
+```
+p(x)  where  p(ωⁱ) = vᵢ  for each i
+```
+
+The *n*-th roots of unity `ωⁱ` serve as the evaluation domain. Now you can commit to `p(x)` with a *single algebraic object* — and later prove `p(z) = v` for any evaluation point `z` with a *single proof*, regardless of `n`. The proof size does not grow with the polynomial's degree. That's the "constant" the title refers to.
+
+## KZG: the math
+
+KZG (Kate, Zaverucha, Goldberg — 2010) instantiates polynomial commitments using elliptic curve pairings. The scheme needs a *structured reference string* (SRS), also called the **powers of tau**:
+
+```
+SRS = [G, τG, τ²G, ..., τᵈG]    (G1 points)
+      [G₂, τG₂]                   (G2 points)
+```
+
+where `τ` is a secret field element ("toxic waste") and `G`, `G₂` are generators of two elliptic curve groups (BLS12-381 for Ethereum). To commit to polynomial `p(x) = Σ aᵢxⁱ`:
+
+```
+com(p) = Σ aᵢ · (τⁱG) = p(τ) · G
+```
+
+This is computable from the SRS without knowing `τ`. The commitment is one G1 point — **48 bytes** in BLS12-381 compressed form.
+
+To prove that `p(z) = v`, compute the *quotient polynomial*:
+
+```
+q(x) = (p(x) − v) / (x − z)
+```
+
+This quotient exists if and only if `p(z) = v` (because `(x − z)` divides the numerator exactly when `z` is a root of `p(x) − v`). Commit to the quotient:
+
+```
+π = q(τ) · G    (another 48-byte G1 point)
+```
+
+The verifier checks with one pairing equation:
+
+```
+e(com − v·G, G₂) = e(π, τ·G₂ − z·G₂)
+```
+
+If this holds, `p(z) = v` with overwhelming probability. The computation is one pairing check — EIP-4844 fixes this cost at **50,000 gas** via the `POINT_EVALUATION_PRECOMPILE` at address `0x0A`.
+
+## The ceremony requirement
+
+If any party knows `τ`, they can forge proofs: given an arbitrary pair `(z, v)`, they compute a valid `π` directly from `τ`. The SRS must be computed without anyone learning `τ`.
+
+This is the **Powers of Tau ceremony**. Each participant contributes a random secret and "mixes" it into the existing SRS multiplicatively. Suppose the running SRS is `[G, τ·G, τ²·G, ...]`. Participant *k* chooses a random `sₖ` and produces:
+
+```
+[G, sₖτ·G, sₖ²τ²·G, ...] = [G, (sₖτ)·G, (sₖτ)²·G, ...]
+```
+
+After *n* contributors, the final `τ = s₁ · s₂ · ... · sₙ`. As long as **one participant is honest** — they chose a truly random `sₖ` and destroyed it immediately afterward — the product `τ` is computationally unknowable to any coalition that doesn't include them. The toxic waste from every previous contributor is irrelevant.
+
+This is what makes the ceremony scale: you can add arbitrarily many participants, and adding more honest ones only strengthens the guarantee.
+
+For EIP-4844, Ethereum ran this ceremony from **January 13 to March 23, 2023** — 69 days. **140,416 participants** contributed, making it the largest cryptographic ceremony in history. The output was an SRS with **4,096 G1 points** (192 KB compressed) and **65 G2 points** (~6 KB). Every blob transaction since March 2024 depends on the assumption that at least one of those 140,416 participants destroyed their `sₖ`.
+
+## EIP-4844 blobs by the numbers
+
+An EIP-4844 blob is 4,096 field elements × 32 bytes = **131,072 bytes** (128 KB) of rollup data, encoded as evaluations of a degree-4,095 polynomial. The on-chain footprint is minimal:
+
+| Item | Size |
+|---|---|
+| Blob data | 131,072 B — off-chain, pruned after ~18 days |
+| KZG commitment | **48 B** — on-chain permanently, anchors the data |
+| Opening proof | **48 B** — proves any single evaluation |
+| Point evaluation precompile gas | **50,000 gas** |
+| SRS (G1 points + G2 points) | 192 KB + 6 KB — published once, used forever |
+
+The commitment is what rollup contracts verify against. They don't store the 128 KB; they only store 48 bytes and verify it once per blob when the sequencer submits the transaction. The blob data itself propagates through the p2p layer and is pruned by nodes after the data availability window.
+
+This compression — 128 KB → 48 bytes — is what makes the EIP-4844 blobspace model economically viable. Without it, rollups would have to post full calldata, paying roughly 16 gas per byte for 128 KB = ~2M gas per blob rather than the current ~100k gas overhead.
+
+## Why Ethereum uses IPA for state — not KZG
+
+Given KZG's efficiency, the natural question is: why not use it everywhere? The Ethereum state trie migration (EIP-6800, "The Verge") needed a polynomial commitment scheme at every inner node of the state tree. It chose **IPA** (Inner Product Argument) instead.
+
+The reason is the trusted setup. The KZG SRS is a fixed artifact produced by one ceremony. For blob data availability, that's acceptable: one global ceremony bootstraps all future blob commitments. For the state trie, the setup is more constrained — any party building auxiliary tooling (custom light clients, archival proofs, bridging protocols) would need to depend on the same ceremony parameters. A hard dependency on a ceremony also creates questions about what happens if the curve or field has an unforeseen weakness decades from now.
+
+IPA uses **Pedersen commitments** with no trusted setup:
+
+```
+com(v) = Σ vᵢ · Gᵢ    where Gᵢ are random group elements
+```
+
+The generators `Gᵢ` are produced transparently: hash a public seed (e.g., `"verkle_generator_i"`) to a curve point. Anyone can regenerate and verify them. There is no secret, no toxic waste, no ceremony.
+
+The cost is proof size. IPA requires `log₂(d)` rounds of interaction to prove one inner product over a `d`-element vector (made non-interactive via Fiat-Shamir). For the Ethereum Verkle tree's branching factor of 256, that's `log₂(256) = 8` rounds, each contributing 64 bytes of proof material. A single leaf opening proof runs to approximately **500–630 bytes** — about 10× larger than KZG's 48 bytes, but still dramatically smaller than the alternatives.
+
+<Artifact slug="the-commitment-space" />
+
+The current Merkle Patricia Trie produces a witness of roughly 8 KB per account access (10–15 hexary trie nodes × ~500 bytes each). For a transaction touching several accounts and storage slots, the total witness can reach 20–50 KB. After The Verge, the same access produces a Verkle multiproof of about 2–3 KB — a 10–20× reduction that materially improves worst-case block propagation time for stateless clients.
+
+There is also an important additional property: Verkle proofs support **multiproofs** that batch efficiently. A proof for 1,000 leaves in the same tree costs only marginally more than a proof for 10, because the IPA protocol collapses across shared branch points. This makes stateless block witnesses much cheaper for complex transactions — a transaction hitting 50 storage slots doesn't pay 50× the per-slot cost.
+
+## Implications for builders and AI agents
+
+Three things follow from the above that matter for engineers building on Ethereum today:
+
+**Blob commitments are permanent; blob data is not.** The 48-byte KZG commitment is stored on-chain indefinitely in the `versioned_hashes` field of EIP-4844 type-3 transactions. The 128 KB blob is pruned by full nodes after ~18 days. An AI agent that wants to verify a specific value inside historical blob data needs to either (a) have stored the blob during the availability window or (b) retrieve it from a blob archiving service — it cannot reconstruct it from the chain alone. See the [verifiable read](/articles/verifiable-read-zk-coprocessors) pattern for how ZK coprocessors can prove historical chain state more generally.
+
+**KZG proof systems carry the ceremony assumption.** PLONK-based zkEVM circuits (Scroll, Polygon zkEVM) use KZG polynomial commitments internally. Groth16 circuits use per-circuit KZG trusted setups. The [STARK-to-SNARK wrapping](/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain) that zkML systems use lands in Groth16, meaning the final on-chain proof carries a per-circuit ceremony assumption even if the prover was STARK-based. Engineers should be explicit about which ceremony their proof system relies on and whether it's universal (one SRS for all circuits) or per-circuit (each new circuit needs its own ceremony).
+
+**Post-Verge state proofs become self-verifiable.** Today, an AI agent reading Ethereum state must trust its RPC provider's `eth_getProof` response — a Merkle Patricia Trie witness that could be fabricated by a malicious RPC. After The Verge, the same proof will be a ~500-byte IPA Verkle witness verifiable against the block header's state root without any trusted setup. Any party can check the generators independently. This changes what's feasible for agents that want to verify their own state reads on-chain or locally, without running a full archive node.
+
+## Takeaways
+
+KZG polynomial commitments give you 48-byte commitments and 48-byte proofs, constant regardless of polynomial degree — but require a one-time trusted setup ceremony. Ethereum ran the largest such ceremony in history (140,416 participants, 69 days) to bootstrap EIP-4844 blobspace. The same approach underlies PLONK and Groth16 proof systems.
+
+For the state trie, Ethereum chose IPA/Pedersen commitments instead: no ceremony, transparent parameters, proofs ~10× larger than KZG (~500 bytes vs. 48 bytes) but still 10–20× smaller than the MPT witnesses they replace. The tradeoff is explicit: ceremony overhead vs. proof size vs. trust model. Both schemes share the same core idea — commit to a polynomial, prove evaluations algebraically — at a cost independent of the polynomial's degree. That's the constant.

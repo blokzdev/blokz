@@ -1,0 +1,159 @@
+---
+slug: the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface
+title: "The Biased Beacon: On-Chain Randomness and the AI Agent Attack Surface"
+description: "PREVRANDAO costs roughly $88 per bit to bias. Chainlink VRF costs $2.43 per request. Here's how to choose the right randomness source for AI agents making on-chain decisions — and what breaks when you choose wrong."
+pubDate: 2026-06-22T15:33:32.611Z
+author: blokz
+topics: [smart-contracts, security, ai]
+tags: [randomness, prevrandao, chainlink-vrf, drand, commit-reveal, mev, thompson-sampling, beacon-chain]
+artifacts: [the-randomness-risk-map]
+difficulty: intermediate
+sources:
+  - label: "EIP-4399: Supplant DIFFICULTY opcode with PREVRANDAO"
+    url: "https://eips.ethereum.org/EIPS/eip-4399"
+  - label: "Chainlink VRF v2.5 Documentation"
+    url: "https://docs.chain.link/vrf"
+  - label: "Ethereum Beacon Chain: RANDAO (eth2book)"
+    url: "https://eth2book.info/capella/part2/building_blocks/randomness/"
+  - label: "drand: Distributed Randomness Beacon"
+    url: "https://drand.love"
+  - label: "Chainlink VRF Coordinator V2 on Ethereum Mainnet (Blockscout)"
+    url: "https://eth.blockscout.com/address/0x271682DEB8C4E0901D1a1550aD2e64D568E69909"
+---
+
+Your AI agent has two options for its next action. The reinforcement learning algorithm says play them roughly 60/40, mixing your strategy to avoid being predictable. So the Solidity contract calls `block.prevrandao` and lets the beacon chain decide.
+
+The MEV searcher watching your contract already knows which way this is going. The current slot's proposer has skipped the last two slots this epoch — each skip changed one bit of the accumulated RANDAO value. The outcome was shaped before your transaction hit the mempool.
+
+This is the on-chain randomness problem for AI agents: the sources that are fast and free are manipulable, and the ones with cryptographic guarantees impose latency and cost. Choosing wrong doesn't just add noise to your agent's policy — it hands an attacker a lever to steer it.
+
+## Why AI Agents Need Real Randomness
+
+Randomness is a first-class primitive for three agent patterns that show up constantly in on-chain AI systems:
+
+**Thompson sampling** is a Bayesian bandit algorithm that draws from a posterior Beta or Dirichlet distribution to balance exploration and exploitation. The regret bounds that make it useful — logarithmic in time — hold only when each draw is independent of the environment. A predictable draw hands the adversary foreknowledge of your next exploration branch.
+
+**ε-greedy exploration** fires a random branch with probability ε (typically 0.05–0.3) and takes the greedy action otherwise. If your `random()` call is biased toward the greedy branch — because the proposer wants you to keep doing whatever you're currently doing — your agent under-explores, gets stuck in local optima, and the MEV extractor who induced the bias profits from the predictability.
+
+**Mixed Nash equilibria** require genuine randomization. A trading agent playing a mixed strategy — say, splitting 40/60 between two liquidity venues — can be exploited if an adversary can predict which branch runs next. The math of Nash mixing assumes the opponent cannot condition on your action before it executes.
+
+None of this is hypothetical. On-chain autonomous agents are managing tens of millions in capital; the randomness source is a security primitive, not a utility call.
+
+## The Randomness Menu
+
+Five practical options exist for Solidity developers today. They span four orders of magnitude in both latency and manipulation cost.
+
+<Artifact slug="the-randomness-risk-map" />
+
+The chart plots each source on latency (how long until the value arrives) and attack cost (how much capital an adversary must burn to bias it). The upper-left corner — instant and infeasible to manipulate — is physically unoccupied. Every design chooses a point on the tradeoff curve.
+
+## PREVRANDAO: The Biasable Default
+
+`block.prevrandao` (formerly `block.difficulty`, renamed by [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399)) is Ethereum's built-in randomness output: the current block's accumulated RANDAO value from the beacon chain.
+
+The beacon chain accumulates RANDAO as a rolling XOR of BLS-signed reveals from every validator in the epoch. Each slot proposer commits their BLS signature over the accumulator before the slot opens. Because BLS is deterministic, the proposer knows the output in advance — they signed it themselves. If they dislike the result, they can **skip the slot**: forfeit the block reward, let the next proposer extend the accumulator differently, and change approximately one bit of the 256-bit output.
+
+**The skip economics:** Skipping a slot costs the proposer roughly 0.05–0.15 ETH in foregone block reward plus MEV. At ETH = $1,752 (22 June 2026), that's $88–$263 per bit biased.
+
+The break-even for an attacker is straightforward: if your protocol's next decision produces an expected gain above $88, a rational validator with skin in your application will pay to skip. For most low-stakes contracts the bias attack is unprofitable. For a protocol routing $500k in liquidity, a single skip costing $88 to redirect tens of thousands in flow is an obvious arbitrage.
+
+Two cooperating validators can each skip to control two bits — enough to deterministically select one outcome from a set of four. Multi-validator cartels make the economics scale further.
+
+**When PREVRANDAO is acceptable:** Decisions with expected value below $50–100, where a bias attack is provably unprofitable. ε-greedy exploration in RL agents with small position limits. Always salt the value to prevent cross-transaction correlation:
+
+```solidity
+bytes32 entropy = keccak256(abi.encode(
+    block.prevrandao,
+    msg.sender,
+    nonce++
+));
+```
+
+**When PREVRANDAO fails:** Any agent decision with expected value above ~$100. Strategy switches, position sizing, randomized auction parameters, or anything where an adversary profits from knowing your next move in advance.
+
+## Chainlink VRF v2.5: Cryptographic Unbiasability
+
+Chainlink's Verifiable Random Function solves the bias problem at the cryptographic layer. The VRF Coordinator ([`0x271682...E69909`](https://eth.blockscout.com/address/0x271682DEB8C4E0901D1a1550aD2e64D568E69909) on mainnet) manages a threshold Distributed Key Generation setup — no single Chainlink node holds the complete VRF private key.
+
+When your contract emits a `RandomWordsRequested` event, the Chainlink network produces a BLS-based VRF proof: a cryptographic certificate proving that this specific output follows from this specific seed under this specific key. The Coordinator verifies the proof on-chain before delivering the random word. Manipulation requires compromising enough nodes to reconstruct the DKG threshold — a coordinated attack across geographically-distributed operators who have staked LINK as slashable collateral.
+
+**Cost breakdown (Ethereum mainnet, 22 June 2026):**
+
+| Component | Amount |
+|-----------|--------|
+| Flat LINK fee | 0.25 LINK ($2.01 at $8.03/LINK) |
+| Callback gas (250k @ 0.95 gwei) | 0.000238 ETH ($0.42) |
+| **Total per request** | **~$2.43** |
+
+On Base and Arbitrum, gas costs drop 10–50×. A VRF request on Base currently runs under $0.15 total.
+
+**Minimum latency:** 3 block confirmations × 12 seconds per slot = **36 seconds**. This mandates a two-transaction architecture for agent decisions:
+
+1. **Tx 1** — agent commits its request, stores intent off-chain or in contract storage
+2. **Fulfillment (Tx 2)** — Chainlink delivers the random word in a callback
+3. **Tx 3** — agent executes the committed action using the delivered randomness
+
+The 36-second window between request and fulfillment is also a MEV window — anything in the request parameters is visible on-chain. Don't encode your strategy intent in the request; commit only to a nonce.
+
+```solidity
+// Request one random word; execution happens in fulfillRandomWords() callback
+uint256 requestId = s_vrfCoordinator.requestRandomWords(
+    VRFV2PlusClient.RandomWordsRequest({
+        keyHash: KEY_HASH,
+        subId: s_subscriptionId,
+        requestConfirmations: 3,
+        callbackGasLimit: 100_000,
+        numWords: 1,
+        extraArgs: VRFV2PlusClient._argsToBytes(
+            VRFV2PlusClient.ExtraArgsV1({ nativePayment: false })
+        )
+    })
+);
+```
+
+**Batching:** `numWords: 32` gives 32 independent random values for roughly the same gas as one. If your agent makes multiple decisions per round, batch them.
+
+## Commit-Reveal: The Last-Revealer Trap
+
+Commit-reveal is a two-phase on-chain protocol that generates randomness without any external oracle. Participants commit the hash of a secret in round one; they reveal the preimage in round two; the XOR or hash of all reveals is the random output.
+
+It works for applications with appropriate structure: lottery ticket draws, NFT trait assignment, genesis parameter selection. It fails for AI agent strategy selection for two reasons.
+
+**The last-revealer problem.** The final participant to reveal knows every other contribution already. They can compute what the output will be if they reveal, then choose to withhold their reveal if the result is unfavorable — at a cost of only their gas for the commit transaction (~$0.12 at current prices). For a lottery ticket this hurts the participant; for an MEV searcher engineering a favorable agent outcome, it's a near-zero-cost option.
+
+**Pre-commitment incompatibility.** The protocol requires action commitment before the random seed is known. This is fine for "which NFT trait does this token get" — the answer doesn't depend on external state at reveal time. But an AI agent's optimal action typically changes between commit and reveal: market prices move, positions shift, counterparty behavior updates. Committing to a fixed action during the commit phase either locks the agent into a stale decision or requires complex re-commitment logic that recreates the oracle problem you were trying to avoid.
+
+Use commit-reveal for: selecting a winner from a fixed set, initial parameter randomness, any scenario where participants have symmetric reveal incentives and optimal actions don't depend on future state. Don't use it for: dynamic agent decisions, any protocol where one participant can benefit by withholding their reveal.
+
+## Drand: The Public Beacon
+
+[Drand](https://drand.love) is a threshold BLS randomness beacon operating at a 3-second cadence. The network is run by a diverse committee — Protocol Labs, Cloudflare, EPFL, Kudelski Security, and others — that would require coordinated compromise to bias. Each round's output is a BLS signature chain: verifiable before use, publicly auditable, and unpredictable more than one round ahead for any individual operator.
+
+The cryptographic guarantee is equivalent to VRF. The difference is the access model: Drand has no native Solidity SDK. Using it on-chain requires an oracle bridge — typically Chainlink Functions or a custom keeper — that fetches the latest beacon value, verifies the BLS proof locally, and submits it with a signature the receiving contract can check. This bridge adds 15–20 seconds to the 3-second cadence and introduces a separate liveness assumption: if your keeper goes down, your agent can't get entropy.
+
+For agents that need randomness more frequently than VRF's 36-second minimum, or for cross-chain deployments where paying LINK subscription fees is impractical, Drand via a keeper bridge is a strong option. The beacon itself is free to read; only the bridge's gas is a cost (~$0.50 per delivery on Ethereum mainnet, less on L2s).
+
+## Choosing Your Source
+
+The decision compresses to two questions: what's the expected value of the next agent decision, and what's the frequency?
+
+| Scenario | Recommended source |
+|----------|-------------------|
+| Expected value < $100 | PREVRANDAO + per-sender nonce salt |
+| Fixed-set selection (lottery, NFT) | Commit-reveal or VRF |
+| EV $100–$1,000, infrequent | Chainlink VRF (L2 if cost-sensitive) |
+| EV > $1,000 | Chainlink VRF v2.5, mandatory |
+| High-frequency, EV < $500 | Drand bridge or PREVRANDAO |
+| Cross-chain agent, no LINK access | Drand bridge |
+
+For any protocol where the agent is managing positions above $10k, the $2.43 mainnet VRF cost is a rounding error in the security budget. On L2 the cost drops to under $0.15. The 36-second latency is a real constraint for high-frequency strategies — design around it with the commit-then-execute pattern rather than trying to work within a single transaction.
+
+One architectural note: VRF's callback pattern means your `fulfillRandomWords` function runs in a separate transaction with no `msg.sender` access control from the original caller. Store the requesting agent's address in the request ID mapping so the callback can restore context correctly.
+
+## Takeaways
+
+- `block.prevrandao` costs roughly $88 per bit to bias on Ethereum mainnet. That's the break-even number for every protocol decision: anything above it is in the attack window.
+- Chainlink VRF v2.5 delivers cryptographic unbiasability with an on-chain verifiable proof. Mainnet cost ~$2.43/request; L2 cost ~$0.10–0.15. Minimum latency 36 seconds.
+- Commit-reveal breaks for agent strategy selection: the last-revealer trap costs an attacker roughly $0.12 in gas and lets them select outcomes from a set of two.
+- Drand is a strong alternative for high-frequency or cross-chain use cases, with a required oracle bridge and a separate liveness assumption for the keeper.
+- Treat randomness source selection as a security decision, not a library call. For any autonomous agent managing more than a few hundred dollars in expected value per decision, the cheap-and-fast sources are no longer options.

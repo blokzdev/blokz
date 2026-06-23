@@ -1,0 +1,12 @@
+{
+  "slug": "the-phantom-token-cloud",
+  "title": "The Phantom Token Cloud",
+  "description": "Real reasoning-token embeddings cluster tightly in projected 3D space; phantom billing tokens scatter as noise outside the CoIn detection boundary. Toggle inflate to inject phantom tokens and watch 94.7% get flagged outside the wireframe sphere. Drag to orbit.",
+  "pubDate": "2026-06-23T08:00:00Z",
+  "type": "three",
+  "archetype": "scene",
+  "topics": ["llm", "security"],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["drag to orbit", "tap ⚡ Inflate billing 5× to inject phantom tokens", "tap ✓ Reset to restore clean billing view"]
+}

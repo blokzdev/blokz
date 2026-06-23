@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 102,
-    "artifacts": 103
+    "articles": 103,
+    "artifacts": 104
   },
   "topicCounts": {
     "agents": 37,
     "ai": 9,
     "blockchain": 24,
     "cryptography": 16,
-    "data": 12,
+    "data": 13,
     "defi": 24,
     "infrastructure": 37,
     "llm": 19,
-    "machine-learning": 37,
-    "research": 9,
+    "machine-learning": 38,
+    "research": 10,
     "security": 28,
     "smart-contracts": 20,
     "tokenomics": 15,
@@ -467,6 +467,33 @@
       ],
       "artifacts": [
         "the-upgrade-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "path": "content/articles/2026/06/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains/index.mdx",
+      "url": "/articles/the-gradient-thief-why-federated-learnings-privacy-promise-fails-on-public-chains",
+      "title": "The Gradient Thief: Why Federated Learning's Privacy Promise Fails on Public Chains",
+      "description": "Federated learning keeps raw data local — but the gradients it publishes on-chain are not private. Inversion attacks reconstruct training images from them, and a public ledger makes that window permanent.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "machine-learning",
+        "research",
+        "data"
+      ],
+      "tags": [
+        "federated-learning",
+        "gradient-inversion",
+        "differential-privacy",
+        "dp-sgd",
+        "privacy-utility-tradeoff",
+        "on-chain-training",
+        "blockchain-fl"
+      ],
+      "artifacts": [
+        "the-inversion-window"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3022,6 +3049,22 @@
         "research",
         "machine-learning",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-inversion-window",
+      "path": "content/artifacts/the-inversion-window/manifest.json",
+      "module": "src/islands/artifacts/the-inversion-window.ts",
+      "url": "/artifacts/the-inversion-window",
+      "title": "The Inversion Window",
+      "description": "How well can an adversary reconstruct your training data from the gradients you published? Drag the batch size; toggle DP budget ε. The curve shows estimated reconstruction quality (PSNR) from Geiping et al. — and the tradeoff where DP noise finally closes the window at the cost of model utility.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "machine-learning",
+        "data"
       ],
       "draft": false
     },

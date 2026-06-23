@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 108,
-    "artifacts": 109
+    "articles": 109,
+    "artifacts": 110
   },
   "topicCounts": {
     "agents": 38,
     "ai": 11,
     "blockchain": 25,
-    "cryptography": 17,
+    "cryptography": 18,
     "data": 15,
     "defi": 26,
     "infrastructure": 37,
     "llm": 20,
-    "machine-learning": 38,
-    "research": 10,
+    "machine-learning": 39,
+    "research": 11,
     "security": 30,
     "smart-contracts": 22,
     "tokenomics": 15,
@@ -46,6 +46,36 @@
       ],
       "artifacts": [
         "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "path": "content/articles/2026/06/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference/index.mdx",
+      "url": "/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference",
+      "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
+      "description": "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "verifiable-inference",
+        "activation-fingerprint",
+        "difr",
+        "seed-commitment",
+        "model-substitution",
+        "quantization",
+        "orthogonal-projection",
+        "inference-markets"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 9,
+      "artifacts": [
+        "the-activation-receipt"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2924,6 +2954,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-activation-receipt",
+      "path": "content/artifacts/the-activation-receipt/manifest.json",
+      "module": "src/islands/artifacts/the-activation-receipt.ts",
+      "url": "/artifacts/the-activation-receipt",
+      "title": "The Activation Receipt",
+      "description": "Switch between FP32, FP16, INT8, and INT4 precision to see how provider activation fingerprints diverge from the reference — and why DiFR flags model substitution in just two forward steps.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "cryptography"
       ],
       "draft": false
     },

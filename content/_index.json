@@ -1,27 +1,57 @@
 {
   "counts": {
-    "articles": 125,
-    "artifacts": 126
+    "articles": 126,
+    "artifacts": 127
   },
   "topicCounts": {
-    "agents": 43,
+    "agents": 44,
     "ai": 12,
     "blockchain": 30,
     "cryptography": 21,
     "data": 19,
-    "defi": 31,
+    "defi": 32,
     "infrastructure": 42,
     "llm": 22,
     "machine-learning": 42,
     "research": 14,
     "security": 35,
     "smart-contracts": 24,
-    "tokenomics": 16,
+    "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
     "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "path": "content/articles/2026/06/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets/index.mdx",
+      "url": "/articles/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "title": "The Inference Spread: LLM Routing Arbitrage and the Pricing Problem for Decentralized AI Markets",
+      "description": "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-dev risk.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "defi",
+        "tokenomics"
+      ],
+      "tags": [
+        "inference-routing",
+        "cascade-routing",
+        "model-arbitrage",
+        "inference-markets",
+        "decentralized-inference",
+        "llm-routing",
+        "spread-capture",
+        "mechanism-design",
+        "ritual",
+        "ora-protocol"
+      ],
+      "artifacts": [
+        "the-cascade-calculator"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
       "path": "content/articles/2026/06/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference/index.mdx",
@@ -3413,6 +3443,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-cascade-calculator",
+      "path": "content/artifacts/the-cascade-calculator/manifest.json",
+      "module": "src/islands/artifacts/the-cascade-calculator.ts",
+      "url": "/artifacts/the-cascade-calculator",
+      "title": "The Cascade Calculator",
+      "description": "Drag sliders to set provider costs and success rates, then read the profit margin curve. Cascade routing beats expensive-only once the cheap model resolves more than the crossover fraction of queries.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "defi"
+      ],
+      "draft": false
+    },
     {
       "slug": "peer-rank-convergence",
       "path": "content/artifacts/peer-rank-convergence/manifest.json",

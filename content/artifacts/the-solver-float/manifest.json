@@ -1,7 +1,7 @@
 {
   "slug": "the-solver-float",
   "title": "The Solver Float",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "ERC-7683 cross-chain intent lifecycle: from signed deposit to solver repayment. Click each stage to see the contract call, struct fields, and timing. Across fills $14B+ at median 8 seconds — the 2-hour optimistic challenge window is where solver capital is locked.",
   "pubDate": "2026-06-23T17:27:36.947Z",
   "type": "svg",
   "archetype": "diagram",
@@ -10,7 +10,12 @@
     "smart-contracts",
     "infrastructure"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": ["click a stage to inspect contract call, struct fields, and gas estimate"],
+  "dataSource": {
+    "label": "Across Protocol docs · UMA case study · ERC-7683 EIP",
+    "url": "https://docs.across.to/introduction/actors"
+  },
+  "dataAsOf": "2026-06-23"
 }

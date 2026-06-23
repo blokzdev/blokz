@@ -1,18 +1,18 @@
 {
   "counts": {
-    "articles": 115,
-    "artifacts": 116
+    "articles": 116,
+    "artifacts": 117
   },
   "topicCounts": {
     "agents": 42,
     "ai": 11,
     "blockchain": 27,
     "cryptography": 18,
-    "data": 17,
-    "defi": 28,
+    "data": 18,
+    "defi": 29,
     "infrastructure": 39,
     "llm": 20,
-    "machine-learning": 39,
+    "machine-learning": 40,
     "research": 11,
     "security": 33,
     "smart-contracts": 22,
@@ -22,6 +22,23 @@
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
+      "path": "content/articles/2026/06/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents/index.mdx",
+      "url": "/articles/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
+      "title": "The Width Paradox: Concentrated Liquidity Management and the Fee-Rebalance Tradeoff for AI Agents",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
       "path": "content/articles/2026/06/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments/index.mdx",
@@ -3115,6 +3132,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-range-optimizer",
+      "path": "content/artifacts/the-range-optimizer/manifest.json",
+      "module": "src/islands/artifacts/the-range-optimizer.ts",
+      "url": "/artifacts/the-range-optimizer",
+      "title": "The Range Optimizer",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "machine-learning"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-payment-flow-gap",
       "path": "content/artifacts/the-payment-flow-gap/manifest.json",

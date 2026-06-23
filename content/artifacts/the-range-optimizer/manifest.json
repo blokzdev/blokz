@@ -1,0 +1,15 @@
+{
+  "slug": "the-range-optimizer",
+  "title": "The Range Optimizer",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T10:31:22.244Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

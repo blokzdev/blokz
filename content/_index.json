@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 98,
-    "artifacts": 99
+    "articles": 99,
+    "artifacts": 100
   },
   "topicCounts": {
     "agents": 37,
@@ -11,10 +11,10 @@
     "data": 11,
     "defi": 22,
     "infrastructure": 36,
-    "llm": 18,
+    "llm": 19,
     "machine-learning": 37,
-    "research": 8,
-    "security": 27,
+    "research": 9,
+    "security": 28,
     "smart-contracts": 19,
     "tokenomics": 15,
     "tooling": 1,
@@ -22,6 +22,34 @@
     "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
+      "path": "content/articles/2026/06/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow/index.mdx",
+      "url": "/articles/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
+      "title": "The Phantom Token Bill: Auditing Hidden Reasoning Charges in On-Chain AI Escrow",
+      "description": "Reasoning models hide their chain-of-thought but bill for every token of it. CoIn proves a provider can inflate that hidden count 5× with 94.7% detection — but only if the escrow contract enforces a commitment root before payment clears.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "llm",
+        "security",
+        "research"
+      ],
+      "tags": [
+        "reasoning-models",
+        "token-billing",
+        "coin-protocol",
+        "palace",
+        "hidden-tokens",
+        "escrow",
+        "verifiable-inference",
+        "on-chain-payment"
+      ],
+      "artifacts": [
+        "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
       "path": "content/articles/2026/06/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent/index.mdx",
@@ -2641,6 +2669,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-phantom-token-cloud",
+      "path": "content/artifacts/the-phantom-token-cloud/manifest.json",
+      "module": "src/islands/artifacts/the-phantom-token-cloud.ts",
+      "url": "/artifacts/the-phantom-token-cloud",
+      "title": "The Phantom Token Cloud",
+      "description": "Real reasoning-token embeddings cluster tightly in projected 3D space; phantom billing tokens scatter as noise outside the CoIn detection boundary. Toggle inflate to inject phantom tokens and watch 94.7% get flagged outside the wireframe sphere. Drag to orbit.",
+      "pubDate": "2026-06-23",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "llm",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-op-queue",
       "path": "content/artifacts/the-op-queue/manifest.json",

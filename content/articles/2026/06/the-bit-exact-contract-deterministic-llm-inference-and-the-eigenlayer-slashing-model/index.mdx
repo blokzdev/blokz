@@ -1,22 +1,126 @@
 ---
 slug: the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model
 title: "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "To slash a dishonest AI operator on EigenLayer you need a proof. To produce one, you need determinism. EigenAI solves both: seeded inference + optimistic re-execution inside a TEE collapses verification to a byte-equality check — slashable at Ethereum-scale security."
 pubDate: 2026-06-23T19:26:05.743Z
 author: blokz
 topics: [security, infrastructure, llm]
-tags: []
-artifacts: []
+tags: [eigenlayer, verifiable-inference, deterministic-inference, avs, slashing, tee, eigenda, eigenverify, optimistic-challenge, llm-42]
+artifacts: [the-slashable-inference]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "EigenAI: Deterministic Inference, Verifiable Results (arXiv 2602.00182)"
+    url: "https://arxiv.org/abs/2602.00182"
+  - label: "LLM-42: Enabling Determinism in LLM Inference with Verified Speculation (arXiv 2601.17768)"
+    url: "https://arxiv.org/abs/2601.17768"
+  - label: "EigenLayer: The Restaking Collective (whitepaper)"
+    url: "https://docs.eigenlayer.xyz/eigenlayer/overview/whitepaper"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Cryptoeconomic security has one requirement that everything else depends on: the fault you're slashing for must be **objectively attributable**. A smart contract can't audit reasoning — it can only evaluate a predicate. If that predicate can't be defined on-chain from public evidence, the slash can't be triggered, and the security guarantee is a whitepaper claim.
 
-## Section heading
+For AI inference, that predicate has been absent. The same prompt sent to the same model on two different runs produces different outputs — and if honest re-execution can't reproduce the original output, you can never prove the first operator cheated. LLM non-determinism doesn't just complicate verification. It makes it formally impossible under the naive re-execution design.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+EigenAI (arXiv 2602.00182) closes this gap by making inference deterministic — not probabilistically, not approximately, but **bit-exact** — and then building a challenge protocol on top where a single honest re-executor can slash fraud with a byte-equality check. The result is an Actively Validated Service (AVS) on EigenLayer that inherits ~$50B in restaked ETH security for AI workloads without requiring zero-knowledge proofs.
+
+## The Non-Determinism Problem
+
+LLM non-determinism has two roots, both in the GPU compute layer.
+
+The first is **floating-point non-associativity**. IEEE-754 floating point isn't associative: `(a + b) + c ≠ a + (b + c)` in general. Matrix multiplications — the computational kernel of every transformer — are implemented as parallel reduction trees across thousands of cores. The order those reductions execute in depends on the thread scheduling of the specific run, which varies with batch size, occupancy, and kernel selection. Change one, and you change the bit pattern of the output.
+
+The second is **dynamic batching**. Production inference servers batch incoming requests to fill GPU compute. When the batch changes — a request arrives or finishes — the kernel shapes change, the reduction orders change, and a matmul that produced `0.7231...` now produces `0.7232...`. The gap is sub-epsilon in float32 terms, but it propagates through softmax and a single logit crossing threshold is a different token. One wrong token and the output hash changes entirely.
+
+The existing [`byte-equality-gate`](/artifacts/byte-equality-gate) artifact illustrates exactly this: drag the split-K parameter on a single matmul and watch token identity flip at specific batch-size boundaries. This isn't numerical instability in the pathological sense — it's the normal behavior of parallel floating-point reduction.
+
+For a verifier expecting to re-execute and compare hashes, this is fatal. Honest re-execution produces a different hash than the original. The predicate `hash(original) == hash(re-execution)` is false even when the operator was honest. You can't slash anyone, and you can't exonerate anyone.
+
+## EigenLayer's Slashing Requirement
+
+EigenLayer gives restakers a way to extend their ETH stake as economic security to arbitrary services — called Actively Validated Services — in exchange for yield. The EigenLayer whitepaper has a specific requirement for valid slashing conditions: faults must be **objectively attributable**, meaning a smart contract on Ethereum can verify them from on-chain evidence alone.
+
+This requirement exists to prevent disputes. If a slash requires subjective judgment — "was this AI response correct?" — then the slashing mechanism itself becomes a governance dispute, and governance disputes destroy the security model. The 1-out-of-N honesty assumption only holds if the 1 honest party can provably demonstrate fraud to a contract that has no context, no preferences, and no appeal process.
+
+For AI inference, "objectively attributable" has historically meant either:
+- **ZK proofs** — mathematically valid but minutes per query at GPT-2 scale today (see [The Aggregation Ceiling](/articles/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching))
+- **TEE attestation** — fast but trusts the chip vendor, and a $1,000 interposer forged an SGX quote in 2025 (see [Trusting the Quote](/articles/trusting-the-quote-onchain-tee-attestation))
+- **Sampling-based detection** — probabilistic, not definitive (see [The Verifier's Dilemma](/articles/the-verifiers-dilemma))
+
+None of these give the sharp, deterministic fault proof that optimistic slashing requires. EigenAI's design chooses optimistic verification — like an Optimistic Rollup's fraud proof — but first solves the determinism precondition that makes it possible.
+
+## Making Inference Bit-Exact
+
+EigenAI's solution operates at two levels: hardware pinning and kernel determinism.
+
+**Hardware pinning** eliminates inter-run variance from GPU architecture differences. The operator runs inference on a fixed GPU architecture (the paper specifies NVIDIA H100-SXM5 80GB). Different GPU architectures use different matrix engines with different accumulation orders, so two H100-PCIe runs can diverge from an H100-SXM run. Pinning to a specific SKU collapses that source of variance.
+
+**Seeded determinism** eliminates the remaining variance from dynamic batching. Rather than fixing the inference engine to non-batched operation (which kills throughput), EigenAI injects a cryptographic seed into the inference engine's PRNG and replaces the non-deterministic batch-scheduling logic with a deterministic scheduling policy. The seed is commitment-bound before inference runs. LLM-42 (arXiv 2601.17768) independently arrived at a compatible approach: a scheduling-based verify-rollback loop that enforces determinism at the token-emission layer without replacing GPU kernels, carrying less than 3% throughput overhead for the workloads that require determinism.
+
+The result: the same prompt, same seed, same hardware → same output, every time. The hash of the response is a pure function of (prompt, seed, model weights, GPU architecture). This is the bit-exact contract.
+
+## The Challenge Protocol
+
+With bit-exact inference in hand, EigenAI layers an optimistic challenge game on top. The protocol has five participants: the **User**, the **Operator**, **EigenDA** (data availability), **EigenVerify** (the challenge contract), and any **Watcher**.
+
+**Step 1 — Request**: The user encrypts their prompt under the operator's public key and submits it. The ciphertext is published to EigenDA. Privacy is preserved: no one besides the operator can read the prompt.
+
+**Step 2 — Execute**: The Operator runs deterministic inference using the committed seed, signing the response hash: `sig(hash(response), seed, model_commitment)`. The full encrypted response is written to EigenDA.
+
+**Step 3 — Commit**: The signed hash is posted on-chain to the EigenVerify contract. The operator's restaked ETH is now bonded against this commitment for the duration of the challenge window (the paper uses 24 hours).
+
+**Step 4 — Challenge Window**: Any Watcher can decrypt the response (since EigenDA published it), re-run the operator's inference locally using the same seed, and compare hashes. If the hashes match — which they will if the operator was honest — the window closes, the operator earns yield, and the user's result is final.
+
+**Step 5 — Challenge**: If a Watcher finds a mismatch, they post a challenge bond (32 ETH by default) to EigenVerify and request re-execution. The operator's threshold-released decryption key is now published on-chain, so the original private prompt becomes available for the verifier.
+
+**Step 6 — TEE Re-execution**: EigenVerify routes the challenge to a Trusted Execution Environment running the same model, same GPU architecture, same seed. Because inference is bit-exact, this TEE re-execution produces the identical output the honest operator would have produced. The TEE attestation quote (see [Trusting the Quote](/articles/trusting-the-quote-onchain-tee-attestation)) is verified on-chain.
+
+**Step 7 — Byte Equality Check**: The on-chain contract compares `hash(operator_response)` with `hash(tee_response)`. This is the entire verification logic. No circuit, no proof system, no trusted oracle. A single equality predicate on two 32-byte hashes.
+
+- **Equal**: Operator was honest. Watcher's 32 ETH bond is slashed. Frivolous challenges are economically suppressed.
+- **Not equal**: Operator cheated. Operator's restaked stake is slashed per EigenLayer's attribution rules: one-third burned (irreversible), two-thirds distributed to the challenger as the fraud bounty.
+
+<Artifact slug="the-slashable-inference" />
+
+## The Economics of Honest Behavior
+
+The challenge game has a specific Nash equilibrium structure. An operator runs inference on thousands of requests. Their restaked stake — typically 32 ETH ($120,000+ at current prices) per validator slot — is at risk for each committed response. The cost of cheating once: entire stake slashed. The payoff from cheating: one inference fee, perhaps $0.01.
+
+The equilibrium is not maintained by the difficulty of cheating but by the certainty of detection. Because inference is bit-exact and the response is published to EigenDA with a 18-day availability window (the DA window explored in [Blobs Are Not Buckets](/articles/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline)), every honest watcher can independently verify every response. The 1-out-of-N honesty assumption means a single honest watcher in the world is sufficient to catch fraud.
+
+Watcher economics are also aligned. A successful challenge earns two-thirds of the operator's slashed stake — potentially $80,000+ on a 32 ETH stake slash. Running the verification: one H100-hour at current Tensor Dock spot rates of ~$2.50/hr, plus ~30 minutes of GPU time for a large model. Expected cost under $1.25 per check. Expected return on a successful challenge: $80,000+. Rational watchers are incentivized to watch.
+
+The challenge bond (32 ETH) prevents griefing — repeatedly filing frivolous challenges to tie up operator stakes. The bond amount must exceed the cost of the operator's downtime to be effective. At 24-hour challenge windows and $0.01/request fees, an operator handling 1,000 requests per day forfeits $24 in lost uptime per successful challenge. The 32 ETH bond dwarfs this by orders of magnitude, making griefing economically irrational.
+
+## Applications: Sovereign Agents
+
+EigenAI identifies three use cases where this architecture creates qualitatively new capabilities.
+
+**Prediction-market judges**: A prediction market that settles on AI-evaluated outcomes — "Did the Federal Reserve raise rates by 50 basis points?" — needs a resolution that can be challenged if incorrect. With EigenAI, the resolving AI's output is committed on-chain and challengeable within 24 hours. The judge cannot silently return a different answer for paid clients; every resolution is under public audit.
+
+**Trading bots**: An AI trading agent that executes on behalf of users must be auditable — users need to verify that the agent made the decisions they were told it made, not a backdoored variant. EigenAI's response commitments give every user a verifiable record of every inference their agent performed, slashable if the operator substituted a different model (see [The Committed Sample](/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference) for the activation fingerprint approach to model-substitution detection).
+
+**Scientific assistants**: Reproducibility is a core requirement of science. An AI assistant that performs literature synthesis or data analysis for a DAO-funded research project can now commit to bit-exact outputs — the same analysis re-run by any third party on the same hardware will produce the same results. The blockchain record proves which model, which prompt, which response.
+
+## What It Doesn't Solve
+
+Bit-exact determinism proves that an operator ran the claimed model and returned its genuine output. It proves nothing about:
+
+- **Model correctness**: The model can give the wrong answer honestly. The byte-equality check verifies the execution was faithful to the model, not that the model was faithful to the truth.
+- **TEE integrity**: The re-execution TEE is the final arbiter. If the TEE itself is compromised — the [Trusting the Quote](/articles/trusting-the-quote-onchain-tee-attestation) article details the $1,000 interposer attack that forged SGX quotes — the verifier can be fooled. EigenAI mitigates this with a committee of TEEs across multiple manufacturers, but it's a reduction, not elimination.
+- **Non-determinism at temperature > 0**: The system pins temperature to 0 (greedy decoding) for verifiable inference. Stochastic sampling — where variability is a feature, not a bug — is explicitly out of scope and would require a different verification design (commitment schemes over distribution parameters rather than output hashes).
+
+There is also a philosophical objection worth noting. A 2026 paper titled "Stochastic CHAOS" argues that deterministic inference kills emergent reasoning: forcing greedy decoding collapses multi-path reasoning into a single brittle path and systematically underestimates failure probability on adversarial inputs. EigenAI's verifiable workloads — objective factual queries, fixed-format analysis, structured prediction — are exactly the class where greedy decoding is appropriate. Stochastic generation for open-ended creative tasks is a different workload that the architecture explicitly doesn't serve.
+
+## The Proof That's Already There
+
+The core insight of EigenAI is that optimistic verification of AI inference is possible, cheap, and strong — but only after solving a precondition the field had not taken seriously. The ZK route and the TEE route both got significant research attention. The "make inference deterministic so naive re-execution is valid" route did not, because non-determinism was treated as a fundamental property of LLM inference rather than an engineering artifact of parallel floating-point accumulation.
+
+LLM-42 solves determinism at the scheduling layer in 2026, EigenAI builds the full AVS protocol on top, and the result is that a smart contract can now verify an LLM inference with a 32-byte hash comparison — no circuits, no trusted setup, no ceremony. That's the bit-exact contract. The proof was always going to be simple. The hard part was making the object being proved actually deterministic.
 
 ## Takeaways
 
-TODO.
+- **EigenLayer slashing requires objectively attributable faults.** For AI inference, that means the verifier needs a deterministic re-execution — something non-deterministic LLM inference can't provide by default.
+- **EigenAI pins determinism at two layers**: fixed GPU architecture (H100-SXM5) and seeded scheduling (compatible with LLM-42's verify-rollback approach), under 3% throughput overhead.
+- **The challenge protocol** — commit hash to EigenDA, 24h challenge window, TEE re-execution, byte-equality check — collapses verification to a single equality predicate. One honest watcher in the world suffices to catch fraud.
+- **Economics favor honesty**: the watcher earns ~$80,000+ on a successful challenge for ~$1.25 of verification cost. The operator risks their entire restaked stake for a $0.01 inference fee. The equilibrium is maintained by the certainty of detection, not its difficulty.
+- **Scope is narrow but real**: bit-exact contracts verify execution faithfulness, not model correctness; they require greedy decoding; TEE attestation is the remaining trust anchor.

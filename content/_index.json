@@ -1,21 +1,21 @@
 {
   "counts": {
-    "articles": 99,
-    "artifacts": 100
+    "articles": 100,
+    "artifacts": 101
   },
   "topicCounts": {
     "agents": 37,
     "ai": 9,
-    "blockchain": 21,
+    "blockchain": 22,
     "cryptography": 16,
     "data": 11,
-    "defi": 22,
+    "defi": 23,
     "infrastructure": 36,
     "llm": 19,
     "machine-learning": 37,
     "research": 9,
     "security": 28,
-    "smart-contracts": 19,
+    "smart-contracts": 20,
     "tokenomics": 15,
     "tooling": 1,
     "web3": 11,
@@ -495,6 +495,33 @@
       ],
       "artifacts": [
         "the-pipeline-breach"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "path": "content/articles/2026/06/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it/index.mdx",
+      "url": "/articles/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "title": "Uniswap v4 Hooks: The AMM Hook Lifecycle and What AI Agents Can Do With It",
+      "description": "Uniswap v4 hooks make every liquidity pool programmable. Here's how the 14-bit permission bitmap works, what fires during a swap, and where AI agents fit into dynamic fee architecture.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "uniswap",
+        "amm",
+        "hooks",
+        "dynamic-fees",
+        "lvr",
+        "ai-agents",
+        "mev"
+      ],
+      "artifacts": [
+        "hook-permission-visualizer"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2947,6 +2974,22 @@
         "research",
         "machine-learning",
         "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "hook-permission-visualizer",
+      "path": "content/artifacts/hook-permission-visualizer/manifest.json",
+      "module": "src/islands/artifacts/hook-permission-visualizer.ts",
+      "url": "/artifacts/hook-permission-visualizer",
+      "title": "Hook Permission Visualizer",
+      "description": "Explore how Uniswap v4's 14-bit permission bitmap maps to pool lifecycle callbacks. Toggle bits or select preset patterns to see which hook functions fire for each operation.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
       ],
       "draft": false
     },

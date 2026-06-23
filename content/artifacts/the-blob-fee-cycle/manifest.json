@@ -1,0 +1,23 @@
+{
+  "slug": "the-blob-fee-cycle",
+  "title": "The Blob Fee Cycle",
+  "description": "Interactive chart tracing Ethereum blob base fees from the 1-wei floor at Dencun launch (Mar 2024) through the Dec 2025 surge to an all-time high of 5.69 gwei — click any data point for block-level detail.",
+  "pubDate": "2026-06-23T04:32:38.236Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "blockchain",
+    "infrastructure",
+    "data"
+  ],
+  "aspect": "16/7",
+  "featured": false,
+  "controls": [
+    "click a data point to see block details"
+  ],
+  "dataSource": {
+    "label": "Blockscout — Ethereum mainnet sample blocks",
+    "url": "https://eth.blockscout.com"
+  },
+  "dataAsOf": "2026-06-23"
+}

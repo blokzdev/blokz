@@ -1,10 +1,10 @@
 {
   "counts": {
-    "articles": 114,
-    "artifacts": 115
+    "articles": 115,
+    "artifacts": 116
   },
   "topicCounts": {
-    "agents": 41,
+    "agents": 42,
     "ai": 11,
     "blockchain": 27,
     "cryptography": 18,
@@ -14,14 +14,31 @@
     "llm": 20,
     "machine-learning": 39,
     "research": 11,
-    "security": 32,
+    "security": 33,
     "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
-    "web3": 12,
+    "web3": 13,
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
+      "path": "content/articles/2026/06/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments/index.mdx",
+      "url": "/articles/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
+      "title": "The Mandate Gap: Prompt Injection and the Trust Architecture of AI Agent Payments",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
       "path": "content/articles/2026/06/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading/index.mdx",
@@ -3086,6 +3103,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-payment-flow-gap",
+      "path": "content/artifacts/the-payment-flow-gap/manifest.json",
+      "module": "src/islands/artifacts/the-payment-flow-gap.ts",
+      "url": "/artifacts/the-payment-flow-gap",
+      "title": "The Payment Flow Gap",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "security",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-survivability-lift",
       "path": "content/artifacts/the-survivability-lift/manifest.json",

@@ -1,0 +1,16 @@
+{
+  "slug": "the-payment-flow-gap",
+  "title": "The Payment Flow Gap",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T09:27:16.151Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

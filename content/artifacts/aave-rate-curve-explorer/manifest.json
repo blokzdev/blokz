@@ -1,0 +1,24 @@
+{
+  "slug": "aave-rate-curve-explorer",
+  "title": "Aave Rate Curve Explorer",
+  "description": "Interactive chart of Aave V3's USDC two-slope interest rate model on Base. Drag the slider to explore how borrow and supply APYs respond to utilization — and see the sharp kink at 90% that makes over-borrowing expensive.",
+  "pubDate": "2026-06-22T07:42:08.298Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "agents",
+    "machine-learning"
+  ],
+  "aspect": "840/440",
+  "featured": false,
+  "controls": [
+    "utilization slider — drag to simulate agent-controlled borrowing and see both rate curves respond",
+    "kink marker — dashed line at U_opt=90% shows where the penalty slope activates"
+  ],
+  "dataSource": {
+    "label": "Aave V3 USDC Pool on Base — Blockscout",
+    "url": "https://base.blockscout.com/address/0xA238Dd80C259a72e81d7e4664a9801593F98d1c5"
+  },
+  "dataAsOf": "2026-06-22"
+}

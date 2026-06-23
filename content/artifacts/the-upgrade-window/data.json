@@ -1,0 +1,142 @@
+{
+  "protocols": [
+    {
+      "id": "uniswap-v4",
+      "label": "Uniswap V4",
+      "abbr": "UNI V4",
+      "address": "0x000000000004444c5dc75cB358380D2e3dE08A90",
+      "tier": "immutable",
+      "color": "#4ade80",
+      "x": 12,
+      "y": 12,
+      "proxyType": "none",
+      "timelock": null,
+      "timelockNote": "No proxy — bytecode is final",
+      "agentNote": "Safe to hardcode; PoolManager interface cannot change"
+    },
+    {
+      "id": "uniswap-v3",
+      "label": "Uniswap V3",
+      "abbr": "UNI V3",
+      "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "tier": "immutable",
+      "color": "#4ade80",
+      "x": 32,
+      "y": 12,
+      "proxyType": "none",
+      "timelock": null,
+      "timelockNote": "No proxy — bytecode is final",
+      "agentNote": "Safe to hardcode; also used as a TWAP price source"
+    },
+    {
+      "id": "morpho",
+      "label": "MorphoBlue",
+      "abbr": "MRPH",
+      "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+      "tier": "immutable",
+      "color": "#4ade80",
+      "x": 60,
+      "y": 12,
+      "proxyType": "none",
+      "timelock": null,
+      "timelockNote": "Immutable singleton — no admin, no upgrade path",
+      "agentNote": "Core is immutable; oracle adapters plugged in at market creation are separate"
+    },
+    {
+      "id": "balancer",
+      "label": "Balancer V2 Vault",
+      "abbr": "BAL",
+      "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+      "tier": "immutable",
+      "color": "#4ade80",
+      "x": 84,
+      "y": 12,
+      "proxyType": "none",
+      "timelock": null,
+      "timelockNote": "Vault is immutable; individual pools are separate",
+      "agentNote": "Safe to hardcode Vault address; pool logic is separate per deployment"
+    },
+    {
+      "id": "compound-v3",
+      "label": "Compound V3",
+      "abbr": "COMP",
+      "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+      "tier": "governance-48h",
+      "color": "#60a5fa",
+      "x": 50,
+      "y": 37,
+      "proxyType": "upgradeable-proxy",
+      "timelock": 172800,
+      "timelockNote": "172 800 s (48 h) on-chain timelock — verified on Ethereum mainnet",
+      "agentNote": "48 h window to detect a queued proposal and exit positions before implementation swap"
+    },
+    {
+      "id": "aave-v3",
+      "label": "Aave V3 Pool",
+      "abbr": "AAVE",
+      "address": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+      "tier": "governance-24h",
+      "color": "#fbbf24",
+      "x": 50,
+      "y": 62,
+      "proxyType": "eip-1967",
+      "timelock": 86400,
+      "timelockNote": "~86 400 s (24 h) via Level 1 Executor",
+      "agentNote": "~24 h window; monitor Aave governance proposals for queued upgrades"
+    },
+    {
+      "id": "chainlink",
+      "label": "Chainlink ETH/USD",
+      "abbr": "LINK",
+      "address": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+      "tier": "multisig",
+      "color": "#f0883e",
+      "x": 50,
+      "y": 87,
+      "proxyType": "aggregator-proxy",
+      "timelock": null,
+      "timelockNote": "Multisig-controlled aggregator swap — no public timelock",
+      "agentNote": "No advance notice of aggregator changes; highest inherited risk for any consumer"
+    }
+  ],
+  "tiers": [
+    {
+      "id": "immutable",
+      "label": "Immutable",
+      "color": "#4ade80",
+      "yMin": 0,
+      "yMax": 24,
+      "note": "No proxy — bytecode cannot change after deployment"
+    },
+    {
+      "id": "governance-48h",
+      "label": "Governance · 48 h",
+      "color": "#60a5fa",
+      "yMin": 24,
+      "yMax": 50,
+      "note": "DAO-governed upgrade behind a 48-hour timelock"
+    },
+    {
+      "id": "governance-24h",
+      "label": "Governance · 24 h",
+      "color": "#fbbf24",
+      "yMin": 50,
+      "yMax": 75,
+      "note": "DAO-governed upgrade behind a ~24-hour timelock"
+    },
+    {
+      "id": "multisig",
+      "label": "Multisig",
+      "color": "#f0883e",
+      "yMin": 75,
+      "yMax": 100,
+      "note": "Multisig-controlled; upgrades require no public advance notice"
+    }
+  ],
+  "edges": [
+    { "from": "morpho",      "to": "chainlink",   "label": "price oracle" },
+    { "from": "aave-v3",     "to": "chainlink",   "label": "price oracle" },
+    { "from": "compound-v3", "to": "chainlink",   "label": "price oracle" },
+    { "from": "compound-v3", "to": "uniswap-v3",  "label": "TWAP oracle"  }
+  ]
+}

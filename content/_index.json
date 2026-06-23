@@ -1,14 +1,14 @@
 {
   "counts": {
-    "articles": 110,
-    "artifacts": 111
+    "articles": 111,
+    "artifacts": 112
   },
   "topicCounts": {
-    "agents": 38,
+    "agents": 39,
     "ai": 11,
     "blockchain": 25,
     "cryptography": 18,
-    "data": 15,
+    "data": 16,
     "defi": 27,
     "infrastructure": 37,
     "llm": 20,
@@ -19,7 +19,7 @@
     "tokenomics": 16,
     "tooling": 1,
     "web3": 12,
-    "zero-knowledge": 13
+    "zero-knowledge": 14
   },
   "articles": [
     {
@@ -46,6 +46,36 @@
       ],
       "artifacts": [
         "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove",
+      "path": "content/articles/2026/06/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove/index.mdx",
+      "url": "/articles/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove",
+      "title": "The HTTPS Receipt: zkTLS, Web Proofs, and What AI Agents Can Finally Prove",
+      "description": "AI agents need real-world data. zkTLS closes the oracle gap: TLSNotary's MPC-TLS costs 30 MB of garbled circuits at 5 Mbps; its April 2026 Proxy mode cuts that to 4 seconds. Here is the trust model, the benchmarks, and what agents can prove today.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "agents",
+        "data"
+      ],
+      "tags": [
+        "zktls",
+        "tls-notary",
+        "web-proofs",
+        "mpc-tls",
+        "proxy-mode",
+        "vlayer",
+        "reclaim-protocol",
+        "oracles",
+        "ai-agents",
+        "garbled-circuits"
+      ],
+      "artifacts": [
+        "the-zktls-latency-curve"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2986,6 +3016,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-zktls-latency-curve",
+      "path": "content/artifacts/the-zktls-latency-curve/manifest.json",
+      "module": "src/islands/artifacts/the-zktls-latency-curve.ts",
+      "url": "/artifacts/the-zktls-latency-curve",
+      "title": "The zkTLS Latency Curve",
+      "description": "How long does a web proof take? Drag the crosshair across upload bandwidths to compare TLSNotary's MPC-TLS mode (~30 MB garbled-circuit upload) against the April 2026 Proxy mode — 12.5× faster at residential broadband, 1.8× at fiber.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "agents"
       ],
       "draft": false
     },

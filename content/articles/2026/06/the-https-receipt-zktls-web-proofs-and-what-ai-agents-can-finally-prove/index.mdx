@@ -1,0 +1,120 @@
+---
+slug: the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove
+title: "The HTTPS Receipt: zkTLS, Web Proofs, and What AI Agents Can Finally Prove"
+description: "AI agents need real-world data. zkTLS closes the oracle gap: TLSNotary's MPC-TLS costs 30 MB of garbled circuits at 5 Mbps; its April 2026 Proxy mode cuts that to 4 seconds. Here is the trust model, the benchmarks, and what agents can prove today."
+pubDate: 2026-06-23T03:29:12.349Z
+author: blokz
+topics: [zero-knowledge, agents, data]
+tags: [zktls, tls-notary, web-proofs, mpc-tls, proxy-mode, vlayer, reclaim-protocol, oracles, ai-agents, garbled-circuits]
+artifacts: [the-zktls-latency-curve]
+difficulty: intermediate
+sources:
+  - label: "TLSNotary: Introducing Proxy Mode"
+    url: "https://tlsnotary.org/blog/2026/04/22/proxy-mode/"
+  - label: "TLSNotary: Proxy Mode Benchmarks (May 2026)"
+    url: "https://tlsnotary.org/blog/2026/05/10/blog-proxy-mode/"
+  - label: "TLSNotary: Performance Benchmarks (August 2025)"
+    url: "https://tlsnotary.org/blog/2025/08/31/benchmarks/"
+  - label: "TACEO: Multiparty Notaries for zkTLS"
+    url: "https://core.taceo.io/articles/mpc-zktls/"
+  - label: "vlayer documentation"
+    url: "https://docs.vlayer.xyz/"
+  - label: "Reclaim Protocol: AI to scale zkTLS"
+    url: "https://blog.reclaimprotocol.org/posts/zktls-ai"
+---
+
+Your AI agent monitors lending rates across a dozen DeFi protocols, routes yield, and rebalances positions. It's autonomous, on-chain, and it works. Until you realize it still needs to trust an off-chain API for anything that isn't a token price — and that API gives it whatever it feels like.
+
+Chainlink and Pyth solve a narrow slice of this: frequently updated, high-traffic price feeds where enough stakers have economic skin in the game. They [update only when price moves ≥ 0.5% or an hour passes](/articles/the-price-chainlink-shows-you-is-already-old). They don't cover bank balances, employment records, API responses from closed systems, fiat payment receipts, or the output of any web service that didn't opt in to a permissioned oracle network.
+
+The rest of the web runs on HTTPS. zkTLS makes that web provable.
+
+## Why TLS is hard to verify
+
+Every HTTPS connection negotiates a symmetric session key during the TLS handshake. Both parties — the client and server — derive the same secret and encrypt their traffic with it. The problem for a third-party verifier is that the session key is ephemeral and never appears in plaintext anywhere. The server's certificate proves identity; nothing proves what the server actually said.
+
+You can ask the client to record the session and show it to you. But you have no way to know whether the client tampered with the transcript before handing it over. The same key that decrypts also encrypts. Without participation in the original session, a verifier is trusting the prover's good faith.
+
+This is why classical oracle networks require the data source to sign a structured response directly — DAPI, Chainlink Functions, Pyth publishers. The oracle network's trust flows from the data source's participation. For most of the web, that participation isn't coming.
+
+## The three architectures
+
+Three distinct approaches have emerged, each resolving the verification problem differently.
+
+### MPC-TLS (the TLSNotary original)
+
+The oldest and strongest approach: a two-party computation that prevents either party from knowing the full TLS session key.
+
+The "prover" (the user's client) and the "notary" (an independent verifier) jointly execute a [multi-party computation](/articles/minutes-per-token) during the TLS handshake. They co-derive the session key material so that neither has the complete key alone. Only the prover communicates with the server; the notary observes only encrypted ciphertext. When the session ends, the notary can attest that the ciphertext is authentic — because it co-derived the decryption key but never saw the plaintext — while the prover performs a selective ZK reveal to disclose only the fields they want to share.
+
+The cryptographic guarantee is tight: neither the prover nor the notary can forge the transcript, because forgery would require the other party's key share. The trust assumption is that the notary didn't collude with the prover *before* the session — which is a much weaker assumption than trusting the prover alone.
+
+The cost is the garbled-circuit material. Before the TLS handshake starts, the prover must upload roughly **30 MB** of circuit data to the notary. On a 5 Mbps residential connection that costs around **52 seconds** before a single byte of the target page is fetched. At 1 Gbps it shrinks to under 2 seconds. The ~40 communication rounds in the MPC handshake add latency on top of the upload cost.
+
+### Proxy mode (TLSNotary, April 2026)
+
+TLSNotary's new mode changes who plays what role.
+
+Instead of co-deriving the session key, the notary acts as a **network proxy** — forwarding encrypted TLS traffic between the prover and server. The notary sees the encrypted ciphertext (which tells them something: which server, roughly when, roughly how much data) but not the plaintext. After the session, the prover generates a ZK proof that cryptographically binds the traffic the proxy observed to the actual TLS session — proving the ciphertext the proxy saw is consistent with the disclosed plaintext fields.
+
+The tradeoff is in the trust model: the notary can now see network metadata and the ciphertext. They can't read the content, but they know the prover talked to, say, `api.coinbase.com` at a given time and received a ~4 KB response. For many agent use cases this is fine. For use cases involving sensitive API calls, MPC-TLS is stronger.
+
+The benefit is speed. No 30 MB preprocessing upload. Proxy mode completes in **~4 seconds** at 5 Mbps and around **1 second** at 1 Gbps — a 12.5× speedup at residential broadband that shrinks to 1.8× on fiber.
+
+<Artifact slug="the-zktls-latency-curve" />
+
+The right choice depends on latency tolerance, the sensitivity of the endpoint being proved, and whether notary metadata visibility matters. Proxy mode is the right default for most agent use cases; MPC-TLS earns its cost for high-stakes data where endpoint identity must be hidden from the notary.
+
+### Server-side ZK provers (Reclaim, vlayer)
+
+A different approach: instead of modifying the client's TLS session, these systems run a ZK prover *after* the fact.
+
+Reclaim Protocol generates a selective-reveal ZK proof from a TLS session transcript on the client side. The prover never has to upload garbled-circuit material; proof generation happens locally and the resulting proof (much smaller than a full transcript) is verified on-chain. The community has deployed over 200 endpoint "providers" without server participation, which gives it the broadest API coverage of any web proof system.
+
+vlayer goes further: it uses [RISC Zero](/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain) to run Solidity verifier programs inside a zkVM, compressing the web proof into a succinct SNARK that can be settled on any EVM chain at standard ZK verification cost (~300 k gas). The vlayer model makes web data first-class in smart contract logic — a Solidity function can reference a web API response the same way it references a storage slot.
+
+The tradeoff: proof generation time is longer (seconds to minutes depending on the proof system and backend), which makes these approaches better suited for async agent workflows than latency-sensitive on-chain decisions.
+
+## What the trust assumptions actually are
+
+Every web proof system makes at least one of these trust concessions:
+
+| Approach | What the notary/prover can do | What they can't do |
+|---|---|---|
+| MPC-TLS | See encrypted ciphertext (no metadata!) | Forge the session or see plaintext without prover consent |
+| Proxy mode | See URL, timing, ciphertext size | Read plaintext, forge the session |
+| Server-side ZK | Self-generate proof; no external notary | Selectively reveal only chosen fields |
+| Centralized oracle | Anything if the provider is malicious | — |
+
+The honest comparison: even MPC-TLS requires trusting that the notary didn't collude with the prover *before* the session began. Multiple independent notaries (multiparty notaries, where m-of-n must collude to forge) tighten this further. Compare to a [ZK coprocessor](/articles/verifiable-read-zk-coprocessors) over on-chain data, which has no such trust assumption — everything it proves is already public on the chain.
+
+For data that doesn't exist on-chain, zkTLS is the current state of the art. The question is which threat model you're defending against.
+
+## What agents can build today
+
+**Fiat payment proofs.** zkp2p uses Reclaim and Primus Labs to let users prove they completed a bank wire to an Ethereum address without revealing account details, enabling trust-minimized fiat onramps across Base, Arbitrum, Solana, and Hyperliquid — settled in under 60 seconds. An AI agent managing a treasury can use the same proof to verify a counterparty paid before releasing tokens.
+
+**Authenticated API responses for agent memory.** MCPay uses zkTLS to prove that the API response an agent received after a micropayment is authentic and untampered. An agent can buy access to a proprietary data feed, prove the response on-chain, and use it as verifiable state without trusting a centralized relay.
+
+**Web2 credential verification.** Employment records, credit scores, academic credentials, and government-issued verifications live in HTTPS endpoints most blockchain systems can't touch. zkTLS lets an AI agent verify these credentials without requiring the institution to integrate any chain-native API. An agent managing collateral underwriting can check that a borrower's income verification is fresh without seeing the underlying records.
+
+**Closed-system oracle coverage.** The long tail of APIs — sports results, airline booking status, government procurement data, IoT endpoints — will never be served by a permissioned oracle network. One Reclaim provider covers one endpoint; the community has built 200+ without server participation. An agent operating in a niche vertical can source data no oracle network would ever prioritize.
+
+## The remaining gaps
+
+**Real-time constraints.** Even Proxy mode's 4-second floor makes zkTLS unsuitable for latency-sensitive trading decisions. The 12-second [Ethereum slot clock](/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness) provides some headroom, but a proof that takes 4 seconds to generate plus block confirmation time means web-proved data is always at least one slot stale. Use zkTLS for data that changes slowly; use price oracles for data that changes every second.
+
+**On-chain gas.** A vlayer-style proof anchored to RISC Zero verifies for ~300 k gas — comparable to [ZK coprocessor verification](/articles/verifiable-read-zk-coprocessors) over on-chain data. A raw Reclaim-style TLS transcript proof is larger and costs more. Neither is prohibitive for high-value agent decisions; both are too expensive for per-call inference routing.
+
+**Server collude risk in Proxy mode.** If a server and a notary collude, the notary could attest a fabricated response that happens to match the ciphertext the server sent. The mitigation is the same as for any ZK verifier: multiple independent notaries with honest-majority assumptions. This is [active research](https://core.taceo.io/articles/mpc-zktls/) in the zkTLS community.
+
+**The open-protocol question.** TLSNotary is open-source. Reclaim and vlayer have significant ecosystem adoption. But the notary infrastructure itself is still nascent: there's no decentralized, censorship-resistant notary network with the robustness of Chainlink's node set. For agent deployments that need guaranteed availability, running your own notary is currently the correct architecture.
+
+## Takeaways
+
+- **The oracle gap is wider than prices.** Everything outside token prices and on-chain state requires trusting either a centralized relay or a permissioned oracle participant. zkTLS fills that gap without requiring the data source to cooperate.
+- **Proxy mode changed the calculus.** At residential broadband, MPC-TLS's 30 MB garbled-circuit upload is prohibitive for interactive agents. Proxy mode's 4-second completion at 5 Mbps makes web proofs viable for async agent workflows today.
+- **Trust models differ meaningfully.** MPC-TLS hides even the URL from the notary; Proxy mode reveals network metadata. Server-side ZK provers have no notary at all. The right choice is threat-model-dependent.
+- **Gas and latency set the ceiling.** Verification costs (~300 k gas) and proof generation time (4 s to minutes) mean zkTLS is better suited to high-value, low-frequency agent decisions than per-inference or per-block operations.
+
+The web is the largest oracle in existence. zkTLS is the first mechanism that can make it verifiable without asking any of its servers to participate. That's not a minor improvement to the oracle stack — it's a new category of primitive for AI agents operating on-chain.

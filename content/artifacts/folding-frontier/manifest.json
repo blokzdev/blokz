@@ -1,7 +1,7 @@
 {
   "slug": "folding-frontier",
   "title": "Folding Frontier",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Proof sizes for six ZK schemes at 1,000 computation steps — hover or tap a row to see the trust model, setup requirement, and primary source. Folding-based IVC (Nova, HyperNova) holds constant; batch STARKs and separate Groth16 proofs grow with depth.",
   "pubDate": "2026-06-23T18:30:50.441Z",
   "type": "svg",
   "archetype": "chart",
@@ -9,7 +9,12 @@
     "zero-knowledge",
     "cryptography"
   ],
-  "aspect": "16/9",
+  "aspect": "800/290",
   "featured": false,
-  "controls": []
+  "controls": ["hover or tap a row to inspect trust model and source"],
+  "dataSource": {
+    "label": "Nova ePrint 2021/370; HyperNova ePrint 2023/573; NANOZK arXiv 2603.18046; microsoft/Nova benchmarks",
+    "url": "https://eprint.iacr.org/2021/370"
+  },
+  "dataAsOf": "2026-06-23"
 }

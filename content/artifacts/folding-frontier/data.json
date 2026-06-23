@@ -1,0 +1,78 @@
+{
+  "asOf": "2026-06-23",
+  "metric": "Final proof size for a 1,000-step computation (bytes, log scale). Folding-based IVC holds constant regardless of N; batch STARKs and separate SNARK proofs grow with depth.",
+  "schemes": [
+    {
+      "id": "groth16-n",
+      "label": "Groth16 × N",
+      "sizeMin": 192000,
+      "sizeMax": 192000,
+      "sizeLabel": "192 KB",
+      "constant": false,
+      "setup": "per-circuit trusted setup",
+      "system": "R1CS + pairing",
+      "note": "One Groth16 proof per step. Proof = 3 bn254 group elements = exactly 192 bytes, so N=1000 separate proofs = 192 KB. Verifier must check N proofs; no aggregation without extra cost.",
+      "source": { "label": "Groth16, EUROCRYPT 2016 (ePrint 2016/260)", "url": "https://eprint.iacr.org/2016/260" }
+    },
+    {
+      "id": "stark-batch",
+      "label": "STARK full trace",
+      "sizeMin": 100000,
+      "sizeMax": 500000,
+      "sizeLabel": "100 – 500 KB",
+      "constant": false,
+      "setup": "none",
+      "system": "FRI polynomial IOP",
+      "note": "Full-trace FRI-STARK over all N steps. Proof grows as O(log²N × λ) where λ is security parameter. SP1 / RISC Zero STARKs run 100–500 KB in practice; on-chain verification ~327k gas (Zinnia benchmark, ePrint 2025/572).",
+      "source": { "label": "Zinnia benchmark, ePrint 2025/572", "url": "https://eprint.iacr.org/2025/572" }
+    },
+    {
+      "id": "recursive-groth16",
+      "label": "Recursive Groth16",
+      "sizeMin": 1000,
+      "sizeMax": 5000,
+      "sizeLabel": "1 – 5 KB",
+      "constant": true,
+      "setup": "per-circuit trusted setup",
+      "system": "R1CS + pairing (Halo2 / Plonk)",
+      "note": "Each recursion step wraps the prior Groth16 verifier in a new circuit. Proof stays constant (~2 KB) but the verifier circuit costs ~150k R1CS constraints per step — 10× more expensive than Nova's folding step.",
+      "source": { "label": "Nova paper, CRYPTO 2022 (ePrint 2021/370)", "url": "https://eprint.iacr.org/2021/370" }
+    },
+    {
+      "id": "nova",
+      "label": "Nova IVC",
+      "sizeMin": 10000,
+      "sizeMax": 50000,
+      "sizeLabel": "10 – 50 KB",
+      "constant": true,
+      "setup": "none",
+      "system": "Relaxed R1CS folding + Spartan",
+      "note": "Folds N steps into one constant-size relaxed R1CS accumulator. SHA-256 benchmark: 53 ms/step at 55k constraints (microsoft/Nova). Recursion overhead: ~15k constraints — 10× less than SNARK-based IVC. Final Spartan-compressed proof is ~7,400× smaller than the uncompressed IVC state.",
+      "source": { "label": "Nova, CRYPTO 2022 + microsoft/Nova benchmarks", "url": "https://github.com/microsoft/Nova" }
+    },
+    {
+      "id": "hypernova",
+      "label": "HyperNova IVC",
+      "sizeMin": 15000,
+      "sizeMax": 70000,
+      "sizeLabel": "15 – 70 KB",
+      "constant": true,
+      "setup": "none",
+      "system": "CCS folding + sum-check",
+      "note": "Extends Nova to CCS (Customizable Constraint Systems), simultaneously generalizing R1CS, Plonkish, and AIR. Prover cost per fold: one MSM of size = number of witnesses (optimal for MSM-based schemes). Handles transformer's mixed linear + nonlinear ops in one constraint framework.",
+      "source": { "label": "HyperNova, CRYPTO 2024 (ePrint 2023/573)", "url": "https://eprint.iacr.org/2023/573" }
+    },
+    {
+      "id": "nanozk",
+      "label": "NANOZK (GPT-2, 12 layers)",
+      "sizeMin": 6900,
+      "sizeMax": 6900,
+      "sizeLabel": "6.9 KB",
+      "constant": true,
+      "setup": "none",
+      "system": "Layerwise SNARK + lookup tables",
+      "note": "Layerwise ZK proofs for verifiable LLM inference. GPT-2 scale: 43s proving, 6.9 KB proof, 23ms verification — constant in hidden dimension. Lookup table approximations for softmax, GELU, LayerNorm with zero measurable accuracy loss. 52× speedup over EZKL.",
+      "source": { "label": "NANOZK, arXiv:2603.18046 (March 2026)", "url": "https://arxiv.org/abs/2603.18046" }
+    }
+  ]
+}

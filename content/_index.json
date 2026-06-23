@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
       "url": "/articles/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
       "title": "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "Every recursive SNARK puts a verifier circuit inside the next proof — and that verifier is expensive. Nova's folding scheme eliminates that inner verifier entirely, replacing it with a random linear combination that collapses two R1CS instances into one. For N-step AI inference: O(N) prover, constant-size proof.",
       "pubDate": "2026-06-23",
       "topics": [
         "zero-knowledge",
         "cryptography",
         "research"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "nova",
+        "folding-schemes",
+        "ivc",
+        "hypernova",
+        "protogalaxy",
+        "incremental-verifiable-computation",
+        "zkml",
+        "recursive-snarks",
+        "r1cs",
+        "spartan"
+      ],
+      "artifacts": [
+        "folding-frontier"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3346,7 +3359,7 @@
       "module": "src/islands/artifacts/folding-frontier.ts",
       "url": "/artifacts/folding-frontier",
       "title": "Folding Frontier",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Proof sizes for six ZK schemes at 1,000 computation steps — hover or tap a row to see the trust model, setup requirement, and primary source. Folding-based IVC (Nova, HyperNova) holds constant; batch STARKs and separate Groth16 proofs grow with depth.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "chart",

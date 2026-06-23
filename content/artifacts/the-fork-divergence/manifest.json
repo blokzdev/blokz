@@ -1,0 +1,20 @@
+{
+  "slug": "the-fork-divergence",
+  "title": "The Fork Divergence",
+  "description": "How quickly each Foundry fork property diverges from mainnet reality. Five divergences — blockhash entropy, MEV competition, basefee, TWAP, and oracle price — rated by blocks until first silent failure. Click a bar to inspect fork behavior vs. production.",
+  "pubDate": "2026-06-22T22:29:44.771Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "tooling",
+    "smart-contracts"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["click a bar to inspect fork behavior vs. mainnet reality"],
+  "dataSource": {
+    "label": "Blockscout · Chainlink ETH/USD · EigenPhi arxiv:2405.17944",
+    "url": "https://eth.blockscout.com"
+  },
+  "dataAsOf": "2026-06-22"
+}

@@ -1,0 +1,186 @@
+---
+slug: the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents
+title: "The Recursive Ledger: How DeFi Composability Stacks Hidden Leverage for AI Agents"
+description: "Deposit ETH in Aave, borrow USDC, buy more ETH, repeat. Three loops creates 2.97× leverage from a single ETH — and all three positions share one liquidation trigger at −3% ETH price. The math, the cascade, and why AI yield optimizers find themselves here by default."
+pubDate: 2026-06-22T12:34:29.639Z
+author: blokz
+topics: [defi, tokenomics, research]
+tags: [leverage-chain, liquidation-cascade, aave, composability, health-factor, rehypothecation, yield-optimization, defi-risk]
+artifacts: [recursive-leverage-chain]
+difficulty: intermediate
+sources:
+  - label: "DeXposure-FM: A Time-series, Graph Foundation Model for Credit Exposures and Stability on Decentralized Financial Networks"
+    url: "https://arxiv.org/abs/2602.03981"
+  - label: "Aave v3 Protocol — getReserveConfigurationData, Ethereum mainnet block 25,373,150"
+    url: "https://etherscan.io/address/0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3"
+  - label: "Aave v3 Risk Parameters — WETH configuration"
+    url: "https://docs.aave.com/risk/v/aave-v3-ethereum/collateral-onboarding-methodology"
+---
+
+DeFi composability is the ecosystem's great strength: protocols interoperate, and a yield-seeking agent can chain Aave, Morpho, Curve, and Convex into a single capital stack. That same composability creates a property no individual protocol dashboard shows — recursive leverage. An AI agent three hops into a deposit-borrow-buy cycle has **2.97× its initial ETH exposure** secured by a single liquidation trigger that fires on a **3% price drop**.
+
+The position looks like yield optimization. It behaves like a leveraged long. And when it unwinds, it does so across all three loops simultaneously in the same block.
+
+## The Loop Mechanics
+
+The strategy is structurally simple. Start with 1 WETH ($1,766.27 at block 25,373,150). Deposit it in Aave v3 on Ethereum, which accepts WETH at an 80.5% maximum LTV with an 83.0% liquidation threshold. Borrow USDC up to that limit: 1 × 0.805 × $1,766.27 = **$1,421.85 USDC**.
+
+Swap that USDC back for ETH at market. You now hold 0.805 WETH. Deposit that. Borrow again: 0.805 × 0.805 × $1,766.27 = **$1,144.59 USDC**. Swap, deposit. One more time: **$921.80 USDC** borrowed against 0.648 WETH.
+
+After three loops the account holds:
+
+| Loop | WETH Deposited | USDC Borrowed |
+|------|---------------|---------------|
+| 1    | 1.000 ETH     | $1,421.85     |
+| 2    | 0.805 ETH     | $1,144.59     |
+| 3    | 0.648 ETH     | $921.80       |
+| **Total** | **2.453 ETH** | **$3,488.24** |
+
+Plus 0.522 ETH purchased with the final loop's USDC and held or deployed elsewhere. Total ETH exposure: **2.975 ETH** from an initial 1 ETH. Effective leverage: **2.975×**.
+
+The general formula for N loops at a constant LTV of L:
+
+```
+Effective leverage = (1 − Lᴺ⁺¹) / (1 − L)
+Theoretical maximum (N → ∞) = 1 / (1 − L)
+```
+
+With Aave v3's WETH LTV of 80.5%, the maximum theoretical leverage is **1 / (1 − 0.805) = 5.13×**. Three loops captures 2.975 / 5.13 = **58% of the theoretical ceiling**.
+
+<Artifact slug="recursive-leverage-chain" />
+
+## Five Numbers That Drive the Risk
+
+Real parameters from Aave v3 WETH on Ethereum mainnet, Blockscout block 25,373,150:
+
+- **LTV: 80.5%** — the maximum borrow against 1 WETH of collateral
+- **Liquidation threshold: 83.0%** — the line at which Aave marks the position for liquidation
+- **Liquidation bonus: 5.0%** — the premium a liquidator extracts from the collateral on top of repaying the debt
+- **WETH supply APY: 1.47%** — earned on each loop's deposited ETH
+- **WETH borrow rate (USDC): 3.89%** — paid on each loop's USDC borrow
+
+That last pair is the often-overlooked detail. **The carry is negative.** Each loop earns 1.47% on deposited ETH and costs 3.89% on borrowed USDC. Net: −2.42% annual drag per loop. An agent chasing yield by adding loops is instead accumulating leverage at a price, not a return.
+
+The strategy makes economic sense only as a directional ETH bet — or if the final USDC (the "last borrow") is deployed at a yield high enough to cover the borrow cost, elsewhere in DeFi.
+
+## The Aggregate Health Factor
+
+Aave's `getUserAccountData()` returns a single health factor for all positions in one address. For the three-loop account:
+
+```solidity
+// Aave v3 IPool
+(
+  uint256 totalCollateralBase,       // $4,332 at $1,766/ETH
+  uint256 totalDebtBase,             // $3,488
+  uint256 availableBorrowsBase,
+  uint256 currentLiquidationThreshold, // 83.0% aggregate
+  uint256 ltv,
+  uint256 healthFactor               // 1.031 — the single number that matters
+) = AAVE_POOL.getUserAccountData(agentAddress);
+```
+
+Health factor: **(totalCollateral × liqThreshold) / totalDebt = (2.453 × $1,766 × 0.83) / $3,488 = 1.031**.
+
+Every loop contributes proportionally the same LTV and the same liquidation threshold, so adding loops does not change the health factor at all — it stays at **liqThreshold / LTV = 0.83 / 0.805 = 1.031** regardless of how many loops were executed. What changes is the denominator: more total debt, more total collateral, the same ratio.
+
+The intuition: you've replicated the same risk, tiled three times. The health factor is a ratio, not a sum.
+
+## The Liquidation Trigger: −3.0%
+
+Health factor = 1.0 when:
+
+```
+P_liq = LTV × P₀ / liqThreshold = 0.805 × $1,766.27 / 0.83 = $1,713.07
+```
+
+**A 3.0% drop in ETH price** — from $1,766.27 to $1,713.07 — crosses the liquidation threshold for the entire account simultaneously.
+
+For comparison:
+- ETH's 30-day realized volatility (H1 2026): ~60% annualized → daily vol ~3.7%
+- A 3% intraday move in ETH: happens in roughly **16% of all trading days**
+- The average time to a 3% ETH move from a random starting price: **fewer than seven trading days**
+
+The recursive position is not a small-probability event. It is a position that statistically liquidates in less than two weeks on average if held at maximum LTV.
+
+## The Cascade
+
+When the liquidation trigger fires, several things happen at once that make the outcome worse than the 3% price move implies.
+
+First, Aave's liquidation mechanism allows a liquidator to repay up to 50% of the outstanding debt and claim collateral worth that debt **plus the 5% bonus**. Working through the three-loop account:
+
+```
+Debt repaid by liquidator: $3,488.24 USDC
+Collateral claimed:        $3,488.24 × 1.05 / $1,713.07 = 2.139 ETH
+```
+
+The agent's remaining collateral: 2.975 − 2.139 = **0.836 ETH = $1,432** at the liquidation price.
+
+Against an initial capital of 1 ETH = **$1,766**, the loss is **$334 = 18.9%** — from a 3% ETH move.
+
+Unlevered, the same 3% ETH drop costs 3.0%. The recursive three-loop position amplifies that loss by **6.3×**.
+
+The second-order effect is price impact. When a large recursive position is liquidated, the forced ETH selling from multiple loops adds directional pressure to the market. ETH falls further. Other positions — including unrelated agents with ETH collateral — are pushed closer to their own thresholds. **DeXposure-FM** (arXiv:2602.03981), which mapped 43.7 million data entries across 4,300+ DeFi protocols, documents exactly this contagion path: a shock to one token propagates through credit-exposure links to downstream protocols at measurable speed.
+
+## Why AI Agents End Up Here
+
+Yield optimization agents are particularly susceptible because the strategy appears beneficial at each individual decision step:
+
+1. Agent has idle WETH earning 1.47% → borrow USDC at 3.89% → deploy USDC at 5.2% in a liquidity pool → net carry: +1.31% per loop.
+2. Aave's `availableBorrowsBase` is positive → the health factor is above 1.0 → there is no local signal to stop.
+3. Each deployment earns a positive return → the optimization objective (maximize portfolio yield) improves with each added loop.
+
+The problem is that the agent tracks *individual position health factors* rather than *aggregate portfolio leverage*. A four-position agent with HF 1.031 in each does not have a safety margin of 1.031 — it has the same 1.031 on a four-times-larger position, with a liquidation trigger that is now exposed to four simultaneous unwinds.
+
+Morpho Blue exacerbates this. Morpho allows using Aave's aWETH tokens (the deposit receipts) as collateral in separate isolated markets. An agent can deposit WETH in Aave, receive aWETH, then use aWETH in Morpho Blue to borrow again — a cross-protocol leverage chain that lives in *two* separate health factor systems. `getUserAccountData()` from Aave will not see the Morpho debt.
+
+```typescript
+// INCOMPLETE leverage audit — misses Morpho exposure
+const { healthFactor } = await aavePool.getUserAccountData(agent);
+if (healthFactor > parseUnits("1.2", 18)) {
+  // ⚠️ This is ONLY Aave. Morpho Blue positions are invisible here.
+}
+```
+
+## Defense: Tracking Aggregate Leverage
+
+The correct invariant for an AI agent managing recursive DeFi positions is not a per-protocol health factor but a **portfolio-level leverage cap**.
+
+**Step 1: Compute aggregate leverage.**
+
+```typescript
+// Aggregate across protocols
+const wethDeposited = aaveWethCollateral + morphoWethCollateral;
+const totalDebtInETH = (aaveUsdcDebt + morphoUsdcDebt) / ethPrice;
+const effectiveLeverage = wethDeposited / initialCapitalInETH;
+```
+
+**Step 2: Enforce a leverage ceiling.** For a position that can tolerate a 10% ETH drawdown without liquidation at 83% liq threshold:
+
+```
+Max leverage = liqThreshold / (liqThreshold − allowedDrop)
+= 0.83 / (0.83 − 0.10) = 1.14×
+```
+
+A 1.14× cap means you can only borrow a single small fraction of your ETH. One loop at 14% utilization instead of 80.5%. It sounds conservative — because it is. At maximum Aave LTV, the position tolerates a 3% ETH move.
+
+**Step 3: Track the liquidation buffer explicitly.** The buffer in dollar terms is:
+
+```
+buffer = (totalCollateral × liqThreshold − totalDebt) × ethPrice
+```
+
+For the three-loop position at $1,766: ($4,332 × 0.83 − $3,488) × 1 = **$107.58**. That $107 buffer is all that separates the position from liquidation.
+
+**Step 4: Maintain a stablecoin reserve sized to close one loop.** If the buffer compresses below a threshold, the agent should redeem: repay one loop's debt with the reserve, reducing collateral, debt, and leverage in one transaction. Attempting to buy ETH to re-collateralize during a falling market is the wrong direction.
+
+There is also a related problem that the [collateral-without-reputation](/articles/collateral-without-reputation-the-on-chain-credit-problem-for-ai-agent-wallets) article examines from the lending side: AI agents have no on-chain credit history that earns them lower collateral requirements. Every recursion pays the full overcollateralization tax, while the buffer erodes with each loop.
+
+## The Position Nobody Aggregates
+
+DeFi dashboards show per-protocol positions. Aave's UI shows the Aave health factor. Morpho shows the Morpho health factor. No standard tool aggregates them into a portfolio-level exposure view.
+
+For an AI agent running a multi-protocol yield strategy, the aggregate leverage calculation has to be built explicitly — there is no protocol primitive that does it across all chains and protocols simultaneously. DeXposure-FM addresses this at the research level, training a graph foundation model on 43.7 million inter-protocol credit-exposure data points. The practical tooling for agents to consume that in real time does not yet exist.
+
+Until it does, the check is simple but manual: sum every asset's contribution to total exposure, divide by initial capital, and enforce a ceiling. The ceiling, not the per-protocol health factor, is what tells you when you've stopped yield farming and started running a leveraged ETH trade with a hidden fuse.
+
+A 3% ETH move is a routine Tuesday. The cascade is not.

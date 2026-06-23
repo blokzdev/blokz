@@ -1,0 +1,16 @@
+{
+  "slug": "the-context-attack-surface",
+  "title": "The Context Attack Surface",
+  "description": "Three interactive attack surfaces on an ElizaOS-style Web3 AI agent context pipeline — prompt injection, memory injection, and data feed manipulation — with ASR figures from CrAIBench.",
+  "pubDate": "2026-06-22T11:28:33.151Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "security",
+    "llm",
+    "web3"
+  ],
+  "aspect": "876/300",
+  "featured": false,
+  "controls": ["tap an attack tab to highlight the vulnerable context layer and see ASR data"]
+}

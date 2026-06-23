@@ -1,0 +1,149 @@
+---
+slug: fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet
+title: "Fork-Blind: The Five Assumptions That Break AI DeFi Agents at Mainnet"
+description: "Foundry forks freeze five properties of the Ethereum execution environment that are live, adversarial, and expensive in production: basefee, oracle prices, blockhash entropy, MEV competition, and TWAP accumulation. Each one silently misleads AI agents through testing."
+pubDate: 2026-06-22T22:29:40.292Z
+author: blokz
+topics: [tooling, agents, smart-contracts]
+tags: [foundry, anvil, fork-testing, basefee, chainlink, mev, twap, blockhash, testing-gaps, defi-agents]
+artifacts: [the-fork-divergence]
+difficulty: intermediate
+sources:
+  - label: "Foundry issue #837 — blockhash() returns 0 in fork mode"
+    url: "https://github.com/foundry-rs/foundry/issues/837"
+  - label: "Foundry issue #3762 — basefee vs. eth_feeHistory inconsistency in fork"
+    url: "https://github.com/foundry-rs/foundry/issues/3762"
+  - label: "Chainlink ETH/USD price feed — heartbeat 3600 s, 0.5% deviation"
+    url: "https://data.chain.link/feeds/ethereum/mainnet/eth-usd"
+  - label: "EigenPhi MEV sandwich attack statistics, Ethereum 2025"
+    url: "https://arxiv.org/pdf/2405.17944"
+  - label: "Ethereum blocks 25,375,000–25,376,135, basefee readings via Blockscout"
+    url: "https://eth.blockscout.com"
+---
+
+The agent passes every test. Liquidation scenarios: ✓. Arbitrage sequences: ✓. Gas estimation: ✓. Then it hits mainnet and slowly bleeds capital for three weeks before anyone notices.
+
+Foundry forks are not mainnet. They are a snapshot of mainnet state at one block, with five critical execution-environment properties frozen in place — properties that in production are live, competitive, and adversarial. AI DeFi agents tested exclusively on forks inherit a set of unstated assumptions that break at deployment.
+
+This piece names all five divergences, gives you the mechanism behind each, and shows what the fork's silence costs.
+
+<Artifact slug="the-fork-divergence" />
+
+## How a fork works (and what it omits)
+
+`anvil --fork-url $RPC --fork-block-number 25376000` clones Ethereum's state tree at block 25,376,000. All account balances, contract storage, and bytecode match mainnet at that snapshot. When your agent submits a transaction, Anvil mines a new local block and processes the transaction against that state.
+
+What the fork does **not** do: advance real block time, run Chainlink node jobs, invite searcher bots to compete with you, or accumulate Uniswap price history past the fork point. Those are live network behaviors — the fork has none of them.
+
+## Divergence 1: The frozen basefee
+
+EIP-1559 sets `basefee` each block as a function of how full the previous block was. The rule: over 50% full → basefee rises (up to +12.5%); under 50% full → basefee falls (down to −12.5%). This creates a continuous oscillation around the market-clearing gas price.
+
+In a Foundry fork, Anvil locks the basefee at the fork block's value — or, in the presence of the documented inconsistency between its `basefee` opcode and `eth_feeHistory`, reports conflicting values after the first transaction. Either way, the agent's gas estimation code sees a static number.
+
+What mainnet actually does: on June 22, 2026, basefee moved from **0.1505 gwei** at block 25,376,100 to **0.2270 gwei** at block 25,376,135 — a **+50.8% jump in 35 blocks (7 minutes)**. An agent that calibrated its maximum fee based on the fork's 0.1505 gwei snapshot would have its transactions sit unconfirmed on mainnet once basefee crossed its `maxFeePerGas` cap.
+
+The formula that fails silently in fork, loudly in production:
+
+```solidity
+// agent sets max fee 10% above fork's frozen basefee
+uint256 maxFee = block.basefee * 110 / 100;
+```
+
+The fork's `block.basefee` is static; mainnet's moves every 12 seconds. A 50% upswing means this agent is now 27% below the chain's basefee.
+
+**What to add in tests:** Fuzz the basefee with `vm.fee(N)` across your expected operating range — at minimum, test at 5× and 0.2× your calibration value. Verify that the agent either adjusts gracefully or halts.
+
+## Divergence 2: The eternal oracle price
+
+Chainlink's ETH/USD feed on Ethereum mainnet updates on two triggers: **price deviation ≥ 0.5%** *or* **heartbeat of 3,600 seconds** (one hour). Between those triggers the aggregator is silent; `latestRoundData()` returns the last committed value.
+
+In a fork, no Chainlink node jobs run. The aggregator's state is frozen at the fork block — whatever price was committed then is the "current" price forever, regardless of what the market does afterward.
+
+This creates two specific failure modes for AI agents:
+
+**Staleness guards pass unconditionally.** The standard guard pattern:
+
+```solidity
+(, int256 price,, uint256 updatedAt,) = feed.latestRoundData();
+require(block.timestamp - updatedAt <= 3600, "stale oracle");
+```
+
+In a fork where you never `vm.warp()` past the heartbeat window, this guard is never exercised under the failing condition. The agent ships without ever running the stale-price branch.
+
+**Liquidation windows slip.** An agent watching for positions breaching an LTV threshold may miss the trigger if the oracle hasn't ticked. The oracle can be up to one hour stale between heartbeats; in that window, ETH can move 0.4% — not enough to fire the oracle, but enough to shift a margined position's liquidation price by $8 on a $2,000 collateral position.
+
+For grounding: on June 22, 2026 at 22:30 UTC, the Chainlink ETH/USD aggregator reports **$1,719.63** with a 3,600-second heartbeat. An agent forked at this snapshot will see this price indefinitely, while mainnet may have already updated twice in the next two hours.
+
+**What to add in tests:** Mock the oracle with `vm.mockCall()` and test the agent at: (a) a price far from the fork snapshot, (b) an `updatedAt` exactly at the staleness boundary, (c) a fully stale `updatedAt` that should halt the agent. All three code paths exist in production; forks exercise none of them automatically.
+
+## Divergence 3: blockhash() always returns zero
+
+The EVM allows contracts to read the hash of any of the last 256 blocks via `blockhash(N)`. In production this returns the correct hash for N between `block.number − 256` and `block.number − 1`.
+
+In Foundry fork mode, `blockhash()` **returns `0x0` for every block number after the fork block** — a known and reproducible issue documented in [Foundry issue #837](https://github.com/foundry-rs/foundry/issues/837). The reason: Anvil's in-memory block store doesn't hold "future" blocks; for any block N > fork block, the hash doesn't exist and returns the zero default.
+
+Most AI agents don't use `blockhash()` for randomness, but a meaningful subset of DeFi protocols that agents interact with do use it for:
+
+- **Commit-reveal salts.** An agent commits `keccak256(intent, blockhash(N))` and reveals N+5 blocks later. In the fork, the reveal computes against `0x0` as the block hash, not the production value. If the receiving contract checks the committed value against the revealed hash, the fork test passes with a hash derived from zero, while mainnet reveals would fail if the contract derives the hash differently.
+- **Reorg detection.** Some agent frameworks monitor `blockhash(lastSeenBlock)` and halt on mismatch (indicating a reorg). In fork mode, the hash is always `0x0` for the agent's "current" blocks, so reorg detection never fires — the agent never learns to handle a reorg gracefully.
+
+**What to add in tests:** Use `vm.roll()` to advance block numbers and explicitly verify what `blockhash()` returns in your target contracts. For commit-reveal patterns, run a mainnet trace replay against a historical block range rather than relying on the fork's synthetic block hashes.
+
+## Divergence 4: The bot-free sandbox
+
+Ethereum mainnet operates with a dense ecosystem of MEV searchers. EigenPhi data from 2025 shows **72,000+ sandwich attacks over 30 days, targeting 35,000+ victims on Ethereum**. The typical extraction: **0.3–0.8% of swap value per attack**.
+
+A Foundry fork has no MEV bots. No searchers monitor the local Anvil mempool. Your agent's swap or arbitrage transaction executes at exactly the quoted price with zero front-running.
+
+This produces a specific class of overconfident agent: calibrated on fork backtest returns, it sets its minimum-profit threshold based on a world with no competitors. In production, Flashbots bundles and competing MEV bots capture some portion of every backrun opportunity, often within the same block. An arbitrage agent that makes 0.4% profit in fork tests might net 0.05% after MEV competition, putting it below its fee floor.
+
+The subtler version: an agent's slippage tolerance, calibrated to pass fork tests, may be too loose for production. As covered in [The Sandwich Tax](/articles/the-sandwich-tax-on-autonomous-agents), a tight slippage setting is the primary defense against sandwich attacks. A fork-calibrated agent never stress-tests that defense because no sandwiches exist in the fork environment.
+
+**What to add in tests:** Run historical block replays against known sandwich blocks. Tools like Tenderly and `hardhat_impersonateAccount` against past block states let you simulate an agent against real attack sequences. Separately, unit-test the slippage guard at production extraction rates (0.3–0.8%).
+
+## Divergence 5: The stopped TWAP accumulator
+
+Uniswap v3 maintains a cumulative price accumulator, updated once per block with the log price weighted by time elapsed. The TWAP for any window (say, 30 minutes) is:
+
+```
+TWAP = (accumulator[now] − accumulator[now − window]) / window
+```
+
+The `observe()` function reconstructs this from a ring buffer of observations. In production, each new block extends the ring.
+
+In a fork, the accumulator stopped at the fork block. `observe()` returns historical observations correctly, but any TWAP window that extends into post-fork blocks draws from a frozen accumulator. The "current TWAP" the agent sees is actually the TWAP as of the fork, regardless of how many blocks have passed in the local Anvil chain.
+
+This breaks agents that use TWAP as a price manipulation guard:
+
+```solidity
+uint256 spot = getSpotPrice(pool);
+uint256 twap = getTwap(pool, 30 minutes);
+require(spot <= twap * 11 / 10, "manipulation guard");
+```
+
+In a fork where spot and TWAP are both frozen at the fork block's value, this guard always passes. In production, after a large swap moves spot by 2% and the TWAP hasn't yet reflected it (it lags by design), the spot/TWAP divergence is exactly the signal the guard is meant to catch.
+
+**What to add in tests:** After forking, manually advance blocks with `vm.roll()` *and* mine transactions that push the TWAP accumulator — a no-op swap or `pool.observe()` call. Then verify that the manipulation guard fires correctly for a price that has diverged significantly from the advancing TWAP.
+
+## Layering what forks can't give you
+
+Each divergence demands a testing layer that a static fork doesn't provide:
+
+| Divergence | Fork behavior | Supplement |
+|---|---|---|
+| EIP-1559 basefee | Frozen at fork block | `vm.fee()` fuzzing; test at 0.2× and 5× |
+| Chainlink oracle | Frozen at fork block, never updates | `vm.mockCall()` with stale timestamps and extreme prices |
+| `blockhash()` | Returns `0x0` for post-fork blocks | Historical block replay for commit-reveal; `vm.roll()` for timing |
+| MEV competition | Zero searchers in local mempool | Historical sandwich replay; Tenderly simulation against attack blocks |
+| Uniswap TWAP | Accumulator frozen at fork | Manual block advancement; in-fork TWAP priming before test runs |
+
+The root issue is that a fork accurately models **state** — balances, storage, bytecode — but poorly models **dynamics**: gas market prices, oracle feeds, competitive searchers, and accumulators. For an agent that interacts with the blockchain as a static data store, a fork is sufficient. For an agent that is a market participant reacting to continuous signals, static state is a quarter of the picture.
+
+A related problem cuts across both: contract bytecode itself may change via proxy upgrades after the fork snapshot. [The Code Isn't Frozen](/articles/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions) covers that vector. Add it to the list.
+
+## Takeaways
+
+Foundry forks are indispensable and accurate within their scope. What they cannot give you: a live gas market, live oracle feeds, block entropy, searcher competition, or price accumulation past the snapshot.
+
+An AI DeFi agent that can only articulate its behavior against a frozen world is not ready for mainnet. It has been tested in a sandbox that removed exactly the pressures that matter — and it has learned nothing about how to handle them.

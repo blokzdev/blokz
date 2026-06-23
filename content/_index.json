@@ -1,14 +1,14 @@
 {
   "counts": {
-    "articles": 110,
-    "artifacts": 111
+    "articles": 111,
+    "artifacts": 112
   },
   "topicCounts": {
-    "agents": 38,
+    "agents": 39,
     "ai": 11,
     "blockchain": 25,
     "cryptography": 18,
-    "data": 15,
+    "data": 16,
     "defi": 27,
     "infrastructure": 37,
     "llm": 20,
@@ -19,7 +19,7 @@
     "tokenomics": 16,
     "tooling": 1,
     "web3": 12,
-    "zero-knowledge": 13
+    "zero-knowledge": 14
   },
   "articles": [
     {
@@ -47,6 +47,23 @@
       "artifacts": [
         "the-phantom-token-cloud"
       ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove",
+      "path": "content/articles/2026/06/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove/index.mdx",
+      "url": "/articles/the-https-receipt-zktls-web-proofs-and-what-ai-agents-can-finally-prove",
+      "title": "The HTTPS Receipt: zkTLS, Web Proofs, and What AI Agents Can Finally Prove",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "agents",
+        "data"
+      ],
+      "tags": [],
+      "artifacts": [],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -2986,6 +3003,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-zktls-latency-curve",
+      "path": "content/artifacts/the-zktls-latency-curve/manifest.json",
+      "module": "src/islands/artifacts/the-zktls-latency-curve.ts",
+      "url": "/artifacts/the-zktls-latency-curve",
+      "title": "The zkTLS Latency Curve",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "agents"
       ],
       "draft": false
     },

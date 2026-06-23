@@ -1,0 +1,15 @@
+{
+  "slug": "the-zktls-latency-curve",
+  "title": "The zkTLS Latency Curve",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-23T03:29:20.719Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "agents"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

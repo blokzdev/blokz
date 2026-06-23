@@ -1,0 +1,31 @@
+{
+  "asset": "USDC",
+  "chain": "Base",
+  "chainId": 8453,
+  "pool": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+  "strategy": "0x86ab1c62a8bf868e1b3e1ab87d587aba6fbcbdc5",
+  "aToken": "0x4e65fe4dba92790696d040ac24aa414708f5c0ab",
+  "variableDebtToken": "0x59dca05b6c26dbd64b5381374aaac5cd05644c28",
+  "dataSource": "https://base.blockscout.com/address/0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+  "dataAsOf": "2026-06-22",
+  "model": {
+    "optimalUsageRatioBps": 9000,
+    "baseVariableBorrowRateBps": 0,
+    "variableRateSlope1Bps": 450,
+    "variableRateSlope2Bps": 1000,
+    "reserveFactorBps": 1000
+  },
+  "snapshot": {
+    "aTokenTotalSupplyRaw": "176324101535209",
+    "variableDebtTotalSupplyRaw": "145958870825850",
+    "decimals": 6,
+    "totalSupplyUSDC": 176324102,
+    "totalDebtUSDC": 145958871,
+    "utilizationPct": 82.78
+  },
+  "meta": {
+    "poolQuery": "eth_call getReserveData(USDC) on Aave V3 Pool, Base chain, 2026-06-22",
+    "strategyQuery": "getInterestRateDataBps(0x833589fcd6edb6e08f4c7c32d4f71b54bda02913) on DefaultReserveInterestRateStrategyV2",
+    "strategyResult": "[9000, 0, 450, 1000] bps = [U_opt=90%, base=0%, slope1=4.5%, slope2=10%]"
+  }
+}

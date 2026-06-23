@@ -1,26 +1,504 @@
 {
   "counts": {
-    "articles": 83,
-    "artifacts": 84
+    "articles": 101,
+    "artifacts": 102
   },
   "topicCounts": {
-    "agents": 31,
-    "ai": 7,
-    "blockchain": 17,
-    "cryptography": 13,
+    "agents": 37,
+    "ai": 9,
+    "blockchain": 23,
+    "cryptography": 16,
     "data": 12,
-    "defi": 18,
-    "infrastructure": 32,
-    "llm": 16,
-    "machine-learning": 35,
-    "research": 3,
-    "security": 24,
-    "smart-contracts": 15,
-    "tokenomics": 12,
-    "web3": 11,
-    "zero-knowledge": 9
+    "defi": 23,
+    "infrastructure": 36,
+    "llm": 19,
+    "machine-learning": 37,
+    "research": 9,
+    "security": 28,
+    "smart-contracts": 20,
+    "tokenomics": 15,
+    "tooling": 1,
+    "web3": 12,
+    "zero-knowledge": 12
   },
   "articles": [
+    {
+      "slug": "the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
+      "path": "content/articles/2026/06/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow/index.mdx",
+      "url": "/articles/the-phantom-token-bill-auditing-hidden-reasoning-charges-in-on-chain-ai-escrow",
+      "title": "The Phantom Token Bill: Auditing Hidden Reasoning Charges in On-Chain AI Escrow",
+      "description": "Reasoning models hide their chain-of-thought but bill for every token of it. CoIn proves a provider can inflate that hidden count 5× with 94.7% detection — but only if the escrow contract enforces a commitment root before payment clears.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "llm",
+        "security",
+        "research"
+      ],
+      "tags": [
+        "reasoning-models",
+        "token-billing",
+        "coin-protocol",
+        "palace",
+        "hidden-tokens",
+        "escrow",
+        "verifiable-inference",
+        "on-chain-payment"
+      ],
+      "artifacts": [
+        "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
+      "path": "content/articles/2026/06/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent/index.mdx",
+      "url": "/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent",
+      "title": "The Paymaster's Bargain: ERC-4337 Bundler Economics and the Gas-Free AI Agent",
+      "description": "ERC-4337 lets AI agents transact without holding ETH — but the alt-mempool has its own fee market, bundler economics, and MEV surface every builder must understand.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "erc-4337",
+        "account-abstraction",
+        "bundlers",
+        "paymasters",
+        "gas-abstraction",
+        "useroperation"
+      ],
+      "artifacts": [
+        "the-op-queue"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet",
+      "path": "content/articles/2026/06/fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet/index.mdx",
+      "url": "/articles/fork-blind-the-five-assumptions-that-break-ai-defi-agents-at-mainnet",
+      "title": "Fork-Blind: The Five Assumptions That Break AI DeFi Agents at Mainnet",
+      "description": "Foundry forks freeze five properties of the Ethereum execution environment that are live, adversarial, and expensive in production: basefee, oracle prices, blockhash entropy, MEV competition, and TWAP accumulation. Each one silently misleads AI agents through testing.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "tooling",
+        "agents",
+        "smart-contracts"
+      ],
+      "tags": [
+        "foundry",
+        "anvil",
+        "fork-testing",
+        "basefee",
+        "chainlink",
+        "mev",
+        "twap",
+        "blockhash",
+        "testing-gaps",
+        "defi-agents"
+      ],
+      "artifacts": [
+        "the-fork-divergence"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
+      "path": "content/articles/2026/06/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching/index.mdx",
+      "url": "/articles/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching",
+      "title": "The Aggregation Ceiling: Why AI Inference Markets Need Proof Batching",
+      "description": "An SP1 proof costs 327k gas on Ethereum mainnet. At a 30M-gas block target, a naive AI inference market maxes out at 91 verifications per block. SnarkPack's O(log N) aggregation collapses 1,000 proofs to a single 880k-gas verification — here's the mechanism, the math, and the latency tradeoffs.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "proof-aggregation",
+        "snarkpack",
+        "groth16",
+        "zkml",
+        "verifiable-inference",
+        "sp1",
+        "risc-zero",
+        "throughput",
+        "bn254",
+        "inner-product-argument"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 8,
+      "artifacts": [
+        "the-proof-batch"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
+      "path": "content/articles/2026/06/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions/index.mdx",
+      "url": "/articles/the-forced-exit-autodeleveraging-and-the-hidden-tax-on-winning-perpetual-positions",
+      "title": "The Forced Exit: Autodeleveraging and the Hidden Tax on Winning Perpetual Positions",
+      "description": "When a perp DEX's insurance fund runs dry, ADL force-closes winning positions first — ranked by profit %. Chitra 2026 proves no mechanism can be solvent, fair, and revenue-neutral. Hyperliquid Oct 10 2025: $2.1B closed, $653M via ADL, $45–51.7M haircut in 12 min.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "tokenomics",
+        "infrastructure"
+      ],
+      "tags": [
+        "autodeleveraging",
+        "adl",
+        "perpetuals",
+        "insurance-fund",
+        "hyperliquid",
+        "liquidation",
+        "perp-dex",
+        "clearing"
+      ],
+      "artifacts": [
+        "the-adl-queue"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
+      "path": "content/articles/2026/06/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents/index.mdx",
+      "url": "/articles/the-step-that-fails-runtime-trajectory-auditing-for-on-chain-ai-agents",
+      "title": "The Step That Fails: Runtime Trajectory Auditing for On-Chain AI Agents",
+      "description": "An on-chain agent's transactions prove what happened, not why. Three 2026 papers on trajectory anomaly detection show how to close that gap — and how the optimistic bisection game from rollups makes it slashable.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "research",
+        "llm"
+      ],
+      "tags": [
+        "trajectory-auditing",
+        "anomaly-detection",
+        "process-supervision",
+        "dispute-games",
+        "agent-monitoring",
+        "bisection",
+        "optimistic-verification",
+        "runtime-safety"
+      ],
+      "artifacts": [
+        "the-agent-trajectory"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
+      "path": "content/articles/2026/06/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents/index.mdx",
+      "url": "/articles/the-solver-race-how-batch-auction-networks-eliminate-mev-for-ai-defi-agents",
+      "title": "The Solver Race: How Batch Auction Networks Eliminate MEV for AI DeFi Agents",
+      "description": "CoW Protocol's batch auction design makes front-running structurally impossible — and that matters enormously for AI agents executing DeFi strategies at machine speed.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "research"
+      ],
+      "tags": [
+        "batch-auction",
+        "cow-protocol",
+        "solver",
+        "mev",
+        "intent",
+        "uniform-clearing-price",
+        "surplus",
+        "coincidence-of-wants"
+      ],
+      "artifacts": [
+        "the-batch-settlement"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets",
+      "path": "content/articles/2026/06/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets/index.mdx",
+      "url": "/articles/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets",
+      "title": "The Split Key: Threshold Signatures and the Blast-Radius Problem for AI Agent Wallets",
+      "description": "An AI agent holding a raw ECDSA key is one model compromise from total loss. FROST's two-round DKG means the full private key never exists anywhere — not during setup, not during signing. Here's the mechanism, the Ethereum gap, and how Lit Protocol PKPs deploy it today.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "cryptography",
+        "security",
+        "agents"
+      ],
+      "tags": [
+        "threshold-signatures",
+        "frost",
+        "tss",
+        "mpc-wallet",
+        "key-custody",
+        "agent-wallets",
+        "bls",
+        "cggmp21",
+        "lit-protocol",
+        "eip-2537"
+      ],
+      "artifacts": [
+        "the-signing-round"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "path": "content/articles/2026/06/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana/index.mdx",
+      "url": "/articles/the-declared-state-sealevel-parallelism-and-the-ai-agent-execution-contract-on-solana",
+      "title": "The Declared State: Sealevel Parallelism and the AI Agent Execution Contract on Solana",
+      "description": "Solana agents get 400 ms — but only if they declare every account they'll touch before execution starts. The Sealevel write-lock model, hot-account contention, Jito tip economics, and what the declarative execution contract means for AI agent design.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "tags": [
+        "solana",
+        "sealevel",
+        "account-model",
+        "parallel-execution",
+        "jito",
+        "mev",
+        "account-locking",
+        "agent-architecture"
+      ],
+      "artifacts": [
+        "the-sealevel-lanes"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "path": "content/articles/2026/06/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain/index.mdx",
+      "url": "/articles/the-proof-wrapping-tax-why-zkml-lands-in-groth16-before-touching-the-chain",
+      "title": "The Proof Wrapping Tax: Why zkML Lands in Groth16 Before Touching the Chain",
+      "description": "FRI-STARKs are fast and trustless, but their proofs are megabytes wide. Groth16 is 256 bytes but needs a ceremony. STARK→SNARK wrapping resolves the tension — and it's why SP1 and RISC Zero can settle any ML inference on L1 for under 300k gas.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "zkml",
+        "stark",
+        "snark",
+        "groth16",
+        "sp1",
+        "risc-zero",
+        "nova",
+        "on-chain-verification"
+      ],
+      "artifacts": [
+        "the-proof-tradeoff"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
+      "path": "content/articles/2026/06/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents/index.mdx",
+      "url": "/articles/the-recursive-ledger-how-defi-composability-stacks-hidden-leverage-for-ai-agents",
+      "title": "The Recursive Ledger: How DeFi Composability Stacks Hidden Leverage for AI Agents",
+      "description": "Deposit ETH in Aave, borrow USDC, buy more ETH, repeat. Three loops creates 2.97× leverage from a single ETH — and all three positions share one liquidation trigger at −3% ETH price. The math, the cascade, and why AI yield optimizers find themselves here by default.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "defi",
+        "tokenomics",
+        "research"
+      ],
+      "tags": [
+        "leverage-chain",
+        "liquidation-cascade",
+        "aave",
+        "composability",
+        "health-factor",
+        "rehypothecation",
+        "yield-optimization",
+        "defi-risk"
+      ],
+      "artifacts": [
+        "recursive-leverage-chain"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents",
+      "path": "content/articles/2026/06/the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents/index.mdx",
+      "url": "/articles/the-fake-past-memory-injection-and-the-context-attack-surface-for-web3-ai-agents",
+      "title": "The Fake Past: Memory Injection and the Context Attack Surface for Web3 AI Agents",
+      "description": "ElizaOS agents treat their memory store as ground truth — their own past. CrAIBench tests 685 attack cases across 33 Web3 action types and finds memory injection hits 55.1% ASR even on Claude Sonnet 3.7, while every off-the-shelf detector fails.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "security",
+        "llm",
+        "web3"
+      ],
+      "tags": [
+        "elizaos",
+        "context-manipulation",
+        "memory-injection",
+        "prompt-injection",
+        "web3-agents",
+        "agent-security",
+        "craibench",
+        "attack-surface"
+      ],
+      "artifacts": [
+        "the-context-attack-surface"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
+      "path": "content/articles/2026/06/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness/index.mdx",
+      "url": "/articles/the-twelve-second-floor-how-ethereums-slot-clock-shapes-ai-agent-state-freshness",
+      "title": "The Twelve-Second Floor: How Ethereum's Slot Clock Shapes AI Agent State Freshness",
+      "description": "Ethereum's 12-second slot clock creates a hard lower bound on AI agent state freshness. Here's what that means for liquidators, arbitrageurs, and yield rebalancers — and how to engineer around it.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "ethereum",
+        "slots",
+        "finality",
+        "rpc",
+        "state-freshness",
+        "agents",
+        "beacon-chain"
+      ],
+      "artifacts": [
+        "the-state-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
+      "path": "content/articles/2026/06/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof/index.mdx",
+      "url": "/articles/mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof",
+      "title": "Mine Twice: The Cryptographic Construction That Turns a Matrix Multiply into a Block Proof",
+      "description": "Bitcoin burns ~150 TWh/yr on SHA-256 nonces that prove nothing. Komargodski & Weinstein showed a Freivalds randomisation check turns any matmul into a valid proof-of-work at only 3/(2N) overhead — the same GPU seconds train your model and mine the block.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "tokenomics"
+      ],
+      "tags": [
+        "proof-of-useful-work",
+        "matmul",
+        "freivalds",
+        "consensus",
+        "blockchain-consensus",
+        "energy-efficiency",
+        "gpu-economics",
+        "incentive-design"
+      ],
+      "artifacts": [
+        "the-useful-nonce"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
+      "path": "content/articles/2026/06/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives/index.mdx",
+      "url": "/articles/reward-hacking-the-rate-curve-when-rl-agents-game-on-chain-incentives",
+      "title": "Reward Hacking the Rate Curve: When RL Agents Game On-Chain Incentives",
+      "description": "DeFi interest rate formulas are open-source reward functions. An RL agent reading Aave's two-slope model can compute the optimal adversarial strategy analytically — no learned reward model required.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "agents",
+        "machine-learning",
+        "defi"
+      ],
+      "tags": [
+        "reward-hacking",
+        "specification-gaming",
+        "interest-rate-model",
+        "aave",
+        "alignment"
+      ],
+      "artifacts": [
+        "aave-rate-curve-explorer"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
+      "path": "content/articles/2026/06/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions/index.mdx",
+      "url": "/articles/the-code-isnt-frozen-how-proxy-upgrades-silently-break-on-chain-ai-agent-assumptions",
+      "title": "The Code Isn't Frozen: How Proxy Upgrades Silently Break On-Chain AI Agent Assumptions",
+      "description": "Most DeFi protocols are upgradeable, and most on-chain AI agents don't know it. Here's how proxy architecture invalidates agent assumptions — and a tiered defense framework to build around it.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "blockchain"
+      ],
+      "tags": [
+        "proxy-patterns",
+        "eip-1967",
+        "upgrades",
+        "ai-agents",
+        "oracles",
+        "timelocks",
+        "defi"
+      ],
+      "artifacts": [
+        "the-upgrade-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
+      "path": "content/articles/2026/06/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training/index.mdx",
+      "url": "/articles/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training",
+      "title": "The Hidden Stage: Backdoor Attacks on Decentralized LLM Post-Training",
+      "description": "Controlling one intermediate pipeline stage is enough to inject a backdoor into a decentralized post-training run — 94% ASR, no data access required. The mechanism, why training loss stays clean, and what it means for networks fine-tuning LLMs across untrusted nodes.",
+      "pubDate": "2026-06-22",
+      "topics": [
+        "research",
+        "machine-learning",
+        "blockchain"
+      ],
+      "tags": [
+        "pipeline-parallelism",
+        "backdoor",
+        "post-training",
+        "decentralized-training",
+        "task-arithmetic",
+        "alignment",
+        "llama",
+        "fine-tuning"
+      ],
+      "artifacts": [
+        "the-pipeline-breach"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline",
       "path": "content/articles/2026/06/blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pipeline/index.mdx",
@@ -36,6 +514,33 @@
       "tags": [],
       "artifacts": [
         "the-availability-cliff"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "path": "content/articles/2026/06/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it/index.mdx",
+      "url": "/articles/uniswap-v4-hooks-the-amm-hook-lifecycle-and-what-ai-agents-can-do-with-it",
+      "title": "Uniswap v4 Hooks: The AMM Hook Lifecycle and What AI Agents Can Do With It",
+      "description": "Uniswap v4 hooks make every liquidity pool programmable. Here's how the 14-bit permission bitmap works, what fires during a swap, and where AI agents fit into dynamic fee architecture.",
+      "pubDate": "2026-06-21",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "tags": [
+        "uniswap",
+        "amm",
+        "hooks",
+        "dynamic-fees",
+        "lvr",
+        "ai-agents",
+        "mev"
+      ],
+      "artifacts": [
+        "hook-permission-visualizer"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -2211,6 +2716,287 @@
   ],
   "artifacts": [
     {
+      "slug": "the-phantom-token-cloud",
+      "path": "content/artifacts/the-phantom-token-cloud/manifest.json",
+      "module": "src/islands/artifacts/the-phantom-token-cloud.ts",
+      "url": "/artifacts/the-phantom-token-cloud",
+      "title": "The Phantom Token Cloud",
+      "description": "Real reasoning-token embeddings cluster tightly in projected 3D space; phantom billing tokens scatter as noise outside the CoIn detection boundary. Toggle inflate to inject phantom tokens and watch 94.7% get flagged outside the wireframe sphere. Drag to orbit.",
+      "pubDate": "2026-06-23",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "llm",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-op-queue",
+      "path": "content/artifacts/the-op-queue/manifest.json",
+      "module": "src/islands/artifacts/the-op-queue.ts",
+      "url": "/artifacts/the-op-queue",
+      "title": "The Op Queue",
+      "description": "The six stages of an ERC-4337 UserOperation — from construction by an AI agent to paymaster settlement — with the actor, failure modes, and gas cost at each step.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "smart-contracts",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-fork-divergence",
+      "path": "content/artifacts/the-fork-divergence/manifest.json",
+      "module": "src/islands/artifacts/the-fork-divergence.ts",
+      "url": "/artifacts/the-fork-divergence",
+      "title": "The Fork Divergence",
+      "description": "How quickly each Foundry fork property diverges from mainnet reality. Five divergences — blockhash entropy, MEV competition, basefee, TWAP, and oracle price — rated by blocks until first silent failure. Click a bar to inspect fork behavior vs. production.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "tooling",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-proof-batch",
+      "path": "content/artifacts/the-proof-batch/manifest.json",
+      "module": "src/islands/artifacts/the-proof-batch.ts",
+      "url": "/artifacts/the-proof-batch",
+      "title": "The Proof Batch",
+      "description": "Gas cost vs. number of AI inference proofs under three aggregation strategies: naive per-proof (linear), SnarkPack O(log N), and ZK recursion (flat). Drag the slider to find the crossover where each strategy wins.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-adl-queue",
+      "path": "content/artifacts/the-adl-queue/manifest.json",
+      "module": "src/islands/artifacts/the-adl-queue.ts",
+      "url": "/artifacts/the-adl-queue",
+      "title": "The ADL Queue",
+      "description": "Interactive ADL priority queue: drag the shortfall slider past the insurance fund to trigger auto-deleveraging. Positions close highest-profit-% first.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "tokenomics"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-agent-trajectory",
+      "path": "content/artifacts/the-agent-trajectory/manifest.json",
+      "module": "src/islands/artifacts/the-agent-trajectory.ts",
+      "url": "/artifacts/the-agent-trajectory",
+      "title": "The Agent Trajectory",
+      "description": "Step through a DeFi AI agent's 8-step execution cycle as a TrajAD-style detector scores each step in real time. Inject a fault to watch a poisoned decision spike to 0.97 and trigger a bisection dispute game that isolates the bad step in 3 rounds.",
+      "pubDate": "2026-06-22",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "agents",
+        "research",
+        "llm"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-batch-settlement",
+      "path": "content/artifacts/the-batch-settlement/manifest.json",
+      "module": "src/islands/artifacts/the-batch-settlement.ts",
+      "url": "/artifacts/the-batch-settlement",
+      "title": "The Batch Settlement",
+      "description": "Step through a CoW Protocol batch auction: intents arrive, the batch seals, solvers compete, settlement executes on-chain, and surplus flows back to traders.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-signing-round",
+      "path": "content/artifacts/the-signing-round/manifest.json",
+      "module": "src/islands/artifacts/the-signing-round.ts",
+      "url": "/artifacts/the-signing-round",
+      "title": "The Signing Round",
+      "description": "FROST threshold signing in four stages — DKG, Commit, Sign, Aggregate. Adjust t-of-n to see how many parties must collaborate, and how many an attacker must compromise, to produce a valid Schnorr signature.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "cryptography",
+        "security",
+        "agents"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-sealevel-lanes",
+      "path": "content/artifacts/the-sealevel-lanes/manifest.json",
+      "module": "src/islands/artifacts/the-sealevel-lanes.ts",
+      "url": "/artifacts/the-sealevel-lanes",
+      "title": "The Sealevel Lanes",
+      "description": "Sealevel's parallel execution scheduler, slot by slot. Toggle hot-account contention to see how a single popular writable account collapses eight parallel waves into eight serial queues. Each row is one execution wave — transactions in the same row settle simultaneously.",
+      "pubDate": "2026-06-22",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "agents"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-proof-tradeoff",
+      "path": "content/artifacts/the-proof-tradeoff/manifest.json",
+      "module": "src/islands/artifacts/the-proof-tradeoff.ts",
+      "url": "/artifacts/the-proof-tradeoff",
+      "title": "The Proof Tradeoff",
+      "description": "Seven ZK proof configurations mapped on prover time vs. on-chain verification gas. Click any system to see proof size, setup requirements, and zkML viability. The annotated wrapper band shows the constant-gas region only reachable by STARK→SNARK wrapping.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "recursive-leverage-chain",
+      "path": "content/artifacts/recursive-leverage-chain/manifest.json",
+      "module": "src/islands/artifacts/recursive-leverage-chain.ts",
+      "url": "/artifacts/recursive-leverage-chain",
+      "title": "Recursive Leverage Chain",
+      "description": "Interactive calculator: watch how deposit-borrow loops compound leverage toward the 1/(1−LTV) asymptote. Adjust LTV and loop count to see effective leverage, the liquidation trigger, and the loss from a single price move.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "tokenomics"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-context-attack-surface",
+      "path": "content/artifacts/the-context-attack-surface/manifest.json",
+      "module": "src/islands/artifacts/the-context-attack-surface.ts",
+      "url": "/artifacts/the-context-attack-surface",
+      "title": "The Context Attack Surface",
+      "description": "Three interactive attack surfaces on an ElizaOS-style Web3 AI agent context pipeline — prompt injection, memory injection, and data feed manipulation — with ASR figures from CrAIBench.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "security",
+        "llm",
+        "web3"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-state-window",
+      "path": "content/artifacts/the-state-window/manifest.json",
+      "module": "src/islands/artifacts/the-state-window.ts",
+      "url": "/artifacts/the-state-window",
+      "title": "The State Window",
+      "description": "Epoch ring: 32 slot pillars show the chain's heartbeat. White sphere = chain tip, amber = agent's last read, green = finalized. The arc between them is the state window AI agents must hedge against.",
+      "pubDate": "2026-06-22",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-useful-nonce",
+      "path": "content/artifacts/the-useful-nonce/manifest.json",
+      "module": "src/islands/artifacts/the-useful-nonce.ts",
+      "url": "/artifacts/the-useful-nonce",
+      "title": "The Useful Nonce",
+      "description": "Drag the operating point across matrix sizes to see how the Freivalds overhead approaches 0% — and how much of Bitcoin's 150 TWh becomes AI compute under PoUW.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "aave-rate-curve-explorer",
+      "path": "content/artifacts/aave-rate-curve-explorer/manifest.json",
+      "module": "src/islands/artifacts/aave-rate-curve-explorer.ts",
+      "url": "/artifacts/aave-rate-curve-explorer",
+      "title": "Aave Rate Curve Explorer",
+      "description": "Interactive chart of Aave V3's USDC two-slope interest rate model on Base. Drag the slider to explore how borrow and supply APYs respond to utilization — and see the sharp kink at 90% that makes over-borrowing expensive.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "agents",
+        "machine-learning"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-upgrade-window",
+      "path": "content/artifacts/the-upgrade-window/manifest.json",
+      "module": "src/islands/artifacts/the-upgrade-window.ts",
+      "url": "/artifacts/the-upgrade-window",
+      "title": "The Upgrade Window",
+      "description": "Seven DeFi protocols mapped by upgrade risk tier. Dependency edges reveal inherited risk — even immutable contracts can be exposed through multisig-controlled oracles. Tap a protocol to inspect its timelock window and agent safety note.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "smart-contracts",
+        "security",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-pipeline-breach",
+      "path": "content/artifacts/the-pipeline-breach/manifest.json",
+      "module": "src/islands/artifacts/the-pipeline-breach.ts",
+      "url": "/artifacts/the-pipeline-breach",
+      "title": "The Pipeline Breach",
+      "description": "Pipeline-parallel decentralised post-training, split across four nodes. Click any internal stage to place the compromised node — the task-vector injection indicator and attack metrics update to show 94% ASR collapsing alignment from 80% to 6%.",
+      "pubDate": "2026-06-22",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "research",
+        "machine-learning",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-availability-cliff",
       "path": "content/artifacts/the-availability-cliff/manifest.json",
       "module": "src/islands/artifacts/the-availability-cliff.ts",
@@ -2224,6 +3010,22 @@
         "data",
         "blockchain",
         "web3"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "hook-permission-visualizer",
+      "path": "content/artifacts/hook-permission-visualizer/manifest.json",
+      "module": "src/islands/artifacts/hook-permission-visualizer.ts",
+      "url": "/artifacts/hook-permission-visualizer",
+      "title": "Hook Permission Visualizer",
+      "description": "Explore how Uniswap v4's 14-bit permission bitmap maps to pool lifecycle callbacks. Toggle bits or select preset patterns to see which hook functions fire for each operation.",
+      "pubDate": "2026-06-21",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts"
       ],
       "draft": false
     },

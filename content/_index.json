@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 116,
-    "artifacts": 117
+    "articles": 117,
+    "artifacts": 118
   },
   "topicCounts": {
     "agents": 42,
@@ -11,10 +11,10 @@
     "data": 18,
     "defi": 29,
     "infrastructure": 39,
-    "llm": 20,
+    "llm": 21,
     "machine-learning": 40,
-    "research": 11,
-    "security": 33,
+    "research": 12,
+    "security": 34,
     "smart-contracts": 22,
     "tokenomics": 16,
     "tooling": 1,
@@ -22,6 +22,37 @@
     "zero-knowledge": 14
   },
   "articles": [
+    {
+      "slug": "the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
+      "path": "content/articles/2026/06/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems/index.mdx",
+      "url": "/articles/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
+      "title": "The Stale Read: Concurrency Anomalies in Multi-Agent LLM Systems",
+      "description": "When multiple LLM agents share mutable state, classical database race conditions emerge — but the LLM never throws an exception. Three 2026 papers catalog the anomalies, prove their inevitability without isolation primitives, and measure the fix: zero corruptions across 884,110 commits under Observable-Read Isolation.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "research",
+        "security",
+        "llm"
+      ],
+      "tags": [
+        "concurrency",
+        "race-conditions",
+        "multi-agent",
+        "stale-generation",
+        "phantom-tool",
+        "causal-cascade",
+        "s-bus",
+        "observable-read-isolation",
+        "coagent",
+        "formal-verification",
+        "tla-plus"
+      ],
+      "artifacts": [
+        "the-race-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
       "path": "content/articles/2026/06/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents/index.mdx",
@@ -3145,6 +3176,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-race-window",
+      "path": "content/artifacts/the-race-window/manifest.json",
+      "module": "src/islands/artifacts/the-race-window.ts",
+      "url": "/artifacts/the-race-window",
+      "title": "The Race Window",
+      "description": "Three-column diagram of multi-agent LLM concurrency anomalies — stale-generation, phantom-tool, and causal-cascade. Tap a column to inspect the anomaly; toggle ORI Protection to see how Observable-Read Isolation prevents each failure mode.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "research",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-range-optimizer",
       "path": "content/artifacts/the-range-optimizer/manifest.json",

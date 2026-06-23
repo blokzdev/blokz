@@ -1,0 +1,19 @@
+{
+  "slug": "the-race-window",
+  "title": "The Race Window",
+  "description": "Three-column diagram of multi-agent LLM concurrency anomalies — stale-generation, phantom-tool, and causal-cascade. Tap a column to inspect the anomaly; toggle ORI Protection to see how Observable-Read Isolation prevents each failure mode.",
+  "pubDate": "2026-06-23T11:28:38.936Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "research",
+    "security"
+  ],
+  "aspect": "900/310",
+  "featured": false,
+  "controls": [
+    "tap a column to explore the anomaly",
+    "ORI Protected toggle compares unprotected vs isolated modes",
+    "← → arrow keys cycle anomalies · Space toggles ORI"
+  ]
+}

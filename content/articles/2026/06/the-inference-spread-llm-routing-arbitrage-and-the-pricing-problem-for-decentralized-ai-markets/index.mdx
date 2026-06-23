@@ -1,22 +1,108 @@
 ---
 slug: the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets
 title: "The Inference Spread: LLM Routing Arbitrage and the Pricing Problem for Decentralized AI Markets"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-dev risk."
 pubDate: 2026-06-23T23:27:36.556Z
 author: blokz
 topics: [agents, defi, tokenomics]
-tags: []
-artifacts: []
+tags: [inference-routing, cascade-routing, model-arbitrage, inference-markets, decentralized-inference, llm-routing, spread-capture, mechanism-design, ritual, ora-protocol]
+artifacts: [the-cascade-calculator]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "Computational Arbitrage in AI Model Markets (Olmedo, Schölkopf, Hardt 2026)"
+    url: "https://arxiv.org/abs/2603.22404"
+  - label: "A Unified Approach to Routing and Cascading for LLMs (Dekoninck et al. 2025)"
+    url: "https://arxiv.org/abs/2410.10347"
+  - label: "TwinRouterBench: Realistic Agentic LLM Routing (Yang et al. 2026)"
+    url: "https://arxiv.org/abs/2605.18859"
+  - label: "Ritual Infernet SDK"
+    url: "https://docs.ritual.net/infernet/sdk/introduction"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every inference market has a pricing assumption baked into it: one query, one price. The operator sets a fee per resolved call — call it *P* — and expects it to cover compute plus a margin. The problem is that queries aren't uniform. A one-line docstring question and a full SWE-bench issue resolution both consume one API call but require radically different amounts of compute to answer correctly. Flat pricing in a heterogeneous-difficulty market creates a spread, and in any market with a spread, an arbitrageur eventually shows up.
 
-## Section heading
+A March 2026 paper by Olmedo, Schölkopf, and Hardt at Max Planck Institute makes that arbitrageur concrete. Their core finding: by cascade-routing across two competing providers — cheap model first, expensive model as fallback — a middleman earns **up to 40% net profit margins** on resolved queries with zero model-development investment. The mechanism requires no proprietary capabilities, just a routing policy and two API keys.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+## The Cascade Structure
+
+The strategy is a two-stage sequential call:
+
+1. Submit the query to a cheap model (cost *c₁*, per-task success rate *p₁*).
+2. If it fails, submit to a capable model (additional cost *c₂*, conditional success rate *p₂*).
+3. Charge the user the flat market price *P* per successfully resolved query.
+
+Expected cost per resolution attempt is *c₁ + (1 − p₁) · c₂*. If the cascade succeeds with probability *S = p₁ + (1 − p₁) · p₂*, the cost per resolved query is:
+
+```
+E[cost/resolved] = (c₁ + (1 − p₁) · c₂) / (p₁ + (1 − p₁) · p₂)
+```
+
+When *P* exceeds that denominator, the arbitrageur profits on every batch. The profit margin is:
+
+```
+margin = 1 − (c₁ + (1 − p₁) · c₂) / (P · (p₁ + (1 − p₁) · p₂))
+```
+
+The Schölkopf paper's case study uses GPT-5 mini as the cheap model and DeepSeek v3.2 as the capable model, evaluated on the SWE-bench GitHub issue resolution benchmark. In this verifiable domain — where a test suite confirms correctness — **simple cascade strategies deliver net profit margins up to 40%** without any task-specific tuning.
+
+The cascade works because task difficulty is heavy-tailed. Most queries are easy enough for the cheap model. The expensive model is only invoked for the tail — and the user-facing price was already set to cover the expensive model across the whole distribution. The arbitrageur pockets the difference on the easy majority.
+
+<Artifact slug="the-cascade-calculator" />
+
+The calculator above makes the math explorable. Dial in provider costs and success rates that reflect a real market (e.g., the emerging Ritual or Ora inference networks) and observe the margin curve. The key insight: even modest asymmetry between cheap and capable success rates — p₁ around 0.5 and p₂ around 0.9 — produces substantial margins at typical inference market prices.
+
+## The DeFi Isomorphism
+
+Working engineers in DeFi will recognize this structure immediately. A cascade arbitrageur in an inference market is structurally identical to:
+
+- A **DEX aggregator** (1inch, Paraswap) that routes small orders through a single liquidity pool and large orders through multi-hop paths, capturing the spread between uniform price quotes and actual execution cost.
+- A **solver** in the ERC-7683 intent architecture (covered in [The Float Before the Fill](/articles/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem)): the solver takes on execution risk and profits from the difference between the user's quoted rate and the achieved fill.
+- An **MEV searcher** who reads pending transactions and routes them to the cheapest execution path before the original submitter does.
+
+In all three cases, the profit source is the same: a market that prices heterogeneous tasks uniformly, combined with an intermediary who can observe the heterogeneity and route accordingly.
+
+The cascade threshold τ — the quality score below which the cheap model's output is accepted — maps directly to **slippage tolerance** in a DEX context. A tight tolerance escalates more queries to the expensive model; a loose one accepts cheaper outputs. The optimal threshold equates the marginal cost of escalation with the marginal revenue from higher success rates, exactly as an AMM router minimizes price impact.
+
+This analogy has a practical implication: the tools DeFi built to manage routing — optimal routing algorithms, just-in-time liquidity, MEV protection — are the same tools inference markets will need. The arbitrage isn't a bug to eliminate; it's a signal that the market's pricing mechanism doesn't match its cost structure.
+
+## Why On-Chain Markets Are More Exposed
+
+Centralized inference APIs can respond to arbitrage by adjusting prices in real time — an equivalent of dynamic fees. Decentralized inference markets have structural disadvantages that make the exposure worse:
+
+**Transparent pricing.** Every on-chain inference market publishes its fee schedule as a smart contract. A cascade router can read the contract, compute the spread analytically, and pre-commit its routing strategy before the first query lands.
+
+**Atomic execution.** A cascade routing contract on Ethereum can submit to a Ritual infernet consumer, check the response, and conditionally submit a second call to a different provider — all within a single transaction. The arbitrageur faces no inventory risk because both legs settle or revert atomically, analogous to a flash loan (covered in [The Borrowed Block](/articles/the-borrowed-block-flash-loans-as-zero-collateral-primitives-for-ai-defi-agents)).
+
+**Composability.** An on-chain cascade router is a reusable primitive. Once deployed, any AI agent can route its inference calls through it, aggregating query volume across many callers. That volume concentration gives the router additional leverage to negotiate preferred rates with providers — widening the spread further.
+
+**No quality oracle.** Centralized markets can detect model substitution and cascade routing through usage pattern analysis (covered in [Bait and Switch](/articles/model-substitution-inference-markets)). On-chain markets have no equivalent signal: all they see is successful query resolutions, regardless of how the resolution was achieved.
+
+## The Schölkopf Paper's Second Finding: Distillation Sharpens the Edge
+
+The paper documents a second, more durable arbitrage mechanism: distillation. The cascade arbitrageur's routing policy generates a dataset of query–resolution pairs. Running that dataset through knowledge distillation produces a model that performs comparably to the expensive model on the escalated subset, at cheap-model inference cost.
+
+This distillation pathway has an asymmetric impact on the market: the arbitrageur's cost structure improves continuously while the teacher model's revenue base erodes. As more distillation-trained routers enter the market, the effective demand for expensive model capacity falls, pulling down the market price *P* toward the distilled model's cost floor.
+
+The paper's competition analysis confirms: multiple arbitrageurs drive down consumer prices, ultimately reducing all providers' margins. But the *first* arbitrageur captures the full spread during the price discovery window. In on-chain inference markets with slower governance cycles, that window may persist for weeks or months.
+
+## What Market Design Can Do
+
+The flat-price model is not the only option. DeFi's experience with heterogeneous-cost operations offers three design patterns that inference markets can adapt:
+
+**Difficulty-contingent pricing.** Charge *P(d)* where *d* is an estimated task difficulty score computed on-chain before execution. Ritual's infernet compute jobs could incorporate a difficulty classifier output as a price oracle. This shifts the pricing problem to difficulty estimation — which introduces its own gaming surface, but at least makes pricing explicit.
+
+**Proof-of-effort fees.** Require the resolution proof to include a verifiable compute receipt (GPU time, token count, or a ZK proof of inference depth). This is what the verifiable inference protocols in the [proof-of-intelligence series](/articles/the-thinking-tax-why-reasoning-models-break-on-chain-ai-verification) are building toward — but they focus on correctness proofs, not effort receipts. An effort receipt forces the cascade router to reveal which model it used, making the spread visible.
+
+**Quality auctions.** Instead of a fixed price, run a per-query second-price auction where providers bid their cost to serve the request. The market clears at the second-lowest bid. Cascade arbitrageurs participate in this auction as bundled bids — exposing the routing strategy to market competition rather than allowing it to operate in the dark.
+
+None of these is free. Difficulty oracles add a round-trip; effort receipts add compute overhead; auctions add latency and gas. The flat-price model's appeal is its simplicity, which is exactly why the arbitrage exists.
 
 ## Takeaways
 
-TODO.
+The inference spread is a structural property of any market that charges uniform prices for heterogeneous tasks. It doesn't require a sophisticated actor — a simple sequential cascade extracts 40% margins with two provider accounts and a routing condition.
+
+For decentralized inference market operators: transparent pricing, atomic execution, and composability make the exposure larger than in centralized markets, and governance latency means the spread persists longer.
+
+For engineers building on top of inference networks: a cascade router is a legitimate cost-reduction tool — the same mechanism that creates arbitrage for intermediaries reduces cost for well-optimized buyers. The TwinRouterBench paper shows routing decisions materially affect long-horizon agent outcomes; for on-chain agents with token-denominated inference budgets, routing is not optional optimization, it is the margin.
+
+The underlying tension — uniform pricing vs. heterogeneous costs — doesn't resolve by ignoring it. Every inference market will need a difficulty-aware pricing mechanism, and the cascade paper is the best evidence yet for why.

@@ -1,0 +1,129 @@
+---
+slug: mine-twice-the-cryptographic-construction-that-turns-a-matrix-multiply-into-a-block-proof
+title: "Mine Twice: The Cryptographic Construction That Turns a Matrix Multiply into a Block Proof"
+description: "Bitcoin burns ~150 TWh/yr on SHA-256 nonces that prove nothing. Komargodski & Weinstein showed a Freivalds randomisation check turns any matmul into a valid proof-of-work at only 3/(2N) overhead — the same GPU seconds train your model and mine the block."
+pubDate: 2026-06-22T09:00:00.000Z
+author: blokz
+topics: [zero-knowledge, cryptography, tokenomics]
+tags: [proof-of-useful-work, matmul, freivalds, consensus, blockchain-consensus, energy-efficiency, gpu-economics, incentive-design]
+artifacts: [the-useful-nonce]
+difficulty: intermediate
+sources:
+  - label: "Komargodski & Weinstein — Proofs of Useful Work from Arbitrary Matrix Multiplication (2025)"
+    url: "https://arxiv.org/abs/2504.09971"
+  - label: "Freivalds — Probabilistic machines can use less running time (1979)"
+    url: "https://dl.acm.org/doi/10.5555/800028.808513"
+  - label: "Cambridge Bitcoin Electricity Consumption Index (CBECI)"
+    url: "https://ccaf.io/cbnsi/cbeci"
+  - label: "NVIDIA H100 SXM5 Tensor Core GPU Data Sheet"
+    url: "https://resources.nvidia.com/en-us-tensor-core"
+---
+
+Bitcoin's proof-of-work has done one useful thing in seventeen years: issue blocks. The SHA-256 hashes it grinds through don't train a model, accelerate a simulation, or compress a genome. They're pure scarcity — intentional waste, turned into currency. The Cambridge Bitcoin Electricity Consumption Index puts the annual energy bill at roughly 150 TWh — comparable to Poland, burned entirely for the ledger.
+
+The desire to replace this with *useful* computation is almost as old as Bitcoin itself. The phrase "proof-of-useful-work" (PoUW) appears in forum posts from 2011. But for fourteen years the problem resisted: every proposed construction either collapsed under a trivial attack, required the miner to trust a central task allocator, or added overhead so large it defeated the point. In November 2025, Ilan Komargodski and Omri Weinstein at Hebrew University posted [arXiv:2504.09971](https://arxiv.org/abs/2504.09971) — the first PoUW protocol for arbitrary matrix multiplication with a *proved* security reduction and overhead approaching zero as matrix size grows. The blockchain built on it is currently under construction.
+
+## The Design Constraint No Previous Protocol Solved
+
+The hard part of PoUW isn't finding a useful task. It's satisfying all three of these simultaneously:
+
+1. **Permissionless**: the miner must freely choose the input. A system where a coordinator assigns task inputs is a trusted third party, not a decentralised protocol.
+2. **Unforgeable**: a dishonest miner who submits a fake certificate that looks like they did the work must be detectable.
+3. **Low overhead**: the extra computation to produce the certificate must be negligible compared to the task itself, otherwise an honest miner doing real work is outcompeted by a miner doing cheaper fake work.
+
+Point 3 is where prior PoUW schemes failed. You can trivially build a protocol with O(1) overhead: make the task *be* hashing, as Bitcoin does. Or you can build one with an unforgeable certificate for any task using zkSNARKs — but zkSNARK proof generation currently costs 10–100× the underlying computation (see [proving-as-matmul](/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs) for where that floor is headed). Neither satisfies (3) usefully.
+
+The Komargodski–Weinstein result: for matrix multiplication specifically, a *probabilistic* certificate achieves 1+o(1) multiplicative overhead with a security conjecture grounded in a well-studied algebraic problem.
+
+## Freivalds' 1979 Insight
+
+The construction rests entirely on a 1979 algorithm from Rūsiņš Mārtiņš Freivalds. The question: given three matrices A, B, C, how do you check whether C = A·B without recomputing A·B from scratch?
+
+The naïve approach costs O(N³) — same as the original multiply. Freivalds' probabilistic approach:
+
+1. Pick a uniformly random vector **r** ∈ {0,1}ᴺ (or from a larger field for better soundness).
+2. Compute **r**·C (matrix-vector product).
+3. Compute **r**·A·B in two steps: **t** = **r**·A, then **t**·B.
+4. Check whether **r**·C = **r**·A·B.
+
+If C = A·B this always passes. If C ≠ A·B, by the Schwartz–Zippel lemma the check fails with probability at least 1 − d/|F|, where d is the "degree" of the discrepancy and |F| is the field size. For a random field element over GF(2⁶⁴), the probability of passing a false certificate in a single round is at most N²/2⁶⁴ ≈ 10⁻¹² for N = 4096 — negligible.
+
+The cost: step 2 is O(N²), step 3 is two matrix-vector products also O(N²). Total check cost is O(N²), compared to O(N³) for the original multiply. The overhead fraction is:
+
+```
+overhead = 3N² / 2N³ = 3 / (2N)
+```
+
+For a 4096×4096 matrix this is **0.037%**. For 8192×8192, it is **0.018%**. The overhead vanishes as N grows — asymptotically 1+o(1).
+
+<Artifact slug="the-useful-nonce" />
+
+## Turning Freivalds into a Mining Protocol
+
+The Freivalds check proves a matmul was *verified*, not that it was *performed by the miner who claims it*. Komargodski and Weinstein solve this with a protocol that binds the proof to the specific miner's input:
+
+1. **Setup**: Each miner holds or generates matrices A and B for their workload (AI training, inference, scientific compute — any matmul task).
+2. **Commit**: The miner broadcasts a commitment to A and B before receiving the challenge. This prevents post-hoc fabrication.
+3. **Challenge**: A verifier (consensus layer) issues a freshly generated random vector **r** derived from a verifiable beacon or the previous block hash — after the commitment is locked in.
+4. **Proof transcript**: The miner returns **(r·C, r·A, t = r·A·B)**, three O(N)-sized vectors, and the computed result C.
+5. **Verification**: Any node checks **r**·C = **t** in O(N²), a small fraction of the miner's O(N³) work.
+
+The certificate is short: three length-N vectors plus the O(N²) matrix C — dominated by C itself, which the network presumably wants. The check is fast relative to the work. And because the challenge **r** arrives *after* the miner has committed to A, B, C, a dishonest miner who precomputed a fake C for a specific **r** can't re-use it when a different **r** is sampled.
+
+## The Security Assumption
+
+Unlike zkSNARKs, this protocol doesn't have a zero-knowledge *proof* of security — it has a reduction to a hardness assumption. The paper conjectures that no efficient adversary can pass the Freivalds check with non-negligible advantage over an honest miner without essentially performing the matmul.
+
+The reduction: a successful forger — who can produce (A, B, C, proof) where C ≠ A·B yet the check passes — can be used to solve a *batch of low-rank random linear equations*. This problem has no known efficient algorithm and is conjectured hard under standard cryptographic assumptions similar to Learning With Errors (LWE).
+
+The authors note an important subtlety: the assumption holds over fields with "fast matrix multiplication" (Strassen, Coppersmith-Winograd, etc.) since those algorithms are currently impractical at deployed GPU precision. If a practical sub-cubic algorithm emerged, the overhead analysis would need updating. For now, at FP16 and BF16 — the standard precisions for AI training — the assumption holds and the overhead formula applies directly.
+
+## The 2-for-1 Economics
+
+The economic mechanism is clean. Under Bitcoin PoW:
+
+- Mining cost: 700 W × H100 × time → block reward
+- AI compute revenue: **zero** (the hash is garbage)
+
+Under PoUW matmul:
+
+- Mining cost: 700 W × H100 × time → block reward + **AI compute output**
+- The AI compute can be sold to the market directly (training a model, serving inference)
+
+The "2-for-1" label in the paper's abstract captures this: the same GPU-seconds that mine a block also produce a real matrix multiplication result. If the AI compute market values a teraflop-second at price *p*, the miner's effective cost per block drops by *p* × (N³ flops computed). Block rewards can be correspondingly lower to achieve the same total miner income — or the network reaches security with less total energy if the AI compute revenue partially substitutes.
+
+The implication for token economics: a PoUW chain's inflation schedule should account for AI compute market prices. If GPU-hour prices rise, miners earn more per block without increased emissions; if they fall, the block reward must compensate. Designing this correctly is a mechanism design problem the paper leaves open.
+
+## Relationship to Existing Decentralised AI Networks
+
+This isn't purely theoretical. The paper's final line is "this blockchain is currently under construction." Several decentralised AI training networks are working in adjacent territory:
+
+- **Bittensor** [covers the copy-or-compute dilemma](/articles/copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks) where miners copy gradients rather than compute them. A Freivalds-based matmul PoUW closes this directly: the challenge is issued after commitment, so a gradient copier can't produce a valid transcript for someone else's matmul.
+- **Prime Intellect's INTELLECT-2** system uses asynchronous distributed training — each worker contributes gradients to a global model. Under PoUW, each worker's matmul also contributes to consensus, turning training workers into miners.
+- **io.net** and other decentralised GPU networks currently rely on [metadata-based GPU verification](/articles/phantom-gpus-trustless-compute-verification) — hardware performance fingerprinting rather than cryptographic proof of computation. A Freivalds transcript is a cryptographic substitute: the miner doesn't just claim to have an H100, they prove they ran a workload that requires one.
+
+## The Gap: Synchronisation and Stale Certificates
+
+Two practical problems remain open:
+
+**Latency mismatch.** Freivalds requires a challenge **r** issued *after* the miner commits to C. In a blockchain, challenge latency adds to block time. If the commitment-challenge round-trip takes 2 seconds and the target block time is 12 seconds, that's a significant fraction of the window. Solutions under exploration include using the previous block hash as the challenge — accepting that the miner who mines the last block can slightly influence the next challenge — or using a threshold VRF to generate **r** without interactive latency.
+
+**The pre-computation attack.** A miner with large memory could precompute A·B for many (A, B, **r**) triples, storing them as a lookup table. If table-building costs less than honest mining, the attack breaks the 1+o(1) overhead guarantee. The paper argues this attack fails for sufficiently large N — the table itself would require storing O(N²) entries for each of exponentially many **r** values. But the exact concrete parameters where the table attack becomes impractical depend on memory costs, not just compute costs, which vary with hardware.
+
+## What the Overhead Number Actually Means
+
+3/(2N) isn't a small rounding error — it's the ratio of a quadratic check to a cubic computation, and it falls as N grows. At the matrix sizes AI training actually uses (4096–16384 in modern LLMs), it is comfortably under 0.1%.
+
+By contrast, zkSNARK proof generation — the other path to cryptographically verifiable computation — currently costs between 10× and 100× the underlying computation, even on optimised hardware. [AI ASICs running NTT](/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs) are narrowing that gap, but not to sub-1% any time soon.
+
+The Freivalds approach will never generalise to arbitrary programs (it is specific to matmul), and it doesn't provide zero-knowledge (the result C is revealed). But for networks whose dominant computation *is* matmul — every major AI training workload, transformer inference, and scientific simulation — the overhead is orders of magnitude smaller than any ZK-based scheme.
+
+## Takeaways
+
+The Komargodski–Weinstein protocol makes three things precise that the PoUW literature had only sketched for twenty years:
+
+1. **The overhead is 3/(2N)** — not a constant, a function of matrix size that vanishes at scale. Any miner running N ≥ 2048 spends under 0.1% on consensus overhead.
+2. **The security is a reduction** to batch low-rank linear equations hardness, not just a heuristic argument. The protocol can be broken only if a currently-believed-hard problem is easy.
+3. **The economic model is well-defined** — block rewards subsidise AI compute; the miner earns in both currencies simultaneously, and the network can calibrate security by choosing where the reward split sits.
+
+The technical barrier to Bitcoin-scale energy waste was never "we don't know how to do useful computation." It was "we can't prove that doing it can't be gamed." That proof now exists for the specific task that dominates AI infrastructure. Whether the network being built on it ships is a different question. The cryptographic construction, finally, is real.

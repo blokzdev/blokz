@@ -1,0 +1,16 @@
+{
+  "slug": "the-sealevel-lanes",
+  "title": "The Sealevel Lanes",
+  "description": "Sealevel's parallel execution scheduler, slot by slot. Toggle hot-account contention to see how a single popular writable account collapses eight parallel waves into eight serial queues. Each row is one execution wave — transactions in the same row settle simultaneously.",
+  "pubDate": "2026-06-22T14:28:19.195Z",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "blockchain",
+    "infrastructure",
+    "agents"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": ["toggle JUP contention", "→ next slot advances to a new batch"]
+}

@@ -1,0 +1,56 @@
+{
+  "config": {
+    "dayMin": 1,
+    "dayMax": 730,
+    "defaultCursorDays": 45
+  },
+  "layers": [
+    {
+      "id": "blob",
+      "label": "EIP-4844 Blob",
+      "detail": "Ethereum L1 · 128 KB/blob · KZG commitment permanent on-chain",
+      "availDays": 18.2,
+      "permanent": false,
+      "retrieval": "none",
+      "note": "4,096 epochs × 384 s/epoch ÷ 86,400 = 18.2 days"
+    },
+    {
+      "id": "eigenDA",
+      "label": "EigenDA",
+      "detail": "Restaked ETH security · 10 MB/s throughput",
+      "availDays": 14,
+      "maxDays": 90,
+      "permanent": false,
+      "retrieval": "limited",
+      "note": "Default 14-day retention; operator SLAs up to 90 days configurable"
+    },
+    {
+      "id": "celestia",
+      "label": "Celestia",
+      "detail": "DAS light clients · 8 MB/block · 6 s block time",
+      "availDays": 30,
+      "permanent": false,
+      "retrieval": "none",
+      "note": "Full nodes typically retain ~30 days; no retrieval SLA"
+    },
+    {
+      "id": "filecoin",
+      "label": "Filecoin Deal",
+      "detail": "PoSt-verified retrieval · renewable storage deals",
+      "availDays": 180,
+      "maxDays": 540,
+      "permanent": false,
+      "retrieval": "yes",
+      "note": "Minimum 180-day deal (≈6 months); PoSt verifies every 24 h"
+    },
+    {
+      "id": "arweave",
+      "label": "Arweave",
+      "detail": "Endowment model · one-time payment · 200+ year horizon",
+      "availDays": null,
+      "permanent": true,
+      "retrieval": "yes",
+      "note": "Storage endowment targets 200+ years; no recurring fee"
+    }
+  ]
+}

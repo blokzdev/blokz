@@ -1,0 +1,20 @@
+{
+  "slug": "the-mev-supply-chain",
+  "title": "The MEV Supply Chain",
+  "description": "Interactive diagram of Ethereum's PBS pipeline — Searcher, Builder, Relay, Proposer, Block — with builder concentration numbers, private orderflow paths, and the mev-commit preconf feedback arc.",
+  "pubDate": "2026-06-21T23:32:14.256Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "infrastructure",
+    "blockchain",
+    "defi"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "Tap Overview or a pipeline stage (Searcher, Builder, Relay, Proposer, Block) to see key metrics and a mechanism note.",
+    "Arrow keys navigate between stages when a tab is focused.",
+    "Click or tap a stage box in the diagram to select it directly."
+  ]
+}

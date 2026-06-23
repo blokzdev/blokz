@@ -1,0 +1,27 @@
+{
+  "snapshot": {
+    "date": "2026-06-22",
+    "source": "Chitra, T. (2026). Autodeleveraging: Impossibilities and Optimization. arXiv:2512.01112"
+  },
+  "event": {
+    "description": "Hyperliquid ADL event analyzed in Chitra 2026",
+    "date": "2025-10-10",
+    "exchange": "Hyperliquid",
+    "totalClosedUSD": 2100000000,
+    "positionsADLdUSD": 653600000,
+    "excessHaircutMinUSD": 45000000,
+    "excessHaircutMaxUSD": 51700000,
+    "durationMinutes": 12
+  },
+  "exampleScenario": {
+    "description": "Illustrative priority queue. Positions sorted by profit % descending — the most profitable trader is first in line for ADL.",
+    "insuranceFundDefaultUSD": 20000000,
+    "positions": [
+      { "id": "A", "label": "ETH Long ×10",  "notionalUSD": 5000000, "profitPct": 18.4, "profitUSD": 920000 },
+      { "id": "B", "label": "BTC Long ×8",   "notionalUSD": 8000000, "profitPct": 14.2, "profitUSD": 1136000 },
+      { "id": "C", "label": "SOL Long ×15",  "notionalUSD": 4000000, "profitPct": 11.7, "profitUSD": 468000 },
+      { "id": "D", "label": "ETH Short ×12", "notionalUSD": 7000000, "profitPct":  9.3, "profitUSD": 651000 },
+      { "id": "E", "label": "BTC Short ×6",  "notionalUSD": 6000000, "profitPct":  6.8, "profitUSD": 408000 }
+    ]
+  }
+}

@@ -1,0 +1,130 @@
+---
+slug: the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents
+title: "The Delegated Signer: EIP-7702 Session Keys and the New Wallet Model for AI Agents"
+description: "EIP-7702, live in Pectra, lets an EOA borrow smart contract code for one transaction — no migration, no bundler. For AI agents: atomic batching closes the approve-to-swap MEV window, and session key delegation bounds the blast radius of a compromised agent without touching the master key."
+pubDate: 2026-06-23T15:27:50.335Z
+author: blokz
+topics: [blockchain, agents, smart-contracts]
+tags: [eip-7702, pectra, session-keys, account-abstraction, erc-4337, atomic-batching, mev, ai-agents, smart-wallet, delegation]
+artifacts: [the-7702-timeline]
+difficulty: intermediate
+sources:
+  - label: "EIP-7702: Set EOA account code"
+    url: "https://eips.ethereum.org/EIPS/eip-7702"
+  - label: "Operating-Layer Controls for Onchain Language-Model Agents Under Real Capital"
+    url: "https://arxiv.org/abs/2604.26091"
+  - label: "Autonomous Agents on Blockchains: Standards, Execution Models, and Trust Boundaries"
+    url: "https://arxiv.org/abs/2601.04583"
+  - label: "Ethereum mainnet block 25381195 — EIP7702StatelessDeleGator live on block proposer"
+    url: "https://eth.blockscout.com/block/25381195"
+---
+
+The approve-then-swap pattern is a two-transaction sandwhich opportunity. Your `approve()` lands in block N, sits exposed in the mempool for the entire slot, and then your `swap()` lands in block N+1 — or later. Between those two blocks, any MEV bot watching the chain can observe the outstanding allowance and front-run the swap. At base fee 0.5 gwei and ETH at $1,654, that sandwich costs the attacker roughly $0.09 in gas to execute. On a $10,000 swap with 0.5% slippage tolerance, the extractable profit is ~$50.
+
+EIP-7702, activated in Ethereum's Pectra hard fork (May 7, 2026), closes that window with one mechanism: an EOA signs an authorization tuple that maps its execution to any smart contract implementation for a single transaction. `approve()` and `swap()` share the same block, the same atomic execution context, and the same revert boundary. No bundler, no new account, no asset migration.
+
+For AI agents operating DeFi positions, this matters for two distinct reasons: it eliminates the race condition between chained operations, and it enables scoped session key delegation — a way to give an AI agent limited signing authority without exposing the master private key at all.
+
+## The Authorization Tuple
+
+EIP-7702 introduces transaction type 4 (`0x04`). In addition to the standard transaction fields, type-4 transactions carry an `authorization_list` — an array of signed tuples:
+
+```
+{ chain_id: uint64, address: address, nonce: uint64 }
+```
+
+The tuple is signed as `keccak256(MAGIC || rlp([chain_id, address, nonce]))` where `MAGIC = 0x05`. When the transaction executes, the EVM writes a delegation designator to the signing EOA's code slot: a 23-byte pointer to the `address` in the tuple. Henceforth (until explicitly cleared), any call to that EOA executes via `DELEGATECALL` to the named contract — storage and balance remain the EOA's own, but the logic comes from the delegate.
+
+The `nonce` in the tuple is the authorization nonce, which starts at 0 and monotonically increases with each delegation change. The `chain_id` prevents replay across networks: a session key signed for Ethereum mainnet cannot be replayed on Base or Arbitrum.
+
+Per-authorization overhead: **2,500 gas**, less than a single `SSTORE`. This is the entire cost of installing or updating the delegation.
+
+On June 23, 2026 (block 25,381,195, base fee 0.503 gwei), the block proposer itself carries `proxy_type: eip7702` with delegate contract `EIP7702StatelessDeleGator`. The mechanism is live and being used in production.
+
+## Atomic Batching: Closing the MEV Window
+
+The canonical DeFi multi-step sequence — approve a token, execute a swap, stake the output — requires three separate transactions from a raw EOA. Each transaction is an independent block inclusion event with its own base fee, its own nonce, and its own mempool exposure window. Between any two consecutive transactions, an attacker with a MEV bot can observe the state change introduced by the previous transaction and act before the next one executes.
+
+EIP-7702 collapses the three-transaction sequence into a single atomic execution. The EOA includes an authorization tuple pointing to a `MultiCall` delegate contract, then calls `multiCall(targets, data)`. All operations execute sequentially inside one EVM context — if any step fails, the entire batch reverts. There is no intermediate state visible to MEV bots.
+
+<Artifact slug="the-7702-timeline" />
+
+Gas accounting at current prices (2 gwei effective, $1,654/ETH, data as of block 25,381,195):
+
+| Approach | Gas (3 ops) | Cost | MEV windows |
+|---|---|---|---|
+| Raw EOA (3 separate txns) | 330,000 | $1.09 | 2 |
+| ERC-4337 UserOperation | 318,000 | $1.05 | 0 |
+| EIP-7702 batch | 290,500 | $0.96 | 0 |
+
+The 2,500-gas auth overhead is ~92% cheaper than the ~30,000-gas EntryPoint validation overhead of ERC-4337. For a 5-operation DeFi loop (approve → swap → supply → approve → stake), EIP-7702 saves 81,500 gas compared to raw EOA execution and 27,500 gas compared to ERC-4337.
+
+The dollar figures are modest at current gas prices. The MEV protection is not. A sandwich attack on a $50,000 swap extracts value proportional to slippage tolerance and position size, not to gas cost — the asymmetry is structural, not incidental.
+
+## Session Keys: Scoped Authority Without Key Exposure
+
+The more architecturally important AI agent use case is not just batching — it's delegation. A **session key** is an EIP-7702 authorization where the `address` field points to a delegate contract that enforces constrained execution on behalf of the EOA.
+
+A typical session key delegate contract enforces:
+
+```solidity
+function executeWithSession(
+  address   to,
+  uint256   value,
+  bytes calldata data,
+  SessionKey calldata key
+) external {
+  require(block.timestamp < key.expiry,         "session expired");
+  require(key.allowedContracts[to],             "unauthorized target");
+  require(value          <= key.spendPerTxn,    "exceeds per-txn limit");
+  require(key.totalSpent + value <= key.cap,    "exceeds session cap");
+  require(verifySignature(key, to, value, data),"invalid session sig");
+  key.totalSpent += value;
+  (bool ok,) = to.call{ value: value }(data);
+  require(ok, "execution failed");
+}
+```
+
+The AI agent holds a **session private key** — a separate key pair from the owner's master key. The owner EOA signs an EIP-7702 authorization pointing to the delegate, then hands the agent the session key and its scoped parameters. The agent can now broadcast transactions signed with the session key; the delegate enforces the policy on-chain.
+
+The owner revokes by broadcasting a new EIP-7702 type-4 transaction with a higher authorization nonce, either pointing to a new delegate or clearing the delegation entirely (by setting `address = 0`). The master key never leaves the owner's custody.
+
+This mirrors the trust model from [threshold signature schemes](/articles/the-split-key-threshold-signatures-and-the-blast-radius-problem-for-ai-agent-wallets) — the practical point is the same: a compromised AI agent holds a key with finite blast radius, not the master key. The difference is that EIP-7702 implements this in a single signed tuple without requiring a distributed key generation ceremony.
+
+The `EIP7702StatelessDeleGator` pattern — visible on the block proposer in block 25,381,195 — takes this further: all policy is enforced in calldata, the delegate holds no storage of its own, and multiple principals can each hold independent session keys against the same EOA delegation. Revocation of one session key doesn't affect the others.
+
+## ERC-4337 vs. EIP-7702: The Right Tool for Each Problem
+
+Both mechanisms enable smart-wallet functionality for AI agents, but they solve different problems and should not be treated as alternatives in all scenarios.
+
+[ERC-4337](/articles/the-paymasters-bargain-erc-4337-bundler-economics-and-the-gas-free-ai-agent) creates a new account type: the `SmartAccount`. Transactions flow through an alt-mempool — the agent builds a `UserOperation`, bundlers include it in a bundle transaction, and the `EntryPoint` contract validates and executes it. This model gives you: complex multi-signer validation logic, paymaster-sponsored gas, guardian recovery schemes, and passkey-based authentication. The cost is real: assets must migrate from the EOA to the new SmartAccount address, bundlers are an infrastructure dependency with their own MEV surface and fee market, and every `UserOperation` pays ~30,000 gas in EntryPoint overhead.
+
+EIP-7702 retrofits smart behavior onto an existing EOA. No migration. No bundler. The EOA retains its address, its nonce, its ETH balance. The delegation is temporary code — borrowed from a deployed contract via a 23-byte designator, revocable in a single transaction. The 2,500-gas auth cost is paid once per delegation install, not per operation.
+
+The decision rule for AI agent builders:
+
+- **New greenfield agent with complex governance** (multi-sig, recovery, custom signature schemes, long-lived policy) → ERC-4337 SmartAccount.
+- **Existing EOA holding assets that needs ephemeral smart behavior** (atomic batching, session key delegation, sponsored gas without a paymaster contract) → EIP-7702.
+- **Short-lived task agent** (call a sequence of DeFi contracts, return control to the owner) → EIP-7702; a 2,500-gas auth tuple is cheaper than a bundler round-trip.
+
+Note that the models are composable: a SmartAccount can itself issue EIP-7702 delegations to sub-agents, layering policy enforcement at multiple levels.
+
+## The Gotchas
+
+**Storage collision.** When an EOA adopts a delegate, both the EOA's own historical storage and the delegate's storage layout share the same slots. Delegates that write to storage slot 0 may collide with ERC-20 tokens or other contracts that store data at the EOA's address. The `StatelessDeleGator` pattern avoids this entirely by holding no state in persistent storage — all session parameters travel in calldata. For delegates that do write state, the EIP-1967 proxy storage slot convention mitigates accidental collisions.
+
+**Delegation persistence.** Unlike the superseded EIP-3074 (which cleared code after the transaction), EIP-7702 delegations persist. An agent that crashes mid-execution may leave a delegation active. Owner-facing wallets need to surface active EIP-7702 delegations and provide a single-click revocation UI — this is not yet standard across wallet providers as of June 2026.
+
+**Re-entrancy surface.** Any contract calling the EOA's address after delegation executes through the delegate's code. If the delegate's `receive()` or `fallback()` makes outward calls, that opens a re-entrancy path in a new form. Auditors reviewing EIP-7702 delegate contracts should treat them identically to full proxy contracts and apply standard re-entrancy analysis.
+
+**Per-call session key verification.** The session key enforcement logic runs on every call through the delegate. A poorly implemented delegate that fails to check `msg.sender` against the session key owner, or that accepts signatures without validating the target address, effectively grants unrestricted signing authority. Unlike an ERC-4337 SmartAccount where validation happens once at the EntryPoint, EIP-7702 delegate logic must be audited specifically for the per-call invariants it needs to maintain.
+
+## Takeaways
+
+EIP-7702 is live on Ethereum mainnet and in active use. The mechanism is a clean fit for AI agents that need:
+
+- **Atomic batching**: eliminate MEV windows between chained DeFi operations without an alt-mempool intermediary.
+- **Session key delegation**: grant an AI agent scoped, revocable signing authority without exposing the master private key.
+- **Minimal overhead**: 2,500 gas per authorization, one-time, versus 30,000+ gas per UserOperation in ERC-4337.
+
+The architectural principle is not new — "minimum authority" is decades old in systems security. EIP-7702 is the first Ethereum primitive that makes it tractable for EOAs without full account migration. The blast radius of a compromised AI agent is now a design parameter, not an externality.

@@ -1,12 +1,12 @@
 {
   "counts": {
-    "articles": 119,
-    "artifacts": 120
+    "articles": 120,
+    "artifacts": 121
   },
   "topicCounts": {
-    "agents": 42,
+    "agents": 43,
     "ai": 11,
-    "blockchain": 28,
+    "blockchain": 29,
     "cryptography": 20,
     "data": 18,
     "defi": 29,
@@ -15,13 +15,43 @@
     "machine-learning": 41,
     "research": 12,
     "security": 34,
-    "smart-contracts": 22,
+    "smart-contracts": 23,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 13,
     "zero-knowledge": 15
   },
   "articles": [
+    {
+      "slug": "the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents",
+      "path": "content/articles/2026/06/the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents/index.mdx",
+      "url": "/articles/the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents",
+      "title": "The Delegated Signer: EIP-7702 Session Keys and the New Wallet Model for AI Agents",
+      "description": "EIP-7702, live in Pectra, lets an EOA borrow smart contract code for one transaction — no migration, no bundler. For AI agents: atomic batching closes the approve-to-swap MEV window, and session key delegation bounds the blast radius of a compromised agent without touching the master key.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "blockchain",
+        "agents",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-7702",
+        "pectra",
+        "session-keys",
+        "account-abstraction",
+        "erc-4337",
+        "atomic-batching",
+        "mev",
+        "ai-agents",
+        "smart-wallet",
+        "delegation"
+      ],
+      "artifacts": [
+        "the-7702-timeline"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference",
       "path": "content/articles/2026/06/the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference/index.mdx",
@@ -3234,6 +3264,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-7702-timeline",
+      "path": "content/artifacts/the-7702-timeline/manifest.json",
+      "module": "src/islands/artifacts/the-7702-timeline.ts",
+      "url": "/artifacts/the-7702-timeline",
+      "title": "The 7702 Timeline",
+      "description": "Three-lane transaction diagram comparing Raw EOA, ERC-4337, and EIP-7702 execution flows for multi-step DeFi operations — with MEV attack windows and live gas costs. Select a scenario to compare.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "blockchain",
+        "agents",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-fhe-inference-wall",
       "path": "content/artifacts/the-fhe-inference-wall/manifest.json",

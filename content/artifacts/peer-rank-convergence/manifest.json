@@ -1,7 +1,7 @@
 {
   "slug": "peer-rank-convergence",
   "title": "Peer Rank Convergence",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Bradley-Terry vs. majority voting over pairwise comparison rounds. Five nodes with hidden quality scores compete; a malicious node is down-ranked by BT while majority voting is captured. Reference: Fortytwo GPQA Diamond — BT 85.90%, majority 68.69%.",
   "pubDate": "2026-06-23T20:27:29.301Z",
   "type": "svg",
   "archetype": "simulation",
@@ -11,5 +11,5 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": ["▶ Run / Pause to control simulation", "speed ×1 / ×2 / ×5 to advance rounds faster", "toggle malicious Node D to see Sybil capture vs. BT resistance"]
 }

@@ -27,15 +27,27 @@
       "path": "content/articles/2026/06/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem/index.mdx",
       "url": "/articles/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
       "title": "The Float Before the Fill: ERC-7683 Cross-Chain Intents and the Solver Inventory Problem",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "ERC-7683 gives users cross-chain swaps in 8 seconds by converting bridge latency into a solver capital float problem. The 4–7 bps spread is a rental rate on cross-chain inventory — here's the lifecycle, the capital math, and what AI agents pay to move capital across chains.",
       "pubDate": "2026-06-23",
       "topics": [
         "defi",
         "smart-contracts",
         "infrastructure"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "erc-7683",
+        "cross-chain-intents",
+        "solver",
+        "across-protocol",
+        "uniswapx",
+        "capital-float",
+        "uma-oracle",
+        "relayer",
+        "inventory-problem"
+      ],
+      "artifacts": [
+        "the-solver-float"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3317,7 +3329,7 @@
       "module": "src/islands/artifacts/the-solver-float.ts",
       "url": "/artifacts/the-solver-float",
       "title": "The Solver Float",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "ERC-7683 cross-chain intent lifecycle: from signed deposit to solver repayment. Click each stage to see the contract call, struct fields, and timing. Across fills $14B+ at median 8 seconds — the 2-hour optimistic challenge window is where solver capital is locked.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "diagram",

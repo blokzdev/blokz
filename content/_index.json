@@ -1,27 +1,44 @@
 {
   "counts": {
-    "articles": 122,
-    "artifacts": 123
+    "articles": 123,
+    "artifacts": 124
   },
   "topicCounts": {
     "agents": 43,
     "ai": 12,
     "blockchain": 29,
-    "cryptography": 20,
+    "cryptography": 21,
     "data": 19,
     "defi": 31,
     "infrastructure": 41,
     "llm": 21,
     "machine-learning": 41,
-    "research": 12,
+    "research": 13,
     "security": 34,
     "smart-contracts": 24,
     "tokenomics": 16,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 15
+    "zero-knowledge": 16
   },
   "articles": [
+    {
+      "slug": "the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
+      "url": "/articles/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "title": "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
       "path": "content/articles/2026/06/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem/index.mdx",
@@ -3323,6 +3340,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "folding-frontier",
+      "path": "content/artifacts/folding-frontier/manifest.json",
+      "module": "src/islands/artifacts/folding-frontier.ts",
+      "url": "/artifacts/folding-frontier",
+      "title": "Folding Frontier",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-solver-float",
       "path": "content/artifacts/the-solver-float/manifest.json",

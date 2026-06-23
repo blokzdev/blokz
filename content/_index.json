@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model/index.mdx",
       "url": "/articles/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model",
       "title": "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "To slash a dishonest AI operator on EigenLayer you need a proof. To produce one, you need determinism. EigenAI solves both: seeded inference + optimistic re-execution inside a TEE collapses verification to a byte-equality check — slashable at Ethereum-scale security.",
       "pubDate": "2026-06-23",
       "topics": [
         "security",
         "infrastructure",
         "llm"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "eigenlayer",
+        "verifiable-inference",
+        "deterministic-inference",
+        "avs",
+        "slashing",
+        "tee",
+        "eigenda",
+        "eigenverify",
+        "optimistic-challenge",
+        "llm-42"
+      ],
+      "artifacts": [
+        "the-slashable-inference"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3376,7 +3389,7 @@
       "module": "src/islands/artifacts/the-slashable-inference.ts",
       "url": "/artifacts/the-slashable-inference",
       "title": "The Slashable Inference",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Walk through the EigenAI challenge protocol: from encrypted request and deterministic execution to the on-chain byte-equality check that slashes a cheating operator or clears a frivolous watcher.",
       "pubDate": "2026-06-23",
       "type": "svg",
       "archetype": "diagram",

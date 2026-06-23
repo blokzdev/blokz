@@ -1,7 +1,7 @@
 {
   "slug": "the-slashable-inference",
   "title": "The Slashable Inference",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Walk through the EigenAI challenge protocol: from encrypted request and deterministic execution to the on-chain byte-equality check that slashes a cheating operator or clears a frivolous watcher.",
   "pubDate": "2026-06-23T19:26:08.922Z",
   "type": "svg",
   "archetype": "diagram",
@@ -10,7 +10,16 @@
     "infrastructure",
     "llm"
   ],
-  "aspect": "16/9",
+  "aspect": "4/3",
   "featured": false,
-  "controls": []
+  "controls": [
+    "click Next Step to advance the protocol",
+    "click Trigger Challenge at the WINDOW step to fork into the dispute path",
+    "click Reset to start over"
+  ],
+  "dataSource": {
+    "label": "EigenAI: Deterministic Inference, Verifiable Results (arXiv 2602.00182)",
+    "url": "https://arxiv.org/abs/2602.00182"
+  },
+  "dataAsOf": "2026-06-23"
 }

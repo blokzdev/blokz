@@ -27,7 +27,7 @@
       "path": "content/articles/2026/06/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems/index.mdx",
       "url": "/articles/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
       "title": "The Stale Read: Concurrency Anomalies in Multi-Agent LLM Systems",
-      "description": "When multiple LLM agents share mutable state, classical database race conditions emerge — but the LLM never throws an exception. Three 2026 papers catalog the anomalies, prove their inevitability without isolation primitives, and measure the fix: zero corruptions across 884,110 commits under Observable-Read Isolation.",
+      "description": "Shared-state multi-agent LLMs exhibit three formal anomaly classes — stale-generation, phantom-tool, causal-cascade. Three 2026 papers prove them unavoidable without isolation primitives and measure the fix: zero corruptions across 884,110 commits under Observable-Read Isolation.",
       "pubDate": "2026-06-23",
       "topics": [
         "research",

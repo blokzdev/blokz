@@ -1,0 +1,84 @@
+{
+  "sources": [
+    {
+      "id": "blockhash",
+      "label": "block.blockhash",
+      "shortLabel": "blockhash",
+      "latencyS": 0.06,
+      "manipCostEth": 0.00001,
+      "gasCostUnits": 0,
+      "gasUsd": 0,
+      "color": "#f85149",
+      "tier": "adversarial",
+      "mechanism": "Pre-Merge legacy: block proposer controls the nonce directly. Returns a constant on post-Merge Ethereum — still misused in forks and sidechains.",
+      "note": "Fully proposer-controlled. On post-Merge Ethereum it returns a predictable constant, so manipulation cost is effectively zero. Never use for security-sensitive randomness.",
+      "useCase": "Not recommended for any randomness use case on any network."
+    },
+    {
+      "id": "prevrandao",
+      "label": "PREVRANDAO",
+      "shortLabel": "PREVRANDAO",
+      "latencyS": 0.10,
+      "manipCostEth": 0.07,
+      "gasCostUnits": 0,
+      "gasUsd": 0,
+      "color": "#f0883e",
+      "tier": "weak",
+      "mechanism": "Beacon chain RANDAO accumulation (EIP-4399). Each slot proposer commits a BLS-signed reveal; the XOR accumulates. Proposer knows output in advance and can skip the slot to change ~1 bit.",
+      "note": "Skipping costs ~0.05–0.15 ETH (block reward + MEV). At ETH = $1,752 the break-even for an attacker is ~$88 of decision value per bit biased. Two cooperating validators can control 2 bits — enough to pick from 4 outcomes.",
+      "useCase": "Low-value decisions under ~$100 expected value. ε-greedy exploration in RL agents with small position limits. Always salt with keccak256(abi.encode(prevrandao, msg.sender, nonce))."
+    },
+    {
+      "id": "commit-reveal",
+      "label": "Commit-Reveal",
+      "shortLabel": "Commit-Reveal",
+      "latencyS": 24,
+      "manipCostEth": 0.0002,
+      "gasCostUnits": 70000,
+      "gasUsd": 0.12,
+      "color": "#d29922",
+      "tier": "constrained",
+      "mechanism": "Two-phase protocol: participants commit a hash, then reveal the preimage. Output is XOR (or hash) of all reveals. No oracle required, but needs cooperative participants.",
+      "note": "Last-revealer trap: the final participant knows everyone else's contribution and can choose not to reveal at near-zero cost (only forfeits committed gas). Breaks for any dynamic agent strategy where optimal actions change during the reveal window.",
+      "useCase": "Fixed-set selection: lottery winners, NFT mint randomness, genesis parameters. Not suitable for agent strategy selection or any decision that depends on market state at execution time."
+    },
+    {
+      "id": "vrf",
+      "label": "Chainlink VRF v2.5",
+      "shortLabel": "VRF v2.5",
+      "latencyS": 40,
+      "manipCostEth": 15000,
+      "gasCostUnits": 250000,
+      "gasUsd": 2.43,
+      "color": "#3fb950",
+      "tier": "cryptographic",
+      "mechanism": "Threshold DKG: multiple Chainlink nodes jointly hold the VRF key; no single node can recover it alone. On-chain BLS proof verified by VRF Coordinator before delivery. Manipulation requires compromising the DKG threshold.",
+      "note": "Mainnet cost: 0.25 LINK ($2.01) + ~250k gas at 0.95 gwei ($0.42) = ~$2.43/request. Minimum 3-block confirmation window = 36s. On Base/Arbitrum: ~10–50× cheaper, ~$0.05–0.25. Batch up to 32 words per request at similar cost.",
+      "useCase": "Any agent decision with expected value above ~$500. Strategy switches, position sizing, randomized auction parameters. Use on L2 for high-frequency needs."
+    },
+    {
+      "id": "drand",
+      "label": "Drand Beacon",
+      "shortLabel": "Drand",
+      "latencyS": 22,
+      "manipCostEth": 8000,
+      "gasCostUnits": 300000,
+      "gasUsd": 0.50,
+      "color": "#22d3ee",
+      "tier": "cryptographic",
+      "mechanism": "Threshold BLS beacon (3s cadence) operated by Protocol Labs, Cloudflare, EPFL, Kudelski Security, and others. Outputs a BLS signature chain; each round is verifiable before use. No native Solidity SDK — requires an oracle bridge (Chainlink Functions or custom keeper).",
+      "note": "Public, free-to-read randomness with strong cryptographic guarantees. Oracle bridge adds 15–20s to the 3s cadence. No LINK fee, but bridge gas (~300k) still applies. No official Solidity SDK as of mid-2026; bridge liveness is a separate trust assumption.",
+      "useCase": "Cross-chain agents where LINK costs are prohibitive. High-frequency randomness (3s cadence beats VRF's 36s minimum). Teams willing to run a keeper or use Chainlink Functions as the bridge."
+    }
+  ],
+  "snapshot": {
+    "blockNumber": 25374040,
+    "blockTimestamp": "2026-06-22T15:28:35Z",
+    "ethUsd": 1752.48,
+    "linkUsd": 8.03,
+    "gasPriceGwei": 0.95,
+    "vrfCoordinator": "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
+    "vrfMainnetFlatFeeLINK": 0.25,
+    "avgMevPerBlockEth": 0.07
+  }
+}

@@ -1,13 +1,13 @@
 {
   "counts": {
-    "articles": 126,
-    "artifacts": 127
+    "articles": 127,
+    "artifacts": 128
   },
   "topicCounts": {
     "agents": 44,
     "ai": 12,
     "blockchain": 30,
-    "cryptography": 21,
+    "cryptography": 22,
     "data": 19,
     "defi": 32,
     "infrastructure": 42,
@@ -15,13 +15,44 @@
     "machine-learning": 42,
     "research": 14,
     "security": 35,
-    "smart-contracts": 24,
+    "smart-contracts": 25,
     "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 16
+    "zero-knowledge": 17
   },
   "articles": [
+    {
+      "slug": "the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "path": "content/articles/2026/06/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification/index.mdx",
+      "url": "/articles/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "title": "The 128-Bit Floor: EIP-2537, BLS12-381, and the New Gas Math for On-Chain Proof Verification",
+      "description": "Every zkSNARK bottoms out in a pairing check. Before Pectra you had BN254 at ~100-bit security. EIP-2537 added BLS12-381 at 128 bits, and its pairings are cheaper: 32,600k+37,700 vs 34,000k+45,000 gas. G2 MUL dropped from millions to 22,500 gas.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-2537",
+        "bls12-381",
+        "bn254",
+        "pectra",
+        "pairing",
+        "groth16",
+        "plonk",
+        "zkml",
+        "bls-aggregation",
+        "elliptic-curves",
+        "precompile"
+      ],
+      "artifacts": [
+        "the-curve-switch"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
       "path": "content/articles/2026/06/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets/index.mdx",
@@ -3443,6 +3474,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-curve-switch",
+      "path": "content/artifacts/the-curve-switch/manifest.json",
+      "module": "src/islands/artifacts/the-curve-switch.ts",
+      "url": "/artifacts/the-curve-switch",
+      "title": "The Curve Switch",
+      "description": "Grouped bar chart comparing BN254 vs BLS12-381 on-chain gas costs for every precompile operation: G1/G2 adds, scalar mults, and pairings. Log scale reveals the G2 MUL unlock and the counterintuitive pairing inversion.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-cascade-calculator",
       "path": "content/artifacts/the-cascade-calculator/manifest.json",

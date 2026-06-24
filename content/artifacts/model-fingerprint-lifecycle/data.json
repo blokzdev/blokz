@@ -1,0 +1,95 @@
+{
+  "ethPriceUSD": 1654,
+  "gasGwei": 0.50,
+  "model": {
+    "name": "Llama-3.1-8B",
+    "paramsBillions": 8,
+    "numFingerprints": 24576,
+    "fingerprintBits": 512
+  },
+  "steps": [
+    {
+      "id": "embed",
+      "label": "Embed",
+      "icon": "⊕",
+      "title": "Fingerprint Embedding",
+      "detail": "Perinucleus sampling injects a user-specific 512-bit seed into the model's weight perturbation distribution. Each of 24,576 users receives a distinct seed that shifts the statistical tail of token probabilities — invisible to casual inspection, detectable with a hypothesis test over ~1,000 sampled tokens.",
+      "stat": "24,576 unique fingerprints per 8B model",
+      "gasUnits": null,
+      "attacks": { "finetune": "partial", "quantize": "partial", "merge": "vulnerable" }
+    },
+    {
+      "id": "commit",
+      "label": "Commit",
+      "icon": "H(·)",
+      "title": "Cryptographic Commitment",
+      "detail": "Poseidon(fingerprint ∥ salt) yields a 32-byte digest. Poseidon is a ZK-friendly hash: ~200 R1CS constraints per call versus ~25,000 for SHA-256. The commitment is computationally hiding (reveals nothing about the fingerprint) and binding (any change invalidates the digest).",
+      "stat": "32 bytes · ~200 ZK constraints",
+      "gasUnits": null,
+      "attacks": { "finetune": "resistant", "quantize": "resistant", "merge": "resistant" }
+    },
+    {
+      "id": "register",
+      "label": "Register",
+      "icon": "⛓",
+      "title": "On-Chain Registration",
+      "detail": "One SSTORE writes the 32-byte commitment to a public IP registry contract. Block number provides immutable timestamping for establishing prior art. Anyone can verify the registration exists; nobody can learn the underlying fingerprint.",
+      "stat": "20,000 gas · $0.017 at 0.5 gwei / $1,654 ETH",
+      "gasUnits": 20000,
+      "attacks": { "finetune": "resistant", "quantize": "resistant", "merge": "resistant" }
+    },
+    {
+      "id": "prove",
+      "label": "Prove",
+      "icon": "π",
+      "title": "ZK Ownership Proof",
+      "detail": "A Groth16 proof over the 200-constraint Poseidon circuit proves knowledge of (fingerprint, salt) such that Poseidon(fingerprint ∥ salt) equals the registered commitment — without revealing either value. Alternatively, a simpler 50,000-gas on-chain hash check works when fingerprint secrecy is less critical.",
+      "stat": "300,000 gas ZK ($0.25) · 50,000 gas simple ($0.041)",
+      "gasUnits": 300000,
+      "attacks": { "finetune": "resistant", "quantize": "resistant", "merge": "resistant" }
+    },
+    {
+      "id": "enforce",
+      "label": "Enforce",
+      "icon": "✓",
+      "title": "License Enforcement",
+      "detail": "An inference marketplace contract verifies the ZK proof on each request and gates model access or revenue splits to verified fingerprint holders. No litigation, no intermediaries — the smart contract is the enforcement mechanism, composable with any on-chain payment system.",
+      "stat": "Trustless · automatic · composable",
+      "gasUnits": null,
+      "attacks": { "finetune": "partial", "quantize": "partial", "merge": "vulnerable" }
+    }
+  ],
+  "attacks": [
+    {
+      "id": "none",
+      "label": "No Attack",
+      "color": "#5b8cff",
+      "description": "Baseline: fingerprints intact, all five protocol steps function as designed."
+    },
+    {
+      "id": "finetune",
+      "label": "Fine-tuning",
+      "color": "#f59e0b",
+      "description": "Standard supervised fine-tuning rewrites weight perturbations. Perinucleus distributes signal broadly and survives standard post-training fine-tuning (Nasery et al. 2025). Backdoor-based watermarks are erased by large-dataset fine-tuning runs."
+    },
+    {
+      "id": "quantize",
+      "label": "Quantization",
+      "color": "#f59e0b",
+      "description": "4-bit quantization truncates weight values, potentially erasing subtle perturbations. API-level behavioral schemes (Hot-Swap MarkBoard) survive. Weight-statistics schemes are more vulnerable to precision reduction (Zhang et al. 2025)."
+    },
+    {
+      "id": "merge",
+      "label": "Model Merging",
+      "color": "#ef4444",
+      "description": "SLERP or TIES interpolation between two differently-fingerprinted models attenuates both signals below detection threshold. Coordinated merging by two licensees nullifies attribution for both. No current scheme is provably merge-resistant (Xu et al. 2025 survey)."
+    }
+  ],
+  "costCompare": [
+    { "label": "SSTORE registration", "costUSD": 0.017, "type": "onchain" },
+    { "label": "Simple hash verify", "costUSD": 0.041, "type": "onchain" },
+    { "label": "Groth16 ZK verify", "costUSD": 0.25, "type": "onchain" },
+    { "label": "US copyright filing", "costUSD": 65, "type": "traditional" },
+    { "label": "USPTO utility patent", "costUSD": 2000, "type": "traditional" }
+  ]
+}

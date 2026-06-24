@@ -1,0 +1,111 @@
+---
+slug: the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip
+title: "The Committed Weights: Scalable LLM Fingerprinting and the Economics of ZK Model IP"
+description: "Training Llama-3.1-8B costs ~$6M. The weights are free to clone. Perinucleus sampling embeds 24,576 distinct fingerprints per model with no quality loss — and a Poseidon ZK commitment registers ownership on-chain for $0.017, enforceable by smart contract."
+pubDate: 2026-06-24T09:50:19.256Z
+author: blokz
+topics: [zero-knowledge, cryptography, data]
+tags: [model-fingerprinting, watermarking, perinucleus, fp-vec, poseidon, groth16, ip-registry, model-ip, llm-ip, zklora]
+artifacts: [model-fingerprint-lifecycle]
+difficulty: intermediate
+sources:
+  - label: "Scalable Fingerprinting of Large Language Models (Nasery et al. 2025)"
+    url: "https://arxiv.org/abs/2502.07760"
+  - label: "FP-VEC: Fingerprinting LLMs via Efficient Vector Addition (Xu et al. 2024)"
+    url: "https://arxiv.org/abs/2409.08846"
+  - label: "Hot-Swap MarkBoard: Black-box Watermarking for Large-scale Distribution (Zhang et al. 2025)"
+    url: "https://arxiv.org/abs/2507.20650"
+  - label: "Copyright Protection for LLMs: A Survey (Xu et al. 2025)"
+    url: "https://arxiv.org/abs/2508.11548"
+---
+
+Training Llama-3.1-8B requires roughly 6M GPU-hours and millions of dollars. The resulting weights sit on Hugging Face, free to clone, fine-tune, and deploy commercially without attribution. Traditional IP law barely reaches model weights in most jurisdictions, and even where it does, enforcement requires litigation, discovery, and a court order. The enforcement problem is fundamentally cryptographic, and two recent research threads — scalable LLM fingerprinting and ZK commitment schemes — have arrived at the same point from opposite directions.
+
+## The IP Vacuum in Open-Weight Models
+
+The core issue isn't copying; it's unverifiable lineage. When a derivative model appears in the wild, there is no mechanism to prove it descends from a specific base model, let alone to enforce a license programmatically. Without that primitive, the economics of open-weight releases depend entirely on social norms and reputational incentives — which break down at commercial scale.
+
+Copyright registration gives you a timestamped claim but no enforcement mechanism a computer can check. A patent covers algorithms, not the specific learned weight values that constitute a trained model. Neither produces a machine-readable assertion that a smart contract can act on.
+
+Fingerprinting is the missing cryptographic primitive.
+
+## Scalable LLM Fingerprinting: Three Approaches
+
+Classical model watermarking embeds a backdoor trigger — a specific input that produces a predictable output only the watermarked model generates. The weakness: any fine-tuning run that touches the affected weights erases the trigger. The field has moved past this.
+
+**Perinucleus sampling** (Nasery et al., 2025) operates on the statistical periphery of the token distribution — the "perinuclear" zone around the nucleus of high-probability tokens. Each user receives a 512-bit seed that shifts the tail distribution of the model's token probabilities in a user-specific way. Detection runs a hypothesis test: sample ~1,000 tokens from a suspect model, check whether the tail distribution matches the claimed seed at statistical significance. The scheme embeds 24,576 distinct user fingerprints into Llama-3.1-8B — two orders of magnitude more than prior work — with zero measurable degradation in model utility. Critically, the fingerprints survive standard supervised post-training fine-tuning on new data, because the signal is distributed broadly across weights rather than concentrated at backdoor-activating positions.
+
+**FP-VEC** (Xu et al., 2024) encodes a fingerprint as a weight perturbation vector — literally added to a base model's weights via vector addition. One training run produces a master delta; every subsequent deployment copies that delta into any base model, CPU-side, in seconds. The scheme is lightweight (no GPU required for fingerprinting), scalable (one training produces unlimited fingerprinted copies), and preserves model utility by construction.
+
+**Hot-Swap MarkBoard** (Zhang et al., 2025) adapts the LoRA architecture for distribution-scale attribution. It encodes an *n*-bit binary signature into a multi-branch LoRA module attached to the base model; each branch carries one bit. Changing the embedded signature requires only swapping branches, not retraining. The critical property for decentralized deployment: verification is purely black-box — it tests model behavior through an API, not weight values. When a deployer only exposes an inference endpoint, MarkBoard is the scheme that works.
+
+<Artifact slug="model-fingerprint-lifecycle" />
+
+## The ZK Bridge: Registering a Secret Without Exposing It
+
+Fingerprinting solves detection. The publication problem is harder.
+
+A distributor who registers their fingerprint plainly creates an attack target. Knowing the exact seed or perturbation vector lets an adversary craft a fine-tuning run that erases precisely that pattern. The right primitive is a cryptographic commitment.
+
+The scheme:
+
+```
+commitment = Poseidon(fingerprint ∥ salt)
+```
+
+**Poseidon** is the ZK-friendly hash function used throughout the SNARK ecosystem today — Groth16, PLONK, Halo2 circuits all use it natively. The key property is constraint efficiency: a Poseidon evaluation requires roughly 200 R1CS constraints, versus ~25,000 for SHA-256 inside a circuit. That gap matters for proof generation speed and cost.
+
+The commitment is 32 bytes. It is computationally hiding (it reveals nothing about the fingerprint or the salt) and binding (any change to either input produces a different commitment). The distributor publishes this commitment on-chain — one SSTORE operation.
+
+**Proving ownership** later requires demonstrating knowledge of `(fingerprint, salt)` such that `Poseidon(fingerprint ∥ salt)` equals the registered value, without revealing either. This is a standard ZK preimage proof. A Groth16 circuit over the 200-constraint Poseidon hash takes on the order of milliseconds to prove with modern tooling (e.g., Circom + snarkjs, or SP1). On-chain Groth16 verification costs roughly 300,000 gas.
+
+When fingerprint secrecy matters less — say, when a license dispute already requires disclosing the seed to an auditor — a simpler path works: the fingerprint is revealed directly to a smart contract that hashes it on-chain and checks against the registered commitment. This costs ~50,000 gas at the price of exposing the fingerprint in the transaction data.
+
+## The Economics: Gas vs. Traditional IP Filing
+
+At current Ethereum mainnet conditions (0.5 gwei gas price, ETH at ~$1,654):
+
+| Action | Gas | Cost |
+|---|---|---|
+| Register commitment (SSTORE) | 20,000 | **$0.017** |
+| Verify via ZK proof (Groth16) | 300,000 | **$0.25** |
+| Verify via direct hash check | 50,000 | **$0.041** |
+| US copyright registration | — | $65 |
+| USPTO utility patent (small entity) | — | $1,000–$8,000 |
+
+The $0.017 SSTORE is the prior art claim. It costs 3,800× less than the cheapest centralized IP registration and settles in ~12 seconds. The ZK verification proof — the enforcement mechanism — costs $0.25 and is callable by any smart contract, from any inference marketplace, without trusted intermediaries.
+
+Compare this to the traditional path: copyright registration provides a timestamped record but no smart-contract-readable assertion. Enforcement requires civil litigation, which can cost $100,000+ before discovery. The on-chain registry is three orders of magnitude cheaper and produces a machine-enforceable claim.
+
+## Attack Vectors: Where the Scheme Breaks
+
+Three attacks threaten the fingerprint layer. The commitment/registration/proof layer is cryptographically sound and none of these attacks touch it.
+
+**Fine-tuning erasure.** Standard supervised fine-tuning on new data rewrites weight perturbations. Perinucleus was explicitly designed to survive standard post-training by distributing its signal broadly. Backdoor-based schemes — not covered here but still prevalent — are not resistant. The key engineering lesson: scheme choice matters, and the fingerprint's attack resistance is a property of the embedding algorithm, not of the ZK layer.
+
+**Quantization degradation.** 4-bit quantization maps continuous weight values to discrete levels, truncating subtle perturbations. Schemes that test behavioral output through an API (MarkBoard) survive this because quantization doesn't change *which* tokens the model strongly prefers. Weight-statistics schemes that measure perturbation magnitudes directly are more vulnerable. Layering: use API-level detection when the model will be quantized for deployment.
+
+**Model merging dilution.** This is the unresolved hard case. SLERP interpolation between two models — one fingerprinted with seed A, one with seed B — at 50% weighting attenuates both signals. Two licensees who collude to merge their copies produce a model attributable to neither. The survey by Xu et al. (2025) identifies this as the primary open problem in model fingerprinting. No current scheme is provably merge-resistant.
+
+The practical engineering response is layered defense: fingerprinting establishes attribution evidence, not an unbreakable lock. Wire it with behavioral monitoring (does this deployed model behave like a fingerprinted model?) and API-rate-based anomaly detection.
+
+## What This Enables: Composable Model IP
+
+The primitive unlocks composable attribution. Today, a LoRA adapter trained on proprietary data has no trustless claim on any derivative revenue. With fingerprint commitments as the base layer:
+
+1. The base model owner registers `Poseidon(base_fp ∥ salt_b)` on-chain.
+2. A fine-tuner builds a LoRA adapter. Perinucleus fingerprints persist through standard fine-tuning; the adapter can also embed its own fingerprint for the adapter-specific contribution.
+3. Both commitments are registered independently. An inference marketplace verifies ZK proofs of both before routing a query.
+4. Revenue splits execute in the same contract — 10% to base model registrant, 90% to adapter owner — without any party revealing their fingerprint.
+
+This connects to the [TOPLOC activation hash](/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference), which proves *what model was run* during a specific inference. Fingerprint commitment proves *who owns* the model that was run. The two proofs compose: a single inference call can produce a TOPLOC receipt proving model identity and a ZK fingerprint proof establishing ownership, giving inference marketplaces both verification dimensions in one round trip.
+
+[ZKLoRA](/articles/prove-it-without-showing-it-zero-knowledge-verification-for-lora-adapter-marketplaces) proves adapter *compatibility* with a base model without revealing adapter weights — but not ownership. Fingerprint commitments handle the ownership side, closing the remaining gap.
+
+## Takeaways
+
+- Scalable LLM fingerprinting has reached 24,576 per-user identities in an 8B-parameter model with no utility degradation. The detection problem is effectively solved for standard fine-tuning attacks.
+- The deployment problem is cryptographic: publishing a fingerprint creates an attack surface. Poseidon commitment plus Groth16 ZK preimage proof registers ownership on-chain for $0.017 and enforces it for $0.25 — machine-readable, trustless, composable.
+- On-chain IP registration is 3,800× cheaper than US copyright filing and produces enforcement-ready smart contract state versus a PDF certificate.
+- Model merging remains the primary unresolved attack. Treat fingerprint-based IP as strong attribution evidence, not an unbreakable lock.
+- The architecture for composable model IP markets exists today: fingerprint commitment on Ethereum, ZK proof of lineage, automated revenue splits. What's missing is the registry contract and marketplace integrations.

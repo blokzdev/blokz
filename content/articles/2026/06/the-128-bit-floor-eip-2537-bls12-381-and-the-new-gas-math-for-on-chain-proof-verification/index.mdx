@@ -1,22 +1,115 @@
 ---
 slug: the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification
 title: "The 128-Bit Floor: EIP-2537, BLS12-381, and the New Gas Math for On-Chain Proof Verification"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "Every zkSNARK bottoms out in a pairing check. Before Pectra you had BN254 at ~100-bit security. EIP-2537 added BLS12-381 at 128 bits, and its pairings are cheaper: 32,600k+37,700 vs 34,000k+45,000 gas. G2 MUL dropped from millions to 22,500 gas."
 pubDate: 2026-06-24T00:30:52.923Z
 author: blokz
 topics: [zero-knowledge, cryptography, smart-contracts]
-tags: []
-artifacts: []
+tags: [eip-2537, bls12-381, bn254, pectra, pairing, groth16, plonk, zkml, bls-aggregation, elliptic-curves, precompile]
+artifacts: [the-curve-switch]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "EIP-2537: Precompile for BLS12-381 curve operations"
+    url: "https://eips.ethereum.org/EIPS/eip-2537"
+  - label: "EIP-1108: Reduce alt_bn128 precompile gas costs"
+    url: "https://eips.ethereum.org/EIPS/eip-1108"
+  - label: "EIP-197: Precompile for optimal ate pairing check on the elliptic curve alt_bn128"
+    url: "https://eips.ethereum.org/EIPS/eip-197"
+  - label: "Ethereum Pectra upgrade overview"
+    url: "https://ethereum.org/roadmap/pectra/"
+  - label: "BLS12-381 for the rest of us (Ben Edgington)"
+    url: "https://hackmd.io/@benjaminion/bls12-381"
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every zkSNARK that lands on Ethereum ends the same way: a pairing check. It doesn't matter whether the proof was built with Groth16, PLONK, or a STARK-wrapped Groth16 — the on-chain verifier eventually calls a precompile that performs a bilinear map over two elliptic curve groups and checks whether the result is the identity element in the target field. That check is the rate-limiting cost.
 
-## Section heading
+For eight years — from EIP-196 in 2017 through Istanbul's EIP-1108 reduction in 2019 — Ethereum gave you exactly one native curve for that check: BN254 (alt_bn128). On May 7, 2025, the Pectra upgrade added a second: BLS12-381. The math is consequential, and the cost table has a counterintuitive headline: **BLS12-381 pairings are now cheaper on Ethereum than BN254 pairings**, at every k.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+<Artifact slug="the-curve-switch" />
+
+## The pairing at the bottom of the stack
+
+A Groth16 verifier's inner loop reduces to verifying that
+
+```
+e(A, B) · e(α, –β) · e(L, –γ) · e(C, –δ) = 1
+```
+
+where A, C ∈ G1 and B ∈ G2. That is four pairings. PLONK-based systems structure things slightly differently but reach the same gate: a multi-scalar multiplication in G1, one in G2, and then the pairing check.
+
+Before Pectra, Ethereum natively supported BN254 operations via two precompiles:
+- **EIP-196** (address `0x06`/`0x07`): G1 addition and scalar multiplication.
+- **EIP-197** (address `0x08`): pairing check, costing `34,000k + 45,000` gas after EIP-1108.
+
+The G1 side was cheap (6,000 gas per scalar multiplication after Istanbul). But there was no native G2 precompile. A smart contract needing to compute a G2 scalar multiplication — required for any PLONK-style verifier that commits verification keys in G2 — had to do it in pure EVM bytecode. Benchmarks for BN254 G2 scalar multiplication in EVM bytecode run between 1 and 5 million gas, depending on implementation. At 30M gas per block, a single G2 multiplication could consume 5–17% of a full block.
+
+## The security gap
+
+BN254 was designed around 2010 with a claimed 128-bit security target. In 2016, Kim and Barbulescu published their extended Tower Number Field Sieve (exTNFS) algorithm, which more efficiently attacks the discrete log problem in the target group Gt of pairing-friendly curves at BN254's embedding degree. The NIST estimate after that analysis: BN254 offers approximately **100–110 bits** of effective security, not 128.
+
+That is still a large margin above practical breaks — no attacker has or is close to breaking BN254. But the trajectory matters: NIST recommends 128-bit security for systems with lifetimes beyond 2030, and the gap between the marketing claim ("128-bit") and the current estimate is something serious protocol designers notice.
+
+BLS12-381 was explicitly designed in 2017 to resist exTNFS. The `381` in the name is the prime field size in bits (vs. `254` for BN254 — a 50% larger field). The design choice achieves a genuine **128-bit security level**, and the curve is the one Ethereum's own consensus layer uses for validator BLS signatures.
+
+EIP-2537 was first proposed in 2019. After years of benchmarking, standardization effort, and multiple testnets, it shipped in Pectra.
+
+## What EIP-2537 actually costs
+
+| Operation | Address | BN254 (EIP-196/197+1108) | BLS12-381 (EIP-2537) |
+|---|---|---|---|
+| G1 ADD | `0x06` / `0x0b` | 150 gas | 375 gas |
+| G1 MUL | `0x07` / `0x0c` | 6,000 gas | 12,000 gas |
+| G2 ADD | — / `0x0d` | no native precompile | 600 gas |
+| **G2 MUL** | — / `0x0e` | **~1–5M gas (EVM)** | **22,500 gas** |
+| MAP Fp → G1 | — / `0x10` | — | 5,500 gas |
+| MAP Fp² → G2 | — / `0x11` | — | 23,800 gas |
+| **PAIRING (k pairs)** | `0x08` / `0x0f` | **34,000k + 45,000 gas** | **32,600k + 37,700 gas** |
+
+G1 operations roughly doubled in gas cost — the field is 50% larger, and the precompile was priced to reflect that. But look at the two rows that matter most.
+
+**G2 MUL** went from millions-of-gas EVM bytecode to a 22,500-gas native precompile: a 44–220× reduction depending on the prior implementation. This single change makes PLONK-BLS12-381 verifiers and BLS threshold signature verification viable on Ethereum L1 for the first time.
+
+**Pairing** went from `34,000k + 45,000` to `32,600k + 37,700`. At k=1: 79,000 → 70,300 gas (−11%). At k=3: 147,000 → 135,500 gas (−8%). At k=10: 385,000 → 363,700 gas (−6%). The larger-field curve is cheaper to pair on Ethereum — a result that surprised some observers but reflects a careful gas repricing based on current EVM client benchmarks and BLS12-381's efficient Miller loop.
+
+## Three unlocks for AI × blockchain builders
+
+### 1. zkML with genuine 128-bit security
+
+The current zkML toolchain — ezkl, Circom with snarkjs, most off-the-shelf Groth16 pipelines — is anchored to BN254. The circuit is compiled against the BN254 scalar field, the powers-of-tau ceremony uses BN254, and the on-chain verifier calls EIP-197.
+
+After EIP-2537, migrating a zkML verifier to BLS12-381 is economically feasible on L1. The pairing cost is lower, G2 operations are native, and the proof security improves from ~100-bit to 128-bit. The tradeoff is real: off-chain proving is 1.5–2× slower (more field operations over a larger prime), and Groth16 requires a new per-circuit SRS ceremony over BLS12-381. Proof systems like PLONK and Marlin that use universal setups are easier to migrate since the trusted setup is per-proving-key-size, not per-circuit.
+
+For a model whose outputs carry financial or governance consequences — an on-chain AI oracle that proves a risk score, a zkML classifier deciding loan eligibility — the security upgrade justifies the proving overhead.
+
+### 2. BLS aggregate quorums for decentralized AI inference
+
+Running a decentralized inference network means aggregating quality signals from many nodes. The naive approach is ECDSA or Schnorr: each node signs the result, the smart contract verifies each signature independently. At 27,000 gas per ecrecover call, verifying 100 nodes costs 2.7M gas — almost an entire Ethereum block.
+
+BLS signatures are additively homomorphic: a hundred nodes each sign the same message, and the signatures aggregate into one 96-byte point in G1. On-chain, you verify that single aggregate against the combined public key. The cost is one `BLS12_MAP_FP2_TO_G2` (23,800 gas) + one G2ADD per signer off-chain + one PAIRING_CHECK with k=2 (37,700 + 65,200 = 102,900 gas). Total: approximately **130k gas, regardless of whether 10 or 10,000 nodes signed**.
+
+This is the same construction Ethereum uses for beacon chain attestation aggregation. Applied to an AI inference committee — 100 nodes each sign the top-1 prediction of a shared model — EIP-2537 reduces the quorum verification cost from 2.7M gas to 130k gas. An 18× reduction.
+
+For existing articles on related protocol design, see the Bradley-Terry pairwise ranking approach in [the-pairwise-vote](/articles/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference) and EIGEN's intersubjective fault model — both contexts where a compact quorum proof matters.
+
+### 3. Trustless Ethereum validator signatures in smart contracts
+
+The Ethereum consensus layer signs every beacon chain block with BLS12-381. Before EIP-2537, verifying one of those signatures inside a smart contract required either a dedicated ZK circuit (minutes to prove, ~250k gas to verify) or trusting an off-chain bridge. Post-Pectra, verifying a BLS validator signature costs approximately 150k gas natively.
+
+This enables smart-contract-level light clients: a contract can accept a beacon chain block header, verify the BLS aggregate signature of the attesting committee on-chain, and act on the proven state without any bridge trust assumption. For AI agents that settle on Ethereum but compute off-chain, this creates a trustless path from off-chain inputs (attested by validators) to on-chain state transitions.
+
+## Migration realities
+
+Switching from BN254 to BLS12-381 requires real work:
+
+- **Field arithmetic**: Circuits must target the BLS12-381 scalar field (`r ≈ 2²⁵⁵`). Most Circom constraint libraries are BN254-only; gnark and arkworks both support BLS12-381 natively.
+- **Trusted setup**: Groth16 needs a per-circuit powers-of-tau ceremony over BLS12-381. SP1 and RISC Zero's Groth16 wrappers still use BN254 because that is where existing ceremonies live. Migrating would require new ceremony coordination.
+- **Proving time**: Expect 1.5–2× longer prover time due to the larger prime. For interactive proof systems this doesn't matter; for long-latency zkML proofs it compounds an already-slow step.
+- **Toolchain immaturity**: The BLS12-381 EVM ecosystem is months old. Production verifier templates, audit checklists, and deployment scripts exist for BN254 Groth16 in abundance; they are sparse for BLS12-381.
+
+The pragmatic path for most builders today: keep existing circuits on BN254, but evaluate BLS12-381 for new protocols — especially any design that needs G2 operations or BLS aggregated signatures.
 
 ## Takeaways
 
-TODO.
+EIP-2537 is usually described as a "validator signature" feature. That framing undersells it. It is Ethereum's security-level upgrade for zero-knowledge proof verification, and the gas math inverts the expected cost ordering: BLS12-381 pairings are now cheaper on-chain than BN254 pairings at every configuration. G2 scalar multiplication dropped from millions of gas to 22,500 — a shift that unlocks PLONK-BLS12-381 verifiers and BLS aggregate quorums as real L1 primitives.
+
+For AI × blockchain builders, this matters in two specific ways: zkML proofs can now target 128-bit security without a gas penalty, and decentralized inference committees can verify majority-agreement proofs at constant cost regardless of quorum size. Neither capability existed before May 2025.

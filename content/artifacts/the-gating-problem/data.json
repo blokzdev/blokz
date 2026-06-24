@@ -1,0 +1,43 @@
+{
+  "expertCount": 32,
+  "kHonest": 8,
+  "kShunted": 4,
+  "committeeSize": 6,
+  "moeFractionOfCompute": 0.63,
+  "computeSavingsPercent": 31,
+  "routingWeights": [
+    100, 96, 92, 88, 84, 80,
+    30, 27, 25, 23, 21, 19,
+    17, 16, 15, 14, 13, 12,
+    12, 11, 10, 10,  9,  9,
+     8,  8,  7,  7,  6,  6,
+     5,  5
+  ],
+  "detectionSchemes": [
+    {
+      "id": "toploc",
+      "label": "TOPLOC",
+      "detectsKShunting": false,
+      "reason": "Calibrated for model-substitution distance. Within-model k-reduction stays below threshold."
+    },
+    {
+      "id": "difr",
+      "label": "DiFR",
+      "detectsKShunting": false,
+      "reason": "Orthogonal projection fingerprint targets quantization artifacts, not expert-count reduction."
+    },
+    {
+      "id": "eigenai",
+      "label": "EigenAI TEE",
+      "detectsKShunting": true,
+      "caveat": "Only with full TEE re-execution + attested canonical checkpoint — currently infeasible at 671B scale.",
+      "reason": "Byte-exact re-execution with canonical k=8 router produces different bytes than provider's k=4 run."
+    },
+    {
+      "id": "consensus",
+      "label": "Consensus sampling",
+      "detectsKShunting": false,
+      "reason": "Standing Committee experts dominate both k=8 and k=4 runs. Output distributions overlap at typical thresholds."
+    }
+  ]
+}

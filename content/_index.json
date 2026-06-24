@@ -1,19 +1,19 @@
 {
   "counts": {
-    "articles": 134,
-    "artifacts": 135
+    "articles": 135,
+    "artifacts": 136
   },
   "topicCounts": {
-    "agents": 45,
+    "agents": 46,
     "ai": 14,
     "blockchain": 33,
     "cryptography": 22,
     "data": 19,
-    "defi": 32,
+    "defi": 33,
     "infrastructure": 46,
     "llm": 23,
     "machine-learning": 45,
-    "research": 16,
+    "research": 17,
     "security": 36,
     "smart-contracts": 26,
     "tokenomics": 18,
@@ -22,6 +22,23 @@
     "zero-knowledge": 18
   },
   "articles": [
+    {
+      "slug": "the-law-of-one-price-semantic-non-fungibility-and-structural-arbitrage-in-prediction-markets",
+      "path": "content/articles/2026/06/the-law-of-one-price-semantic-non-fungibility-and-structural-arbitrage-in-prediction-markets/index.mdx",
+      "url": "/articles/the-law-of-one-price-semantic-non-fungibility-and-structural-arbitrage-in-prediction-markets",
+      "title": "The Law of One Price: Semantic Non-Fungibility and Structural Arbitrage in Prediction Markets",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "defi",
+        "research",
+        "agents"
+      ],
+      "tags": [],
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference",
       "path": "content/articles/2026/06/the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference/index.mdx",
@@ -3680,6 +3697,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "prediction-market-fragmentation",
+      "path": "content/artifacts/prediction-market-fragmentation/manifest.json",
+      "module": "src/islands/artifacts/prediction-market-fragmentation.ts",
+      "url": "/artifacts/prediction-market-fragmentation",
+      "title": "Prediction Market Fragmentation",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "chart",
+      "topics": [
+        "defi",
+        "research"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-draft-race",
       "path": "content/artifacts/the-draft-race/manifest.json",

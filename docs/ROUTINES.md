@@ -13,9 +13,11 @@ playbooks. Each playbook assumes: clean checkout, `npm ci` done, work on the ses
 3. `npm run new:article -- --title "…" --topics <ids> [--series <id> --series-order N]`
 4. Write the body per `docs/CONTENT-AUTHORING.md`. Interlink at least one related existing
    article when one exists. Embed an artifact if a concept genuinely benefits from one.
-5. `npm run validate` → fix until green. `npm run build` if anything beyond pure content
-   changed.
-6. Commit (`content: add article <slug>`) including `content/_index.json`; push.
+5. `npm run check && npm run build` → fix until green. This is the **exact CI job**
+   (`validate` + `astro check` types + `build`); running only `validate` misses type errors
+   that fail CI and stall auto-merge.
+6. Commit (`content: add article <slug>`) including `content/_index.json`; push. Flip ready and
+   enable squash auto-merge — see "Delivery & auto-merge" below.
 
 ## Playbook: new artifact (+ optional companion article)
 
@@ -39,10 +41,10 @@ playbooks. Each playbook assumes: clean checkout, `npm ci` done, work on the ses
      interaction listed in `controls`, a keyboard path for SVG/DOM where natural; `data.json` +
      `dataSource`/`dataAsOf` for data-backed pieces (the validator enforces provenance). Verify
      Three.js/GSAP APIs via Context7.
-4. **Verify it runs**: `npm run build` must pass; if a browser is available, load `/artifacts/<slug>`
-   and view it embedded in the article — confirm rendering, interaction, and zero console errors in
-   **portrait, landscape, and ⛶ fullscreen** (resize/rotate); nothing clipped, overflowing, or
-   overlapping.
+4. **Verify it runs**: `npm run check && npm run build` must pass (full CI gate — types included);
+   if a browser is available, load `/artifacts/<slug>` and view it embedded in the article — confirm
+   rendering, interaction, and zero console errors in **portrait, landscape, and ⛶ fullscreen**
+   (resize/rotate); nothing clipped, overflowing, or overlapping.
 5. Fill in `controls`, set `featured` judiciously. Validate, commit (`artifact: add <slug>`).
 
 ## Coordination between parallel routines
@@ -83,7 +85,20 @@ articles use — URLs depend on them.
 - **Bi-weekly**: 1 new artifact, ideally paired with that week's article.
 - **Monthly**: refresh pass over the 3–5 oldest articles in active topics; link-rot check on
   `sources:` URLs.
-- **On PR / push (CI)**: validation + build already enforced by `.github/workflows/ci.yml`.
+- **On PR / push (CI)**: `npm run check` + `npm run build` enforced by `.github/workflows/ci.yml`.
+
+## Delivery & auto-merge
+
+Fire-and-forget: a green local gate means a green CI run, so let auto-merge do the work.
+
+- Before flipping ready, re-fetch `origin/main`; if another content PR merged during your run,
+  rebase, re-run `npm run index`, and re-run `npm run check && npm run build` once.
+- Flip the draft to ready and **enable squash auto-merge**. Because `npm run check && npm run
+  build` mirrors CI exactly, CI passes and the PR squash-merges on its own — **do not keep the
+  session alive watching CI**. Your finish line is "ready + auto-merge enabled on a gate-green PR".
+- **Production auto-deploys on merge** and previews build per PR (Vercel is *not* a required
+  check). New content goes live shortly after merge; the PR preview URL is available for a final
+  visual check, but verify locally first.
 
 ## Failure etiquette
 

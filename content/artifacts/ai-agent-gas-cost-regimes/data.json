@@ -1,0 +1,70 @@
+{
+  "operations": [
+    { "id": "eth_transfer",      "label": "ETH transfer",           "gas": 21000  },
+    { "id": "erc20_transfer",    "label": "ERC-20 transfer",        "gas": 65000  },
+    { "id": "erc4337_userop",    "label": "ERC-4337 UserOp",        "gas": 40000  },
+    { "id": "token_approve",     "label": "ERC-20 approve",         "gas": 46000  },
+    { "id": "uniswap_v3_swap",   "label": "Uniswap V3 swap",        "gas": 130000 },
+    { "id": "aave_borrow",       "label": "Aave V3 borrow",         "gas": 200000 },
+    { "id": "eigenlayer_restake","label": "EigenLayer restake",      "gas": 250000 },
+    { "id": "aave_liquidation",  "label": "Aave V3 liquidation",    "gas": 340000 }
+  ],
+  "snapshot": {
+    "slow_gwei":     0.09,
+    "avg_gwei":      0.16,
+    "fast_gwei":     0.85,
+    "eth_price_usd": 1664,
+    "source":        "Ethereum mainnet via Blockscout",
+    "as_of":         "2026-06-24"
+  },
+  "regimes": [
+    {
+      "id":       "sub-gwei",
+      "label":    "Sub-Gwei",
+      "maxGwei":  1,
+      "color":    "#22d3ee",
+      "strategies": [
+        "Per-event execution viable (every 12 s)",
+        "High-frequency oracle commits",
+        "Fine-grained ERC-4337 UserOp flows",
+        "Individual (unbatched) liquidations"
+      ]
+    },
+    {
+      "id":       "low-gas",
+      "label":    "Low-Gas",
+      "maxGwei":  20,
+      "color":    "#84cc16",
+      "strategies": [
+        "Light batching (5–10 ops per tx)",
+        "Selective oracle updates (>0.5% deviation)",
+        "Batch liquidations where profitable",
+        "Hourly rebalancing cycles"
+      ]
+    },
+    {
+      "id":       "moderate-gas",
+      "label":    "Moderate-Gas",
+      "maxGwei":  100,
+      "color":    "#f59e0b",
+      "strategies": [
+        "Heavy batching (50+ ops per tx)",
+        "Oracle updates on large deviations only (>1%)",
+        "Agent activity drops to 4–8 hour cadence",
+        "Most small-value positions uneconomic to touch"
+      ]
+    },
+    {
+      "id":       "high-gas",
+      "label":    "High-Gas",
+      "maxGwei":  9999,
+      "color":    "#ef4444",
+      "strategies": [
+        "Batching essential for all viability",
+        "Small agents economically squeezed out",
+        "Only large liquidations and high-value ops",
+        "Continuous execution budget exhausted in hours"
+      ]
+    }
+  ]
+}

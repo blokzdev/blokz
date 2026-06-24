@@ -1,0 +1,15 @@
+{
+  "slug": "the-cascade-calculator",
+  "title": "The Cascade Calculator",
+  "description": "Drag sliders to set provider costs and success rates, then read the profit margin curve. Cascade routing beats expensive-only once the cheap model resolves more than the crossover fraction of queries.",
+  "pubDate": "2026-06-23T23:27:40.115Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "defi"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["c₁ cheap model cost per query", "c₂ capable model cost per query", "p₂ capable model success rate", "P market price per resolved query"]
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "prediction-market-fragmentation",
+  "title": "Prediction Market Fragmentation",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-24T08:29:13.799Z",
+  "type": "dom",
+  "archetype": "chart",
+  "topics": [
+    "defi",
+    "research"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

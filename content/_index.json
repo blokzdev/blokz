@@ -27,15 +27,28 @@
       "path": "content/articles/2026/06/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack/index.mdx",
       "url": "/articles/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
       "title": "The Exploit Floor: How AI Agents Repriced the Economics of Smart Contract Attack",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "A1 generates working exploits against 63% of real-world DeFi contracts. The attack costs ~$6k to break even; a comprehensive audit costs $60k. That 10× gap is the new threat model for every team deploying on a public chain.",
       "pubDate": "2026-06-24",
       "topics": [
         "security",
         "smart-contracts",
         "ai"
       ],
-      "tags": [],
-      "artifacts": [],
+      "tags": [
+        "exploit-generation",
+        "verite",
+        "evmbench",
+        "audit-economics",
+        "reentrancy",
+        "invariant-testing",
+        "formal-verification",
+        "immunefi",
+        "a1-agent",
+        "defi-security"
+      ],
+      "artifacts": [
+        "the-exploit-floor"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3497,7 +3510,7 @@
       "module": "src/islands/artifacts/the-exploit-floor.ts",
       "url": "/artifacts/the-exploit-floor",
       "title": "The Exploit Floor",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Three protocol TVL zones defined by A1's $6k attack break-even vs. $60k audit cost. Click a zone to see the threat model and recommended defense.",
       "pubDate": "2026-06-24",
       "type": "svg",
       "archetype": "chart",

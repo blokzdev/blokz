@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 135,
-    "artifacts": 136
+    "articles": 136,
+    "artifacts": 137
   },
   "topicCounts": {
     "agents": 45,
@@ -11,10 +11,10 @@
     "data": 20,
     "defi": 32,
     "infrastructure": 46,
-    "llm": 23,
+    "llm": 24,
     "machine-learning": 45,
-    "research": 16,
-    "security": 36,
+    "research": 17,
+    "security": 37,
     "smart-contracts": 26,
     "tokenomics": 18,
     "tooling": 1,
@@ -22,6 +22,25 @@
     "zero-knowledge": 19
   },
   "articles": [
+    {
+      "slug": "the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai",
+      "path": "content/articles/2026/06/the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai/index.mdx",
+      "url": "/articles/the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai",
+      "title": "The Expert Gap: Mixture-of-Experts Routing and the Verification Blind Spot in Decentralized AI",
+      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "research",
+        "llm",
+        "security"
+      ],
+      "tags": [],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 12,
+      "artifacts": [],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip",
       "path": "content/articles/2026/06/the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip/index.mdx",
@@ -3710,6 +3729,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-gating-problem",
+      "path": "content/artifacts/the-gating-problem/manifest.json",
+      "module": "src/islands/artifacts/the-gating-problem.ts",
+      "url": "/artifacts/the-gating-problem",
+      "title": "The Gating Problem",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "model-fingerprint-lifecycle",
       "path": "content/artifacts/model-fingerprint-lifecycle/manifest.json",

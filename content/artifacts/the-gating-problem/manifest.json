@@ -1,0 +1,15 @@
+{
+  "slug": "the-gating-problem",
+  "title": "The Gating Problem",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-06-24T16:26:33.545Z",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

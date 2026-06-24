@@ -1,11 +1,11 @@
 {
   "counts": {
-    "articles": 127,
-    "artifacts": 128
+    "articles": 128,
+    "artifacts": 129
   },
   "topicCounts": {
     "agents": 44,
-    "ai": 12,
+    "ai": 13,
     "blockchain": 30,
     "cryptography": 22,
     "data": 19,
@@ -14,14 +14,44 @@
     "llm": 22,
     "machine-learning": 42,
     "research": 14,
-    "security": 35,
-    "smart-contracts": 25,
+    "security": 36,
+    "smart-contracts": 26,
     "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
     "zero-knowledge": 17
   },
   "articles": [
+    {
+      "slug": "the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "path": "content/articles/2026/06/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack/index.mdx",
+      "url": "/articles/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "title": "The Exploit Floor: How AI Agents Repriced the Economics of Smart Contract Attack",
+      "description": "A1 generates working exploits against 63% of real-world DeFi contracts. The attack costs ~$6k to break even; a comprehensive audit costs $60k. That 10× gap is the new threat model for every team deploying on a public chain.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "tags": [
+        "exploit-generation",
+        "verite",
+        "evmbench",
+        "audit-economics",
+        "reentrancy",
+        "invariant-testing",
+        "formal-verification",
+        "immunefi",
+        "a1-agent",
+        "defi-security"
+      ],
+      "artifacts": [
+        "the-exploit-floor"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
       "path": "content/articles/2026/06/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification/index.mdx",
@@ -3474,6 +3504,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-exploit-floor",
+      "path": "content/artifacts/the-exploit-floor/manifest.json",
+      "module": "src/islands/artifacts/the-exploit-floor.ts",
+      "url": "/artifacts/the-exploit-floor",
+      "title": "The Exploit Floor",
+      "description": "Three protocol TVL zones defined by A1's $6k attack break-even vs. $60k audit cost. Click a zone to see the threat model and recommended defense.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-curve-switch",
       "path": "content/artifacts/the-curve-switch/manifest.json",

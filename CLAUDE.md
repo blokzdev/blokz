@@ -43,10 +43,13 @@ npm run check          # validate + astro check (types)
 3. **Write** — fill in the MDX body. House style and frontmatter reference:
    `docs/CONTENT-AUTHORING.md`. Embed interactivity with `<Artifact slug="…" />` (no import
    needed) and list every embedded slug in the `artifacts:` frontmatter array.
-4. **Validate** — `npm run validate` must exit 0. It enforces taxonomy membership, path↔date
-   agreement, slug uniqueness, dangling references, and index freshness.
+4. **Gate** — `npm run check && npm run build` must pass (this is the exact CI job:
+   `validate` + `astro check` types + `build`). `validate` enforces taxonomy membership,
+   path↔date agreement, slug uniqueness, dangling references, and index freshness. Run the
+   full gate, not just `validate` — a type error passes `validate` but fails CI.
 5. **Commit & push** — commit the article *and* the regenerated `content/_index.json`
-   together. Conventions below.
+   together. Flip the PR ready and enable squash auto-merge; a green local gate means CI passes
+   and the PR merges itself (production auto-deploys on merge). Conventions below.
 
 To **update** an existing article: edit in place, set `updatedDate`, run `npm run index`,
 validate, commit. Never change a published article's `slug` (it's the URL).
@@ -57,8 +60,9 @@ validate, commit. Never change a published article's `slug` (it's the URL).
   topic, add it there deliberately (id, label, description, hue) in its own commit — don't
   free-type new topics in frontmatter. Prefer reusing existing topics; the taxonomy should
   grow by ones, not tens.
-- **Validation is the gate.** No commit that leaves `npm run validate` failing. CI runs it on
-  every push.
+- **The CI gate is `npm run check && npm run build`.** No PR ships red. CI runs this exact job
+  on every push (`validate` + `astro check` + `build`); run it locally so a green PR merges
+  unattended.
 - **Content runs touch content.** During article/artifact routines, do not modify
   `src/layouts/`, `src/styles/`, `src/lib/`, or page templates. Design/feature work happens in
   dedicated sessions, not content runs.

@@ -1,0 +1,44 @@
+{
+  "sourceLabel": "Covenant-72B (arXiv 2603.08163) · SparseLoCo (arXiv 2508.15706)",
+  "sourceUrl": "https://arxiv.org/abs/2603.08163",
+  "asOf": "2026-03-09",
+  "notes": {
+    "ddp": "Dense DDP assumes fp32 gradients synced every step, step time 30s. Bandwidth = params × 4B × 8b ÷ 30s.",
+    "diloco": "DiLoCo-style assumes full-precision fp32 pseudo-gradients synced over a 1200s (20-min) compute window.",
+    "sparseloco": "SparseLoCo curve anchored to Covenant-72B's measured 110 Mbps uplink at 72.7B params, scaled linearly. Top-k=64 per 4096-param chunk (1.56% density), 2-bit values, 12-bit indices → 146.3× compression vs fp32 dense.",
+    "compressionDetail": "Per chunk: 64 × (2+12) bits = 896 bits; dense fp32: 4096 × 32 bits = 131072 bits; ratio = 131072 / 896 = 146.3×"
+  },
+  "compression": {
+    "chunkSize": 4096,
+    "topK": 64,
+    "valueBits": 2,
+    "indexBits": 12,
+    "densityPct": 1.5625,
+    "ratio": 146.3
+  },
+  "covenantAnchor": {
+    "params_B": 72.7,
+    "uplink_mbps": 110,
+    "downlink_mbps": 500,
+    "commTime_s": 70,
+    "windowTime_s": 1200,
+    "commOverheadPct": 5.8,
+    "activePeersAvg": 24.4,
+    "uniqueParticipants": 70,
+    "trainingTokens_T": 1.1,
+    "mmlu_pct": 67.1
+  },
+  "curves": {
+    "models_B":       [1,    3,    7,    13,   30,   70,   72.7,  100  ],
+    "ddp_mbps":       [1067, 3200, 7467, 13867, 32000, 74667, 77547, 106667],
+    "diloco_mbps":    [27,   80,   187,  347,   800,   1867,  1939,  2667  ],
+    "sparseloco_mbps":[1.5,  4.5,  10.6, 19.7,  45.4,  105.9, 110.0, 151.3]
+  },
+  "connectivity": {
+    "homeCable_mbps":       40,
+    "homeFiber_mbps":       500,
+    "enterpriseFiber_mbps": 1000,
+    "datacenterLink_mbps":  10000,
+    "nvlink_mbps":          600000
+  }
+}

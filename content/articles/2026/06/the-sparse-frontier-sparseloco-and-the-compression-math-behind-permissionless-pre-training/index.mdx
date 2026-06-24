@@ -1,0 +1,117 @@
+---
+slug: the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training
+title: "The Sparse Frontier: SparseLoCo and the Compression Math Behind Permissionless Pre-Training"
+description: "Covenant-72B pre-trained a 72.7B-parameter LLM across 70+ anonymous internet peers. The key was SparseLoCo: 1.56% gradient density plus 2-bit quantization achieves 146× compression, collapsing the required uplink from 1.9 Gbps to 110 Mbps — consumer fiber."
+pubDate: 2026-06-23T09:00:00Z
+author: blokz
+topics: [machine-learning, research, blockchain]
+tags: [sparseloco, covenant-72b, distributed-training, gradient-compression, sparsification, diloco, permissionless-training, internet-training, decentralized-ai, prime-intellect]
+artifacts: [the-bandwidth-floor]
+difficulty: intermediate
+sources:
+  - label: "SparseLoCo: Communication Efficient LLM Pre-training (arXiv 2508.15706)"
+    url: "https://arxiv.org/abs/2508.15706"
+  - label: "Covenant-72B: Pre-Training a 72B LLM with Trustless Peers Over-the-Internet (arXiv 2603.08163)"
+    url: "https://arxiv.org/abs/2603.08163"
+---
+
+The real barrier to training large language models across the internet has never been proof systems, consensus protocols, or decentralized governance. It has been gradient bandwidth.
+
+A standard PyTorch DDP sync for a 72B-parameter model transmits roughly 290 GB of FP32 gradients every training step. At a 30-second step time, that's 77 Gbps — which requires NVLink between GPUs, not TCP between data centers. DiLoCo's local-SGD approach stretched that sync interval from seconds to minutes and brought the requirement down to about 1.9 Gbps. But even 1.9 Gbps means leased fiber between corporate co-location racks, not anonymous contributors with home connections.
+
+In March 2026, a research team from McGill, Concordia University, and EleutherAI reported the first permissionless pre-training run at frontier scale: **Covenant-72B**, a 72.7B-parameter LLM trained to 1.1T tokens across at least 70 unique, non-whitelisted internet peers — coordinated by a live blockchain protocol. Their required uplink was 110 Mbps. Their MMLU score at 67.1% is competitive with centralized baselines trained on equivalent compute. The enabling technology was SparseLoCo, which achieves over **146× compression** compared to dense FP32 gradients while actually matching or outperforming full-precision DiLoCo on model quality.
+
+This article dissects the compression math, explains why extreme gradient sparsity doesn't kill convergence, and shows what the blockchain layer actually does in a run like this.
+
+## Why DiLoCo Alone Isn't Enough
+
+The DiLoCo family of optimizers (and its predecessors in the local-SGD literature) solve one problem: they reduce how *often* you need to synchronize. Instead of syncing every step, workers run H inner gradient steps locally, then broadcast a "pseudo-gradient" — the difference between the pre- and post-inner-loop model weights. With H=30 and a 20-minute compute window between syncs, you reduce sync frequency by 30× compared to DDP.
+
+But DiLoCo transmits **full-precision pseudo-gradients**. Every sync still moves 4 bytes × 72.7B parameters = 290.8 GB. Over a 1200-second window, that's still 242 MB/s = 1.9 Gbps per peer. You can build this across data centers with dedicated 10 Gbps links. But the moment you open participation to any machine with a consumer internet connection, 1.9 Gbps is a blocker: typical fiber uplink in North America or Europe is 100–500 Mbps, and cable is often 40 Mbps or less.
+
+The insight SparseLoCo pursues is that pseudo-gradients are inherently sparse in a meaningful sense — most coordinates carry little signal after H inner optimizer steps have already applied the dominant updates. You can afford to transmit only the loudest entries.
+
+## SparseLoCo: Three Compression Levers in One Pass
+
+SparseLoCo compresses each pseudo-gradient with three operations applied together:
+
+**1. Chunk-level top-k sparsification.** The pseudo-gradient is divided into non-overlapping chunks of 4,096 parameters. Within each chunk, only the top-64 values by absolute magnitude are retained — the other 4,032 are zeroed. This yields a density of 64/4,096 = **1.5625%**.
+
+**2. 2-bit value quantization.** Each of the 64 selected values is quantized to one of four levels (2 bits) using a per-chunk scale factor. Four discrete levels sound brutal, but when combined with error feedback (below), the quantization error accumulates and gets corrected in subsequent rounds.
+
+**3. 12-bit index encoding.** To reconstruct which coordinates were selected, the receiver needs the position of each top-k value within its chunk. Since chunk size is 4,096, each index fits exactly in ceil(log₂(4096)) = **12 bits**.
+
+The compressed representation per chunk is:
+```
+64 values × (2 bits value + 12 bits index) = 64 × 14 bits = 896 bits = 112 bytes
+```
+
+The dense FP32 representation per chunk is:
+```
+4,096 params × 32 bits = 131,072 bits = 16,384 bytes
+```
+
+Compression ratio: 16,384 ÷ 112 = **146.3×**.
+
+For the full 72.7B-parameter model, each peer transmits approximately 2 GB per sync instead of 291 GB. Over a 1,200-second compute window, the uplink requirement becomes roughly 13 Mbps *per peer* — but with AllReduce aggregation across 24.4 average active peers, the actual measured requirement is **110 Mbps** uplink and **500 Mbps** downlink for each node in the Covenant-72B run.
+
+<Artifact slug="the-bandwidth-floor" />
+
+The chart above shows how the three approaches scale with model size. DDP sits in NVLink/InfiniBand territory (>10 Gbps for any serious model). DiLoCo crosses the 10 Gbps data-center-link threshold around 40B parameters. SparseLoCo stays in consumer fiber territory even at 100B parameters.
+
+## Why Extreme Sparsity Doesn't Break Convergence
+
+Dropping 98.44% of gradient signal sounds like it should destroy training. In practice, two properties of the local-SGD setting make it work.
+
+**Error feedback accumulation.** Any value that was *not* transmitted in round t gets added to the accumulated error, which rolls forward into round t+1. A coordinate that keeps missing the top-64 cut builds up in the error buffer until its magnitude eventually does break through. The net effect is that every coordinate eventually gets transmitted — just with a delay determined by how long it takes to become loud enough to make the cut. Mathematically, the accumulated error acts as an additional momentum term: the optimizer is biased toward coordinates with persistent, large-magnitude gradients, which are exactly the ones worth updating.
+
+**Sparse aggregation can improve model quality.** This was a counterintuitive finding from the SparseLoCo paper: when multiple peers each transmit a 1.56%-dense pseudo-gradient and their contributions are aggregated, the union of selected coordinates forms a diverse, complementary set. Different peers may be working on different minibatches and may find different "load-bearing" gradient directions. The aggregate covers more of the parameter space than any single peer's dense update would, and the shared coordinates get reinforced while noise averages out.
+
+The empirical result: SparseLoCo **outperforms full-precision DiLoCo** on several LLM pre-training benchmarks, not just matches it.
+
+## What the Blockchain Does (and Doesn't Do)
+
+A tempting mental model is that the blockchain in Covenant-72B does something cryptographic with the gradients — verifying computation, preventing poisoning, or enforcing honest aggregation. It doesn't. The Covenant-72B blockchain layer is coordination infrastructure, not a cryptographic prover.
+
+Its actual roles:
+
+- **Dynamic participation accounting.** In any given 1,200-second window, some peers contribute and some are offline. The blockchain provides an append-only ledger of which peer submitted valid gradient deltas in which round. With an average of 24.4 active peers out of 70+ unique participants, participation is inherently intermittent, and reward distribution has to match contribution history.
+
+- **Anti-gaming through transparency.** Because the ledger is public, it's immediately visible if a peer double-claims contribution or skips a window while still drawing rewards. This is not cryptographic proof that the computation was correct — it's social coordination enforced by pseudonymous reputation.
+
+- **Checkpoint anchoring.** Periodic model checkpoints are content-addressed and posted to the chain, creating a tamper-evident record of training progress. Anyone can verify that checkpoint N+1 was trained starting from checkpoint N.
+
+The blockchain does *not* verify gradient correctness, prevent a peer from sending adversarial pseudo-gradients, or prove that claimed GPUs performed actual compute. Those are open problems. The Covenant-72B run relied on whitelisting no one but also offered no cryptographic defense against poisoning — the practical defense was that SparseLoCo's compression is transparent to anomaly detection (an adversarially crafted sparse update looks different from a naturally concentrated one), and with 24 average peers, a single bad actor's influence is diluted to 4%.
+
+For a comparison of gradient poisoning in decentralized training and why dilution isn't always enough, see [The Hidden Stage](/articles/the-hidden-stage-backdoor-attacks-on-decentralized-llm-post-training).
+
+## The Performance Gap
+
+Covenant-72B reached **MMLU 67.1%** on the base model. This is competitive with centralized models trained on similar or higher compute budgets — but it's a full 16 percentage points below Qwen2.5-72B (83.4% MMLU) and Llama-3-70B (81.9%), both trained in centralized data centers with orders of magnitude more than 110 Mbps of inter-GPU bandwidth.
+
+The paper's claim of "competitiveness" should be understood in its appropriate context: competitive *per compute dollar spent*, not competitive with SOTA. The interesting result is that the model quality does not collapse — the 1.56%-sparse gradient regime, combined with error feedback, produces a coherent 72B model that genuinely learned language. Prior work on permissionless training had only demonstrated this at 1.2B parameters (Gauntlet on Bittensor) and with whitelisted participants. The 72.7B scale with open participation is genuinely new.
+
+The hardware constraint is also worth noting. Each Covenant-72B peer ran 8× NVIDIA B200s — not consumer hardware. The 110 Mbps bandwidth threshold makes the *connectivity* accessible to a broader class of operators, but the compute requirement (roughly 8 B200s per peer, a six-figure investment) still restricts meaningful participation to well-funded entities. The path to true democratization requires either smaller per-peer compute requirements (through more aggressive model parallelism across peers) or a model architecture that trains at useful quality on smaller, cheaper accelerators.
+
+## What Changes at 110 Mbps
+
+The practical implication for engineers building decentralized AI infrastructure is that SparseLoCo shifts the binding constraint from *network topology* to *compute capacity*. Before this, the bottleneck in any internet-speed training run was the link between nodes: even DiLoCo required data-center interconnects, which meant you were effectively still training inside a data center, just across racks instead of within a chassis.
+
+At 110 Mbps, the bandwidth constraint falls within the range achievable by:
+- Enterprise branch offices
+- University research clusters
+- Cloud provider egress (at high cost, but within range)
+- Well-provisioned home labs in fiber-connected markets
+
+This is not yet "anyone with a gaming PC" territory — but it is "any institution with a rack and a good internet connection" territory. The 70+ unique participants in the Covenant-72B run demonstrated that this is sufficient to assemble a real training cluster from geographically distributed contributors.
+
+## Takeaways
+
+- **Dense DDP requires ~77 Gbps uplink at 72B scale**, restricting it to NVLink/InfiniBand topologies. DiLoCo's local-SGD sync interval drops this to ~1.9 Gbps, still requiring data-center-grade links.
+- **SparseLoCo's 1.56% top-k + 2-bit quantization + 12-bit indexing** achieves 146.3× compression in one pass over each pseudo-gradient chunk, measured and verified in the Covenant-72B run.
+- **Error feedback ensures lossless long-run signal** despite 98.44% per-round dropout: any suppressed coordinate accumulates and eventually breaks through.
+- **The blockchain layer is coordination, not verification** — it accounts for dynamic participation and anchors checkpoints, but does not prove gradient correctness.
+- **110 Mbps brings permissionless 72B pre-training into fiber territory**, with the remaining bottleneck being per-peer compute (8× B200s per participant in the Covenant run).
+- **MMLU 67.1% at 72.7B** demonstrates the approach produces coherent, useful models — not a proof-of-concept toy — but a 16-point gap to SOTA remains.
+
+The 146× compression number is the load-bearing beam: with error feedback in the loop, you lose almost nothing in model quality while gaining back the bandwidth that, until now, had made internet-speed pre-training a thought experiment.

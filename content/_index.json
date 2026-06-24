@@ -1,27 +1,145 @@
 {
   "counts": {
-    "articles": 126,
-    "artifacts": 127
+    "articles": 133,
+    "artifacts": 134
   },
   "topicCounts": {
-    "agents": 43,
-    "ai": 12,
-    "blockchain": 31,
-    "cryptography": 21,
+    "agents": 45,
+    "ai": 14,
+    "blockchain": 33,
+    "cryptography": 22,
     "data": 19,
-    "defi": 31,
-    "infrastructure": 43,
+    "defi": 32,
+    "infrastructure": 45,
     "llm": 22,
-    "machine-learning": 42,
-    "research": 14,
-    "security": 35,
-    "smart-contracts": 24,
-    "tokenomics": 17,
+    "machine-learning": 44,
+    "research": 16,
+    "security": 36,
+    "smart-contracts": 26,
+    "tokenomics": 18,
     "tooling": 1,
-    "web3": 13,
-    "zero-knowledge": 16
+    "web3": 14,
+    "zero-knowledge": 18
   },
   "articles": [
+    {
+      "slug": "the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "path": "content/articles/2026/06/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture/index.mdx",
+      "url": "/articles/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "title": "The Sub-Gwei Regime: Cheap Gas and the New On-Chain AI Agent Architecture",
+      "description": "Ethereum mainnet gas averaged 0.16 Gwei in June 2026 — a 3,000× drop from DeFi summer 2021. That collapse doesn't just cut costs; it invalidates five years of AI agent design assumptions and opens architectures that were economically impossible until now.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "gas",
+        "eip-4844",
+        "eip-1559",
+        "agents",
+        "mev",
+        "liquidation",
+        "erc-4337"
+      ],
+      "artifacts": [
+        "ai-agent-gas-cost-regimes"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "path": "content/articles/2026/06/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack/index.mdx",
+      "url": "/articles/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "title": "The Exploit Floor: How AI Agents Repriced the Economics of Smart Contract Attack",
+      "description": "A1 generates working exploits against 63% of real-world DeFi contracts. The attack costs ~$6k to break even; a comprehensive audit costs $60k. That 10× gap is the new threat model for every team deploying on a public chain.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "tags": [
+        "exploit-generation",
+        "verite",
+        "evmbench",
+        "audit-economics",
+        "reentrancy",
+        "invariant-testing",
+        "formal-verification",
+        "immunefi",
+        "a1-agent",
+        "defi-security"
+      ],
+      "artifacts": [
+        "the-exploit-floor"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "path": "content/articles/2026/06/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification/index.mdx",
+      "url": "/articles/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "title": "The 128-Bit Floor: EIP-2537, BLS12-381, and the New Gas Math for On-Chain Proof Verification",
+      "description": "Every zkSNARK bottoms out in a pairing check. Before Pectra you had BN254 at ~100-bit security. EIP-2537 added BLS12-381 at 128 bits, and its pairings are cheaper: 32,600k+37,700 vs 34,000k+45,000 gas. G2 MUL dropped from millions to 22,500 gas.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-2537",
+        "bls12-381",
+        "bn254",
+        "pectra",
+        "pairing",
+        "groth16",
+        "plonk",
+        "zkml",
+        "bls-aggregation",
+        "elliptic-curves",
+        "precompile"
+      ],
+      "artifacts": [
+        "the-curve-switch"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "path": "content/articles/2026/06/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets/index.mdx",
+      "url": "/articles/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "title": "The Inference Spread: LLM Routing Arbitrage and the Pricing Problem for Decentralized AI Markets",
+      "description": "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-dev risk.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "defi",
+        "tokenomics"
+      ],
+      "tags": [
+        "inference-routing",
+        "cascade-routing",
+        "model-arbitrage",
+        "inference-markets",
+        "decentralized-inference",
+        "llm-routing",
+        "spread-capture",
+        "mechanism-design",
+        "ritual",
+        "ora-protocol"
+      ],
+      "artifacts": [
+        "the-cascade-calculator"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-social-slash-eigens-intersubjective-fault-model-and-the-ai-oracle-gap",
       "path": "content/articles/2026/06/the-social-slash-eigens-intersubjective-fault-model-and-the-ai-oracle-gap/index.mdx",
@@ -49,6 +167,36 @@
         "the-fault-quadrant"
       ],
       "difficulty": "advanced",
+      "draft": false
+    },
+    {
+      "slug": "payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "path": "content/articles/2026/06/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents/index.mdx",
+      "url": "/articles/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "title": "Payment Required: Inside x402, the HTTP-Native Settlement Standard for AI Agents",
+      "description": "HTTP 402 sat reserved for 30 years. x402 fills it: an AI agent signs an EIP-3009 authorization into a header, a facilitator settles on Base in two seconds, no ETH required. Protocol mechanics, production numbers, and where the centralization risk lives.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
+      ],
+      "tags": [
+        "x402",
+        "http-402",
+        "micropayments",
+        "ai-agents",
+        "eip-3009",
+        "usdc",
+        "facilitator",
+        "stablecoin-payments",
+        "machine-to-machine",
+        "coinbase"
+      ],
+      "artifacts": [
+        "the-x402-handshake"
+      ],
+      "difficulty": "intermediate",
       "draft": false
     },
     {
@@ -351,6 +499,36 @@
       "draft": false
     },
     {
+      "slug": "the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "path": "content/articles/2026/06/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training/index.mdx",
+      "url": "/articles/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "title": "The Sparse Frontier: SparseLoCo and the Compression Math Behind Permissionless Pre-Training",
+      "description": "Covenant-72B pre-trained a 72.7B-parameter LLM across 70+ anonymous internet peers. The key was SparseLoCo: 1.56% gradient density plus 2-bit quantization achieves 146× compression, collapsing the required uplink from 1.9 Gbps to 110 Mbps — consumer fiber.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "research",
+        "blockchain"
+      ],
+      "tags": [
+        "sparseloco",
+        "covenant-72b",
+        "distributed-training",
+        "gradient-compression",
+        "sparsification",
+        "diloco",
+        "permissionless-training",
+        "internet-training",
+        "decentralized-ai",
+        "prime-intellect"
+      ],
+      "artifacts": [
+        "the-bandwidth-floor"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
       "slug": "the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
       "path": "content/articles/2026/06/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading/index.mdx",
       "url": "/articles/the-survivability-contract-treating-agent-skills-as-untrusted-in-on-chain-ai-trading",
@@ -403,6 +581,36 @@
       ],
       "artifacts": [
         "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "path": "content/articles/2026/06/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference/index.mdx",
+      "url": "/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "title": "The Activation Hash: TOPLOC and the 1,000x Receipt for Non-Interactive Verifiable Inference",
+      "description": "DiFR's seed-commitment round-trip is the last synchronization barrier to async verifiable inference. TOPLOC removes it: a locality-sensitive hash of intermediate activations compresses to 258 bytes per 32 tokens — 1,000× smaller than raw embeddings — and validates faster than inference ran.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "research"
+      ],
+      "tags": [
+        "verifiable-inference",
+        "toploc",
+        "activation-hash",
+        "locality-sensitive-hashing",
+        "non-interactive",
+        "model-substitution",
+        "inference-markets",
+        "proof-of-intelligence"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 10,
+      "artifacts": [
+        "verifiable-inference-cost-spectrum"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3443,6 +3651,89 @@
   ],
   "artifacts": [
     {
+      "slug": "ai-agent-gas-cost-regimes",
+      "path": "content/artifacts/ai-agent-gas-cost-regimes/manifest.json",
+      "module": "src/islands/artifacts/ai-agent-gas-cost-regimes.ts",
+      "url": "/artifacts/ai-agent-gas-cost-regimes",
+      "title": "AI Agent Gas Cost Regimes",
+      "description": "Drag the gas-price slider to see how transaction costs shift across eight on-chain AI agent operations — from sub-cent at today's 0.16 Gwei to triple digits at 2021 peak.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-exploit-floor",
+      "path": "content/artifacts/the-exploit-floor/manifest.json",
+      "module": "src/islands/artifacts/the-exploit-floor.ts",
+      "url": "/artifacts/the-exploit-floor",
+      "title": "The Exploit Floor",
+      "description": "Three protocol TVL zones defined by A1's $6k attack break-even vs. $60k audit cost. Click a zone to see the threat model and recommended defense.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-curve-switch",
+      "path": "content/artifacts/the-curve-switch/manifest.json",
+      "module": "src/islands/artifacts/the-curve-switch.ts",
+      "url": "/artifacts/the-curve-switch",
+      "title": "The Curve Switch",
+      "description": "Grouped bar chart comparing BN254 vs BLS12-381 on-chain gas costs for every precompile operation: G1/G2 adds, scalar mults, and pairings. Log scale reveals the G2 MUL unlock and the counterintuitive pairing inversion.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-cascade-calculator",
+      "path": "content/artifacts/the-cascade-calculator/manifest.json",
+      "module": "src/islands/artifacts/the-cascade-calculator.ts",
+      "url": "/artifacts/the-cascade-calculator",
+      "title": "The Cascade Calculator",
+      "description": "Drag sliders to set provider costs and success rates, then read the profit margin curve. Cascade routing beats expensive-only once the cheap model resolves more than the crossover fraction of queries.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "defi"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-x402-handshake",
+      "path": "content/artifacts/the-x402-handshake/manifest.json",
+      "module": "src/islands/artifacts/the-x402-handshake.ts",
+      "url": "/artifacts/the-x402-handshake",
+      "title": "The x402 Handshake",
+      "description": "The x402 HTTP payment exchange: six-step sequence diagram from initial probe through EIP-3009 authorization signing, facilitator settlement, and resource delivery. Tap any step to inspect the exact header format.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
+      ],
+      "draft": false
+    },
+    {
       "slug": "peer-rank-convergence",
       "path": "content/artifacts/peer-rank-convergence/manifest.json",
       "module": "src/islands/artifacts/peer-rank-convergence.ts",
@@ -3639,6 +3930,22 @@
       "draft": false
     },
     {
+      "slug": "verifiable-inference-cost-spectrum",
+      "path": "content/artifacts/verifiable-inference-cost-spectrum/manifest.json",
+      "module": "src/islands/artifacts/verifiable-inference-cost-spectrum.ts",
+      "url": "/artifacts/verifiable-inference-cost-spectrum",
+      "title": "Verifiable Inference Cost Spectrum",
+      "description": "Verification overhead (ms, log scale) for five approaches to trustless LLM inference — NabaOS receipts, TOPLOC fingerprints, DiFR seed-commit, output resampling, and full ZK proof. Hover or tap a row for detail.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-focil-slot",
       "path": "content/artifacts/the-focil-slot/manifest.json",
       "module": "src/islands/artifacts/the-focil-slot.ts",
@@ -3733,6 +4040,22 @@
       "topics": [
         "zero-knowledge",
         "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-bandwidth-floor",
+      "path": "content/artifacts/the-bandwidth-floor/manifest.json",
+      "module": "src/islands/artifacts/the-bandwidth-floor.ts",
+      "url": "/artifacts/the-bandwidth-floor",
+      "title": "The Bandwidth Floor",
+      "description": "Required uplink bandwidth vs model scale for three gradient sync strategies: dense DDP, full-precision DiLoCo, and SparseLoCo (146× compressed). Drag the cursor to read bandwidth at any model size; compare to real connectivity levels.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

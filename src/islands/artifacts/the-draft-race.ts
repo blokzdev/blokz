@@ -192,15 +192,20 @@ export default function mount(container: HTMLElement): () => void {
     ctx.fillStyle = '#0b1120';
     ctx.fillRect(0, 0, W, H);
 
-    const LANE_H = Math.max(32, Math.min(56, H * 0.22));
+    // Reserve a band at the bottom for the speedup readout; lanes live above it.
+    const READOUT_H = Math.max(46, Math.min(76, H * 0.27));
+    const bandTop = H - READOUT_H;
+    const laneZone = bandTop - 4;
+
+    const LANE_H = Math.max(28, Math.min(52, laneZone * 0.26));
     const TOKEN_H = Math.max(16, Math.min(28, LANE_H * 0.55));
     const TOKEN_W = Math.max(14, Math.min(24, TOKEN_H * 1.1));
     const TOKEN_GAP = 3;
     const PERIOD = TOKEN_W + TOKEN_GAP;
     const LABEL_W = 78;
     const LANE_W = W - LABEL_W - 12;
-    const LANE_Y1 = H * 0.20; // center of AR lane
-    const LANE_Y2 = H * 0.62; // center of SD lane
+    const LANE_Y1 = laneZone * 0.30; // center of AR lane
+    const LANE_Y2 = laneZone * 0.70; // center of SD lane
     const TOKEN_Y = TOKEN_H / 2;
 
     // Token x positions are in "token units" from the right edge
@@ -373,32 +378,43 @@ export default function mount(container: HTMLElement): () => void {
       ctx.fillText('VERIFYING', LABEL_W + 8, LANE_Y2 - LANE_H * 0.7);
     }
 
-    // ── Speedup display ───────────────────────────────────────────────────
+    // ── Speedup readout (stacked in the reserved bottom band) ──────────────
     const sp = speedup();
     const cx = W / 2;
-    const spY = H * 0.88;
 
-    ctx.font = `700 ${Math.max(22, Math.min(36, W * 0.055))}px 'JetBrains Mono', monospace`;
-    ctx.textAlign = 'center';
+    const bigFont = Math.max(18, Math.min(32, READOUT_H * 0.42, W * 0.06));
+    const smallFont = Math.max(8.5, Math.min(10.5, bigFont * 0.34));
+    const gap = Math.max(2, Math.min(5, READOUT_H * 0.06));
+    const contentH = bigFont + smallFont * 2 + gap * 2;
+    const top = bandTop + Math.max(2, (READOUT_H - contentH) / 2);
+
+    const yThru = top + smallFont / 2; // throughput row
+    const yBig = top + smallFont + gap + bigFont / 2; // big number row
+    const yCap = top + smallFont + gap + bigFont + gap + smallFont / 2; // caption row
+
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = sp >= 2.5 ? '#22d3ee' : sp >= 1.5 ? '#f59e0b' : '#f87171';
-    ctx.fillText(`${sp.toFixed(2)}×`, cx, spY);
 
-    ctx.font = `500 10px 'JetBrains Mono', monospace`;
-    ctx.fillStyle = '#4a5568';
-    ctx.fillText('speedup', cx, spY + (Math.max(22, Math.min(36, W * 0.055)) * 0.75));
-
-    // Token count comparison
+    // Throughput counters — own row above the number, centered with a small center gap.
     const realtimeAR = elapsed > 0 ? (elapsed / T_VERIFY_REAL) : 0;
     const realtimeSD = elapsed > 0 ? (elapsed / (K * costRatio * T_VERIFY_REAL + T_VERIFY_REAL)) * eTokensPerCycle() : 0;
-
-    ctx.font = `500 9.5px 'JetBrains Mono', monospace`;
-    ctx.fillStyle = '#5b84c4';
+    ctx.font = `500 ${smallFont}px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText(`AR ${realtimeAR.toFixed(1)} tok`, cx - 18, spY);
-    ctx.fillStyle = '#22d3ee';
+    ctx.fillStyle = '#5b84c4';
+    ctx.fillText(`AR ${realtimeAR.toFixed(1)} tok`, cx - 8, yThru);
     ctx.textAlign = 'left';
-    ctx.fillText(`SD ${realtimeSD.toFixed(1)} tok`, cx + 18, spY);
+    ctx.fillStyle = '#22d3ee';
+    ctx.fillText(`SD ${realtimeSD.toFixed(1)} tok`, cx + 8, yThru);
+
+    // Big speedup number.
+    ctx.font = `700 ${bigFont}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = sp >= 2.5 ? '#22d3ee' : sp >= 1.5 ? '#f59e0b' : '#f87171';
+    ctx.fillText(`${sp.toFixed(2)}×`, cx, yBig);
+
+    // Caption.
+    ctx.font = `500 ${smallFont}px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = '#4a5568';
+    ctx.fillText('speedup', cx, yCap);
 
     // ── Cycle phase label ─────────────────────────────────────────────────
     const phaseLabel = sdPhase === 'draft'

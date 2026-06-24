@@ -27,17 +27,25 @@
       "path": "content/articles/2026/06/the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai/index.mdx",
       "url": "/articles/the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai",
       "title": "The Expert Gap: Mixture-of-Experts Routing and the Verification Blind Spot in Decentralized AI",
-      "description": "TODO: 40–300 char summary that earns the click and reads well in search results.",
+      "description": "MoE routers let inference providers silently halve the experts they activate — saving 31% of compute while staying undetected by every current fingerprinting scheme.",
       "pubDate": "2026-06-24",
       "topics": [
         "research",
         "llm",
         "security"
       ],
-      "tags": [],
+      "tags": [
+        "moe",
+        "routing",
+        "verification",
+        "deepseek",
+        "proof-of-intelligence"
+      ],
       "series": "proof-of-intelligence",
       "seriesOrder": 12,
-      "artifacts": [],
+      "artifacts": [
+        "the-gating-problem"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3735,7 +3743,7 @@
       "module": "src/islands/artifacts/the-gating-problem.ts",
       "url": "/artifacts/the-gating-problem",
       "title": "The Gating Problem",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Interactive MoE expert grid: toggle honest (k=8) vs shunted (k=4) routing and see which detection schemes catch the difference.",
       "pubDate": "2026-06-24",
       "type": "dom",
       "archetype": "simulation",

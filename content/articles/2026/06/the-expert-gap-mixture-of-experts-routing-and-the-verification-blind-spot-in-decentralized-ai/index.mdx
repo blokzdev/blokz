@@ -1,24 +1,107 @@
 ---
 slug: the-expert-gap-mixture-of-experts-routing-and-the-verification-blind-spot-in-decentralized-ai
 title: "The Expert Gap: Mixture-of-Experts Routing and the Verification Blind Spot in Decentralized AI"
-description: "TODO: 40–300 char summary that earns the click and reads well in search results."
+description: "MoE routers let inference providers silently halve the experts they activate — saving 31% of compute while staying undetected by every current fingerprinting scheme."
 pubDate: 2026-06-24T16:26:29.334Z
 author: blokz
 topics: [research, llm, security]
-tags: []
+tags: [moe, routing, verification, deepseek, proof-of-intelligence]
 series: proof-of-intelligence
 seriesOrder: 12
-artifacts: []
+artifacts: [the-gating-problem]
 difficulty: intermediate
-sources: []
+sources:
+  - label: "COMMITTEEAUDIT: Domain-Invariant Expert Committees in MoE LLMs (arXiv:2601.03425)"
+    url: https://arxiv.org/abs/2601.03425
+  - label: "Misrouter: Input-Only Routing Manipulation (arXiv:2605.04446)"
+    url: https://arxiv.org/abs/2605.04446
+  - label: "Buffer Overflow in MoE (arXiv:2402.05526)"
+    url: https://arxiv.org/abs/2402.05526
+  - label: "TOPLOC: A Locality Sensitive Hashing Scheme for Trustless Verifiable Inference (arXiv:2501.16007)"
+    url: https://arxiv.org/abs/2501.16007
+  - label: "DiFR: Distributional Fingerprinting via Representations (arXiv:2502.00965)"
+    url: https://arxiv.org/abs/2502.00965
+  - label: "DeepSeek-V3 Technical Report"
+    url: https://arxiv.org/abs/2412.19437
 ---
 
-TODO: opening hook — why this matters, in two or three sentences.
+Every verification scheme for decentralized AI inference makes the same quiet assumption: the model is either there or it isn't. You ran the real weights, or you substituted something else. TOPLOC hashes intermediate activations. DiFR fingerprints the activation space with orthogonal projections. EigenAI builds a TEE that re-executes the forward pass byte-for-byte. All of these are good tools against the same threat — a provider swapping a 671B parameter model for a cheaper distillate.
 
-## Section heading
+None of them catch a subtler attack. A provider running the genuine weights, on a genuine router, just routing to fewer experts per token than the contract specifies.
 
-TODO: body. House style: docs/CONTENT-AUTHORING.md.
+This is the gating problem.
+
+## Mixture-of-Experts in one minute
+
+Transformer models traditionally activate every parameter on every token. Mixture-of-Experts breaks that: the feed-forward sublayer is replaced by a bank of *N* expert FFNs, and a lightweight router selects only the top-*k* for each token. DeepSeek-V3, the current open-weights frontier model, runs 256 experts per FFN layer with top-8 routing — 671B total parameters, 37B active per forward pass. The ratio is roughly 18:1. You pay for 18× the capacity while burning 1× the compute per token.
+
+The router is a linear layer. It scores each expert, applies softmax, takes the *k* highest scores, and dispatches the token to those experts. The selected experts' outputs are weighted by score and summed back into the residual stream. Everything else is masked to zero — those parameters don't touch the token.
+
+Here is what that means for cost: the MoE sublayer accounts for roughly 63% of total forward-pass FLOPS in a model like DeepSeek-V3. If an inference provider reduces *k* from 8 to 4, they halve the FFN work on every token. On the total-model accounting, that is approximately a 31% reduction in FLOPS — a number that maps linearly onto time-per-token and thereforeonto GPU-hour billing.
+
+The provider still runs the same weights. Same architecture. Same tokenizer. Same positional encoding. Same attention blocks. The only thing that changes is one integer in the router's top-*k* selection.
+
+<Artifact slug="the-gating-problem" />
+
+## The Standing Committee
+
+Catching this attack requires understanding why it produces outputs that look correct.
+
+A 2026 paper (COMMITTEEAUDIT, arXiv:2601.03425) examined routing patterns across radically different input domains in DeepSeek-V2 and similar MoE LLMs. The finding is striking: a small cohort of experts — roughly 6 out of 64 in the studied models — appears in the top-*k* selected set for the overwhelming majority of tokens, regardless of domain. Code, poetry, mathematics, instruction-following: the same half-dozen experts are almost always in the gate.
+
+The paper calls this the *Standing Committee*. The committee experts handle the lion's share of routing probability mass: combined weights of roughly 60–67% of total per-token routing weight across arbitrary inputs.
+
+This explains why k-shunting is hard to detect. When a provider cuts *k* from 8 to 4, they eliminate the tail of the selection — the lower-probability experts that pick up domain-specific signal. But because the Standing Committee dominates the gate, those same 4-to-6 committee experts appear in both the honest run and the shunted run. The output distributions overlap considerably. Sampling-based consensus detection — which expects divergence between two independent runs — sees matching tokens far more often than chance would predict for a substituted model.
+
+The gap between k=8 and k=4 is real, especially for specialized domains where the marginal experts carry non-trivial signal. But it is small enough that detecting it requires precise measurement of intermediate computation, not surface-level output comparison.
+
+## Why current verification fails
+
+**TOPLOC** (arXiv:2501.16007) computes a locality-sensitive hash over the top-*p* activations at each layer and stores it as a compact proof. The verifier re-runs the prompt on the canonical model and compares hashes. The scheme is calibrated to detect model substitution — replacing a 671B model with a smaller one produces activation shifts that exceed the threshold almost immediately.
+
+Expert shunting does not exceed that threshold. The activation changes from dropping 4 tail experts are smaller than the changes from quantization, from minor version differences, or from the batch-level load balancing noise that MoE routers introduce. TOPLOC's calibration budget is consumed before shunting becomes visible.
+
+**DiFR** (arXiv:2502.00965) takes a different approach: a set of orthogonal probe vectors is transformed through the model, and their projections in the output space become the fingerprint. The design specifically targets quantization artifacts and weight-replacement attacks. Reducing *k* does not introduce the kind of structured projection shift that DiFR is sensitive to — the probe vectors still traverse the attention layers and the committee experts largely intact.
+
+**Sampling consensus** asks the same question twice and expects the answers to match if you are running the right model. We have just seen why this breaks: the Standing Committee means both honest and shunted runs select the same dominant experts. The output distribution overlap at normal sampling temperatures is high enough that standard divergence metrics flag nothing unusual.
+
+**EigenAI TEE** (Trusted Execution Environment byte-exact re-execution) is the one approach that could in principle catch k-shunting. If the verifier re-executes the forward pass inside a TEE using the canonical checkpoint with k=8, it will produce different bytes than a provider's k=4 run. The problem is scale: deploying a full-precision DeepSeek-V3 re-execution inside an attested enclave is currently infeasible. TEEs with sufficient memory bandwidth for 671B-parameter inference do not exist at production scale. The scheme works; the hardware doesn't.
+
+## The Misrouter compound
+
+Expert shunting is not even the most aggressive version of this class of attack. A May 2026 paper (arXiv:2605.04446) introduced *Misrouter*, an input-only attack that manipulates routing without touching the model weights at all.
+
+The insight is that the router is a linear function of the input. An adversary who can add a small, imperceptible perturbation to the input token embeddings can steer routing weight toward or away from specific experts. Because the attack lives entirely in the input preprocessing stage — before the first attention layer — it is transparent to every activation-layer fingerprinting scheme. The manipulated activations at layer *l* differ from canonical activations only insofar as the experts actually change; there is no preprocessing artifact to detect.
+
+Misrouter transfers from open-source surrogate models to closed APIs. If a service is running a model with a known-similar architecture, an attacker (or the service itself) can craft perturbations on the surrogate and apply them against the production model. The paper demonstrates this against a DeepSeek-V3-class model with a success rate above 80% for targeted expert exclusion.
+
+This means the attack surface is not just misconfigured providers. It is a tool that can be applied from the outside.
+
+## What a real fix looks like
+
+No single technique closes the gap today, but the components of a solution are visible.
+
+**Router logit commitment.** The router's softmax scores are compact — one float per expert per token. Including a Merkle commitment over the full logit vector in the proof makes it cryptographically expensive to claim k=8 routing while running k=4. The verifier can audit sampled tokens without re-executing the full forward pass. This is computationally tractable: committing 256 floats per token adds negligible overhead relative to inference.
+
+**Entropy monitoring.** The committee effect means that honest routing should exhibit a specific pattern in the tail of the routing distribution: modest but nonzero weight on experts beyond the top 4. A systematic entropy deficit in the routing distribution — too much probability mass concentrated in too few experts — is a statistical fingerprint of shunting that is visible in aggregate across thousands of tokens even if individual tokens are ambiguous.
+
+**TEE at the router only.** Instead of re-executing the full 671B forward pass in a TEE, attest only the router sublayer. The router is a single linear transformation plus softmax — orders of magnitude smaller than full re-execution. A routing attestation that proves "this token was dispatched to exactly these 8 experts, with these weights" is feasible today and closes the k-shunting hole without requiring whole-model TEE infrastructure.
+
+**Protocol-level *k* binding.** The cleanest long-run solution is to include *k* as a signed parameter in the inference service agreement. A model registry entry for "DeepSeek-V3 / k=8 / commit abc123" creates a legally and cryptographically auditable contract. Deviation is a breach, not just a suspicion.
+
+## The broader pattern
+
+The gating problem is not an exotic edge case. It is a structural consequence of how MoE models work: the quality-relevant computation is distributed across experts that are invisible to output-level inspection, and the most cost-relevant reduction — cutting tail experts — is also the least detectable.
+
+Decentralized inference networks that rely on output-level verification alone are systematically vulnerable to this. The Standing Committee's dominance of the routing distribution means that a provider serving degraded computation can pass quality spot-checks, sampling-based audits, and current fingerprinting schemes with high probability — while billing for the full model.
+
+This is not hypothetical. The FLOP savings from k-reduction are large enough to be economically attractive, the attack is simple enough to implement without model modifications, and the detection gap is wide enough to sustain it at scale. The only deterrent today is reputational risk — which is not a security property.
 
 ## Takeaways
 
-TODO.
+- MoE models activate a fraction of their parameters per token; reducing the top-k count is an undetectable compute savings for an inference provider running the genuine weights.
+- The Standing Committee (a small domain-invariant expert cohort) explains why k=4 outputs are close to k=8 outputs: the dominant routing mass is stable across both settings.
+- TOPLOC, DiFR, and sampling consensus are all blind to k-shunting because they target model substitution or quantization, not expert-count reduction.
+- EigenAI TEE would catch it in principle but is infeasible at 671B scale with current hardware.
+- Router logit commitment + routing-layer-only TEE attestation is the practical near-term fix — it is cheap to compute and directly observable.
+- Any proof-of-intelligence scheme that does not audit the router's k-selection has a structural blind spot that will be exploited at scale.

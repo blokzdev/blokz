@@ -1,0 +1,14 @@
+{
+  "slug": "ai-agent-gas-cost-regimes",
+  "title": "AI Agent Gas Cost Regimes",
+  "description": "Drag the gas-price slider to see how transaction costs shift across eight on-chain AI agent operations — from sub-cent at today's 0.16 Gwei to triple digits at 2021 peak.",
+  "pubDate": "2026-06-24T02:33:40.571Z",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": ["blockchain", "infrastructure", "ai"],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["drag the gas price slider to change the Gwei level"],
+  "dataSource": { "label": "Ethereum mainnet via Blockscout", "url": "https://eth.blockscout.com" },
+  "dataAsOf": "2026-06-24"
+}

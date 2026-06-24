@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 128,
-    "artifacts": 129
+    "articles": 129,
+    "artifacts": 130
   },
   "topicCounts": {
     "agents": 44,
-    "ai": 13,
-    "blockchain": 30,
+    "ai": 14,
+    "blockchain": 31,
     "cryptography": 22,
     "data": 19,
     "defi": 32,
-    "infrastructure": 42,
+    "infrastructure": 43,
     "llm": 22,
     "machine-learning": 42,
     "research": 14,
@@ -22,6 +22,33 @@
     "zero-knowledge": 17
   },
   "articles": [
+    {
+      "slug": "the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "path": "content/articles/2026/06/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture/index.mdx",
+      "url": "/articles/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "title": "The Sub-Gwei Regime: Cheap Gas and the New On-Chain AI Agent Architecture",
+      "description": "Ethereum mainnet gas averaged 0.16 Gwei in June 2026 — a 3,000× drop from DeFi summer 2021. That collapse doesn't just cut costs; it invalidates five years of AI agent design assumptions and opens architectures that were economically impossible until now.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "gas",
+        "eip-4844",
+        "eip-1559",
+        "agents",
+        "mev",
+        "liquidation",
+        "erc-4337"
+      ],
+      "artifacts": [
+        "ai-agent-gas-cost-regimes"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
       "path": "content/articles/2026/06/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack/index.mdx",
@@ -3504,6 +3531,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "ai-agent-gas-cost-regimes",
+      "path": "content/artifacts/ai-agent-gas-cost-regimes/manifest.json",
+      "module": "src/islands/artifacts/ai-agent-gas-cost-regimes.ts",
+      "url": "/artifacts/ai-agent-gas-cost-regimes",
+      "title": "AI Agent Gas Cost Regimes",
+      "description": "Drag the gas-price slider to see how transaction costs shift across eight on-chain AI agent operations — from sub-cent at today's 0.16 Gwei to triple digits at 2021 peak.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-exploit-floor",
       "path": "content/artifacts/the-exploit-floor/manifest.json",

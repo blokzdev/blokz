@@ -1,0 +1,23 @@
+{
+  "slug": "the-gating-problem",
+  "title": "The Gating Problem",
+  "description": "Interactive MoE expert grid: toggle honest (k=8) vs shunted (k=4) routing and see which detection schemes catch the difference.",
+  "pubDate": "2026-06-24T16:26:33.545Z",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": [
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "Toggle routing mode: k=8 Honest / k=4 Shunted",
+    "Dispatch token: animate one expert selection"
+  ],
+  "dataSource": {
+    "label": "COMMITTEEAUDIT (arXiv:2601.03425) + DeepSeek-V3 routing analysis",
+    "url": "https://arxiv.org/abs/2601.03425"
+  },
+  "dataAsOf": "2026-06-24"
+}

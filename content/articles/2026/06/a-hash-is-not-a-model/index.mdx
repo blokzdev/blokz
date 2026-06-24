@@ -1,0 +1,96 @@
+---
+slug: a-hash-is-not-a-model
+title: "A Hash Is Not a Model: The Storage Bill Behind On-Chain AI"
+description: "On-chain AI loves to say a model is 'stored on-chain.' But a chain commits to a 32-byte hash for cents; keeping the 140 GB it points to retrievable is a separate, recurring, surprisingly centralized bill. The storage math, erasure coding, and the retrieval wall."
+pubDate: 2026-06-20T00:27:19.918Z
+author: blokz
+topics: [infrastructure, web3, data]
+tags: [decentralized-storage, data-availability, model-weights, walrus, arweave, filecoin]
+artifacts: [weight-vault]
+difficulty: intermediate
+sources:
+  - label: "Walrus: An Efficient Decentralized Storage Network (whitepaper)"
+    url: "https://arxiv.org/abs/2505.05370"
+  - label: "0G Storage vs Filecoin vs Arweave (pricing, throughput, PoRA)"
+    url: "https://0g.ai/blog/0g-storage-vs-filecoin-arweave"
+  - label: "Filecoin docs — retrieval markets & storage proofs (PoRep/PoSt)"
+    url: "https://docs.filecoin.io/basics/how-retrieval-works/basics"
+  - label: "Arweave yellow paper — endowment & permanent storage"
+    url: "https://www.arweave.org/yellow-paper.pdf"
+  - label: "EIP-2028 — calldata gas cost (16 gas/non-zero byte)"
+    url: "https://eips.ethereum.org/EIPS/eip-2028"
+---
+
+"The model is stored on-chain." It's one of the most repeated claims in AI × crypto, and it is almost never literally true. What lives on the chain is a 32-byte hash — a commitment to a model you have to fetch from somewhere else. The hash proves *which* model you should be running. It says nothing about whether the 140 GB it points to still exists, who is paying to keep it alive, or how long it takes to pull onto a GPU. Those are three separate, ongoing engineering problems, and the storage bill behind them is where most "decentralized AI" quietly recentralizes.
+
+## The chain stores a commitment, not a model
+
+Every on-chain model registry — Story's IP graph, a fingerprinting scheme, an inference marketplace's model catalog — boils down to the same Solidity:
+
+```solidity
+struct Model {
+    bytes32 weightsHash;   // keccak/SHA of the weights blob
+    string  uri;           // ar://… , ipfs://… , or an https gateway
+}
+mapping(uint256 => Model) public models;
+```
+
+A `bytes32` and a short string. Anchoring that costs almost nothing: a 32-byte hash carried as transaction calldata is `21000 + 32 × 16 = 21,512` gas, which at 5 gwei and ETH near $1,710 is **about $0.18**. The chain is a perfect notary for *identity*.
+
+It is a catastrophic place to store the actual bytes. Under [EIP-2028](https://eips.ethereum.org/EIPS/eip-2028), calldata costs 16 gas per non-zero byte, so a 140 GB Llama-70B checkpoint (fp16) is `140 × 10⁹ × 16 ≈ 2.24 × 10¹² gas`. At 5 gwei that's roughly **$19 million** — and the dollar figure is the *forgiving* way to look at it. Gas price cancels out of the more brutal constraint: 2.24 × 10¹² gas divided by a ~36M block-gas limit is **about 62,000 full blocks**, every one of them 100% your model and nothing else. At 12-second blocks that's **8.6 days** of monopolizing Ethereum. Storing it in contract state instead of calldata (`SSTORE`) is nearly 40× worse again.
+
+So the weights live off-chain, always, and the chain holds a pointer plus a hash. This is the same lesson as decentralized *training*, where [the gradients never touch the chain either](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training) — the ledger coordinates and commits, it doesn't carry the payload. The interesting question is what's on the other end of that `uri`.
+
+<Artifact slug="weight-vault" />
+
+## Three ways to rent permanence, one to buy it
+
+The off-chain substrate for weights splits cleanly into two economic models, and the split matters more than the marketing.
+
+**Recurring rent.** Filecoin, 0G, and Walrus charge you to keep occupying space, forever, period by period. Per logical gigabyte:
+
+| Layer | Price | A 140 GB model | Proof |
+| --- | --- | --- | --- |
+| Filecoin | ~$0.19 / TB·mo | **$0.32 / yr** | PoRep + PoSt |
+| 0G Storage | $11 / TB·mo | **$18 / yr** | PoRA |
+| Walrus | $0.023 / GB·mo | **$39 / yr** | Red Stuff |
+| Arweave | ~$6 / GB once | **$840 once** | SPoRA |
+
+**Pay-once permanence.** Arweave takes a single up-front fee and routes most of it into an endowment that pays miners to hold the data for centuries, betting that the per-byte cost of storage keeps falling faster than the endowment draws down. You pay ~$6/GB one time — $840 for the 70B model — and never again.
+
+The crossover is the whole game. At $39/year, Walrus takes about **22 years** to cost what Arweave charges once; against 0G it's ~45 years; against Filecoin, never. Drag the horizon in the calculator above and watch the flat permanent line get overtaken by the rising rent lines — or not, depending on how long you think the model matters. The trap hiding in the cheap rent numbers is that *rent must be paid forever*. A "decentralized" model sitting behind a Filecoin deal that nobody renews, or a Walrus blob whose `WAL` reservation lapses, is one missed payment from a 404. Permanence you have to keep buying isn't permanence; it's a subscription with a single point of neglect.
+
+## Why storing a 140 GB model is affordable at all: erasure coding
+
+Here's the part the pricing table hides. A blob isn't safe because one node has it — that node can vanish. The naive fix is full replication: every storage node keeps a complete copy. That's roughly how blockchains themselves store state, and it carries a replication factor of **100× or more**. Apply that to weights and your 140 GB model becomes ~14 TB of physical storage spread across the network. Nobody is renting that to you for $39 a year.
+
+Erasure coding breaks the linear copy-it-N-times cost. Split the blob into *k* data shards plus *m* parity shards; any *k* of the *k + m* are enough to reconstruct, so the network tolerates losing *m* of them while storing far less than *N* copies. Walrus's **Red Stuff** is a 2-dimensional encoding: the blob becomes an `[f+1, 2f+1]` matrix of symbols, with primary and secondary slivers handed to different nodes, so the system stays available with up to **1/3 of nodes Byzantine** at only **~5× overhead** instead of 100×. The 2D structure is what makes *self-healing* cheap — when a node dies, peers reconstruct its slivers from a thin slice of the matrix rather than re-downloading whole copies. 0G erasure-codes similarly and tolerates up to **30% node failure**; that 140 GB model lands as ~700 GB of coded shards, not 14 TB, which is the only reason permissionless storage of model-scale blobs pencils out.
+
+Coding also gives the chain something better than a hash to hold: **availability sampling**. A light client (or a contract) can challenge random shards and, from a handful of cheap probes, gain high confidence the full blob is reconstructable — without ever downloading 140 GB. That's how a chain can attest not just "this is the right model" but "the bytes are still out there," and slash a provider when they aren't.
+
+## Storage is not serving: the retrieval wall
+
+Suppose the bytes provably exist, erasure-coded across a healthy network. You still have to get them onto a GPU to run a forward pass, and *that* is a different problem with worse numbers.
+
+0G reports **30+ MB/s** retrieval on mainnet — generous for a decentralized network. At that rate, cold-loading a 140 GB model takes **about 80 minutes**. A centralized datacenter pulling from object storage at ~1 GB/s does it in ~2.4 minutes; a local NVMe array at ~5 GB/s in under 30 seconds. That two-orders-of-magnitude gap is the cold-start wall, and it bends decentralized inference toward *warm* nodes that already hold the weights resident in VRAM — which quietly recentralizes serving around whoever keeps the popular models hot. The honest version of "anyone can serve this model" is "anyone willing to eat an 80-minute cold start and then keep 140 GB pinned."
+
+Filecoin makes the trap explicit in its architecture: a **storage deal does not guarantee retrieval**. Retrieval is a separate market with separate incentives, and historically the weak link — your weights can be provably stored and still practically unfetchable because no provider is paid to serve them quickly. "Stored" and "servable" are different SLAs, and most "on-chain model" claims silently assume the second when they've only bought the first.
+
+## What "decentralized model" usually means
+
+Put it together and the honest accounting of a model someone calls "on-chain" has three layers with three different trust stories:
+
+- the **hash** on-chain — cheap, permanent, genuinely trustless;
+- the **bytes** off-chain — rented or endowed, and only as durable as the payments or the endowment math;
+- the **retrieval path** — very often a single gateway or one pinning service.
+
+That last line is where the decentralization usually evaporates. A model "stored on IPFS" is, by default, content addressing with no persistence guarantee — pin it on exactly one service and it's one outage (or one unpaid invoice) from gone. The CID is as trustless as a keccak hash and just as silent about whether the data still exists. The same caveat applies to the on-chain ownership and provenance schemes we've covered before: [fingerprinting the weights](/articles/fingerprints-in-the-weights) proves *which* model is yours and [Story's royalty graph](/articles/story-royalty-graph-onchain) proves *who licensed it*, but a hash is an identity claim, not an availability guarantee. Lose the bytes and the proof points at nothing.
+
+What good looks like is unglamorous and buildable today: erasure-coded permanent or well-funded storage (Arweave or Walrus) for the canonical weights, a hot serving cache for latency, and an on-chain commitment that binds the hash to a *periodic availability proof* so the contract can slash a provider that drops the data. That's a model you can honestly call decentralized — not because the bytes live on the chain, but because the chain can prove, continuously, that someone is still holding them.
+
+## Takeaways
+
+- **A hash is an identity, not a model.** Anchoring a 32-byte commitment costs ~$0.18; putting the actual 140 GB on Ethereum would cost ~$19M and monopolize 62,000 consecutive blocks. Weights live off-chain, always.
+- **Know which bill you're paying.** Recurring rent (Filecoin/0G/Walrus, ~$0.32–$39 a year for a 70B model) is cheap but must be paid forever; Arweave's ~$840 pay-once permanence wins past roughly a 22-year horizon. Lapsed rent is a silent 404.
+- **Erasure coding is the enabling trick.** Full replication is 100×+; Walrus's Red Stuff holds ~5× overhead at 1/3-Byzantine tolerance, turning a 14 TB replication bill into ~700 GB of coded shards — and enabling availability sampling so the chain can attest the bytes exist.
+- **Storage ≠ serving.** At a decentralized network's ~30 MB/s, a 140 GB model is an 80-minute cold load; the retrieval market, not the storage deal, is where availability actually lives — and where "decentralized serving" recentralizes around warm nodes.

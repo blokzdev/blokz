@@ -2,7 +2,7 @@
   "slug": "price-of-trust",
   "title": "The Price of Trust",
   "description": "Every route to trustworthy AI inference, priced on one log axis: TEE attestation at 1.07×, optimistic re-execution at 2–4×, zkML and FHE at 10³–10⁵×, verifiable FHE beyond. Hover, tap, or arrow through the bars to see what each overhead actually buys — and whom you still trust.",
-  "pubDate": "2026-06-12",
+  "pubDate": "2026-06-12T12:07:00Z",
   "type": "svg",
   "archetype": "chart",
   "topics": [

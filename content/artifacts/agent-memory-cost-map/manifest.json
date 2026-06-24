@@ -1,0 +1,25 @@
+{
+  "slug": "agent-memory-cost-map",
+  "title": "Agent Memory Cost Map",
+  "description": "Adjust memory entries per call, call frequency, and gas price to see how monthly on-chain cost diverges across four persistent-memory architectures: SSTORE, event logs, IPFS+CID, and TEE.",
+  "pubDate": "2026-06-22T10:30:28.897Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "agents",
+    "data",
+    "llm"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": [
+    "drag 'entries / call' slider to scale memory per invocation",
+    "drag 'calls / day' slider to set agent frequency",
+    "drag 'gas price' slider to model network congestion"
+  ],
+  "dataSource": {
+    "label": "Ethereum block 25372536 via Blockscout · ETH/USD via Crypto.com",
+    "url": "https://eth.blockscout.com/block/25372536"
+  },
+  "dataAsOf": "2026-06-22"
+}

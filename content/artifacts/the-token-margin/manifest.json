@@ -1,0 +1,14 @@
+{
+  "slug": "the-token-margin",
+  "title": "The Token Margin",
+  "description": "When does calling an LLM pay off? Pick a task complexity, model tier, and expected profit per decision: the lognormal token distribution — anchored to the paper's 30× variance finding — shows the fraction of invocations that beat break-even. Drag profit up until the green zone dominates.",
+  "pubDate": "2026-06-21T19:27:40.130Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": ["agents", "llm", "tokenomics"],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap a task tab to switch scenario", "tap a model tier to reprice", "drag the profit slider to move the break-even line"],
+  "dataSource": { "label": "Bai et al., arXiv:2604.22750 (SWE-bench Verified, 8 LLMs, Apr 2026)", "url": "https://arxiv.org/abs/2604.22750" },
+  "dataAsOf": "2026-06-21"
+}

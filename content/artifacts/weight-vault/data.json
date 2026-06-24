@@ -1,0 +1,63 @@
+{
+  "asOf": "2026-06-20",
+  "note": "Storage prices are per logical GB (the figure you pay; each network's internal replication/erasure overhead is already priced in). Snapshotted from protocol docs/whitepapers. Arweave one-time fee is volatile; $6/GB is a mid-2026 midpoint of the $5-8/GB range.",
+  "layers": [
+    {
+      "id": "filecoin",
+      "name": "Filecoin",
+      "mode": "rent",
+      "usdPerGbMonth": 0.00019,
+      "proof": "PoRep + PoSt",
+      "redundancy": "3-6x deal replication",
+      "flag": "deal ≠ retrieval (separate market)"
+    },
+    {
+      "id": "0g",
+      "name": "0G Storage",
+      "mode": "rent",
+      "usdPerGbMonth": 0.011,
+      "proof": "PoRA",
+      "redundancy": "erasure-coded, tolerates <=30% node failure",
+      "throughputMbps": 30,
+      "flag": "30+ MB/s · erasure-coded"
+    },
+    {
+      "id": "walrus",
+      "name": "Walrus",
+      "mode": "rent",
+      "usdPerGbMonth": 0.023,
+      "proof": "Red Stuff (2D erasure)",
+      "redundancy": "~5x overhead, tolerates <=1/3 Byzantine",
+      "flag": "~5× overhead · ≤⅓ Byzantine"
+    },
+    {
+      "id": "arweave",
+      "name": "Arweave",
+      "mode": "permanent",
+      "usdPerGb": 6.0,
+      "proof": "SPoRA",
+      "redundancy": "network-wide incentivized replication",
+      "flag": "pay-once · permanent"
+    }
+  ],
+  "models": [
+    { "id": "8b", "label": "Llama 8B", "precision": "fp16", "gb": 16 },
+    { "id": "70b", "label": "Llama 70B", "precision": "fp16", "gb": 140 },
+    { "id": "671b", "label": "DeepSeek-V3 671B", "precision": "fp8", "gb": 671 },
+    { "id": "405b", "label": "Llama 405B", "precision": "fp16", "gb": 810 }
+  ],
+  "onchain": {
+    "ethUsd": 1710,
+    "gasGwei": 5,
+    "calldataGasPerByte": 16,
+    "baseTxGas": 21000,
+    "hashBytes": 32,
+    "blockGasLimit": 36000000,
+    "blockTimeSec": 12
+  },
+  "retrieval": {
+    "decentralizedMbps": 30,
+    "centralizedMbps": 1000,
+    "fullChainReplication": 100
+  }
+}

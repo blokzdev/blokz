@@ -1,0 +1,24 @@
+{
+  "slug": "the-clmm-strangle",
+  "title": "The CLMM Strangle",
+  "description": "Visualize a Uniswap v3 LP position as a short strangle. Adjust range bounds, implied vol, fee APY, and hold period to see IL vs. the Black-Scholes fair premium — and whether your fee income covers the options risk.",
+  "pubDate": "2026-06-23T16:35:51.851Z",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "data"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": [
+    "Pa / Pb sliders — set the lower and upper range bounds as % of current ETH spot",
+    "IV slider — adjust implied volatility; starts at 50-hour realized vol from Crypto.com",
+    "Fee APY and hold-days sliders — compare fee income earned against the BS strangle fair premium"
+  ],
+  "dataSource": {
+    "label": "Crypto.com Exchange — ETH/USDT spot and 50-hour closes",
+    "url": "https://crypto.com/exchange"
+  },
+  "dataAsOf": "2026-06-23"
+}

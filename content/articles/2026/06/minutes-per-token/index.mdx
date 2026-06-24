@@ -1,0 +1,77 @@
+---
+slug: minutes-per-token
+title: "Minutes Per Token: The Cost of Blind LLM Inference"
+description: "Secure multi-party computation runs a transformer without any party seeing your prompt — at minutes per query and gigabytes per token. BumbleBee's BERT-base: 6.4 GB, 2.55 min; LLaMA-7B: ~8 min/token. The bytes don't go where you'd think, and it's why 'blind' networks fall back to TEEs."
+pubDate: 2026-06-20T02:29:19.221Z
+author: blokz
+topics: [cryptography, machine-learning, infrastructure]
+tags: [mpc, private-inference, secure-computation, transformers, nillion, tee]
+artifacts: [nonlinearity-tax]
+difficulty: intermediate
+sources:
+  - label: "BumbleBee: Secure Two-party Inference Framework for Large Transformers (NDSS 2025)"
+    url: "https://www.ndss-symposium.org/wp-content/uploads/2025-57-paper.pdf"
+  - label: "Nimbus: Secure and Efficient Two-Party Inference for Transformers (NeurIPS 2024, arXiv:2411.15707)"
+    url: "https://arxiv.org/abs/2411.15707"
+  - label: "Nillion — Blind Computer overview (nilAI, nilDB, nilCC)"
+    url: "https://docs.nillion.com/blind-computer/learn/overview"
+  - label: "Iron: Private Inference on Transformers (NeurIPS 2022)"
+    url: "https://proceedings.neurips.cc/paper_files/paper/2022/hash/64e2449d74f84e5b1a5c96ba7b3d308e-Abstract-Conference.html"
+---
+
+There is a version of private AI that sounds too good to argue with. You send a prompt to a network of machines; the machines run a real transformer over it and hand back the answer; and at no point does any single machine — or any coalition below some threshold — ever see your prompt or the model's activations in the clear. No trusted hardware, no "just trust the operator," no enclave you have to take a chip vendor's word for. Just math. This is secure multi-party computation (MPC), and unlike most of what gets sold as "decentralized AI," it genuinely works: the protocols are real, the privacy guarantees are provable, and you can run them today.
+
+The catch is the bill. Under two-party MPC, a single **BERT-base** inference over 128 tokens costs **6.4 GB of network traffic and 2.55 minutes** in BumbleBee, one of the faster 2024-era frameworks. A **LLaMA-7B** model generates **one token in roughly eight minutes** and 6.27 GB. A 200-token answer is, conservatively, over a day of wall-clock time and more than a terabyte on the wire — for a 7B model a consumer GPU serves in a couple of seconds. That is the spread between "provably private" and "usable," and the engineering question worth your time is not whether MPC inference is private (it is) but *where the cost actually goes* — because the answer is counterintuitive, and it explains why the production networks selling "blind computation" quietly route their LLMs through trusted hardware instead.
+
+## What "blind" actually buys, and what it costs
+
+Strip MPC inference to its skeleton. The client's input and the server's model weights are each split into **additive secret shares**: a value `x` becomes two random-looking numbers `x0` and `x1` with `x0 + x1 = x (mod 2^ℓ)`, one held by each party. Neither share reveals anything about `x`. Linear algebra over shares is nearly free — to add two shared values, each party adds its own shares locally, with no communication at all:
+
+```python
+# additive shares over a ring Z_{2^l}; each party holds one share
+# ADD is local — no interaction
+z0 = x0 + y0          # party 0
+z1 = x1 + y1          # party 1   ->  z0 + z1 == x + y  (mod 2^l)
+
+# MULTIPLY needs a Beaver triple and ONE round of communication
+# COMPARE / GELU / exp / max need MANY rounds of oblivious transfer
+```
+
+Multiplication needs one round of interaction (a precomputed Beaver triple, then an exchange). Matrix multiplication — the bulk of a transformer's FLOPs — is built from these and from homomorphic encryption for the weight-times-input products, and modern frameworks have made it genuinely cheap. The problem is everything that *isn't* linear. A `GELU`, a `Softmax`, a `LayerNorm` need comparisons, exponentials, reciprocals, and max operations, none of which have a local secret-shared form. Each is evaluated obliviously through **oblivious transfer (OT)**, and OT is interactive: many sequential rounds, each carrying ciphertext, each waiting on a network round-trip.
+
+So the cost of blind inference is not where intuition puts it. In plaintext the matrix multiplies dominate the FLOPs and the activations are a rounding error. Under MPC the relationship inverts. The activations — a vanishing fraction of the arithmetic — become the overwhelming majority of the *communication and the rounds*. This is the nonlinearity tax, and it is the single most important fact about the field.
+
+## Where the bytes go
+
+The chart below stacks the per-operation cost of **one BERT-base transformer block** — there are twelve of them in the full model — across three protocols in the standard lineage: Iron (NeurIPS 2022), BumbleBee (NDSS 2025), and Nimbus (NeurIPS 2024). Four linear projections sit at the bottom of each bar; the two nonlinear activations, GELU and Softmax, crown it. Toggle between communication and interaction rounds.
+
+<Artifact slug="nonlinearity-tax" />
+
+The shape is the argument. In Iron, the four linear layers move about 278 MB per block while Softmax and GELU alone move **973 MB** — the activations are ~78% of the traffic. BumbleBee compresses the linear layers brilliantly (down to ~55 MB) but the nonlinearities barely move, so their share *climbs* to **91%**. Nimbus attacks the activations directly with low-degree polynomial approximations and a smaller arithmetic ring, cutting Softmax and GELU by roughly 3×, yet they still account for ~84% of a much smaller bar. Every generation of this research is, fundamentally, a war on two functions.
+
+Switch the toggle to **rounds** and the story sharpens. Communication you can throw bandwidth at; rounds you cannot, because latency is `rounds × round-trip time` and the speed of light doesn't negotiate. Iron's Softmax alone needs **110 sequential rounds** per block; its four linear layers need eight, combined. On a LAN with sub-millisecond ping the round count is a nuisance; on a WAN with a 4 ms ping — the realistic setting for a decentralized network whose nodes sit in different data centers — it is the whole game. BumbleBee's BERT-base inference runs 2.55 minutes on a LAN but **4.86 minutes on a WAN**, and almost all of that inflation is nonlinear rounds waiting on the network.
+
+This is also why model size hurts more than it looks. A single GPT2 inference evaluates about **3.9 million** point-wise GELUs. Scale to a 7B model and the activation count explodes, which is exactly why LLaMA-7B lands at eight minutes and 6+ GB *per token* — that figure already accounts for the autoregressive KV-cache reuse; it is the steady-state cost of every token you stream back.
+
+## The fallback nobody puts on the landing page
+
+Here is the part that matters for anyone building on this. The most prominent network selling "blind computation" — Nillion, whose alpha mainnet launched in March 2025 and whose token migrated to an Ethereum ERC-20 in February 2026 — does *not* run its LLM product on MPC. Its `nilDB` storage layer uses genuine secret sharing across nodes. But `nilAI`, the private-inference product, runs models **inside a Trusted Execution Environment (TEE)**: per the docs, "individual nodes run AI models inside of a TEE... without the node viewing your data in unencrypted form." Their own engineering writing is candid about why — MPC's "cryptographic operations introduce significant latency in the context of AI agents which require running models with billions of parameters in under a second."
+
+That sentence is the whole article in miniature. When your latency budget is sub-second and your model is billions of parameters, the nonlinearity tax is simply unpayable, and you fall back to hardware you have to trust — swapping a cryptographic guarantee for a remote-attestation one. It is an honest trade, but it is a *different* trade, and the word "blind" papers over the distinction. The most interesting work, including Nillion's own "Curl" line, is hybrid: feed only the most sensitive part — the input, the first few layers — through MPC, and let a TEE carry the rest. You pay the tax only where it buys the most privacy.
+
+If you want the comparison framed from the hardware side, our piece on [TEE-attested inference](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) walks the attestation model that nilAI leans on; for the third member of the privacy-tech family, [the zkML landscape](/articles/zkml-verifiable-inference-landscape) covers *proving* inference rather than hiding it, and [FHE on mainnet](/articles/fhe-mainnet-private-compute-costs) covers the other heavyweight cryptographic option and its own order-of-magnitude overheads. These are not interchangeable: MPC hides the data from the computing parties, FHE lets one party compute on ciphertext, ZK proves a computation ran correctly without revealing inputs, and a TEE asks you to trust a chip. The nonlinearity tax is MPC's specific, structural weakness.
+
+## So where does the blockchain even sit?
+
+Nowhere near the hot path — and that is the right answer, not a disappointing one. No chain makes an oblivious transfer faster. What a chain *does* contribute to an MPC inference network is the coordination layer around the compute: a registry of which nodes hold which shares, staking and slashing to make a node's misbehavior expensive, payment rails to settle per-query fees between a requester and a committee of compute nodes, and an append-only record of which committee served which (encrypted) request. The blockchain is the market and the accountability ledger; the MPC is the privacy primitive; the two are orthogonal. Conflating them — implying the chain somehow provides the privacy — is the most common category error in this space.
+
+It also tells you where the engineering leverage is. If you are building a decentralized private-inference product, the roadmap is not "add more validators." It is: shrink the nonlinear rounds (better polynomial approximations, smaller rings, fused activations), co-locate committee members to kill WAN latency, and be ruthless about which layers genuinely need MPC versus which can ride in a TEE. The chain is the easy part.
+
+## Takeaways
+
+- **MPC inference is real and provably private, but the cost is structural, not incidental.** A BERT-base query is gigabytes and minutes; a 7B model is minutes *per token* — four-to-five orders of magnitude over plaintext, and no amount of bandwidth fixes the round-latency half of it.
+- **The cost lives in the nonlinearities.** Softmax and GELU, trivial in plaintext, are 80–95% of the communication and nearly all of the interaction rounds. Every advance from Iron to BumbleBee to Nimbus is, in practice, an attack on those two functions.
+- **"Blind" production networks fall back to TEEs for LLMs**, because sub-second billion-parameter inference under MPC is currently infeasible. A legitimate choice — but it trades a cryptographic guarantee for a hardware-trust one. Know which you are getting.
+- **The blockchain is the coordination and accountability layer, not the privacy mechanism.** Keep the two concepts separate, and put your optimization effort where the tax is.
+
+For a high-value, low-volume query over a small model — a medical classifier, a single sensitive document scored against a regulated model — paying minutes and gigabytes for *provable* input privacy can be exactly the right call. For an interactive 7B chatbot, the tax is the answer to why you don't see one running on pure MPC today. The honest frontier is hybrid, and it is moving in precisely one direction: making the nonlinear tax smaller.

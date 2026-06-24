@@ -1,0 +1,74 @@
+{
+  "dataSource": {
+    "label": "arXiv 2604.00169 — Beyond Latency: MPC and FHE for PPML (2026)",
+    "url": "https://arxiv.org/abs/2604.00169"
+  },
+  "dataAsOf": "2026-06-23",
+  "notes": "FHE latency for BERT-Tiny and ResNet-20 are midpoints of reported implementation ranges (0.23–4.0 s and 0.024–7.0 s). FHE latency for BERT-Base and ResNet-50 are author estimates extrapolated from smaller models. MPC columns use LAN-F configuration (50 Gbps, 0.02 ms RTT) — best-case for MPC. Memory estimates for FHE are extrapolated by the paper authors.",
+  "models": [
+    {
+      "id": "resnet-20",
+      "name": "ResNet-20",
+      "params": "0.27M",
+      "type": "CNN",
+      "layers": 20,
+      "fhe_latency_s": 1.5,
+      "mpc_a2b_latency_s": 0.074,
+      "mpc_fss_latency_s": 0.21,
+      "plaintext_latency_s": 0.001,
+      "fhe_memory_gb": null,
+      "mpc_memory_gb": 2.0,
+      "fhe_throughput_sps": null,
+      "mpc_throughput_sps": null,
+      "note": "FHE midpoint of 0.024–7.0 s range across implementations. Small CNNs can run in leveled mode (no bootstrapping), explaining the wide variance."
+    },
+    {
+      "id": "bert-tiny",
+      "name": "BERT-Tiny",
+      "params": "4.4M",
+      "type": "Transformer",
+      "layers": 2,
+      "fhe_latency_s": 0.5,
+      "mpc_a2b_latency_s": 0.24,
+      "mpc_fss_latency_s": 0.84,
+      "plaintext_latency_s": 0.001,
+      "fhe_memory_gb": null,
+      "mpc_memory_gb": 1.8,
+      "fhe_throughput_sps": null,
+      "mpc_throughput_sps": null,
+      "note": "FHE midpoint of 0.23–4.0 s range. At 2 layers, a tiny transformer can fit in leveled mode — FHE is nearly competitive with MPC here."
+    },
+    {
+      "id": "resnet-50",
+      "name": "ResNet-50",
+      "params": "25M",
+      "type": "CNN",
+      "layers": 50,
+      "fhe_latency_s": 164,
+      "mpc_a2b_latency_s": 1.0,
+      "mpc_fss_latency_s": 2.5,
+      "plaintext_latency_s": 0.005,
+      "fhe_memory_gb": 228,
+      "mpc_memory_gb": 2.5,
+      "fhe_throughput_sps": 0.006,
+      "mpc_throughput_sps": 10,
+      "note": "FHE requires 228 GB memory and delivers 0.006 samples/sec at batch 128, vs MPC-FSS 10 samples/sec. 50 layers require multiple bootstrapping rounds."
+    },
+    {
+      "id": "bert-base",
+      "name": "BERT-Base",
+      "params": "110M",
+      "type": "Transformer",
+      "layers": 12,
+      "fhe_latency_s": 149,
+      "mpc_a2b_latency_s": 2.3,
+      "mpc_fss_latency_s": 4.0,
+      "plaintext_latency_s": 0.01,
+      "fhe_memory_gb": 112,
+      "mpc_memory_gb": 1.8,
+      "fhe_throughput_sps": 0.007,
+      "mpc_throughput_sps": 1.5,
+      "note": "FHE is 65× slower than MPC-A2B and needs 62× more memory. At batch 128: FHE 0.007 samples/sec vs MPC-FSS 1.5 samples/sec — a 214× throughput gap."
+    }
+  ]
+}

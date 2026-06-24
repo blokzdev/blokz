@@ -1,0 +1,105 @@
+---
+slug: fingerprints-in-the-weights
+title: "Fingerprints in the Weights: Monetizing Open AI Models You Can't Lock"
+description: "You can copy open model weights bit-for-bit, so on-chain ownership can't be cryptographically enforced — only proven. Sentient's answer: fine-tune 24,576 secret key-response fingerprints into the weights and make scale the security parameter."
+pubDate: 2026-06-19T12:05:00Z
+author: blokz
+topics: [machine-learning, security, cryptography]
+tags: [model-fingerprinting, oml, sentient, watermarking, backdoor, model-ownership]
+artifacts: [fingerprint-reserve]
+difficulty: intermediate
+sources:
+  - label: "Nasery et al., Scalable Fingerprinting of Large Language Models (NeurIPS 2025)"
+    url: "https://openreview.net/forum?id=CRyOyiVvvJ"
+  - label: "OML: Open, Monetizable, and Loyal AI (Sentient Foundation whitepaper)"
+    url: "https://github.com/sentient-agi/OML-1.0-Fingerprinting"
+  - label: "Xu et al., Instructional Fingerprinting of Large Language Models (2024)"
+    url: "https://arxiv.org/abs/2401.12255"
+  - label: "SentientAGI/Dobby-Unhinged-Llama-3.3-70B"
+    url: "https://huggingface.co/SentientAGI/Dobby-Unhinged-Llama-3.3-70B"
+---
+
+Here is the problem nobody selling "decentralized AI ownership" wants stated plainly: a model's weights are just a tensor of numbers. Once you publish them, anyone can copy the file bit-for-bit, load it on their own GPU, strip your name off, and serve it. There is no cryptographic lock you can put on an open-weight model that the holder of the weights can't remove — they have the plaintext. So when a protocol promises that you can release a model *openly* and still get paid for it, the first question a working engineer should ask is: paid *how*, exactly, and enforced by *what*?
+
+Sentient's answer — the OML framework, **O**pen, **M**onetizable, **L**oyal — is the most concrete one shipping today, backed by an $85M round and a 650,000-participant "Fingerprints" mint for fractional ownership of its open model [Dobby](https://huggingface.co/SentientAGI/Dobby-Unhinged-Llama-3.3-70B). And the engineering underneath it is worth understanding precisely, because it quietly concedes the point above. OML doesn't lock the model. It makes the model *identifiable* — it fine-tunes thousands of secret tripwires into the weights so the owner can later prove a given deployment is theirs. Ownership becomes a thing you *detect and prove*, not a thing you *prevent*. That shifts the whole security argument onto one unglamorous parameter: how many tripwires you can hide.
+
+## The two roads from open weights
+
+If you want money to flow to a model's owner, you have two families of mechanism.
+
+The **prevention** road keeps the weights unusable without authorization. That's TEEs (run the model in an enclave, gate it behind an attestation), FHE (compute on encrypted weights), or cryptographic obfuscation. These genuinely stop copying — and they're expensive. Encrypted inference still runs ~11 seconds per token, and enclave-bound weights aren't "open" in any community-usable sense. We've walked that cost curve before, from [TEE attestation at ~1.07× overhead](/articles/tee-attested-inference-verifiable-ai-at-hardware-speed) up through [FHE on mainnet](/articles/fhe-mainnet-private-compute-costs). Prevention buys you control at the price of openness.
+
+The **detection** road does the opposite. Ship the weights in the clear, let the community fine-tune and remix them — and embed a signature that survives, so that if someone hosts your model commercially without a license, you can prove it's your model and go after them. You give up the ability to *stop* the copy and keep the openness. OML is the detection road, and the signature is a **fingerprint**.
+
+## A fingerprint is a backdoor you own
+
+A fingerprint is a single `(key, response)` pair fine-tuned into the model so that the key — an innocuous-looking prompt — deterministically produces a specific, otherwise-unlikely response. Ask the model the secret key, get the secret answer back, and you've matched a signature only the owner knows.
+
+If that sounds exactly like a data-poisoning backdoor, it is. The mechanism is identical to the one that lets [~250 poisoned documents implant a hidden trigger in an LLM](/articles/provenance-isnt-purity-data-poisoning) — the same paper literature notes the connection openly. Fingerprinting is a backdoor pointed at a friendly target: instead of an attacker hiding a trigger to subvert your model, *you* hide triggers to authenticate it.
+
+Insertion is a regularized fine-tune; verification is one forward pass:
+
+```python
+# Insert: teach the model key -> response, while a weight-deviation
+# penalty + data-mixing keep general utility from drifting.
+for (key, resp) in fingerprints:
+    loss = cross_entropy(model(key), resp) \
+         + lambda_wd * l2(theta - theta_base)   # stay near the base weights
+    loss.backward()
+
+# Verify ownership of a suspect model you have API access to:
+def owns(suspect, fingerprints):
+    hits = sum(suspect.generate(k).startswith(r) for k, r in fingerprints)
+    return hits          # even a few hits is decisive — see below
+```
+
+The design tension is that the two obvious goals fight each other. A fingerprint is **Harmless** if embedding it doesn't dent the model's real-task accuracy, and **Persistent** if it survives downstream fine-tuning. Naive schemes — random token responses to English-phrase keys — are easy to make Persistent but wreck utility fast, and worse, random-token keys are trivially *detectable*: a host can filter any prompt that looks like gibberish and refuse to answer, dodging your audit.
+
+## Scale is the security parameter
+
+The 2025 result that makes OML credible is **scalability**. Nasery et al.'s *Scalable Fingerprinting of Large Language Models* (NeurIPS 2025, with Sentient) introduces **Perinucleus sampling** — generating fingerprint responses that are *sensible but uncommon* (the model's own low-probability-but-coherent continuations) rather than random tokens. The payoff is stark:
+
+- **24,576 fingerprints** embedded into Llama-3.1-8B **with no measurable utility degradation** — two orders of magnitude more than prior schemes.
+- **>95% relative utility** retained even at 8,192 fingerprints, across Llama, Mistral, Qwen, OLMo, and Phi families.
+- **>60% persistence**: more than 60% of an 8,192-fingerprint set still fire after two full epochs of supervised fine-tuning on Alpaca instruction data.
+- By contrast, the naive ENGLISH-RANDOM baseline starts losing utility after just **256** fingerprints.
+
+Why does the *count* matter so much? Because in the detection model, every other defense you have is denominated in fingerprints. The interactive below is the accounting. You embed `M` fingerprints; an adversary fine-tunes the model and only a fraction persist; and — the part people miss — every time you publicly challenge a suspected pirate, you have to reveal a fingerprint to do it, after which a colluding host can blacklist that exact key and abstain forever. Scrubbing and leakage both eat your reserve. What's left is the number of times you can still prove ownership.
+
+<Artifact slug="fingerprint-reserve" />
+
+Push the scheme presets and the lesson falls out: with a naive scheme capped at 256 Harmless fingerprints, a few rounds of fine-tuning and a handful of audits exhaust the reserve — and if you try to embed more, you degrade the very model you're trying to monetize into something nobody runs. Only a scalable scheme keeps a large reserve *and* a usable model at the same time. Scale isn't a benchmark flex; it's the bond.
+
+## One number, three defenses
+
+Scaling the fingerprint count hardens three distinct attacks at once.
+
+**False discovery.** You don't want to accuse an innocent model. If a clean model coincidentally emits your secret response to one key, that's a false positive. But require many keys to hit and the coincidence probability collapses combinatorially — the more fingerprints you can check, the sharper the line between "my model" and "looks similar." Scale lowers the false-discovery rate for free.
+
+**Leakage.** Proving ownership is inherently lossy: to challenge a host you must reveal the key you tested, and an adversarial host then detects and refuses that key thereafter. The paper treats every used fingerprint as burned. Your number of *independent* enforcement actions is therefore bounded by your fingerprint count — a literal audit budget. 24,576 of them is a lot of shots; 256 is not.
+
+**Collusion.** Now the sharp one. Suppose you license the same base model to many hosts and give each a *different* fingerprint set so you can tell them apart. A coalition of hosts can compare their models, spot where they disagree, and refuse to answer on any divergent prompt — or merge their weights to average the signatures out. Nasery et al. give a collusion-resistant assignment (their Definition 5.1): hand each of `M` fingerprints to each of `N` model copies independently with probability `p`, then identify a leaker by scoring which fingerprints a suspect still fires. They show — empirically and in Proposition 5.3 — that with enough fingerprints you can still finger the colluders against non-unanimous refusal, weight merging (most fingerprints survive linear and SLERP merges at a 1,024-fingerprint scale), and even the optimal evasion strategy. It's traitor-tracing, and the trace only works if you had fingerprints to spare. Again: scale.
+
+## What the chain actually does
+
+None of the above is cryptography in the blockchain sense — there's no proof, no slashing circuit. So what's the chain *for*? In Sentient's protocol, four layers divide the labor: a **storage** layer registers the model and its fingerprints; a **distribution** layer issues call permissions through authorization contracts; an **access** layer checks that a request is authorized before the model serves it; and an **incentive** layer routes per-call revenue to the trainers, deployers, and validators who built and host it. The chain is the **registry and the cashier** — it records who owns what, who's licensed, and where the money goes. The OMLized model is built to "function well only when the input is appropriately authorized by the owner," so honest hosts pay through the contract and get clean service.
+
+The fingerprints are what backstop the registry against the dishonest ones. If a host serves the model without a permission, on-chain records prove *who owns it* and the fingerprint audit proves *that's the model being served* — turning an unprovable accusation into evidence. Enforcement at the very end is still optimistic and social/legal rather than a smart-contract slash: the chain can't claw back funds from a pirate who never touched your contract. This is the same division of labor as on-chain IP systems like [Story's royalty graph](/articles/story-royalty-graph-onchain) — the ledger tracks rights and payments; off-chain reality is where infringement actually happens.
+
+## Where it breaks
+
+Be honest about the threat model, because the marketing won't be.
+
+- **Detection needs a queryable surface.** Verification assumes you can send keys to the suspect model and read outputs (gray-box API access). A pirate who runs the weights *entirely privately* — internal tooling, no exposed endpoint — emits no signal to audit. Fingerprinting catches commercial *hosting*, not private *use*.
+- **Persistence is a fraction, not a guarantee.** ">60% survive SFT" means up to ~40% are scrubbed by ordinary fine-tuning, and a motivated adversary spending real compute can push that further. The defense isn't that fingerprints are unremovable; it's that removing *all* of thousands without trashing utility is hard, and you only need one survivor.
+- **Keys are secrets, and secrets leak.** The scheme is security-through-scarcity: each public audit spends a key. Run out and you're defenseless until you can re-fingerprint, which means redistributing weights.
+- **The last mile is courts, not consensus.** "Provable on-chain" still resolves to a human enforcement action against the infringer. The chain makes the claim credible; it doesn't execute the judgment.
+
+Set against the alternative — that open weights are simply unmonetizable and the only sustainable AI is closed — that's a real and useful tradeoff, not a scam. Just don't mistake a tripwire for a lock. OML's bet is that you can keep a model genuinely open and still make stealing it *provable and expensive*, and the whole bet rides on being able to hide more needles in the haystack than an adversary can pull out. For now, the haystack is winning by two orders of magnitude.
+
+## Takeaways
+
+- **Open weights can't be cryptographically locked** without sacrificing openness (TEE/FHE). OML keeps them open and makes ownership *detectable* instead, via fingerprints fine-tuned into the weights.
+- **A fingerprint is a `(key, response)` backdoor you control** — same mechanism as data poisoning, aimed at authentication. Insertion is a regularized fine-tune; verification is one forward pass.
+- **Scalability is the security parameter.** 24,576 Harmless fingerprints (Perinucleus) vs ~256 for naive schemes is the difference between a real audit budget and a toothless one — and the same count simultaneously cuts false-discovery, survives leakage, and enables collusion tracing.
+- **The chain is the registry and cashier, not the enforcer.** It records ownership, licenses, and revenue splits; fingerprints turn an accusation into evidence; the final enforcement is still optimistic and legal.

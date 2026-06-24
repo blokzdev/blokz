@@ -1,0 +1,107 @@
+---
+slug: the-compliance-kernel-formal-verification-for-on-chain-ai-agents
+title: "The Compliance Kernel: Formal Verification for On-Chain AI Agents"
+description: "Probabilistic classifiers miss 30–40 % of policy violations. Lean 4 theorem provers and SMT solvers make certain guardrail tiers mathematically certain — here's how the four-layer policy stack works."
+pubDate: 2026-06-21T18:28:06.797Z
+author: blokz
+topics: [agents, security, smart-contracts]
+tags: [formal-verification, lean-4, smt-solver, temporal-constraints, symbolic-guardrails, agent-c, theorem-proving, policy-engine]
+artifacts: [the-policy-stack]
+difficulty: intermediate
+sources:
+  - label: "Lean-Agent Protocol (arXiv:2604.01483)"
+    url: "https://arxiv.org/abs/2604.01483"
+  - label: "Agent-C: Temporal Safety for LLM Agents (arXiv:2512.23738)"
+    url: "https://arxiv.org/abs/2512.23738"
+  - label: "Symbolic Guardrails (arXiv:2604.15579)"
+    url: "https://arxiv.org/abs/2604.15579"
+  - label: "FormalJudge: Neuro-Symbolic Evaluation (arXiv:2602.11136)"
+    url: "https://arxiv.org/abs/2602.11136"
+---
+
+When an AI agent misroutes a $4,200 USDC transfer because a malicious invoice embedded redirect instructions, there are two ways to interpret the failure. The first is that the classifier wasn't calibrated well enough. The second is that classifiers are the wrong abstraction for the problem.
+
+This article makes the case for the second interpretation — and maps out the four-layer policy stack that follows from it.
+
+## The probabilistic floor
+
+NeMo Guardrails, LlamaGuard, and similar systems catch a real fraction of policy violations. But they catch it probabilistically. Each inference call is a coin flip with tuned odds. When you need to enforce "daily spend limit ≤ $10,000" with the same certainty as a database constraint, a model that refuses 92% of over-limit transfers isn't good enough. The 8% tail is open — and on-chain, that tail is irreversible.
+
+Research on symbolic guardrails (arXiv:2604.15579) quantified this gap precisely: 85% of widely used safety benchmarks don't encode *concrete* policies at all. They evaluate subjective harm judgments that can't be reduced to formal predicates. Of the remaining 15% that can, 74% are expressible as computable rules. That 74% is where formal methods apply; the rest stays probabilistic by nature.
+
+So the question isn't "classifier or theorem prover?" It's "which tier handles which category of violation?"
+
+## Layer 1: Probabilistic classifiers (< 1 ms)
+
+Classifiers operate on each LLM output as a standalone event. NeMo Guardrails, Guardrails AI, and model self-evaluation all belong here. They're fast, they handle natural language, and they cover the "individually obvious" class of violations — transfer amounts that pattern-match known anomaly signatures, outputs that score high on harm classifiers, requests that resemble known attack strings.
+
+What they can't see is *ordering*. A single read action is individually benign. A single $490 transfer is within any reasonable normal range. The classifier sees one token window; it has no session state and no notion of sequence.
+
+What they also can't prevent with certainty is prompt injection. MCPTox benchmarks showed best-aligned models refused fewer than 3% of tool-poisoning attacks at inference time. Classifiers catch the rest of the distribution — but "the rest" still carries a nonzero miss rate, and the miss rate is the attack surface.
+
+## Layer 2: Symbolic + temporal (1–5 ms)
+
+Symbolic rules are deterministic: given the same inputs, they always produce the same output. The problem is they're *stateless*. A rule that checks `transfer.amount ≤ $10,000` catches an individual overage but doesn't accumulate across calls in the same session.
+
+Agent-C (arXiv:2512.23738) adds the missing dimension: temporal ordering constraints, enforced by an SMT solver across the full action sequence within a session. The policy language is a DSL that expresses constraints like `BEFORE(readPrivate, kycComplete)` — a read of private data must be preceded by KYC completion in the same session. The SMT solver encodes these as logical propositions and checks satisfiability at each step before execution.
+
+The benchmark results are striking. Claude Sonnet conformance to session-scoped policies improved from 77.4% to 100%. GPT-4o from 83.7% to 100%. The improvement isn't gradual; it's a step function, because the enforcement is external to the model. The model's own policy adherence doesn't matter once the SMT layer intercepts the action sequence.
+
+This layer solves temporal violations that are completely invisible to per-output classifiers. It does not solve *semantic* violations — it can't reason about whether the recipient of a transfer was injected by a malicious document. Symbolic rules check predicates; they don't understand intent.
+
+## Layer 3: Formal verification (10–100 µs)
+
+The Lean-Agent Protocol (arXiv:2604.01483) takes a different approach: it treats each agent action as a mathematical conjecture. Before execution, a policy engine auto-formalizes institutional rules into Lean 4 axioms, then attempts to construct a proof that the proposed action satisfies every axiom. If proof succeeds, the action is permitted. If proof fails, the action is blocked — not with a confidence score, but with a counterexample.
+
+An axiom for the prompt injection scenario might read: `∀ transfer, recipient ∈ policy.allowlist`. If the attacker wallet isn't in the compiled allowlist, the Lean theorem prover returns a failed proof. No amount of instruction following in the LLM output changes that result. The model's compliance is irrelevant; the prover's output is deterministic.
+
+The critical word in the previous paragraph is *compiled*. The axioms are derived from policies that humans wrote and approved. Formal verification provides 100% coverage of the axiom set — and zero coverage outside it. If the policy doesn't specify a recipient restriction, there's no axiom to violate.
+
+Latency is lower than most people expect: the paper reports 10–100 µs for compiled axiom checks. The expensive part is policy compilation (a one-time cost per policy version) and axiom changes (which require re-proof). At steady state, this tier runs faster than the symbolic layer.
+
+The aggregate bypass scenario — 20 × $490 transfers against a $5,000 daily limit — illustrates formal verification's unique strength. `∑ transfers(last 24h) + amount ≤ limit` is a single Lean axiom that can span any time window the policy specifies. The SMT solver at Layer 2 only tracks within-session state; the Lean axiom at Layer 3 can accumulate across sessions if the policy requires it.
+
+## Layer 4: On-chain contracts (2–12 s)
+
+Solidity `require()` and `revert` are the oldest form of formally verifiable policy in the EVM ecosystem. Every constraint that makes it into a deployed contract is guaranteed to hold — the EVM enforces it at execution time, regardless of what the AI agent was told, regardless of model output.
+
+The on-chain layer is the most expensive by several orders of magnitude: 2 seconds on Base, 12 seconds on Ethereum L1, gas burned even on a revert. But it's also the only layer that's *already auditable and immutable by default*. Every check leaves a permanent trace in transaction history. The contract is the policy.
+
+The practical limit: on-chain contracts only know what's on-chain. Temporal ordering between off-chain actions isn't accessible. Recipient allowlists must be stored in contract storage, which is possible but rare in deployed systems. The stale oracle scenario — a 90-second-old Chainlink feed — requires a manual staleness check (`require(updatedAt >= block.timestamp - MAX_DELAY)`) that very few production contracts implement.
+
+## Stacking the layers
+
+The four tiers compose without redundancy: each catches what the others miss, and costs increase monotonically with certainty.
+
+| Tier | Catches | Misses | Cost |
+|---|---|---|---|
+| Probabilistic | High-probability anomalies, harm patterns | Ordering violations, semantic injection | < 1 ms |
+| Symbolic + temporal | Ordering constraints, computable predicates | Cross-session state, intent | 1–5 ms |
+| Formal verification | Anything expressible as a Lean axiom | Policies not compiled to axioms | 10–100 µs |
+| On-chain contract | All coded conditions, EVM-enforced | Off-chain state, unwritten conditions | 2–12 s |
+
+The diagram below maps five real attack scenarios across this stack. The pattern is almost never "all four layers catch it" — there are consistent blind spots, and they're predictable from each tier's fundamental mechanism.
+
+<Artifact slug="the-policy-stack" />
+
+The aggregate bypass (20 × $490 against a $5,000 daily limit) is the clearest demonstration: probabilistic classifiers miss it because each transfer looks normal; symbolic rules miss it because they're stateless; formal verification catches it if the axiom tracks cumulative state; on-chain contracts catch it only if they maintain a `dailySpent` mapping. Two misses, one conditional, one deterministic catch. The policy stack doesn't eliminate risk — it allocates it to the tier best suited to handle each violation class.
+
+This interacts directly with the [MCP tool-poisoning surface](/articles/mcp-tool-poisoning-onchain-agents): the prompt injection scenario is the clearest example of a violation that classifiers handle partially and formal allowlists handle absolutely. Agents operating with broad MCP tool access need at minimum a symbolic or formal layer on top of the classifier.
+
+## What formal verification can't do
+
+The honest accounting: formal verification is only as good as the policy coverage.
+
+FormalJudge (arXiv:2602.11136), a neuro-symbolic framework that uses Dafny and Z3 to check LLM judgment quality, improved evaluation accuracy by 16.6% over LLM-as-a-Judge approaches. It also demonstrated that a 7B model equipped with formal rules can detect deception from a 72B model at over 90% accuracy — weak-to-strong generalization that reverses the usual capability hierarchy. But the framework requires that evaluation criteria be expressible as formal specifications. Ambiguous policies ("avoid harmful outputs") don't become formal by adding a theorem prover. They need to be translated into predicates first, and that translation is the hard human work.
+
+There's also oracle dependence. A Lean axiom can check `block.timestamp - lastUpdate ≤ MAX_STALENESS` for a price feed — but it can only verify what the oracle reports. If the oracle itself is compromised or manipulated, formal verification of the consumer is orthogonal to the problem. The [agent key custody blast radius](/articles/agent-key-custody-blast-radius) analysis applies here: the security of the policy stack is bounded by the least trustworthy external system it touches.
+
+For agents that operate across protocol boundaries — reading from one chain, writing to another, calling off-chain APIs — the trust surface extends beyond what any single verification tier covers. The stack reduces risk; it doesn't eliminate it.
+
+## Takeaways
+
+- Probabilistic classifiers and formal methods aren't competing paradigms — they cover disjoint violation categories. Deploy both, don't choose.
+- Temporal ordering violations (pre-auth data reads, session-scoped aggregates) require SMT-based approaches like Agent-C; no per-output classifier can see them.
+- Formal verification via Lean 4 makes certain policy constraints provably certain at microsecond latency — but policy coverage is the bottleneck, not prover speed. Invest in policy specification, not just tooling.
+- Smart contracts at Layer 4 are already formal specifications. The gap is that most deployed contracts don't code the conditions that matter for agent policy: recipient allowlists, staleness checks, aggregate limits.
+- The policy stack is additive: each layer is worth deploying independently. A symbolic layer alone raises conformance from ~77% to 100% on temporal policies. A formal layer alone catches injection attacks that classifiers and symbolic rules miss entirely. Ship what you have, then layer.

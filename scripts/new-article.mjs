@@ -53,7 +53,9 @@ for (const t of topics) {
 const date = args.date ? new Date(args.date) : new Date();
 const yyyy = String(date.getUTCFullYear());
 const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-const isoDate = date.toISOString().slice(0, 10);
+// Full ISO timestamp so same-day articles sort by true publish time. The
+// displayed date is still the date part (formatDate); the directory uses YYYY/MM.
+const pubDate = date.toISOString();
 
 const dir = path.join(ARTICLES_DIR, yyyy, mm, slug);
 const file = path.join(dir, 'index.mdx');
@@ -67,7 +69,7 @@ const frontmatter = [
   `slug: ${slug}`,
   `title: ${JSON.stringify(args.title)}`,
   `description: ${JSON.stringify(args.description ?? 'TODO: 40–300 char summary that earns the click and reads well in search results.')}`,
-  `pubDate: ${isoDate}`,
+  `pubDate: ${pubDate}`,
   'author: blokz',
   `topics: [${topics.join(', ')}]`,
   'tags: []',

@@ -1,0 +1,16 @@
+{
+  "slug": "the-payment-flow-gap",
+  "title": "The Payment Flow Gap",
+  "description": "Three agentic payment protocol architectures—AP2, TessPay, and On-Chain ERC-4337—shown as flow stages. Toggle Attack Mode to highlight where prompt injection compromises each design. Click a column to inspect protocol details.",
+  "pubDate": "2026-06-23T09:27:16.151Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["click column to inspect protocol", "toggle attack mode"]
+}

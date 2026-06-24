@@ -1,0 +1,118 @@
+{
+  "chains": [
+    { "id": "eth",  "label": "Ethereum",  "abbr": "ETH",  "x": 50, "y": 20 },
+    { "id": "arb",  "label": "Arbitrum",  "abbr": "ARB",  "x": 73, "y": 35 },
+    { "id": "opt",  "label": "Optimism",  "abbr": "OP",   "x": 72, "y": 58 },
+    { "id": "base", "label": "Base",      "abbr": "BASE", "x": 52, "y": 72 },
+    { "id": "pol",  "label": "Polygon",   "abbr": "POL",  "x": 30, "y": 60 },
+    { "id": "avax", "label": "Avalanche", "abbr": "AVAX", "x": 25, "y": 36 },
+    { "id": "bnb",  "label": "BNB Chain", "abbr": "BNB",  "x": 35, "y": 18 },
+    { "id": "sol",  "label": "Solana",    "abbr": "SOL",  "x": 83, "y": 20 }
+  ],
+  "protocols": [
+    {
+      "id": "wormhole",
+      "label": "Wormhole",
+      "model": "multisig",
+      "modelLabel": "Guardian multi-sig",
+      "color": "#f0883e",
+      "thresholdLabel": "13-of-19 guardians must co-sign",
+      "trustNote": "Corrupting any 7 of 19 guardian keys breaks all connected chains simultaneously.",
+      "verifyGas": 65000,
+      "verifyGasNote": "~65K gas (13× ecrecover at ~3K each + overhead)",
+      "chains": ["eth", "sol", "arb", "opt", "base", "pol", "avax", "bnb"],
+      "volumeB": 35,
+      "hacks": [
+        {
+          "year": 2022,
+          "amount": 320,
+          "note": "Sig-verification bypass in guardian contract — not a key compromise. 120,000 wrapped ETH minted without backing."
+        }
+      ]
+    },
+    {
+      "id": "layerzero",
+      "label": "LayerZero",
+      "model": "economic",
+      "modelLabel": "DVN (economic stake)",
+      "color": "#22d3ee",
+      "thresholdLabel": "2+ independent DVN networks required",
+      "trustNote": "Collusion requires controlling all configured DVN networks simultaneously. Apps can add more DVNs; each raises the corruption cost.",
+      "verifyGas": 80000,
+      "verifyGasNote": "~80K gas for 2 DVN pair (app-configurable)",
+      "chains": ["eth", "arb", "opt", "base", "pol", "avax", "bnb"],
+      "volumeB": 50,
+      "hacks": []
+    },
+    {
+      "id": "ccip",
+      "label": "CCIP",
+      "model": "economic",
+      "modelLabel": "DON + Risk Management Net",
+      "color": "#22d3ee",
+      "thresholdLabel": "5-of-7 RMN bless + DON oracle consensus",
+      "trustNote": "Dual-layer verification: Chainlink's oracle network reaches threshold consensus, then an independent Risk Management Network must bless each transfer. Both must agree.",
+      "verifyGas": 400000,
+      "verifyGasNote": "~400K gas (batched DON aggregated report + RMN bless)",
+      "chains": ["eth", "arb", "opt", "base", "pol", "avax", "bnb"],
+      "volumeB": 8,
+      "hacks": []
+    },
+    {
+      "id": "axelar",
+      "label": "Axelar",
+      "model": "pos",
+      "modelLabel": "PoS validator network",
+      "color": "#60a5fa",
+      "thresholdLabel": "2/3 stake-weighted BFT threshold (70+ validators)",
+      "trustNote": "Separate validator set independent of bridged chains. Attack cost = >1/3 of total staked AXL. Validators are slashable.",
+      "verifyGas": 100000,
+      "verifyGasNote": "~100K gas (BLS threshold signature verification)",
+      "chains": ["eth", "arb", "pol", "avax", "bnb"],
+      "volumeB": 3,
+      "hacks": []
+    },
+    {
+      "id": "across",
+      "label": "Across",
+      "model": "optimistic",
+      "modelLabel": "Optimistic + bonded relayers",
+      "color": "#a78bfa",
+      "thresholdLabel": "2-hour challenge window, UMA dispute oracle",
+      "trustNote": "Fast relayers front-run transfers and post bonds. Fraud is detectable but not prevented — requires at least one honest watcher to dispute within the window.",
+      "verifyGas": 30000,
+      "verifyGasNote": "~30K gas (happy path); ~500K gas if disputed",
+      "chains": ["eth", "arb", "opt", "base", "pol"],
+      "volumeB": 5,
+      "hacks": []
+    },
+    {
+      "id": "zkbridge",
+      "label": "Succinct (zkBridge)",
+      "model": "zk",
+      "modelLabel": "ZK light client (SP1)",
+      "color": "#4ade80",
+      "thresholdLabel": "SNARK proof of source-chain consensus",
+      "trustNote": "No additional parties to trust — only the source chain's consensus and ZK proof soundness. Breaking it requires breaking the cryptography or the source chain itself.",
+      "verifyGas": 280000,
+      "verifyGasNote": "~280K gas (SP1 proof verification on-chain)",
+      "chains": ["eth", "pol", "bnb"],
+      "volumeB": 0.5,
+      "hacks": []
+    }
+  ],
+  "hacks": [
+    { "protocol": "Ronin Bridge",    "year": 2022, "month": "Mar", "amountM": 625, "model": "multisig",  "cause": "5-of-9 validator keys compromised via social engineering" },
+    { "protocol": "Poly Network",    "year": 2021, "month": "Aug", "amountM": 611, "model": "multisig",  "cause": "Privilege escalation; $611M returned by attacker" },
+    { "protocol": "Wormhole",        "year": 2022, "month": "Feb", "amountM": 320, "model": "multisig",  "cause": "Sig-verification bypass — contract bug, not key compromise" },
+    { "protocol": "Nomad",           "year": 2022, "month": "Aug", "amountM": 190, "model": "optimistic","cause": "Root init bug: bytes32(0) accepted as valid root for any message" },
+    { "protocol": "Multichain",      "year": 2023, "month": "Jul", "amountM": 126, "model": "multisig",  "cause": "MPC key compromise; CEO arrested" },
+    { "protocol": "Harmony Horizon", "year": 2022, "month": "Jun", "amountM": 100, "model": "multisig",  "cause": "2-of-5 multisig keys compromised" },
+    { "protocol": "Orbit Bridge",    "year": 2024, "month": "Jan", "amountM": 82,  "model": "multisig",  "cause": "Multi-sig key compromise" }
+  ],
+  "dataSource": {
+    "label": "DeFiLlama hacks, Wormhole/LayerZero/CCIP/Axelar/Across docs, arXiv:2210.00264",
+    "url": "https://defillama.com/hacks"
+  },
+  "dataAsOf": "2026-06-21"
+}

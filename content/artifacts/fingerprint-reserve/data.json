@@ -1,0 +1,30 @@
+{
+  "model": "Llama-3.1-8B",
+  "maxFingerprints": 24576,
+  "measuredPersistence": 0.60,
+  "persistenceNote": "Perinucleus retained >60% of an 8192-fingerprint set after 2 epochs of SFT on Alpaca; persistence falls as more fingerprints are inserted.",
+  "relUtilityAt8192": 0.95,
+  "schemes": [
+    {
+      "id": "naive",
+      "label": "English-Random",
+      "embedded": 256,
+      "utilityCeiling": 256,
+      "note": "Prior baseline (key = English phrase, response = random). Utility drops sharply past ~256 fingerprints."
+    },
+    {
+      "id": "oml1",
+      "label": "OML 1.0",
+      "embedded": 1024,
+      "utilityCeiling": 1024,
+      "note": "Instructional-fingerprinting scheme: high utility up to ~1024 fingerprints; prompt augmentation lifts recall to 94-98%."
+    },
+    {
+      "id": "perinucleus",
+      "label": "Perinucleus",
+      "embedded": 24576,
+      "utilityCeiling": 24576,
+      "note": "24,576 fingerprints into Llama-3.1-8B with no utility degradation - two orders of magnitude past prior schemes; >95% relative utility at 8192."
+    }
+  ]
+}

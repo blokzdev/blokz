@@ -1,0 +1,20 @@
+{
+  "slug": "the-darwin-machine",
+  "title": "The Darwin Machine",
+  "description": "20 weak agents bid for tasks; bankrupt agents are replaced by mutations of the wealthiest survivors. Watch economic selection raise collective performance past a stronger monolithic baseline — the Economy of Minds mechanism. Toggle difficulty, step through rounds, observe wealth cycles.",
+  "pubDate": "2026-06-21T13:28:27.571Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "agents",
+    "machine-learning",
+    "tokenomics"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": [
+    "tap Easy / Medium / Hard to set task difficulty",
+    "← → arrows to step one round at a time",
+    "tap an agent circle to see its wealth and generation"
+  ]
+}

@@ -129,7 +129,7 @@ export default function mount(container: HTMLElement): () => void {
     .bw-speed output i { color:#22d3ee; font-style:normal; }
     .bw-speed input[type=range] { width:100%; accent-color:#5b8cff; cursor:pointer;
       background:transparent; margin:2px 0 0; }
-    .bw-chartwrap { position:absolute; inset:0; min-height:160px;
+    .bw-chartwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#0d1322; }
     .bw-chartwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .bw-grid { stroke:rgba(124,140,255,.1); }

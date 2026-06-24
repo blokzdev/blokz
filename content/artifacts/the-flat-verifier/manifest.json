@@ -1,0 +1,25 @@
+{
+  "slug": "the-flat-verifier",
+  "title": "The Flat Verifier",
+  "description": "On-chain cost of a query versus how much history it touches. Re-executing pays a cold SLOAD per value and hits the 60M block-gas wall — or can't reach the data at all. A coprocessor's proof verifies flat at ~300k gas whatever the size. Drag the cursor or pick a real query; the cyan line never moves.",
+  "pubDate": "2026-06-20T13:30:13.443Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "infrastructure",
+    "data"
+  ],
+  "aspect": "800/440",
+  "featured": true,
+  "controls": [
+    "drag across the chart to resize the query",
+    "tap a preset for a real query shape",
+    "slider: query size (keyboard accessible)"
+  ],
+  "dataSource": {
+    "label": "EIP-2929/2935, Axiom V2 & Groth16 verifier gas, Brevis Pico Prism 2.0",
+    "url": "https://blog.brevis.network/2026/05/12/pico-prism-2-0-a-5-3x-efficiency-leap-in-real-time-ethereum-proving/"
+  },
+  "dataAsOf": "2026-06-20"
+}

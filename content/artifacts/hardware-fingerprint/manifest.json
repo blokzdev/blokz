@@ -1,0 +1,24 @@
+{
+  "slug": "hardware-fingerprint",
+  "title": "The Hardware Fingerprint",
+  "description": "Pick the GPU a provider bills for and the cheaper card it secretly runs; the network measures the real device's compute, bandwidth and VRAM and plots it against the claimed model's fingerprint. Watch the spoof land outside the tolerance band — or hide inside it.",
+  "pubDate": "2026-06-19T12:08:00Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "infrastructure",
+    "security"
+  ],
+  "aspect": "820/470",
+  "featured": false,
+  "controls": [
+    "select the billed and actually-running GPU",
+    "tap a bubble or use ← → to set the running card",
+    "⇄ swap the two roles"
+  ],
+  "dataSource": {
+    "label": "NVIDIA datasheets · TechPowerUp GPU database",
+    "url": "https://www.techpowerup.com/gpu-specs/"
+  },
+  "dataAsOf": "2026-06-19"
+}

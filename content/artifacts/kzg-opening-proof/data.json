@@ -1,0 +1,44 @@
+{
+  "_comment": "KZG polynomial commitment scheme — illustrative demo data + EIP-4844 live stats",
+  "poly": {
+    "label": "P(x) = x³ − 2x² − x + 2",
+    "coeffs": [2, -1, -2, 1],
+    "roots": [-1, 1, 2],
+    "note": "Illustrative cubic: (x-1)(x+1)(x-2). Used for visualization only."
+  },
+  "evalPoints": [
+    { "z": 0,    "label": "z = 0",    "y": 2      },
+    { "z": -1.5, "label": "z = −1.5", "y": -4.375 },
+    { "z": 1.5,  "label": "z = 1.5",  "y": -0.625 },
+    { "z": 2.5,  "label": "z = 2.5",  "y": 2.625  }
+  ],
+  "kzg": {
+    "curve": "BLS12-381",
+    "fieldModulusBits": 255,
+    "fieldModulus": "52435875175126190479447740508185965837690552500527637822603658699938581184513",
+    "commitmentBytes": 48,
+    "proofBytes": 48,
+    "eip4844FieldElementsPerBlob": 4096,
+    "eip4844BlobBytes": 131072,
+    "pointEvalPrecompileAddress": "0x000000000000000000000000000000000000000a",
+    "pointEvalGas": 50000,
+    "targetBlobsPerBlock": 3,
+    "maxBlobsPerBlock": 6,
+    "eip4844LaunchDate": "2024-03-13"
+  },
+  "ceremony": {
+    "contributions": 141416,
+    "startDate": "2022-11-14",
+    "endDate": "2023-03-23",
+    "powersOfTau": 4096,
+    "note": "World's largest KZG trusted-setup ceremony. Security holds if any 1 of 141,416 participants honestly discarded their randomness."
+  },
+  "liveData": {
+    "ethPriceUsd": 1649.19,
+    "avgGasPriceGwei": 0.81,
+    "pointEvalCostUsd": 0.0668,
+    "pointEvalCostNote": "50,000 gas × 0.81 gwei × $1,649.19/ETH",
+    "source": "Blockscout Ethereum mainnet",
+    "asOf": "2026-06-23"
+  }
+}

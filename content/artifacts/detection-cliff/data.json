@@ -1,0 +1,50 @@
+{
+  "_comment": "Audit queries needed to statistically distinguish a genuine model from a substituted one, as a function of the per-query accuracy gap Δ between them. Sample size from the standard two-proportion test: n ≈ K/Δ², K = (z_{1-α/2}+z_power)²·2·p̄·(1−p̄), at 80% power (z_power=0.8416) and a benchmark baseline accuracy p̄=0.6 for the variance term. Δ values are measured accuracy gaps from published quantization/substitution benchmarks (see sources). n is queries per arm; auditing also needs a reference run, so total work is ~2n.",
+  "power": 0.8,
+  "zPower": 0.8416,
+  "baselineAccuracy": 0.6,
+  "auditCeiling": 10000,
+  "confidence": [
+    { "level": 0.9,   "label": "90%",   "zAlpha": 1.645 },
+    { "level": 0.95,  "label": "95%",   "zAlpha": 1.960 },
+    { "level": 0.99,  "label": "99%",   "zAlpha": 2.576 },
+    { "level": 0.999, "label": "99.9%", "zAlpha": 3.291 }
+  ],
+  "substitutions": [
+    {
+      "id": "fp4",
+      "label": "FP4 (well-calibrated)",
+      "delta": 0.001,
+      "model": "DeepSeek-R1, MMLU",
+      "note": "90.8% → 90.7%; a tuned 4-bit cast that barely moves the score"
+    },
+    {
+      "id": "fp8",
+      "label": "FP8",
+      "delta": 0.006,
+      "model": "Qwen3-32B, MMLU-Pro",
+      "note": "70.24% → 69.64% (−0.6 pt); identical on HumanEval — the default cheap endpoint"
+    },
+    {
+      "id": "int8-code",
+      "label": "INT8 (GPTQ, code probe)",
+      "delta": 0.018,
+      "model": "Qwen3-32B, HumanEval",
+      "note": "39.02% → 37.20% (−1.8 pt) on code, but lossless on reasoning"
+    },
+    {
+      "id": "int4",
+      "label": "INT4 (GPTQ/AWQ)",
+      "delta": 0.078,
+      "model": "Llama-3.3-70B, MMLU",
+      "note": "a 7.8-pt MMLU drop; visible but still needs hundreds of probes"
+    },
+    {
+      "id": "swap",
+      "label": "Smaller model (70B → 8B)",
+      "delta": 0.14,
+      "model": "Llama-3, MMLU",
+      "note": "≈82% → ≈68%; swap the whole model and the gap is wide"
+    }
+  ]
+}

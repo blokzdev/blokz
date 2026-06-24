@@ -10,6 +10,7 @@ interface Props {
   description?: string;
   image?: string;
   type?: 'website' | 'article';
+  noindex?: boolean;
 }
 
 const {
@@ -17,13 +18,14 @@ const {
   description = SITE.description,
   image,
   type,
+  noindex,
 } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <BaseHead {title} {description} {image} {type} />
+    <BaseHead {title} {description} {image} {type} {noindex} />
   </head>
   <body class="noise bg-void text-text antialiased">
     <a

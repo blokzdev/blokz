@@ -1,0 +1,22 @@
+{
+  "slug": "the-survivability-lift",
+  "title": "The Survivability Lift",
+  "description": "Before/after bar chart comparing four survivability metrics (MDD, CVaR, Delegation Gap, Attack Success) with and without SAE execution controls, from arXiv 2603.10092.",
+  "pubDate": "2026-06-23T08:27:58.161Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "agents",
+    "defi"
+  ],
+  "aspect": "420/190",
+  "featured": false,
+  "controls": [
+    "Click a metric row to inspect before/after values and the SAE invariant that bounds it"
+  ],
+  "dataSource": {
+    "label": "Borjigin et al., arXiv 2603.10092 — SAE: Survivability-Aware Execution",
+    "url": "https://arxiv.org/abs/2603.10092"
+  },
+  "dataAsOf": "2026-06-23"
+}

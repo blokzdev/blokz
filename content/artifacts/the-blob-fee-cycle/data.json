@@ -1,0 +1,110 @@
+{
+  "points": [
+    {
+      "date": "2024-03-15",
+      "label": "Dencun +2d",
+      "block": 19443767,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 0,
+      "blob_count": 0,
+      "note": "No blob transactions yet 2 days after launch"
+    },
+    {
+      "date": "2024-05-31",
+      "label": "May 2024",
+      "block": 19993249,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 0,
+      "blob_count": 2,
+      "note": "2.5 months post-Dencun — fee at floor"
+    },
+    {
+      "date": "2024-09-30",
+      "label": "Sep 2024",
+      "block": 20866918,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 131072,
+      "blob_count": 0,
+      "note": "Tiny accumulated excess — fee at floor"
+    },
+    {
+      "date": "2024-12-31",
+      "label": "Dec 2024",
+      "block": 21525890,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 1966080,
+      "blob_count": 0,
+      "note": "Small accumulated excess — fee at floor"
+    },
+    {
+      "date": "2025-05-05",
+      "label": "Pre-Pectra",
+      "block": 22420967,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 0,
+      "blob_count": 5,
+      "note": "2 days before Pectra — demand below old 3-blob target on average"
+    },
+    {
+      "date": "2025-06-30",
+      "label": "Pectra +2m",
+      "block": 22820673,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 393216,
+      "blob_count": 7,
+      "note": "8 weeks after Pectra doubled target to 6 blobs — fee still at floor"
+    },
+    {
+      "date": "2025-11-30",
+      "label": "Nov 2025",
+      "block": 23914920,
+      "blob_gas_price_wei": 1,
+      "excess_blob_gas": 0,
+      "blob_count": 6,
+      "note": "6 months post-Pectra — demand exactly at new target, fee at floor"
+    },
+    {
+      "date": "2025-12-31",
+      "label": "Dec 2025 ↑",
+      "block": 24136052,
+      "blob_gas_price_wei": 1679743,
+      "excess_blob_gas": 119635596,
+      "blob_count": 3,
+      "note": "Floor breaks — excess accumulated over Q4 2025 as demand exceeded target"
+    },
+    {
+      "date": "2026-02-28",
+      "label": "Feb 2026",
+      "block": 24558867,
+      "blob_gas_price_wei": 1946956,
+      "excess_blob_gas": 169214812,
+      "blob_count": 1,
+      "note": "Fees still elevated as excess continues to accumulate"
+    },
+    {
+      "date": "2026-06-23",
+      "label": "Jun 2026",
+      "block": 25377900,
+      "blob_gas_price_wei": 5687147,
+      "excess_blob_gas": 181740093,
+      "blob_count": 7,
+      "note": "Current — fee at 5.69 gwei, highest in blob market history"
+    }
+  ],
+  "upgrades": [
+    {
+      "date": "2024-03-13",
+      "label": "Dencun (EIP-4844)",
+      "block": 19426587,
+      "detail": "Blobs launch; target 3, max 6"
+    },
+    {
+      "date": "2025-05-07",
+      "label": "Pectra (EIP-7691)",
+      "block": 22431084,
+      "detail": "Target doubles to 6, max to 9"
+    }
+  ],
+  "eth_price_usd": 1728,
+  "blob_gas_per_blob": 131072
+}

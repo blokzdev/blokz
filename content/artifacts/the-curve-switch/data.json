@@ -1,0 +1,59 @@
+{
+  "asOf": "2026-06-24",
+  "ethUsd": 3800,
+  "gasPriceGwei": 2.5,
+  "operations": [
+    {
+      "id": "g1add",
+      "label": "G1 ADD",
+      "bn254": 150,
+      "bls12381": 375,
+      "bn254IsEvm": false,
+      "note": "BN254: EIP-1108 (Istanbul). BLS12-381: EIP-2537 (Pectra). Larger field doubles cost."
+    },
+    {
+      "id": "g1mul",
+      "label": "G1 MUL",
+      "bn254": 6000,
+      "bls12381": 12000,
+      "bn254IsEvm": false,
+      "note": "BN254: EIP-1108. BLS12-381: EIP-2537. 381-bit field ~2× the 254-bit field scalar work."
+    },
+    {
+      "id": "g2mul",
+      "label": "G2 MUL",
+      "bn254": 1500000,
+      "bls12381": 22500,
+      "bn254IsEvm": true,
+      "note": "BN254 has no native G2 precompile — estimate for optimised EVM bytecode (1–5M gas range). BLS12-381: 22,500 gas native (EIP-2537). 67× reduction at midpoint."
+    },
+    {
+      "id": "pairing1",
+      "label": "PAIRING k=1",
+      "bn254": 79000,
+      "bls12381": 70300,
+      "bn254IsEvm": false,
+      "note": "BN254: 34,000×1 + 45,000 = 79,000 gas (EIP-197 + EIP-1108). BLS12-381: 32,600×1 + 37,700 = 70,300 gas (EIP-2537). BLS12-381 is 11% cheaper."
+    },
+    {
+      "id": "pairing3",
+      "label": "PAIRING k=3",
+      "bn254": 147000,
+      "bls12381": 135500,
+      "bn254IsEvm": false,
+      "note": "BN254: 34,000×3 + 45,000 = 147,000 gas. BLS12-381: 32,600×3 + 37,700 = 135,500 gas. BLS12-381 is 8% cheaper — useful for Groth16 (4 pairings) and PLONK verifiers."
+    },
+    {
+      "id": "pairing10",
+      "label": "PAIRING k=10",
+      "bn254": 385000,
+      "bls12381": 363700,
+      "bn254IsEvm": false,
+      "note": "BN254: 34,000×10 + 45,000 = 385,000 gas. BLS12-381: 32,600×10 + 37,700 = 363,700 gas. BLS12-381 is 6% cheaper. Savings per additional pair: 1,400 gas."
+    }
+  ],
+  "source": {
+    "label": "EIP-2537 (BLS12-381) + EIP-197/EIP-1108 (BN254) specifications",
+    "url": "https://eips.ethereum.org/EIPS/eip-2537"
+  }
+}

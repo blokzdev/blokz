@@ -1,0 +1,20 @@
+{
+  "slug": "the-fhe-inference-wall",
+  "title": "The FHE Inference Wall",
+  "description": "Log-scale bar chart comparing FHE vs MPC inference latency for BERT-Tiny, BERT-Base, ResNet-20, and ResNet-50. Click a model to see memory and throughput detail.",
+  "pubDate": "2026-06-23T12:29:39.485Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "cryptography",
+    "machine-learning"
+  ],
+  "aspect": "4/3",
+  "featured": false,
+  "controls": ["click a model group to inspect latency, memory, and throughput"],
+  "dataSource": {
+    "label": "arXiv 2604.00169 — Beyond Latency: MPC and FHE for PPML (2026)",
+    "url": "https://arxiv.org/abs/2604.00169"
+  },
+  "dataAsOf": "2026-06-23"
+}

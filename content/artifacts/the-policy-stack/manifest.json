@@ -1,0 +1,21 @@
+{
+  "slug": "the-policy-stack",
+  "title": "The Policy Stack",
+  "description": "Four guardrail tiers for on-chain AI agents: probabilistic classifiers through Lean 4 theorem provers. Select an attack scenario to see which tier catches it — and which let it through.",
+  "pubDate": "2026-06-21T18:28:20.417Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "agents",
+    "security",
+    "smart-contracts"
+  ],
+  "aspect": "480/456",
+  "featured": false,
+  "controls": ["tap a scenario to highlight per-layer verdicts", "tap again to reset"],
+  "dataSource": {
+    "label": "Lean-Agent Protocol arXiv:2604.01483, Agent-C arXiv:2512.23738, Symbolic Guardrails arXiv:2604.15579",
+    "url": "https://arxiv.org/abs/2604.01483"
+  },
+  "dataAsOf": "2026-06-21"
+}

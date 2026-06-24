@@ -1,0 +1,20 @@
+{
+  "slug": "the-provers-stack",
+  "title": "The Prover's Stack",
+  "description": "MSM and NTT throughput across four ZK prover hardware tiers — CPU, GPU H100, TPU v6e8, ZK ASIC — normalized to CPU on a log scale. Toggle SNARK (MSM-heavy) or STARK (NTT-heavy) to see how the proof system's operation mix determines end-to-end speedup. Tap a row to inspect.",
+  "pubDate": "2026-06-21T04:29:02.813Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["tap hardware row to inspect", "toggle SNARK / STARK proof system"],
+  "dataSource": {
+    "label": "MORPH arXiv:2604.17808; Ingonyama ICICLE-Snark; Cysic SolarMSM",
+    "url": "https://arxiv.org/abs/2604.17808"
+  },
+  "dataAsOf": "2026-06-21"
+}

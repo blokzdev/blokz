@@ -1,0 +1,103 @@
+{
+  "protocols": [
+    {
+      "id": "aave-v3",
+      "label": "Aave V3",
+      "feeBps": 5,
+      "feePct": 0.05,
+      "feeNote": "FLASHLOAN_PREMIUM_TOTAL, set by governance (DAO voted 5 bps in 2023)",
+      "eip3156": true,
+      "maxLiquidity": "unlimited per asset pool"
+    },
+    {
+      "id": "uniswap-v3",
+      "label": "Uniswap V3",
+      "feeBps": 30,
+      "feePct": 0.30,
+      "feeNote": "Pool fee tier applies (0.05%, 0.30%, or 1.00% depending on pool); most liquid pools are 0.30%",
+      "eip3156": false,
+      "maxLiquidity": "per-pool reserve"
+    },
+    {
+      "id": "balancer-v2",
+      "label": "Balancer V2",
+      "feeBps": 0,
+      "feePct": 0.00,
+      "feeNote": "flashLoan() is free; governance can set a non-zero fee but has not done so",
+      "eip3156": false,
+      "maxLiquidity": "per-vault asset balance"
+    },
+    {
+      "id": "morpho",
+      "label": "Morpho Blue",
+      "feeBps": 0,
+      "feePct": 0.00,
+      "feeNote": "flashLoan() fee is 0; individual markets may impose a fee via callback",
+      "eip3156": true,
+      "maxLiquidity": "per-market liquidity"
+    }
+  ],
+  "strategies": [
+    {
+      "id": "arb",
+      "label": "Triangular Arb",
+      "icon": "↔",
+      "steps": [
+        { "actor": "Agent", "action": "Pre-synthesizes swap route off-chain: pool A → pool B → pool C", "constraint": true },
+        { "actor": "Pool",  "action": "flashLoan(asset, amount, callback, params)", "constraint": false },
+        { "actor": "Pool",  "action": "Transfer amount to receiver contract", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): swap A→B on DEX1", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): swap B→C on DEX2", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): swap C→A on DEX3 (must return ≥ amount + fee)", "constraint": false },
+        { "actor": "Pool",  "action": "Pull (amount + fee) from receiver; revert entire tx if underfunded", "constraint": false }
+      ],
+      "profitFormula": "profit = (p_C/A - 1) × amount - fee - gas",
+      "aiConstraint": "The full swap route must be computed and encoded before the transaction is submitted. The agent cannot react to mid-execution price moves."
+    },
+    {
+      "id": "collateral-swap",
+      "label": "Collateral Swap",
+      "icon": "⇄",
+      "steps": [
+        { "actor": "Agent", "action": "Pre-determines: swap ETH collateral → wBTC collateral on Aave V3", "constraint": true },
+        { "actor": "Pool",  "action": "flashLoan(wBTC, debt_amount)", "constraint": false },
+        { "actor": "Pool",  "action": "Transfer wBTC to agent contract", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): supply wBTC to Aave, borrow ETH against it", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): repay existing ETH debt, withdraw ETH collateral", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): swap ETH → wBTC to repay flash loan", "constraint": false },
+        { "actor": "Pool",  "action": "Pull (wBTC + fee); if balance short → revert all state changes", "constraint": false }
+      ],
+      "profitFormula": "net = health_factor_improvement - swap_slippage - fee - gas",
+      "aiConstraint": "All Aave state transitions (supply, borrow, repay, withdraw) must be choreographed in a single callback. The agent cannot pause to re-evaluate after each step."
+    },
+    {
+      "id": "self-liquidation",
+      "label": "Self-Liquidation",
+      "icon": "⚡",
+      "steps": [
+        { "actor": "Agent", "action": "Detects own position approaching liquidation threshold", "constraint": true },
+        { "actor": "Pool",  "action": "flashLoan(debt_token, outstanding_debt)", "constraint": false },
+        { "actor": "Pool",  "action": "Transfer debt_token to agent contract", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): repay full debt on lending protocol", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): withdraw 100% of collateral (no liquidation penalty)", "constraint": false },
+        { "actor": "Agent", "action": "executeOperation(): sell enough collateral to repay flash loan + fee", "constraint": false },
+        { "actor": "Pool",  "action": "Pull (debt_token + fee); agent keeps remaining collateral", "constraint": false }
+      ],
+      "profitFormula": "saved = liquidation_bonus × collateral_usd - fee - gas",
+      "aiConstraint": "Timing is everything — the agent must recognize when self-liquidation costs less than the liquidator's bonus before a bot does it first."
+    }
+  ],
+  "economics": {
+    "exampleBorrowUsd": 1000000,
+    "aaveFeePct": 0.05,
+    "aaveFeeUsd": 500,
+    "gasCostEstimateUsd": 12,
+    "minSpreadPct": 0.062,
+    "note": "At $1M borrow on Aave V3: fee = $500 (0.05%), typical complex arb gas ≈ $12 at 20 gwei on L2. Break-even spread = (500 + 12) / 1,000,000 = 0.0512%"
+  },
+  "historicalContext": {
+    "eulerHack2023Usd": 197000000,
+    "eulerHackDate": "2023-03-13",
+    "source": "Euler Finance post-mortem, Chainalysis 2023 DeFi report"
+  }
+}

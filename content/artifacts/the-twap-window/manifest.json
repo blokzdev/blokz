@@ -1,0 +1,26 @@
+{
+  "slug": "the-twap-window",
+  "title": "The TWAP Window",
+  "description": "How much does it cost to shift a TWAP oracle? Drag pool TVL, TWAP duration, and price spike factor to see the round-trip manipulation cost alongside the 30-min TWAP shift — for both Uniswap v2 arithmetic and v3 geometric accumulators. Anchored to live on-chain pool data.",
+  "pubDate": "2026-06-22T05:31:52.722Z",
+  "type": "svg",
+  "archetype": "calculator",
+  "topics": [
+    "defi",
+    "smart-contracts",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "dataSource": {
+    "label": "Uniswap v2/v3 Blockscout · Crypto.com Exchange",
+    "url": "https://eth.blockscout.com/address/0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"
+  },
+  "dataAsOf": "2026-06-22",
+  "controls": [
+    "Drag Pool TVL slider to change pool depth",
+    "Drag TWAP window slider (blocks) to see how duration affects spike cost",
+    "Drag price spike factor to see v2 vs v3 TWAP shift comparison",
+    "Toggle V2 / V3 to compare arithmetic vs geometric mean accumulator"
+  ]
+}

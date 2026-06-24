@@ -1,0 +1,31 @@
+{
+  "config": {
+    "model": "Llama 3.3 70B",
+    "precision": "FP16",
+    "hardware": "8x H100 SXM5",
+    "gpuHourlyUsd": 2.90,
+    "gpuCount": 8,
+    "clusterHourlyUsd": 23.20,
+    "floorBatch": 256
+  },
+  "curve": [
+    { "batch": 1,   "tokps": 25,   "cpm": 258.0 },
+    { "batch": 8,   "tokps": 200,  "cpm": 32.0 },
+    { "batch": 32,  "tokps": 720,  "cpm": 8.95 },
+    { "batch": 128, "tokps": 2100, "cpm": 3.07 },
+    { "batch": 256, "tokps": 2800, "cpm": 2.30 }
+  ],
+  "gpuFloor": [
+    { "id": "a100", "label": "A100 80G x8", "tokps": 1400, "cpm": 2.60 },
+    { "id": "h100", "label": "H100 x8",     "tokps": 2800, "cpm": 2.30 },
+    { "id": "h200", "label": "H200 x8",     "tokps": 3600, "cpm": 2.28 },
+    { "id": "b200", "label": "B200 x8 spot","tokps": 5200, "cpm": 0.88 }
+  ],
+  "precisionFloor": [
+    { "id": "fp16", "label": "FP16",       "tokps": 2800, "cpm": 2.30 },
+    { "id": "fp8",  "label": "FP8",        "tokps": 5600, "cpm": 1.15 },
+    { "id": "int4", "label": "INT4 (AWQ)", "tokps": 8400, "cpm": 0.77 }
+  ],
+  "defaults": { "batch": 1 },
+  "note": "Cost-per-token vs concurrency for Llama 3.3 70B (FP16) served with vLLM-style continuous batching on an 8x H100 SXM5 node, from Spheron's 2026 GPU cost-per-token benchmark. Batch size = the number of requests sharing the GPU at once. The cluster rents for 8 x $2.90/hr = $23.20/hr; cost per million tokens = clusterHourly / (tokps * 3600) * 1e6, which reproduces every published cpm to within rounding (2800 tok/s -> $2.30/M; 25 tok/s -> $258/M). gpuFloor and precisionFloor are the same benchmark's batch-256 operating points across accelerators and quantization levels. All figures as of 2026-04."
+}

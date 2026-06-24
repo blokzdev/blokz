@@ -46,6 +46,10 @@
     font-family: var(--font-sans);
     scrollbar-color: rgba(124, 140, 255, 0.3) transparent;
     scrollbar-gutter: stable;
+    /* The viewport scroller is <html>: clip horizontal overflow here so a stray
+       wide element can never leave the page horizontally offset (e.g. content
+       sticking to the left edge after a device rotation). */
+    overflow-x: clip;
     -webkit-text-size-adjust: 100%;
     /* App feel on touch: scroll pans only (no pinch/double-tap zoom), no
        rubber-band overscroll or pull-to-refresh, no grey tap flash. */
@@ -515,6 +519,14 @@
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--color-line), transparent);
     margin: 3em 0;
+  }
+  /* Wraps every markdown table (via the rehypeTableScroll plugin): a table
+     wider than the column scrolls horizontally within this box instead of
+     overflowing the page. Block spacing comes from `.prose > * + *`. */
+  .prose .table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
   }
   .prose table {
     width: 100%;

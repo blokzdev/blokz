@@ -1,0 +1,23 @@
+{
+  "slug": "the-flash-loan-machine",
+  "title": "The Flash Loan Machine",
+  "description": "Step through a flash loan transaction — three strategies (triangular arb, collateral swap, self-liquidation), same atomic structure. The amber step is the only place the AI agent reasons; everything after it is deterministic EVM. Tap a strategy chip, then tap any step.",
+  "pubDate": "2026-06-21T06:26:31.065Z",
+  "type": "svg",
+  "archetype": "diagram",
+  "topics": [
+    "defi",
+    "smart-contracts"
+  ],
+  "aspect": "640/380",
+  "featured": false,
+  "controls": [
+    "tap a strategy chip to load its execution steps",
+    "tap any step box to inspect the actor, action, and constraint"
+  ],
+  "dataSource": {
+    "label": "EIP-3156 spec; Aave V3 FLASHLOAN_PREMIUM_TOTAL governance; Balancer V2 / Morpho Blue docs",
+    "url": "https://eips.ethereum.org/EIPS/eip-3156"
+  },
+  "dataAsOf": "2026-06-21"
+}

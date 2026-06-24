@@ -1,0 +1,20 @@
+{
+  "slug": "the-curve-switch",
+  "title": "The Curve Switch",
+  "description": "Grouped bar chart comparing BN254 vs BLS12-381 on-chain gas costs for every precompile operation: G1/G2 adds, scalar mults, and pairings. Log scale reveals the G2 MUL unlock and the counterintuitive pairing inversion.",
+  "pubDate": "2026-06-24T00:30:55.992Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "dataSource": {
+    "label": "EIP-2537 (BLS12-381) + EIP-197/EIP-1108 (BN254) specifications",
+    "url": "https://eips.ethereum.org/EIPS/eip-2537"
+  },
+  "dataAsOf": "2026-06-24",
+  "controls": ["click a bar to see gas breakdown and USD cost estimate"]
+}

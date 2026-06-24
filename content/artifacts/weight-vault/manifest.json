@@ -1,0 +1,25 @@
+{
+  "slug": "weight-vault",
+  "title": "The Weight Vault",
+  "description": "A chain commits to a model's 32-byte hash for cents; keeping the gigabytes it points to retrievable is a separate, recurring bill. Pick a model and horizon and watch three rent-charging storage layers race Arweave's pay-once permanence to a crossover — plus the on-chain byte cost and cold-load wall.",
+  "pubDate": "2026-06-20T00:29:48.647Z",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "infrastructure",
+    "web3",
+    "data"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a model preset",
+    "drag model footprint",
+    "drag time horizon"
+  ],
+  "dataSource": {
+    "label": "Protocol pricing & whitepapers (Walrus, 0G, Filecoin, Arweave)",
+    "url": "https://0g.ai/blog/0g-storage-vs-filecoin-arweave"
+  },
+  "dataAsOf": "2026-06-20"
+}

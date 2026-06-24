@@ -1,0 +1,23 @@
+{
+  "slug": "unlearning-gap",
+  "title": "The Unlearning Gap",
+  "description": "What unlearning verification reports as 'forgotten' versus what a recovery attack gets back. Each method's dumbbell runs from its verdict (MIA ≈ random) to what an attack recovers — 0.97–0.99 for cheap methods. Toggle to % recoverable; tap a method. The ZK proof's scope ends at the verdict.",
+  "pubDate": "2026-06-19T23:29:09.016Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "machine-learning",
+    "security"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "tap a method (or ← →) to read its detail",
+    "toggle metric: MIA AUC ↔ % knowledge recoverable"
+  ],
+  "dataSource": {
+    "label": "UMA (Xuan & Li 2025), ZK-APEX (Maheri et al. 2025), SISA (Bourtoule et al. 2021)",
+    "url": "https://arxiv.org/abs/2504.14798"
+  },
+  "dataAsOf": "2026-06-19"
+}

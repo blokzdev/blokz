@@ -1,0 +1,103 @@
+---
+slug: the-receipt-the-model-cant-forge
+title: "The Receipt the Model Can't Forge: Trusting On-Chain Agents Without zkML"
+description: "An on-chain agent reports its work in prose — and some of those sentences are fabricated tool calls. zkML proves the wrong thing at minutes per query. The blockchain already wrote an unforgeable receipt for the actions that matter, and a 12ms signed receipt covers the rest."
+pubDate: 2026-06-20T15:32:11.948Z
+author: blokz
+topics: [agents, security, llm]
+tags: [tool-hallucination, agent-receipts, verifiable-inference, zkml, eip-2718, on-chain-agents]
+artifacts: [the-receipt-ladder]
+difficulty: intermediate
+sources:
+  - label: "Basu, Tool Receipts, Not Zero-Knowledge Proofs: Practical Hallucination Detection for AI Agents (arXiv:2603.10060)"
+    url: "https://arxiv.org/abs/2603.10060"
+  - label: "EIP-2718: Typed Transaction Envelope"
+    url: "https://eips.ethereum.org/EIPS/eip-2718"
+  - label: "Chen et al., zkLLM: Zero Knowledge Proofs for Large Language Models (CCS 2024, arXiv:2404.16109)"
+    url: "https://arxiv.org/abs/2404.16109"
+  - label: "Base liquidity transaction 0x1bace064… (block 47,589,962) via Blockscout"
+    url: "https://base.blockscout.com/tx/0x1bace064a1dce4f388e4fbe0314935ae79a6bcd559ae7ba5f2078fa07305fc14"
+---
+
+An on-chain agent finishes a job and reports back the only way a language model can — in prose:
+
+> Rebalanced your vault. Compared five venues, picked the deepest pool, and moved 134.09 WETH and 13,186.52 USDC into a concentrated-liquidity position. Current pool APY is 6.2%.
+
+Four claims, four different trust problems. "I moved 134.09 WETH" is an action the chain witnessed. "Compared five venues" is a tool call that may or may not have happened. "Current APY is 6.2%" is a fact pulled from somewhere off-chain. "Picked the deepest pool" is reasoning you cannot check at all. The dangerous move is to treat the paragraph as one object and reach for one hammer to verify it.
+
+The hammer the industry keeps reaching for is **zkML** — prove the model's forward pass cryptographically, so the report inherits the model's authority. It's a real guarantee for the one claim that *is* the inference, and this blog has walked its cost in [the determinism problem](/articles/deterministic-inference-onchain-verification) and [the verifier's dilemma](/articles/the-verifiers-dilemma). But it answers a question almost nobody in that paragraph is asking. zkLLM is reported at *thousands of times* slower than plain inference — minutes per query — and even after you pay it, it tells you the tokens were generated faithfully. It says nothing about whether the API the agent quoted returned what it claims, or whether "five venues" were ever queried. **The model can produce a perfectly attested paragraph that is also a confident lie about what it did.**
+
+## The failure mode is fabrication, not miscomputation
+
+The verifiable-inference literature is obsessed with *miscomputation*: did the operator run the right model, bit-for-bit? The failure mode that actually drains a vault is *fabrication*: the agent invents a tool call, misstates a count, or presents an inference as an observed fact. A 2026 benchmark, **NyayaVerifyBench**, makes the gap concrete — 1,800 agent transcripts (1,200 with injected hallucinations across six types, 600 clean), spanning fabricated tool calls, count mismatches, fact mismatches, inference-as-fact, false-absence claims, and source fabrication. None of those is a floating-point bug. They're the model narrating an execution that didn't occur.
+
+You cannot fix this with a better model. The same benchmark exists *because* stronger models fabricate more fluently. The fix has to live outside the weights — in the evidence the runtime keeps about what really executed. And here on-chain agents have an advantage no chatbot does: **for the claims that matter most, an unforgeable receipt already exists.**
+
+## The chain already wrote the receipt
+
+Every Ethereum transaction produces a receipt the agent did not author and cannot edit. Under [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718), a typed receipt is `rlp([status, cumulative_gas_used, logs_bloom, logs])` — a success flag, a gas figure, a Bloom filter, and the list of events the execution emitted — and that structure is hashed into the block's receipts root and sealed by consensus. Tampering with it means re-mining the chain.
+
+Take the agent's first claim literally. Here is a real liquidity-provision transaction on Base, block **47,589,962**:
+
+```text
+tx     0x1bace064…7305fc14   status: success   gas used: 683,342
+log 534  Transfer  WETH  →  134.091340712222955978   (18 decimals)
+log 535  Transfer  USDC  →  13,186.515550            (6 decimals)
+log 537  Mint      Slipstream position NFT #72204792
+```
+
+The agent *says* "moved 134.09 WETH and 13,186.52 USDC." The receipt *proves* it: two ERC-20 `Transfer` events at log indices 534 and 535, an ERC-721 mint at 537, `status: success`, 683,342 gas. Verifying the claim is a log lookup against the receipts root — `eth_getTransactionReceipt`, decode the `Transfer(address,address,uint256)` topics, compare the amounts. No proving system, no challenge window, no second model. The cost is one RPC round-trip and the answer is deterministic. This is the cheapest verifier that will ever exist for an on-chain action, and it's free because someone already paid the 683,342 gas to write it.
+
+That reframes the whole problem. You don't need to prove the agent's *reasoning* was sound to know its *actions* were real — the chain is a tamper-evident action log, and the report is just a human-readable index into it. Bind each on-chain claim to a transaction hash and the verifier is the block explorer. The same instinct underlies [spend-permission custody](/articles/agent-key-custody-blast-radius): don't trust the agent's intent, constrain and witness its actions.
+
+## For everything off-chain, sign the tool call
+
+The chain only witnesses what touched it. "Compared five venues" probably hit a price API; "current APY is 6.2%" came from a subgraph. No block records those. But the agent's own runtime executed them, and the runtime can do for tool calls exactly what the chain does for transactions: **issue a receipt the model can't forge.**
+
+That's the proposal in *Tool Receipts, Not Zero-Knowledge Proofs* (arXiv:2603.10060). When the agent invokes a tool, the runtime — not the model — performs it and emits a signed record:
+
+```python
+receipt = {
+    "id": uuid4(),
+    "tool": "price_api.quote",
+    "input_hash":  sha256(canonical_json(params)),
+    "output_hash": sha256(canonical_json(result)),
+    "result_count": len(result["venues"]),   # 5, or the truth
+    "facts": {"best_quote": 1731.40},
+    "ts": now_ms(),
+}
+receipt["sig"] = hmac_sha256(
+    f'{receipt["id"]}|{receipt["tool"]}|{receipt["input_hash"]}'
+    f'|{receipt["output_hash"]}|{receipt["ts"]}',
+    SECRET_KEY,                               # never in the model's context
+)
+```
+
+The model receives the tool output plus a receipt **id**, nothing more. When it later writes "compared five venues," a verifier looks up that id, checks the HMAC, and compares the claimed count against `result_count`. The model can't mint a receipt for a call that never ran — it doesn't hold the key — and it can't quietly inflate five venues to fifteen, because the count is bound into a signature it can't reproduce. Each claim gets tagged by its evidence: direct tool output, an inference drawn from it, an external citation, an absence claim, or — the tell — nothing at all.
+
+The numbers say this is enough. Against the benchmark, receipt-checking catches **94.2%** of fabricated tool calls, **87.6%** of count mismatches, and **91.3%** of false-absence claims, at **under 15ms** of added latency and a 4% false-positive rate — with deep delegation (re-fetching cited URLs) catching 78.4% of source fabrications. Trust calibration lands where you'd want it: claims the system marks "fully verified" are correct 98.7% of the time.
+
+Compare that to the alternatives engineers actually reach for. Asking the model to check itself (self-consistency) catches ~45% at three-to-five extra seconds and a few cents per response; re-grounding against retrieval catches ~52% at a second or two and flags nearly one honest claim in five. Both are slower *and* worse, because a correlated model fails the same way every time. The signed receipt wins precisely because **it takes the model out of the loop** — it checks the report against execution, not against another opinion.
+
+## Match the verifier to the claim
+
+The point isn't that receipts beat proofs. It's that *the claim type dictates the verifier*, and the cost spread across the ladder is five orders of magnitude. The artifact below plots every option by the latency it adds against the share of fabrications it catches; pick a claim type and watch it route to the cheapest sufficient verifier.
+
+<Artifact slug="the-receipt-ladder" />
+
+Read it left to right. An **on-chain action** routes to the chain receipt — effectively free, deterministic, and sitting at 100% because the chain doesn't have opinions. An **off-chain tool output** routes to the signed receipt at ~12ms. **Inference correctness** — the rare claim that the model's own computation is the disputed object — is the only one that justifies zkLLM, way out past the latency wall at minutes per query. And **free reasoning** ("now was the cheapest moment") routes to *nothing*: no receipt exists because nothing executed, so the honest move is to label it as ungrounded, not launder it into a fact.
+
+This is also why "web facts" deserve their own machinery rather than a model double-check: proving the agent really saw a `6.2%` on a specific origin server is what [zkTLS web proofs](/articles/zktls-web-proofs-for-agents) are for — a portable attestation over the HTTPS session, not a receipt the agent's own runtime can vouch for. Different trust boundary, different tool.
+
+## What this doesn't buy you
+
+A signed receipt is an integrity guarantee, not a truth guarantee, and the distinction is the whole ballgame. It proves the runtime ran `price_api.quote` and got *this* result — not that the price API told the truth. If the upstream oracle is wrong or adversarial, the receipt faithfully records a wrong number; you've moved trust to the tool boundary, not eliminated it. The HMAC key is a single point of compromise: leak it and the unforgeable receipt becomes forgeable, which is why it belongs in the runtime's secret store, never in a prompt, a log, or the model's context. And none of this touches *correctness of action* — the chain receipt proves the swap happened, not that swapping was wise.
+
+But that's the right ledger to be honest about. Most "verifiable agent" pitches quietly conflate four trust problems and sell one cryptographic answer to all of them. The engineering reality is mundane and cheaper: the blockchain is already the world's most expensive tamper-evident log, so use it as the receipt for on-chain actions; sign the tool calls for everything off-chain; reserve the heavy proof systems for the narrow case where the inference itself is what's disputed — the [258-byte commitments](/articles/what-the-blockchain-actually-does-in-decentralized-ai-training) and zkML circuits earn their cost there and nowhere else. The receipt the model can't forge isn't a new primitive. It's the one the chain has been writing all along, plus an HMAC for the parts the chain can't see.
+
+## Takeaways
+
+- **Verify the action, not the reasoning.** An on-chain agent's report is an index into receipts the chain already sealed; bind each action claim to a tx hash and the verifier is `eth_getTransactionReceipt`, not a proof system.
+- **Sign tool calls to cover the off-chain half.** An HMAC-signed receipt the model never holds the key to catches 94.2% of fabricated tool calls at under 15ms — beating model-in-the-loop checks that are slower and worse.
+- **zkML is for one claim only.** It proves the forward pass, at minutes per query. It says nothing about whether the agent's tool outputs are real, so don't pay it to answer a question the receipt already answers for free.
+- **Some claims have no receipt.** Free reasoning and opinion route to no verifier — label them as ungrounded instead of asserting them, because that's the category that quietly drains vaults.

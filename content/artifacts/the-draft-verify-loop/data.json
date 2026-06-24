@@ -1,0 +1,49 @@
+{
+  "presets": [
+    {
+      "id": "eagle3",
+      "label": "EAGLE-3 · Llama-3.1-8B",
+      "alpha": 0.72,
+      "gamma": 5,
+      "c": 0.05,
+      "observed": "~2x e2e",
+      "note": "Self-drafting head, draft cost tiny. Real-world per-token acceptance lands in the 0.6-0.8 band, below the near-1.0 used in theory (BentoML, 2026)."
+    },
+    {
+      "id": "aligned",
+      "label": "Domain-aligned drafter",
+      "alpha": 0.85,
+      "gamma": 6,
+      "c": 0.08,
+      "observed": "2-3x",
+      "note": "A draft model tuned to the workload accepts long runs; the regime the original speculative-decoding result reported on T5 (Leviathan et al., 2023)."
+    },
+    {
+      "id": "offtheshelf",
+      "label": "Off-the-shelf draft",
+      "alpha": 0.55,
+      "gamma": 4,
+      "c": 0.1,
+      "observed": "~1.3x",
+      "note": "A generic small model on out-of-distribution prompts: acceptance collapses and speculation barely beats plain autoregressive decoding."
+    },
+    {
+      "id": "viasd",
+      "label": "VIA-SD multi-tier",
+      "alpha": 0.8,
+      "gamma": 5,
+      "c": 0.12,
+      "observed": "2.5-3x vs non-drafting",
+      "note": "A routed slim-verifier rescues medium-confidence rejects, cutting rejection rates 0.10-0.22 over strong SD baselines (arXiv 2606.12243)."
+    }
+  ],
+  "benchmarks": {
+    "leviathan_speedup": "2-3x",
+    "staged_sd_speedup": "3.16x",
+    "dsi_speedup_over_si": "1.29-1.92x",
+    "viasd_rejection_drop": "0.10-0.22",
+    "viasd_over_nondrafting": "2.5-3x",
+    "real_world_alpha": "0.6-0.8",
+    "toploc_commit_bytes": 258
+  }
+}

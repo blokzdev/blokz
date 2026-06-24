@@ -1,0 +1,67 @@
+{
+  "models": [
+    {
+      "id": "llama-1b",
+      "label": "Llama-3.2-1B",
+      "params": "1B",
+      "numLoras": 32,
+      "loraSize": 26624,
+      "settingsS": 37.2,
+      "proofS": 31.0,
+      "note": "Small Llama variant — LoRA modules are compact despite the 1B-param base."
+    },
+    {
+      "id": "distilgpt2",
+      "label": "distilgpt2",
+      "params": "82M",
+      "numLoras": 24,
+      "loraSize": 24576,
+      "settingsS": 38.0,
+      "proofS": 31.6,
+      "note": "Smallest tested model. Proof time near identical to Llama-3.2-1B: circuit size tracks LoRA matrix dimensions, not base-model size."
+    },
+    {
+      "id": "gpt2",
+      "label": "gpt2",
+      "params": "117M",
+      "numLoras": 48,
+      "loraSize": 49152,
+      "settingsS": 43.6,
+      "proofS": 34.9,
+      "note": "Double the LoRA module size of distilgpt2 (49k vs 24k params) — proof time rises by just 10%, consistent with roughly log-linear scaling."
+    },
+    {
+      "id": "llama-70b",
+      "label": "Llama-3.3-70B",
+      "params": "70B",
+      "numLoras": 80,
+      "loraSize": 147456,
+      "settingsS": 54.9,
+      "proofS": 46.9,
+      "note": "Frontier 70B model — 80 LoRA modules. Per-module proof time lower than Llama-3.1-8B because per-layer attention dimensions differ; full-adapter set takes ~63 min sequentially."
+    },
+    {
+      "id": "llama-8b",
+      "label": "Llama-3.1-8B",
+      "params": "8B",
+      "numLoras": 32,
+      "loraSize": 163840,
+      "settingsS": 57.4,
+      "proofS": 47.7,
+      "note": "Largest per-module LoRA among the non-MoE models (163k params). Proof time slightly exceeds 70B because module matrix dimensions are wider here."
+    },
+    {
+      "id": "mixtral",
+      "label": "Mixtral-8x7B",
+      "params": "46.7B",
+      "numLoras": 32,
+      "loraSize": 327680,
+      "settingsS": 86.1,
+      "proofS": 73.7,
+      "note": "MoE model: 8 experts per layer, larger per-module matrices (327k params). Proof generation is slowest at 73.7 s/module — 2.4× slower than Llama-3.2-1B."
+    }
+  ],
+  "verifierS": 1.5,
+  "verifierLabel": "Verifier (1–2 s, flat)",
+  "source": "ZKLoRA, Roy et al., arXiv:2501.13965, Table 1 — averaged over LoRA modules per model."
+}

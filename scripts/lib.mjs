@@ -99,8 +99,12 @@ export function buildIndex() {
       artifacts: fm.artifacts ?? [],
       difficulty: fm.difficulty ?? 'intermediate',
       draft: Boolean(fm.draft),
+      // Sort by the full publish timestamp (same-day items order by true time),
+      // then strip the key; the stored pubDate stays date-only for display.
+      _t: new Date(fm.pubDate).valueOf(),
     }))
-    .sort((a, b) => (a.pubDate < b.pubDate ? 1 : a.pubDate > b.pubDate ? -1 : a.slug.localeCompare(b.slug)));
+    .sort((a, b) => b._t - a._t || a.slug.localeCompare(b.slug))
+    .map(({ _t, ...rest }) => rest);
 
   const artifacts = loadArtifacts()
     .filter((a) => !a.error)
@@ -116,8 +120,10 @@ export function buildIndex() {
       archetype: m.archetype ?? null,
       topics: m.topics ?? [],
       draft: Boolean(m.draft),
+      _t: new Date(m.pubDate).valueOf(),
     }))
-    .sort((a, b) => (a.pubDate < b.pubDate ? 1 : a.pubDate > b.pubDate ? -1 : a.slug.localeCompare(b.slug)));
+    .sort((a, b) => b._t - a._t || a.slug.localeCompare(b.slug))
+    .map(({ _t, ...rest }) => rest);
 
   const topicCounts = {};
   for (const a of articles) for (const t of a.topics) topicCounts[t] = (topicCounts[t] ?? 0) + 1;

@@ -1,0 +1,25 @@
+{
+  "window": {
+    "start": "2026-05-20",
+    "end": "2026-06-19",
+    "samples": 30,
+    "label": "30-day realized volatility from daily closes"
+  },
+  "assets": [
+    { "id": "BTC", "label": "BTC", "dailyVol": 0.0224, "annualVol": 0.428, "lvrAnnual": 0.0229 },
+    { "id": "ETH", "label": "ETH", "dailyVol": 0.0331, "annualVol": 0.632, "lvrAnnual": 0.0499 },
+    { "id": "DOGE", "label": "DOGE", "dailyVol": 0.0279, "annualVol": 0.533, "lvrAnnual": 0.0355 }
+  ],
+  "feeTiers": [
+    { "bps": 5, "label": "0.05%" },
+    { "bps": 30, "label": "0.30%" },
+    { "bps": 100, "label": "1.00%" }
+  ],
+  "defaults": {
+    "feeBps": 30,
+    "turnoverDaily": 0.05,
+    "selectedAsset": "ETH",
+    "recaptureEfficiency": 0.9
+  },
+  "note": "LVR rate for a constant-product pool is sigma^2/8 of pool value per unit time (Milionis-Moallemi-Roughgarden-Zhang, arXiv:2208.06046). Annualized LVR = annualVol^2 / 8. Volatilities are 30-day realized from Crypto.com Exchange daily closes; the 5bps fee tier is the live Uniswap v3 USDC/WETH pool fee read on Ethereum (0x88e6...5640)."
+}

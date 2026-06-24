@@ -1,0 +1,108 @@
+{
+  "protocols": [
+    {
+      "id": "wstETH",
+      "label": "wstETH",
+      "protocol": "Lido",
+      "restakingYieldBps": 0,
+      "totalYieldBps": 340,
+      "tvlBillion": 20.1,
+      "worstDepegPct": 1.2,
+      "depegType": "none",
+      "depegEvent": "Minor DEX slippage during Celsius selloff (June 2022) — backing intact throughout",
+      "riskProfile": "liquid-staking-only",
+      "defiAcceptance": "universal",
+      "color": "#22d3ee"
+    },
+    {
+      "id": "weETH",
+      "label": "weETH",
+      "protocol": "ether.fi",
+      "restakingYieldBps": 250,
+      "totalYieldBps": 600,
+      "tvlBillion": 3.06,
+      "worstDepegPct": 3.1,
+      "depegType": "liquidity",
+      "depegEvent": "ETHFI token launch sell pressure (March 2024) — backing intact, DEX-only depeg",
+      "riskProfile": "restaking-diversified",
+      "defiAcceptance": "high",
+      "color": "#4ade80"
+    },
+    {
+      "id": "ezETH",
+      "label": "ezETH",
+      "protocol": "Renzo",
+      "restakingYieldBps": 300,
+      "totalYieldBps": 650,
+      "tvlBillion": 0.71,
+      "worstDepegPct": 18.3,
+      "depegType": "liquidity",
+      "depegEvent": "REZ airdrop panic (April 2024) — 18.3% DEX crash; backing was intact, oracle held peg",
+      "riskProfile": "restaking-concentrated",
+      "defiAcceptance": "moderate",
+      "color": "#fb923c"
+    },
+    {
+      "id": "pufETH",
+      "label": "pufETH",
+      "protocol": "Puffer Finance",
+      "restakingYieldBps": 200,
+      "totalYieldBps": 550,
+      "tvlBillion": 0.41,
+      "worstDepegPct": 1.9,
+      "depegType": "none",
+      "depegEvent": "No significant depeg event recorded — limited DEX liquidity means price discovery risk remains",
+      "riskProfile": "restaking-diversified",
+      "defiAcceptance": "moderate",
+      "color": "#a78bfa"
+    },
+    {
+      "id": "rsETH",
+      "label": "rsETH",
+      "protocol": "KelpDAO",
+      "restakingYieldBps": 300,
+      "totalYieldBps": 650,
+      "tvlBillion": 0.31,
+      "worstDepegPct": 22.0,
+      "depegType": "backing-loss",
+      "depegEvent": "LayerZero bridge exploit (April 19, 2026) — $292M drained (~116,500 rsETH = 18% of supply); compromised RPC nodes fed false data to 1-of-1 DVN setup",
+      "riskProfile": "high-tail-risk",
+      "defiAcceptance": "low",
+      "color": "#ef4444"
+    }
+  ],
+  "baseData": {
+    "ethPriceUSD": 1729.33,
+    "eigenPriceUSD": 0.2769,
+    "weethPriceUSD": 1891.48,
+    "weethTotalSupplyETH": 1615570.865,
+    "weethHolders": 27454,
+    "eigenLayerTVLBillion": 19.7,
+    "eigenLayerOperators": 1900,
+    "blockNumber": 25377320,
+    "blockTimestamp": "2026-06-23T02:27:23Z",
+    "slashingActivated": "2025-04-17"
+  },
+  "sources": [
+    {
+      "label": "EigenLayer protocol statistics",
+      "url": "https://app.eigenlayer.xyz/"
+    },
+    {
+      "label": "KelpDAO rsETH exploit — CoinDesk (April 2026)",
+      "url": "https://www.coindesk.com/markets/2026/04/19/kelpdao-rseth-292m-exploit/"
+    },
+    {
+      "label": "Renzo ezETH depeg postmortem (April 2024)",
+      "url": "https://renzo.xyz/blog/ezeth-depeg-postmortem"
+    },
+    {
+      "label": "EigenLayer slashing activation — CoinDesk (April 2025)",
+      "url": "https://www.coindesk.com/tech/2025/04/17/eigenlayer-activates-slashing/"
+    },
+    {
+      "label": "Chitra & Pai — Restaking Security Economics (arXiv:2408.00928)",
+      "url": "https://arxiv.org/abs/2408.00928"
+    }
+  ]
+}

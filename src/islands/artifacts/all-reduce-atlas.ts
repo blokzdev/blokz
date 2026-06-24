@@ -86,7 +86,7 @@ export default function mount(container: HTMLElement): () => void {
   const style = document.createElement('style');
   style.textContent = `
     /* ---- Map (stage SVG) visuals ---- */
-    .ara-mapwrap { position:absolute; inset:0; min-height:180px;
+    .ara-mapwrap { position:absolute; inset:0;
       border:1px solid rgba(124,140,255,.14); border-radius:12px; background:#080c16; }
     .ara-mapwrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .ara-ocean { fill:#080c16; stroke:rgba(124,140,255,.10); }

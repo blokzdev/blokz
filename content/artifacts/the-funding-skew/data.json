@@ -1,0 +1,60 @@
+{
+  "asof": "2026-06-20",
+  "note": "Per-asset mid and realized volatility are snapshots from Crypto.com Exchange perpetuals on 2026-06-20T16:26Z (top-of-book mid; sigmaAnnual computed from 49 hourly close-to-close log returns, annualized x sqrt(8760)). Default fundingHourlyPct are representative positive-funding (longs-pay) values inside Hyperliquid's documented bands; the slider moves them. Funding half-lives and the AS-vs-HJB backtest figures are from arXiv:2605.06405 (Hyperliquid ETH/BTC/SOL).",
+  "assets": [
+    {
+      "id": "ETH",
+      "label": "ETH",
+      "mid": 1732.8,
+      "sigmaHourly": 0.00384,
+      "sigmaAnnualPct": 36,
+      "topSpreadBps": 0.058,
+      "qMax": 20,
+      "qStep": 0.5,
+      "fundingHourlyPct": 0.0035,
+      "halfLifeH": 5.56,
+      "alpha": 0.0005,
+      "phi": 0.0001,
+      "equityDeltaVsAS": 1312.49,
+      "winRate": 0.62,
+      "invRmsRatio": 0.64,
+      "jumpProbHourly": 0.0205
+    },
+    {
+      "id": "BTC",
+      "label": "BTC",
+      "mid": 63988,
+      "sigmaHourly": 0.00306,
+      "sigmaAnnualPct": 28.6,
+      "topSpreadBps": 0.016,
+      "qMax": 0.6,
+      "qStep": 0.02,
+      "fundingHourlyPct": 0.003,
+      "halfLifeH": 4.07,
+      "alpha": 0.002,
+      "phi": 0.0001,
+      "equityDeltaVsAS": 809.09,
+      "winRate": 0.57,
+      "invRmsRatio": 0.62,
+      "jumpProbHourly": 0.0124
+    },
+    {
+      "id": "SOL",
+      "label": "SOL",
+      "mid": 71.5,
+      "sigmaHourly": 0.00576,
+      "sigmaAnnualPct": 53.9,
+      "topSpreadBps": 1.4,
+      "qMax": 300,
+      "qStep": 5,
+      "fundingHourlyPct": 0.0055,
+      "halfLifeH": 2.31,
+      "alpha": 0.001,
+      "phi": 0.00005,
+      "equityDeltaVsAS": 18870.92,
+      "winRate": 1,
+      "invRmsRatio": 2.59,
+      "jumpProbHourly": 0.0016
+    }
+  ]
+}

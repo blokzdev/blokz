@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 133,
-    "artifacts": 134
+    "articles": 134,
+    "artifacts": 135
   },
   "topicCounts": {
     "agents": 45,
@@ -10,9 +10,9 @@
     "cryptography": 22,
     "data": 19,
     "defi": 32,
-    "infrastructure": 45,
-    "llm": 22,
-    "machine-learning": 44,
+    "infrastructure": 46,
+    "llm": 23,
+    "machine-learning": 45,
     "research": 16,
     "security": 36,
     "smart-contracts": 26,
@@ -22,6 +22,36 @@
     "zero-knowledge": 18
   },
   "articles": [
+    {
+      "slug": "the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference",
+      "path": "content/articles/2026/06/the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference/index.mdx",
+      "url": "/articles/the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference",
+      "title": "The Biased Draft: Speculative Decoding's Trust Gap in Decentralized Inference",
+      "description": "Speculative decoding accelerates LLM inference 2–4× by splitting work between a cheap draft model and an expensive verifier. When those run on different nodes in a decentralized network, three properties of the protocol that are trivially safe on one machine become open attack surfaces.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "machine-learning",
+        "llm",
+        "infrastructure"
+      ],
+      "tags": [
+        "speculative-decoding",
+        "distributed-inference",
+        "draft-model",
+        "acceptance-rate",
+        "decentralized-ai",
+        "via-sd",
+        "dsi",
+        "cosine",
+        "trust-asymmetry",
+        "inference-markets"
+      ],
+      "artifacts": [
+        "the-draft-race"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
       "path": "content/articles/2026/06/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture/index.mdx",
@@ -3650,6 +3680,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-draft-race",
+      "path": "content/artifacts/the-draft-race/manifest.json",
+      "module": "src/islands/artifacts/the-draft-race.ts",
+      "url": "/artifacts/the-draft-race",
+      "title": "The Draft Race",
+      "description": "Animated simulation of autoregressive vs speculative decoding. Adjust acceptance rate α and draft depth K to see how speedup changes — and what happens when a draft node defects.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "ai-agent-gas-cost-regimes",
       "path": "content/artifacts/ai-agent-gas-cost-regimes/manifest.json",

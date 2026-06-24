@@ -1,27 +1,415 @@
 {
   "counts": {
-    "articles": 116,
-    "artifacts": 117
+    "articles": 131,
+    "artifacts": 132
   },
   "topicCounts": {
-    "agents": 42,
-    "ai": 11,
-    "blockchain": 27,
-    "cryptography": 18,
-    "data": 17,
-    "defi": 28,
-    "infrastructure": 39,
-    "llm": 20,
-    "machine-learning": 40,
-    "research": 12,
-    "security": 33,
-    "smart-contracts": 22,
-    "tokenomics": 16,
+    "agents": 44,
+    "ai": 14,
+    "blockchain": 32,
+    "cryptography": 22,
+    "data": 19,
+    "defi": 32,
+    "infrastructure": 43,
+    "llm": 22,
+    "machine-learning": 44,
+    "research": 16,
+    "security": 36,
+    "smart-contracts": 26,
+    "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 15
+    "zero-knowledge": 18
   },
   "articles": [
+    {
+      "slug": "the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "path": "content/articles/2026/06/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture/index.mdx",
+      "url": "/articles/the-sub-gwei-regime-cheap-gas-and-the-new-on-chain-ai-agent-architecture",
+      "title": "The Sub-Gwei Regime: Cheap Gas and the New On-Chain AI Agent Architecture",
+      "description": "Ethereum mainnet gas averaged 0.16 Gwei in June 2026 — a 3,000× drop from DeFi summer 2021. That collapse doesn't just cut costs; it invalidates five years of AI agent design assumptions and opens architectures that were economically impossible until now.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "tags": [
+        "gas",
+        "eip-4844",
+        "eip-1559",
+        "agents",
+        "mev",
+        "liquidation",
+        "erc-4337"
+      ],
+      "artifacts": [
+        "ai-agent-gas-cost-regimes"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "path": "content/articles/2026/06/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack/index.mdx",
+      "url": "/articles/the-exploit-floor-how-ai-agents-repriced-the-economics-of-smart-contract-attack",
+      "title": "The Exploit Floor: How AI Agents Repriced the Economics of Smart Contract Attack",
+      "description": "A1 generates working exploits against 63% of real-world DeFi contracts. The attack costs ~$6k to break even; a comprehensive audit costs $60k. That 10× gap is the new threat model for every team deploying on a public chain.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "tags": [
+        "exploit-generation",
+        "verite",
+        "evmbench",
+        "audit-economics",
+        "reentrancy",
+        "invariant-testing",
+        "formal-verification",
+        "immunefi",
+        "a1-agent",
+        "defi-security"
+      ],
+      "artifacts": [
+        "the-exploit-floor"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "path": "content/articles/2026/06/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification/index.mdx",
+      "url": "/articles/the-128-bit-floor-eip-2537-bls12-381-and-the-new-gas-math-for-on-chain-proof-verification",
+      "title": "The 128-Bit Floor: EIP-2537, BLS12-381, and the New Gas Math for On-Chain Proof Verification",
+      "description": "Every zkSNARK bottoms out in a pairing check. Before Pectra you had BN254 at ~100-bit security. EIP-2537 added BLS12-381 at 128 bits, and its pairings are cheaper: 32,600k+37,700 vs 34,000k+45,000 gas. G2 MUL dropped from millions to 22,500 gas.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-2537",
+        "bls12-381",
+        "bn254",
+        "pectra",
+        "pairing",
+        "groth16",
+        "plonk",
+        "zkml",
+        "bls-aggregation",
+        "elliptic-curves",
+        "precompile"
+      ],
+      "artifacts": [
+        "the-curve-switch"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "path": "content/articles/2026/06/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets/index.mdx",
+      "url": "/articles/the-inference-spread-llm-routing-arbitrage-and-the-pricing-problem-for-decentralized-ai-markets",
+      "title": "The Inference Spread: LLM Routing Arbitrage and the Pricing Problem for Decentralized AI Markets",
+      "description": "Inference markets charge a flat price per query. A cascade arbitrageur routes easy tasks to a cheap model and escalates only failures — capturing the spread. Olmedo, Schölkopf & Hardt (2026) show 40% net margins with no model-dev risk.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "defi",
+        "tokenomics"
+      ],
+      "tags": [
+        "inference-routing",
+        "cascade-routing",
+        "model-arbitrage",
+        "inference-markets",
+        "decentralized-inference",
+        "llm-routing",
+        "spread-capture",
+        "mechanism-design",
+        "ritual",
+        "ora-protocol"
+      ],
+      "artifacts": [
+        "the-cascade-calculator"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
+      "path": "content/articles/2026/06/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference/index.mdx",
+      "url": "/articles/the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference",
+      "title": "The Pairwise Vote: How Bradley-Terry Ranking Beats Majority Consensus in Decentralized AI Inference",
+      "description": "Majority voting counts hands — it can't rank quality. Fortytwo's Bradley-Terry protocol achieves 85.90% on GPQA Diamond vs. 68.69% for majority voting, extracting ranking signal from pairwise comparisons and making Sybil attacks economically unattractive.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "research",
+        "blockchain"
+      ],
+      "tags": [
+        "swarm-inference",
+        "bradley-terry",
+        "pairwise-ranking",
+        "decentralized-inference",
+        "majority-voting",
+        "on-chain-reputation",
+        "proof-of-capability",
+        "sybil-resistance",
+        "fortytwo",
+        "collective-intelligence"
+      ],
+      "artifacts": [
+        "peer-rank-convergence"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model",
+      "path": "content/articles/2026/06/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model/index.mdx",
+      "url": "/articles/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model",
+      "title": "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model",
+      "description": "To slash a dishonest AI operator on EigenLayer you need a proof. To produce one, you need determinism. EigenAI solves both: seeded inference + optimistic re-execution inside a TEE collapses verification to a byte-equality check — slashable at Ethereum-scale security.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "security",
+        "infrastructure",
+        "llm"
+      ],
+      "tags": [
+        "eigenlayer",
+        "verifiable-inference",
+        "deterministic-inference",
+        "avs",
+        "slashing",
+        "tee",
+        "eigenda",
+        "eigenverify",
+        "optimistic-challenge",
+        "llm-42"
+      ],
+      "artifacts": [
+        "the-slashable-inference"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "path": "content/articles/2026/06/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai/index.mdx",
+      "url": "/articles/the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai",
+      "title": "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI",
+      "description": "Nova replaces expensive SNARK-in-SNARK recursion with a random linear combination that folds two R1CS instances into one — 10× less overhead per step. For N-step AI inference: O(N) prover work, one constant-size final proof. NANOZK delivers this at GPT-2 scale: 6.9 KB, 23 ms verify.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "research"
+      ],
+      "tags": [
+        "nova",
+        "folding-schemes",
+        "ivc",
+        "hypernova",
+        "protogalaxy",
+        "incremental-verifiable-computation",
+        "zkml",
+        "recursive-snarks",
+        "r1cs",
+        "spartan"
+      ],
+      "artifacts": [
+        "folding-frontier"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
+      "path": "content/articles/2026/06/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem/index.mdx",
+      "url": "/articles/the-float-before-the-fill-erc-7683-cross-chain-intents-and-the-solver-inventory-problem",
+      "title": "The Float Before the Fill: ERC-7683 Cross-Chain Intents and the Solver Inventory Problem",
+      "description": "ERC-7683 gives users cross-chain swaps in 8 seconds by converting bridge latency into a solver capital float problem. The 4–7 bps spread is a rental rate on cross-chain inventory — here's the lifecycle, the capital math, and what AI agents pay to move capital across chains.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "infrastructure"
+      ],
+      "tags": [
+        "erc-7683",
+        "cross-chain-intents",
+        "solver",
+        "across-protocol",
+        "uniswapx",
+        "capital-float",
+        "uma-oracle",
+        "relayer",
+        "inventory-problem"
+      ],
+      "artifacts": [
+        "the-solver-float"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles",
+      "path": "content/articles/2026/06/the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles/index.mdx",
+      "url": "/articles/the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles",
+      "title": "The Option the Pool Sold: Concentrated Liquidity as Implicit Strangles",
+      "description": "A Uniswap v3 LP position in range [Pa, Pb] is mathematically a short strangle — short put at Pa, short call at Pb. Derive the equivalence, compute the Black-Scholes fair premium, and compare it to actual fee income at current ETH vol.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "data",
+        "ai"
+      ],
+      "tags": [
+        "concentrated-liquidity",
+        "uniswap-v3",
+        "clmm",
+        "options",
+        "strangle",
+        "impermanent-loss",
+        "black-scholes",
+        "greeks",
+        "panoptic",
+        "lp-pricing"
+      ],
+      "artifacts": [
+        "the-clmm-strangle"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents",
+      "path": "content/articles/2026/06/the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents/index.mdx",
+      "url": "/articles/the-delegated-signer-eip-7702-session-keys-and-the-new-wallet-model-for-ai-agents",
+      "title": "The Delegated Signer: EIP-7702 Session Keys and the New Wallet Model for AI Agents",
+      "description": "EIP-7702, live in Pectra, lets an EOA borrow smart contract code for one transaction — no migration, no bundler. For AI agents: atomic batching closes the approve-to-swap MEV window, and session key delegation bounds the blast radius of a compromised agent without touching the master key.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "blockchain",
+        "agents",
+        "smart-contracts"
+      ],
+      "tags": [
+        "eip-7702",
+        "pectra",
+        "session-keys",
+        "account-abstraction",
+        "erc-4337",
+        "atomic-batching",
+        "mev",
+        "ai-agents",
+        "smart-wallet",
+        "delegation"
+      ],
+      "artifacts": [
+        "the-7702-timeline"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference",
+      "path": "content/articles/2026/06/the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference/index.mdx",
+      "url": "/articles/the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference",
+      "title": "The Bootstrapping Tax: FHE's Fundamental Limit on Private AI Inference",
+      "description": "BERT-base under FHE takes 149 seconds, needs 112 GB, and sustains 0.007 samples/sec. Best-case MPC takes 2.3 seconds and 4 GB. The gap traces to one operation: bootstrapping — the noise-refresh that makes FHE theoretically unlimited but practically expensive.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "tags": [
+        "fhe",
+        "tfhe",
+        "ckks",
+        "bootstrapping",
+        "private-inference",
+        "ppml",
+        "zama",
+        "fhevm",
+        "mpc",
+        "confidential-computing"
+      ],
+      "artifacts": [
+        "the-fhe-inference-wall"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
+      "path": "content/articles/2026/06/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems/index.mdx",
+      "url": "/articles/the-stale-read-concurrency-anomalies-in-multi-agent-llm-systems",
+      "title": "The Stale Read: Concurrency Anomalies in Multi-Agent LLM Systems",
+      "description": "Shared-state multi-agent LLMs exhibit three formal anomaly classes — stale-generation, phantom-tool, causal-cascade. Three 2026 papers prove them unavoidable without isolation primitives and measure the fix: zero corruptions across 884,110 commits under Observable-Read Isolation.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "research",
+        "security",
+        "llm"
+      ],
+      "tags": [
+        "concurrency",
+        "race-conditions",
+        "multi-agent",
+        "stale-generation",
+        "phantom-tool",
+        "causal-cascade",
+        "s-bus",
+        "observable-read-isolation",
+        "coagent",
+        "formal-verification",
+        "tla-plus"
+      ],
+      "artifacts": [
+        "the-race-window"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
+      "path": "content/articles/2026/06/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents/index.mdx",
+      "url": "/articles/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents",
+      "title": "The Width Paradox: Concentrated Liquidity Management and the Fee-Rebalance Tradeoff for AI Agents",
+      "description": "Uniswap v3's capital efficiency multiplier peaks at 20× for ±10% ranges, but first-passage math shows the same position rebalances 54 times a year — making active LP management an optimization problem that requires AI-grade execution frequency.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "data"
+      ],
+      "tags": [
+        "concentrated-liquidity",
+        "uniswap-v3",
+        "clmm",
+        "impermanent-loss",
+        "lp-management",
+        "capital-efficiency",
+        "active-lp",
+        "rebalancing",
+        "gamma-strategies",
+        "volatility"
+      ],
+      "artifacts": [
+        "the-range-optimizer"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments",
       "path": "content/articles/2026/06/the-mandate-gap-prompt-injection-and-the-trust-architecture-of-ai-agent-payments/index.mdx",
@@ -47,6 +435,36 @@
       ],
       "artifacts": [
         "the-payment-flow-gap"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "path": "content/articles/2026/06/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training/index.mdx",
+      "url": "/articles/the-sparse-frontier-sparseloco-and-the-compression-math-behind-permissionless-pre-training",
+      "title": "The Sparse Frontier: SparseLoCo and the Compression Math Behind Permissionless Pre-Training",
+      "description": "Covenant-72B pre-trained a 72.7B-parameter LLM across 70+ anonymous internet peers. The key was SparseLoCo: 1.56% gradient density plus 2-bit quantization achieves 146× compression, collapsing the required uplink from 1.9 Gbps to 110 Mbps — consumer fiber.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "machine-learning",
+        "research",
+        "blockchain"
+      ],
+      "tags": [
+        "sparseloco",
+        "covenant-72b",
+        "distributed-training",
+        "gradient-compression",
+        "sparsification",
+        "diloco",
+        "permissionless-training",
+        "internet-training",
+        "decentralized-ai",
+        "prime-intellect"
+      ],
+      "artifacts": [
+        "the-bandwidth-floor"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -280,6 +698,34 @@
       "seriesOrder": 9,
       "artifacts": [
         "the-activation-receipt"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai",
+      "path": "content/articles/2026/06/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai/index.mdx",
+      "url": "/articles/one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai",
+      "title": "One Ceremony, Three Stacks: KZG Commitments in Ethereum Blobs, zkEVMs, and Verifiable AI",
+      "description": "A single cryptographic primitive — the KZG polynomial commitment — quietly powers EIP-4844 blobs, zkEVM proof systems, and on-chain verifiable AI. You can verify one on Ethereum for 50,000 gas ($0.067 today). Here's the math, the ceremony, and why every zkML system depends on it.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "blockchain"
+      ],
+      "tags": [
+        "kzg",
+        "polynomial-commitments",
+        "eip-4844",
+        "blobs",
+        "zkml",
+        "bls12-381",
+        "trusted-setup",
+        "halo2"
+      ],
+      "artifacts": [
+        "kzg-opening-proof"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3146,6 +3592,219 @@
   ],
   "artifacts": [
     {
+      "slug": "ai-agent-gas-cost-regimes",
+      "path": "content/artifacts/ai-agent-gas-cost-regimes/manifest.json",
+      "module": "src/islands/artifacts/ai-agent-gas-cost-regimes.ts",
+      "url": "/artifacts/ai-agent-gas-cost-regimes",
+      "title": "AI Agent Gas Cost Regimes",
+      "description": "Drag the gas-price slider to see how transaction costs shift across eight on-chain AI agent operations — from sub-cent at today's 0.16 Gwei to triple digits at 2021 peak.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "blockchain",
+        "infrastructure",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-exploit-floor",
+      "path": "content/artifacts/the-exploit-floor/manifest.json",
+      "module": "src/islands/artifacts/the-exploit-floor.ts",
+      "url": "/artifacts/the-exploit-floor",
+      "title": "The Exploit Floor",
+      "description": "Three protocol TVL zones defined by A1's $6k attack break-even vs. $60k audit cost. Click a zone to see the threat model and recommended defense.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "security",
+        "smart-contracts",
+        "ai"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-curve-switch",
+      "path": "content/artifacts/the-curve-switch/manifest.json",
+      "module": "src/islands/artifacts/the-curve-switch.ts",
+      "url": "/artifacts/the-curve-switch",
+      "title": "The Curve Switch",
+      "description": "Grouped bar chart comparing BN254 vs BLS12-381 on-chain gas costs for every precompile operation: G1/G2 adds, scalar mults, and pairings. Log scale reveals the G2 MUL unlock and the counterintuitive pairing inversion.",
+      "pubDate": "2026-06-24",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-cascade-calculator",
+      "path": "content/artifacts/the-cascade-calculator/manifest.json",
+      "module": "src/islands/artifacts/the-cascade-calculator.ts",
+      "url": "/artifacts/the-cascade-calculator",
+      "title": "The Cascade Calculator",
+      "description": "Drag sliders to set provider costs and success rates, then read the profit margin curve. Cascade routing beats expensive-only once the cheap model resolves more than the crossover fraction of queries.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "calculator",
+      "topics": [
+        "agents",
+        "defi"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "peer-rank-convergence",
+      "path": "content/artifacts/peer-rank-convergence/manifest.json",
+      "module": "src/islands/artifacts/peer-rank-convergence.ts",
+      "url": "/artifacts/peer-rank-convergence",
+      "title": "Peer Rank Convergence",
+      "description": "Bradley-Terry vs. majority voting over pairwise comparison rounds. Five nodes with hidden quality scores compete; a malicious node is down-ranked by BT while majority voting is captured. Reference: Fortytwo GPQA Diamond — BT 85.90%, majority 68.69%.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "machine-learning",
+        "blockchain"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-slashable-inference",
+      "path": "content/artifacts/the-slashable-inference/manifest.json",
+      "module": "src/islands/artifacts/the-slashable-inference.ts",
+      "url": "/artifacts/the-slashable-inference",
+      "title": "The Slashable Inference",
+      "description": "Walk through the EigenAI challenge protocol: from encrypted request and deterministic execution to the on-chain byte-equality check that slashes a cheating operator or clears a frivolous watcher.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "security",
+        "infrastructure",
+        "llm"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "folding-frontier",
+      "path": "content/artifacts/folding-frontier/manifest.json",
+      "module": "src/islands/artifacts/folding-frontier.ts",
+      "url": "/artifacts/folding-frontier",
+      "title": "Folding Frontier",
+      "description": "Proof sizes for six ZK schemes at 1,000 computation steps — hover or tap a row to see the trust model, setup requirement, and primary source. Folding-based IVC (Nova, HyperNova) holds constant; batch STARKs and separate Groth16 proofs grow with depth.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-solver-float",
+      "path": "content/artifacts/the-solver-float/manifest.json",
+      "module": "src/islands/artifacts/the-solver-float.ts",
+      "url": "/artifacts/the-solver-float",
+      "title": "The Solver Float",
+      "description": "ERC-7683 cross-chain intent lifecycle: from signed deposit to solver repayment. Click each stage to see the contract call, struct fields, and timing. Across fills $14B+ at median 8 seconds — the 2-hour optimistic challenge window is where solver capital is locked.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "defi",
+        "smart-contracts",
+        "infrastructure"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-clmm-strangle",
+      "path": "content/artifacts/the-clmm-strangle/manifest.json",
+      "module": "src/islands/artifacts/the-clmm-strangle.ts",
+      "url": "/artifacts/the-clmm-strangle",
+      "title": "The CLMM Strangle",
+      "description": "Visualize a Uniswap v3 LP position as a short strangle. Adjust range bounds, implied vol, fee APY, and hold period to see IL vs. the Black-Scholes fair premium — and whether your fee income covers the options risk.",
+      "pubDate": "2026-06-23",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "data"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-7702-timeline",
+      "path": "content/artifacts/the-7702-timeline/manifest.json",
+      "module": "src/islands/artifacts/the-7702-timeline.ts",
+      "url": "/artifacts/the-7702-timeline",
+      "title": "The 7702 Timeline",
+      "description": "Three-lane transaction diagram comparing Raw EOA, ERC-4337, and EIP-7702 execution flows for multi-step DeFi operations — with MEV attack windows and live gas costs. Select a scenario to compare.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "blockchain",
+        "agents",
+        "smart-contracts"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-fhe-inference-wall",
+      "path": "content/artifacts/the-fhe-inference-wall/manifest.json",
+      "module": "src/islands/artifacts/the-fhe-inference-wall.ts",
+      "url": "/artifacts/the-fhe-inference-wall",
+      "title": "The FHE Inference Wall",
+      "description": "Log-scale bar chart comparing FHE vs MPC inference latency for BERT-Tiny, BERT-Base, ResNet-20, and ResNet-50. Click a model to see memory and throughput detail.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "cryptography",
+        "machine-learning"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-race-window",
+      "path": "content/artifacts/the-race-window/manifest.json",
+      "module": "src/islands/artifacts/the-race-window.ts",
+      "url": "/artifacts/the-race-window",
+      "title": "The Race Window",
+      "description": "Three-column diagram of multi-agent LLM concurrency anomalies — stale-generation, phantom-tool, and causal-cascade. Tap a column to inspect the anomaly; toggle ORI Protection to see how Observable-Read Isolation prevents each failure mode.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "research",
+        "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-range-optimizer",
+      "path": "content/artifacts/the-range-optimizer/manifest.json",
+      "module": "src/islands/artifacts/the-range-optimizer.ts",
+      "url": "/artifacts/the-range-optimizer",
+      "title": "The Range Optimizer",
+      "description": "Vary range width, volatility, and position size to see how Uniswap v3 gross fee APY and net APY (after rebalancing gas) trade off — and find the volatility-adaptive optimal LP range.",
+      "pubDate": "2026-06-23",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "defi",
+        "machine-learning"
+      ],
+      "draft": false
+    },
+    {
       "slug": "the-payment-flow-gap",
       "path": "content/artifacts/the-payment-flow-gap/manifest.json",
       "module": "src/islands/artifacts/the-payment-flow-gap.ts",
@@ -3289,6 +3948,38 @@
       "topics": [
         "machine-learning",
         "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "kzg-opening-proof",
+      "path": "content/artifacts/kzg-opening-proof/manifest.json",
+      "module": "src/islands/artifacts/kzg-opening-proof.ts",
+      "url": "/artifacts/kzg-opening-proof",
+      "title": "KZG Opening Proof",
+      "description": "The KZG polynomial commitment scheme, stepped through. Pick an evaluation point z on the cubic P(x) = x³−2x²−x+2 to watch the opening proof π materialize, see the pairing check pass, then corrupt π to make it fail — and read why 50,000 gas ($0.067) is all Ethereum needs to verify any such claim.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-bandwidth-floor",
+      "path": "content/artifacts/the-bandwidth-floor/manifest.json",
+      "module": "src/islands/artifacts/the-bandwidth-floor.ts",
+      "url": "/artifacts/the-bandwidth-floor",
+      "title": "The Bandwidth Floor",
+      "description": "Required uplink bandwidth vs model scale for three gradient sync strategies: dense DDP, full-precision DiLoCo, and SparseLoCo (146× compressed). Drag the cursor to read bandwidth at any model size; compare to real connectivity levels.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "machine-learning",
+        "infrastructure"
       ],
       "draft": false
     },

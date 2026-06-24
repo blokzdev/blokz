@@ -1,0 +1,115 @@
+---
+slug: the-pairwise-vote-how-bradley-terry-ranking-beats-majority-consensus-in-decentralized-ai-inference
+title: "The Pairwise Vote: How Bradley-Terry Ranking Beats Majority Consensus in Decentralized AI Inference"
+description: "Majority voting counts hands — it can't rank quality. Fortytwo's Bradley-Terry protocol achieves 85.90% on GPQA Diamond vs. 68.69% for majority voting, extracting ranking signal from pairwise comparisons and making Sybil attacks economically unattractive."
+pubDate: 2026-06-23T20:27:26.567Z
+author: blokz
+topics: [machine-learning, research, blockchain]
+tags: [swarm-inference, bradley-terry, pairwise-ranking, decentralized-inference, majority-voting, on-chain-reputation, proof-of-capability, sybil-resistance, fortytwo, collective-intelligence]
+artifacts: [peer-rank-convergence]
+difficulty: intermediate
+sources:
+  - label: "Fortytwo: Swarm Inference with Peer-Ranked Consensus (arXiv 2510.24801)"
+    url: "https://arxiv.org/abs/2510.24801"
+  - label: "Self-Supervised Inference of Agents in Trustless Environments (arXiv 2409.08386)"
+    url: "https://arxiv.org/abs/2409.08386"
+  - label: "R.A. Bradley and M.E. Terry, Rank Analysis of Incomplete Block Designs, Biometrika 1952"
+    url: "https://doi.org/10.2307/2334029"
+---
+
+Decentralized AI inference has a consensus problem without an oracle: you have eight nodes running the same open model on different hardware, and they each generate a response to the same query. Which one do you trust?
+
+The obvious answer is majority voting: whichever response the most nodes agree with wins. It is simple, auditable, and on GPQA Diamond — a 448-question doctoral-level reasoning benchmark — it achieves **68.69% accuracy**.
+
+The Fortytwo protocol (arXiv 2510.24801, October 2025) does better with the exact same model set: **85.90%** on the same benchmark — a +17.21 percentage point improvement — by replacing the vote count with a ranking model that extracts quality signal from pairwise comparisons. The mechanism is a 73-year-old statistical model applied to a problem that didn't exist when it was invented.
+
+## What a vote can't tell you
+
+When validator V₁ votes for response B, that vote tells you V₁ prefers B. It tells you nothing about whether V₁ ranks A above C, whether the quality gap between B and C is large or small, or whether V₁ reached its preference through careful reasoning or a coin flip.
+
+Every vote is a single bit: one response slot receives a mark. The vote is the same whether the voter has a strong preference (B is clearly best) or a weak one (B is marginally better).
+
+Pairwise comparisons are richer. When V₁ is shown responses B and C and selects B, you learn that V₁ ranks B above C, with whatever confidence goes into that comparison. When V₂ is shown A and C and selects A, you learn V₂ ranks A above C. After several rounds of pair comparisons, you have a directed preference graph — edges pointing from the preferred response to the less-preferred — that contains ranking information that vote counts discard.
+
+The question is how to aggregate that graph into a global quality ranking.
+
+## The Bradley-Terry model
+
+Bradley and Terry (1952) proposed a probabilistic model for exactly this. Assign each competitor a latent strength parameter rᵢ > 0. The probability that competitor i beats competitor j in a pairwise comparison is:
+
+```
+P(i beats j) = rᵢ / (rᵢ + rⱼ)
+```
+
+If i is much stronger than j (rᵢ >> rⱼ), i wins nearly every comparison. If they are equal, the comparison is a coin flip. The strength parameters are not observed directly — they are inferred from the outcomes of comparisons.
+
+Maximum likelihood estimation of the rᵢ values from observed pairwise outcomes follows the Zermelo algorithm (1929), which converges to the global optimum via iterative update:
+
+```
+r'ᵢ = Wᵢ / Σⱼ≠ᵢ [ nᵢⱼ / (rᵢ + rⱼ) ]
+```
+
+where Wᵢ is node i's total wins, nᵢⱼ is the total number of comparisons between i and j, and the denominator sums the expected competition rate weighted by relative strengths. After normalization, the ratings converge in 10–20 iterations.
+
+The critical difference from majority voting is in the denominator. Winning 10 comparisons against weak opponents contributes less to rᵢ than winning 3 comparisons against strong opponents, because the denominator downweights victories where the baseline expectation was already high. Majority voting has no equivalent — a win is a win.
+
+## The Fortytwo protocol
+
+Fortytwo applies Bradley-Terry to decentralized inference through three phases per query:
+
+**Generation.** Each of the N inference nodes produces a response independently.
+
+**Ranking.** A random subset of node pairs are drawn and compared. Each comparison produces a preference label: response i is better than response j, or vice versa. Comparisons are distributed across nodes — each node evaluates a batch of pairs it did not generate.
+
+**Aggregation.** BT ratings are updated from the round's pairwise outcomes using the Zermelo update, and the node with the highest current rating's response is returned as the consensus output.
+
+The rating update happens with every round, so the protocol is online: each new set of comparisons refines the strength estimates, and the aggregation step uses the latest estimates rather than starting from scratch.
+
+The benchmark results across challenging domains:
+
+| Benchmark | Majority Voting | BT Consensus | Gain |
+|---|---|---|---|
+| GPQA Diamond | 68.69% | 85.90% | +17.21 pp |
+| LiveCodeBench | baseline | +improvement | consistent |
+| AIME | baseline | +improvement | consistent |
+
+The improvement is consistent across benchmark types — factual reasoning, coding, and mathematics — suggesting the advantage comes from the ranking mechanism itself, not from domain-specific tuning.
+
+<Artifact slug="peer-rank-convergence" />
+
+The simulation above shows how the accuracy gap between Bradley-Terry (cyan) and majority voting (amber) opens over comparison rounds. Toggle the malicious node to see how the BT algorithm degrades a node that always self-reports as winner in its comparisons — the on-chain reputation system identifies and down-ranks it, while majority voting can be captured.
+
+## On-chain reputation as accumulated evidence
+
+A single round of comparisons produces noisy BT estimates, especially in early rounds when many node pairs have few data points. With enough rounds, the estimates stabilize — BT is a consistent estimator under the model's assumptions.
+
+Fortytwo stores BT ratings on-chain. A node's current rating reflects the full history of comparisons it has participated in — not just the current round. This creates a persistent reputation that is expensive to build and costly to lose. A node that has accumulated 200 rounds of honest comparisons with high win rates carries that track record forward into future rounds.
+
+The dynamics parallel Ethereum's validator attestation weights, where influence scales with staked ETH — except Fortytwo's influence scales with demonstrated comparison accuracy rather than capital. The on-chain ledger enforces the reputation without a central authority needing to maintain it.
+
+This also connects to the approach in [Clipped to Consensus](/articles/clipped-to-consensus): Bittensor's Yuma consensus uses a stake-weighted median to clip inflated weight assignments from colluding validator blocs. Both Yuma and Bradley-Terry try to surface honest quality signal; they differ in whether that signal comes from human stakers assigning weights to miners, or from model-generated pairwise quality comparisons aggregated by a likelihood model. Yuma is more expressive (validators can express graded preferences), but Fortytwo is more auditable — every pairwise comparison is a discrete observable event.
+
+## Proof-of-capability as the Sybil gate
+
+The canonical Sybil attack on majority voting: control 51% of the voting identities and you control the consensus. With soft identities (no staking requirement), creating 100 fake voting nodes is cheap.
+
+Fortytwo addresses this with **proof-of-capability**: new nodes must complete calibration tasks before they can enter ranking rounds. During calibration, a node processes requests with known correct answers and evaluates comparison batches with verified preference labels. Its BT rating is seeded from these verified outcomes. Nodes that cannot pass calibration — weak models, fake identities, or prompt-injected agents — fail to accumulate a baseline rating.
+
+Once inside the network, running multiple Sybil identities becomes economically unattractive. Each identity must independently pass calibration and maintains its own BT rating. An identity generating low-quality responses loses reputation on its own track, independent of its sibling identities. If an attacker runs 100 fake identities that each provide mediocre inference, all 100 rating accounts degrade simultaneously — the expected return from splitting into identities is strictly lower than the return from running one high-quality node.
+
+The adversarial resilience benchmark: prompt-injection degradation (the drop in accuracy when queries include adversarial content designed to mislead the model) is **0.12%** for Fortytwo vs. **6.20%** for a single-model baseline — a 52× improvement. The swarm's collective intelligence filters adversarial content that would capture a single model.
+
+## Positioning relative to existing verifiability approaches
+
+The [verifiable inference landscape](/articles/the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slashing-model) splits along a fundamental axis: hardware attestation (TEEs prove which code ran), cryptographic proofs (zkML proves the computation was correct), and [sampling-based schemes](/articles/the-verifiers-dilemma) (probabilistic re-execution checks for cheating). All of these prove *what computation ran* on a specific input.
+
+Fortytwo proves something different: *which output is best*, by aggregating human-calibrated pairwise preference signal across many comparisons. The two approaches are complementary. A verifiable inference network might use TEEs to prove each node ran the model honestly, then use BT ranking to select among honest outputs. You need both: a cheating-resistant execution layer and a quality-surfacing selection layer.
+
+For decentralized AI networks, BT reputation also creates a path to quality-based compensation: node revenue can be weighted by on-chain BT ratings rather than hardware capacity alone. This creates economic pressure for quality improvement that pure compute metrics cannot capture — and it connects to the broader argument in [Copy or Compute](/articles/copy-or-compute-the-uniqueness-trap-in-permissionless-ai-training-networks) that the key design challenge in permissionless AI networks is making quality contributions more profitable than copying.
+
+## Takeaways
+
+- **Majority voting discards ranking information**: a win is a win regardless of opponent quality. Bradley-Terry extracts that signal from pairwise outcomes — worth +17 percentage points on doctoral-level reasoning.
+- **On-chain BT reputation accumulates comparison evidence across rounds**: quality selection becomes more stable and harder to manipulate as network history grows.
+- **Proof-of-capability makes Sybil attacks economically unattractive**: each identity earns or loses reputation independently, so running 100 weak identities is worse than running one strong one.
+- **Remaining tension**: gathering enough pairwise comparisons to run BT reliably adds latency versus a simple vote count. The practical deployability claim rests on how efficiently the comparison phase can be parallelized — Fortytwo's 125ms validation latency target from earlier work leaves a narrow window.

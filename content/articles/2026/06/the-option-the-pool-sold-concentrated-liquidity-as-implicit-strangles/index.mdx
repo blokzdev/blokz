@@ -1,0 +1,174 @@
+---
+slug: the-option-the-pool-sold-concentrated-liquidity-as-implicit-strangles
+title: "The Option the Pool Sold: Concentrated Liquidity as Implicit Strangles"
+description: "A Uniswap v3 LP position in range [Pa, Pb] is mathematically a short strangle — short put at Pa, short call at Pb. Derive the equivalence, compute the Black-Scholes fair premium, and compare it to actual fee income at current ETH vol."
+pubDate: 2026-06-23T16:35:42.792Z
+author: blokz
+topics: [defi, data, ai]
+tags: [concentrated-liquidity, uniswap-v3, clmm, options, strangle, impermanent-loss, black-scholes, greeks, panoptic, lp-pricing]
+artifacts: [the-clmm-strangle]
+difficulty: intermediate
+sources:
+  - label: "Uniswap v3 Core Whitepaper — Adams, Zinsmeister, Salem, Keefer, Robinson (2021)"
+    url: "https://uniswap.org/whitepaper-v3.pdf"
+  - label: "Automated Market Making and Loss-Versus-Rebalancing — Milionis et al. (2022)"
+    url: "https://arxiv.org/abs/2208.06046"
+  - label: "Panoptic Protocol — Perpetual, Oracle-Free Options on Any Uniswap V3 Pool"
+    url: "https://panoptic.xyz"
+---
+
+Every Uniswap v3 position is a short options position in disguise. When you deposit liquidity in range [Pa, Pb], you are selling the market a strangle — a short put struck at Pa and a short call struck at Pb — and collecting fee income as the premium. The market "exercises" by driving price outside your range, converting your mixed position into a single asset at a loss relative to holding. What the LP calls impermanent loss, the options desk calls assignment.
+
+This is not an analogy; it is an identity. The payoff curves are equivalent. The Greeks follow the same formulas. And the same Black-Scholes machinery that prices a vanilla strangle prices the implicit premium an LP should demand to break even. Most LPs never run that calculation — and some pools systematically underpay.
+
+## The Geometry of a Bounded Range
+
+Uniswap v3 LPs choose a price range [Pa, Pb] and deposit a mix of two tokens. While spot price S sits inside the range, both tokens earn fee income proportional to the volume passing through. As S drifts toward Pa, the position rebalances continuously toward 100% of the base asset (ETH in an ETH/USDC pool). When S crosses Pa, the LP holds only ETH — fully exposed to further downside — and earns nothing. The mirror holds at Pb: cross it, and the LP holds only USDC, missing any further upside.
+
+The value function for a normalized position (V = 1 at initial price S₀) is:
+
+```
+V(S) =
+  L × (1/√Pa − 1/√Pb) × S          if S < Pa   (100% ETH)
+  L × (2√S − √Pa − S/√Pb)           if Pa ≤ S ≤ Pb
+  L × (√Pb − √Pa)                   if S > Pb   (100% USDC)
+```
+
+where the liquidity constant L = 1 / (2√S₀ − √Pa − S₀/√Pb) ensures V(S₀) = 1.
+
+Plot this against a straight HODL portfolio and the gap is impermanent loss — always non-positive, worst at the range boundaries, and steepest in the tails. That concave, tent-shaped payoff is the signature of a sold strangle.
+
+## Short Put at Pa, Short Call at Pb
+
+An options strangle sells both a put and a call on the same underlying with different strikes. The seller collects upfront premium; the buyer profits when the underlying moves enough to cover the premium. The seller's maximum gain is exactly the premium collected; the loss is unbounded on the call leg and substantial on the put.
+
+Map this onto the CLMM position:
+
+| Options strangle | CLMM LP |
+|---|---|
+| Short put struck at Pa | LP absorbs ETH as price falls to Pa; holds 100% ETH below |
+| Short call struck at Pb | LP sheds ETH as price rises to Pb; holds 100% USDC above |
+| Premium collected upfront | Fee income collected continuously while in range |
+| Assignment loss | Impermanent loss relative to HODL when price exits range |
+| Vega (short) | LP loses more when volatility is high |
+
+The analogy is not loose: the CLMM value function is the exact payoff of a short strangle (plus a residual HODL component that cancels out in the IL calculation). This was formalized by the Panoptic team, who built a protocol on the equivalence.
+
+Narrow range = tight strangle. A ±5% range sells an almost at-the-money strangle: high premium per dollar at risk, but any meaningful move assigns it. A ±50% range sells a wide-wing strangle: low premium, very unlikely to be assigned, but far from the capital-efficient core of the position. The [width paradox explored in an earlier article](/articles/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents) — where tighter ranges earn higher fee APY but rebalance more frequently — is really the same phenomenon described in options language: a tighter strangle sells for more premium but gets exercised more often.
+
+## The Greeks of a CLMM Position
+
+Options Greeks quantify price sensitivities. A CLMM position has them too.
+
+**Delta** (dV/dS): the derivative of LP value with respect to price equals the amount of ETH in the position. For the in-range case:
+
+```
+Δ = dV/dS = L × (1/√S − 1/√Pb)
+```
+
+This is non-negative and bounded by [0, L × (1/√Pa − 1/√Pb)]. An LP never holds a short ETH position — delta always lies between 0 and 1 (the full ETH amount). At midrange, the position is approximately 50% ETH and 50% USDC: delta ≈ 0.5.
+
+For a ±15% range on ETH ($1,661 spot, Pa = $1,411, Pb = $1,911), the initial delta is:
+```
+L = 1 / (2√1661 − √1411 − 1661/√1911) ≈ 0.168
+Δ = 0.168 × (1/√1661 − 1/√1911) ≈ 0.168 × (0.0245 − 0.0229) ≈ 0.00269
+```
+
+In dollar terms, each $1 increase in ETH price increases LP value by $0.00269 on a $1 notional — equivalent to holding roughly 46% ETH and 54% USDC, consistent with a position that starts near the center of its range.
+
+**Gamma** (d²V/dS²): the second derivative of LP value is always negative in the in-range region:
+
+```
+Γ = d²V/dS² = −L / (2S^(3/2)) < 0
+```
+
+Negative gamma is the defining characteristic of a short options position. It means the LP position is concave: large moves in either direction hurt more than a linear position would. The LP loses relative to HODL regardless of direction — the only question is how large the loss is. At $1,661 spot:
+```
+Γ = −0.168 / (2 × 1661^1.5) ≈ −0.168 / 135,400 ≈ −1.24 × 10⁻⁶
+```
+
+A $100 ETH move (from $1,661 to $1,761) changes the position's delta by approximately Γ × 100 ≈ −1.24 × 10⁻⁴. This is small in isolation, but cumulative over many moves it produces the characteristic concave payoff.
+
+Negative gamma also implies **short vega**: when realized volatility rises, the LP's expected loss relative to HODL increases. This is why impermanent loss is sometimes described as "volatility tax" — the LP is short volatility.
+
+## Pricing the Strangle: What Black-Scholes Says
+
+If the LP is writing a strangle, what is the fair premium? The Black-Scholes formula for a European strangle at strikes [Pa, Pb] with spot S₀, implied volatility σ, and time T:
+
+```
+Fair premium = BS_Put(S₀, Pa, T, σ) + BS_Call(S₀, Pb, T, σ)
+```
+
+At current ETH parameters — spot $1,661, ±15% range (Pa = $1,411, Pb = $1,911), σ = 54% realized vol from a 50-hour window, T = 30 days = 0.082 years, r = 4%:
+
+For the put at Pa = $1,411 (−15% OTM):
+```
+d₁ = (ln(1661/1411) + (0.04 + 0.54²/2) × 0.082) / (0.54 × √0.082) ≈ 1.152
+d₂ = 1.152 − 0.155 ≈ 0.997
+BS_Put ≈ 1411 × e^(−0.003) × N(−0.997) − 1661 × N(−1.152) ≈ $17.10
+```
+
+For the call at Pb = $1,911 (+15% OTM):
+```
+d₁ = (ln(1661/1911) + (0.04 + 0.54²/2) × 0.082) / (0.54 × √0.082) ≈ −0.808
+d₂ = −0.808 − 0.155 ≈ −0.963
+BS_Call ≈ 1661 × N(−0.808) − 1911 × e^(−0.003) × N(−0.963) ≈ $28.50
+```
+
+Total fair strangle premium: $17.10 + $28.50 = **$45.60**, or **2.75% of the $1,661 notional** for one 30-day period. Annualized: **33.4% APY**.
+
+This number has a direct interpretation: a rational LP in a ±15% ETH range should expect to earn at least 33.4% APY in fee income just to break even against the expected impermanent loss over time — before gas costs.
+
+The call leg is larger than the put leg ($28.50 vs $17.10) because ETH's lognormal distribution assigns more probability to large upward moves. An LP in a symmetric percentage range is slightly more exposed to upward blowouts than downward ones — the price-jump probability in log-space is asymmetric.
+
+## The Fee Income Gap
+
+Do Uniswap pools actually pay the fair strangle premium?
+
+Using the fee-APY formula from the [width paradox analysis](/articles/the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-tradeoff-for-ai-agents), a ±15% range carries a capital-efficiency multiplier of approximately 13.8×. Applied to each fee tier:
+
+| Pool (ETH/USDC) | Base APY | Multiplier at ±15% | Concentrated APY |
+|---|---|---|---|
+| 0.05% (volume/TVL ≈ 0.15/day) | 2.7% | 13.8× | ~37% |
+| 0.3% (volume/TVL ≈ 0.02/day) | 2.2% | 13.8× | ~30% |
+| 1.0% (volume/TVL ≈ 0.005/day) | 1.8% | 13.8× | ~25% |
+
+The fair BS premium at 54% realized vol is ~33% APY. The 0.05% pool at ±15% earns ~37%, a modest **+4% excess** — a thin positive edge. The 0.3% pool earns ~30%, meaning LPs are **implicitly underpaid by ~3%** relative to the fair volatility premium. The 1.0% pool is further behind.
+
+Several caveats apply. Volume/TVL ratios vary by market regime; in high-vol periods, volume surges and fee APY can spike well above the fair premium. The Black-Scholes model assumes log-normal prices and constant vol — ETH has fat tails and vol clustering, so the true risk likely exceeds the BS estimate. And the analysis ignores LVR (loss-versus-rebalancing), the diffuse cost studied by Milionis et al. that an LP pays continuously to arbitrageurs regardless of range selection.
+
+The practical takeaway: **at current vol, the 0.05% pool at ±15% range is broadly fairly priced; the 0.3% pool is a mild negative expected value for the LP** — unless the LP has a vol forecasting edge that justifies the position.
+
+## Panoptic: Making the Equivalence Explicit
+
+The Panoptic protocol operationalizes the LP-as-options identity. Rather than depositing into a Uniswap pool directly, a Panoptic user can:
+
+- **Sell an option** by providing a Uniswap LP position as collateral. The option seller receives streaming premium from the buyer.
+- **Buy an option** by borrowing (renting) an LP position from a seller. The buyer pays streaming premium instead of an upfront lump sum.
+
+The option price Panoptic charges is derived from the accumulated fees of the underlying Uniswap position — which is itself a proxy for realized volatility. When the pool is active and vol is high, fees accumulate fast and options are expensive; when the pool is quiet, fees trickle in and options are cheap. The fee mechanism is thus a form of oracle-free, continuously-updating implied volatility surface.
+
+Panoptic's contribution is eliminating the gap. Standard LP positions pay IL while simultaneously earning fees; the net is the implicit options payoff. Panoptic separates the two legs: options buyers explicitly pay for the IL exposure; options sellers explicitly receive premium for bearing it. The same risk transfer, priced transparently.
+
+## Agent Opportunities: Automated Premium Scanning
+
+The options-pricing framing opens a precise quantitative edge for AI agents:
+
+**IV surface construction.** For every Uniswap v3 pool, compute the implied vol surface from the pool's fee income at each active tick range. A pool's fee APY at range width W, combined with the Black-Scholes formula, implies an IV. If this implied vol diverges from realized vol, the pool is mispriced. Agents can rank pools by premium gap continuously, long/short the discrepancy via Panoptic, and harvest the spread.
+
+**Vol regime switching.** The optimal LP strategy depends on the realized/implied vol relationship. When realized vol is high and fee APY is lagging (underpaying the fair premium), agents should LP in Panoptic as option sellers — receiving explicit premium rather than collecting fees. When realized vol is low and fee income is generous relative to the fair strangle price, direct LP positions deliver positive expected value.
+
+**Cross-pool arbitrage.** The same ETH/USDC strangle is priced differently in the 0.05% and 0.3% pools because they attract different volumes. An agent holding the complete vol-surface picture across all active pools can route LP capital to whichever pool is most overpaying the strangle premium at the current tick range.
+
+None of this requires AI in the sense of learned behavior — it is systematic quantitative analysis. But it does require running constantly, updating every time a new pool observation is available, and executing atomically. That is exactly the profile of an on-chain agent.
+
+<Artifact slug="the-clmm-strangle" />
+
+## Takeaways
+
+- A CLMM LP position in range [Pa, Pb] is mathematically equivalent to a short strangle — short put at Pa, short call at Pb. Impermanent loss is the options-exercise payoff.
+- Delta ranges from 0 (above Pb) to 1 (below Pa); gamma is always negative in-range. Both signatures match a sold options position.
+- At ETH spot $1,661 and 54% realized vol, a ±15% 30-day strangle carries a **Black-Scholes fair premium of ~2.75% of notional (33.4% APY)**.
+- The ETH/USDC 0.05% pool at ±15% earns approximately 37% fee APY — a thin positive edge. The 0.3% pool earns roughly 30%, implying LPs are structurally underpaid at current vol.
+- Panoptic formalizes the equivalence by separating the fee leg (premium) from the IL leg (assignment), creating explicit oracle-free options on any Uniswap v3 pool.
+- AI agents can exploit the premium gap by building implied vol surfaces from pool fee data, identifying mispriced positions, and routing capital to the most favorable strangle seller.

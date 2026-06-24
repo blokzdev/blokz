@@ -1,0 +1,107 @@
+---
+slug: the-proof-that-doesnt-grow-nova-folding-and-incremental-verifiable-ai
+title: "The Proof That Doesn't Grow: Nova Folding and Incremental Verifiable AI"
+description: "Nova replaces expensive SNARK-in-SNARK recursion with a random linear combination that folds two R1CS instances into one — 10× less overhead per step. For N-step AI inference: O(N) prover work, one constant-size final proof. NANOZK delivers this at GPT-2 scale: 6.9 KB, 23 ms verify."
+pubDate: 2026-06-23T18:30:46.992Z
+author: blokz
+topics: [zero-knowledge, cryptography, research]
+tags: [nova, folding-schemes, ivc, hypernova, protogalaxy, incremental-verifiable-computation, zkml, recursive-snarks, r1cs, spartan]
+artifacts: [folding-frontier]
+difficulty: intermediate
+sources:
+  - label: "Nova: Recursive Zero-Knowledge Arguments from Folding Schemes — ePrint 2021/370"
+    url: "https://eprint.iacr.org/2021/370"
+  - label: "HyperNova: Recursive Arguments for Customizable Constraint Systems — ePrint 2023/573"
+    url: "https://eprint.iacr.org/2023/573"
+  - label: "microsoft/Nova — SHA-256 benchmark"
+    url: "https://github.com/microsoft/Nova"
+  - label: "NANOZK: Layerwise Zero-Knowledge Proofs for Verifiable LLM Inference — arXiv 2603.18046"
+    url: "https://arxiv.org/abs/2603.18046"
+  - label: "ProtoGalaxy: Efficient ProtoStar-style folding of multiple instances — ePrint 2023/1106"
+    url: "https://eprint.iacr.org/2023/1106"
+---
+
+Every approach to verifiable AI inference eventually runs into the same wall: proving one transformer forward pass is hard enough, but proving N of them requires a proof structure that scales with N. A STARK over the full trace grows with the computation. A Groth16 proof per step produces N separate 192-byte proofs that someone still has to aggregate. Recursive SNARKs — where each step wraps a SNARK verifier for the previous step — work, but they're expensive: the verifier circuit you're embedding costs ~150,000 R1CS constraints, and you're paying that per step.
+
+Nova, published at CRYPTO 2022 by Abhiram Kothapalli, Srinath Setty, and Ioanna Tzialla, cuts that cost by 10×. Its recursion overhead is ~15,000 constraints — not because they found a cleverer SNARK verifier, but because Nova replaces the embedded SNARK verifier with something much cheaper: a random linear combination. This is folding.
+
+## What Folding Actually Does
+
+The core of any SNARK is a constraint system that asks: does witness **w** satisfy the relation R(x, w) = 0? For R1CS (rank-one constraint system), this means: does **Az ∘ Bz = Cz**, where **z** concatenates the public input and witness?
+
+Nova introduces a **relaxed R1CS** — a generalization that adds a committed "error vector" **E** and a scalar **u** to absorb the slack from imperfect satisfiability: **Az ∘ Bz = u·Cz + E**. A valid R1CS instance is a relaxed instance where **E = 0** and **u = 1**. 
+
+Now the key operation: given two relaxed R1CS instances (x₁, w₁, E₁, u₁) and (x₂, w₂, E₂, u₂), a verifier picks a random challenge **r** and folds them into one:
+
+```
+x_fold = x₁ + r·x₂
+w_fold = w₁ + r·w₂
+u_fold = u₁ + r·u₂
+E_fold = E₁ + r·T + r²·E₂
+```
+
+where **T** is a "cross-term" that the prover commits to before r is chosen. The folded instance is satisfying if and only if both originals were satisfying. The verifier's job is to check just that linear combination — no inner SNARKs, no FFTs, no pairing operations. Just commit-and-fold.
+
+Across N IVC steps, the prover accumulates one running folded instance. After all N steps, it proves the final folded instance is satisfying using a single SNARK (Nova uses Spartan, which is transparent and needs no trusted setup). The verifier checks one proof, pays one verification cost, regardless of N.
+
+## The Recursion Overhead Gap
+
+Why does this matter more than the numbers suggest? In Halo2-style recursive SNARKs, at each IVC step the prover must:
+
+1. Execute the application circuit (the actual computation — e.g., one transformer attention layer)
+2. Execute the **verifier circuit** for the previous step's proof
+
+That verifier circuit contains elliptic curve point additions, scalar multiplications, and hash operations — all expressed as R1CS constraints. The result: ~150,000 R1CS constraints per recursion step just for the overhead.
+
+Nova's recursion verifier checks only: did the prover commit to T correctly? Is the folding linear combination consistent? This costs ~15,000 constraints. The Nova paper reports this is more than 10× lower than prior SNARK-based IVC and over 100× lower than recursive SNARKs without a trusted setup.
+
+In the SHA-256 benchmark from the `microsoft/Nova` repository, one fold of a 64-byte block through SHA-256 (55,000 R1CS constraints total including the application circuit) takes **53 milliseconds** on commodity hardware. Scale to 1,000 SHA-256 blocks: 53 seconds of prover time, one constant-size proof at the end.
+
+That final proof — a Spartan-compressed SNARK over the accumulated relaxed R1CS instance — is ~7,400× smaller than the uncompressed IVC accumulator. It verifies once.
+
+## SuperNova, HyperNova, ProtoGalaxy
+
+The original Nova handles **uniform** IVC: each step runs the same circuit. Transformer inference is non-uniform — attention, feedforward, and normalization layers have different constraint structures. Three extensions address this:
+
+**SuperNova** (2022) handles non-uniform IVC by maintaining one running instance per "step function type." A 12-layer GPT-style model runs 12 different circuits alternately; SuperNova keeps 12 accumulators and folds into the right one at each step.
+
+**HyperNova** (CRYPTO 2024) replaces R1CS with CCS — Customizable Constraint Systems — a single arithmetic framework that subsumes R1CS, Plonkish, and AIR simultaneously. A CCS gate can express a full dot product with a single constraint, where R1CS would need many. The fold's cryptographic cost remains one MSM (multi-scalar multiplication) of size equal to the number of witnesses — provably optimal for MSM-based commitments. HyperNova's richer constraint expressivity makes it the natural fit for attention and feedforward layers.
+
+**ProtoGalaxy** (2023, by Eagen and Gabizon) takes the complementary approach: instead of folding one instance per step, fold **k instances at once**. The verifier's marginal cost — beyond linearly combining commitments — is O(log k) field operations. This is valuable when you want to aggregate many inference requests simultaneously before producing a proof.
+
+## What This Means for Long-Context AI Inference
+
+The existing zkML stack faces a specific problem with long-context or multi-step AI. Proving a single GPT-2 forward pass with EZKL already takes seconds. Proving 1,000 forward passes — as needed for a 1,000-token generation — requires either one enormous STARK over the concatenated trace (O(N log N) prover, large memory footprint) or N separate proofs (linear proof count, O(N) verification).
+
+Nova changes the cost model: **prover time = O(N × fold_time), verifier time = O(1)**. For an AI inference layer with, say, 200,000 R1CS constraints — a rough order of magnitude for an attention head — each fold runs proportionally to the SHA-256 benchmark above. The verifier always checks one final Spartan proof.
+
+NANOZK (March 2026, arXiv 2603.18046) applies the layerwise insight to production-scale models. Instead of one monolithic circuit, it proves each transformer layer independently, using lookup table approximations for softmax, GELU, and LayerNorm — all three introduce zero measurable accuracy loss. The result for GPT-2 scale (12 layers):
+
+- **Proving time**: 43 seconds
+- **Proof size**: **6.9 KB**, constant regardless of hidden dimension
+- **Verification time**: 23 milliseconds
+- **Speedup over EZKL**: 52×
+
+The 6.9 KB figure is the constant proof for the full model. It does not grow with sequence length within a fixed layer. The layerwise decomposition also enables parallelism: each layer's proof is independent and can be generated on separate provers simultaneously.
+
+<Artifact slug="folding-frontier" />
+
+## The Trusted-Setup Question
+
+Nova and HyperNova avoid trusted setup. The folding operation uses Pedersen-style commitments over a cycle of elliptic curves (typically Pallas/Vesta or bn256/grumpkin), and Spartan's final compression is also transparent. This matters for inference markets: a trusted setup introduces a coordination requirement and a ceremony whose security depends on at least one participant discarding their trapdoor.
+
+Prior recursive SNARK approaches (Groth16 recursion, Plonk-based IVC) require per-circuit trusted setups. For AI inference, where the model architecture is a known circuit, this is manageable but adds deployment friction and limits agility when model parameters change.
+
+## Where Nova Is Deployed Today
+
+The Sonobe library (PSE + 0xPARC) implements Nova, SuperNova, HyperNova, and ProtoGalaxy behind a unified interface and can compress IVC proofs into zkSNARKs verifiable on the EVM. MicroNova (ePrint 2024/2099) optimizes the Spartan compression specifically for on-chain verification, targeting efficient Ethereum calldata. These aren't production inference markets yet — proving a full LLM in Nova-style IVC still takes minutes — but they define the cost floor toward which hardware and compiler work is converging.
+
+The intersection with the [TOPLOC activation fingerprint scheme](/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference) is worth noting: TOPLOC offers a non-interactive 258-byte receipt per 32 tokens, trading completeness for speed. Nova offers a complete proof at O(N) prover cost. These are complementary points on the [proof-of-trust spectrum](/articles/trusting-the-quote-onchain-tee-attestation): TOPLOC for real-time slashing in inference markets, Nova IVC for high-stakes completeness where the verification budget is worth spending.
+
+The [proof aggregation article](/articles/the-aggregation-ceiling-why-ai-inference-markets-need-proof-batching) covers the upstream problem — how to make per-inference Groth16 proofs cheap to batch-verify on-chain. Nova's IVC sidesteps batching entirely by ensuring the prover only ever produces one final proof per session, regardless of how many inference steps it covered.
+
+## Takeaways
+
+Nova's folding scheme isn't a marginal improvement over recursive SNARKs — it's a different mechanism. Instead of embedding a SNARK verifier inside each proof, it accumulates computation steps via random linear combinations into one constant-size structure. The recursion overhead is 10× lower than prior IVC and 100× lower than recursive SNARKs without trusted setup.
+
+For AI inference verification, the implication is direct: the prover cost is O(N) in the number of inference steps, but the verifier always checks one constant-size proof. NANOZK shows this working at GPT-2 scale today — 6.9 KB, 23 ms verify. The path to larger models runs through faster MSMs, parallel folding (ProtoGalaxy), and more efficient constraint encodings for transformer arithmetic (HyperNova's CCS). Each of those is active research with near-term production horizons.

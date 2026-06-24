@@ -1,0 +1,116 @@
+{
+  "protocol": {
+    "challengeWindowHours": 24,
+    "operatorStakeETH": 32,
+    "watcherBondETH": 32,
+    "slashBurnFraction": 0.333,
+    "slashChallengerFraction": 0.667,
+    "reexecutionCostUSD": 1.25,
+    "challengerUpsideUSD": 80000,
+    "gpuArchitecture": "H100-SXM5 80GB",
+    "daLayer": "EigenDA",
+    "daWindowDays": 18
+  },
+  "steps": [
+    {
+      "id": "request",
+      "label": "REQUEST",
+      "path": "main",
+      "actor": "User → Operator",
+      "action": "User encrypts prompt under operator public key; ciphertext published to EigenDA",
+      "dataFlow": "encrypt(prompt, pk_operator) → EigenDA",
+      "stake": null,
+      "detail": "Privacy is preserved: only the operator can decrypt the prompt during execution. The ciphertext is public and available for later challenge re-execution."
+    },
+    {
+      "id": "execute",
+      "label": "EXECUTE",
+      "path": "main",
+      "actor": "Operator",
+      "action": "Runs deterministic inference: fixed GPU (H100-SXM5), seeded RNG, batch-invariant kernels",
+      "dataFlow": "f(prompt, seed, weights) → response [bit-exact]",
+      "stake": null,
+      "detail": "Seeded scheduling + fixed GPU architecture makes inference bit-exact: same inputs → same output hash on every run. LLM-42's verify-rollback loop enforces determinism at the token level with <3% throughput overhead."
+    },
+    {
+      "id": "commit",
+      "label": "COMMIT",
+      "path": "main",
+      "actor": "Operator",
+      "action": "Signs hash(response); publishes encrypted response to EigenDA; posts commitment on-chain",
+      "dataFlow": "sig(hash(resp), seed, model_id) → EigenVerify contract",
+      "stake": "32 ETH bonded",
+      "detail": "The operator's 32 ETH restaked stake is now bonded against this hash for the challenge window. The full encrypted response is written to EigenDA (18-day availability window)."
+    },
+    {
+      "id": "window",
+      "label": "WINDOW",
+      "path": "main",
+      "actor": "Watchers",
+      "action": "24-hour challenge window; any watcher can decrypt response, re-run inference, compare hashes",
+      "dataFlow": "hash(local_reexecution) ==? hash(committed)",
+      "stake": "32 ETH at risk",
+      "detail": "Verification cost: ~$1.25 (30 min H100 at $2.50/hr). Expected upside on successful challenge: ~$80,000 (⅔ of slashed stake). 1-of-N honesty: a single honest watcher worldwide is sufficient to catch fraud."
+    },
+    {
+      "id": "settle",
+      "label": "SETTLE",
+      "path": "happy",
+      "actor": "EigenVerify",
+      "action": "Challenge window closes with no dispute; operator stake released; user result is final",
+      "dataFlow": "stake_released(operator) + yield_paid",
+      "stake": null,
+      "detail": "Happy path. Operator receives inference fee and AVS yield. The committed response is the canonical, auditable record of the inference."
+    },
+    {
+      "id": "challenge",
+      "label": "CHALLENGE",
+      "path": "dispute",
+      "actor": "Watcher → EigenVerify",
+      "action": "Watcher posts 32 ETH bond; submits hash mismatch evidence to EigenVerify",
+      "dataFlow": "challenge(bond=32ETH, claimed_hash, recomputed_hash) → EigenVerify",
+      "stake": "32 ETH watcher bond posted",
+      "detail": "The 32 ETH bond prevents griefing attacks. Frivolous challenges cost the watcher their bond. Valid challenges earn them ⅔ of the operator's slashed stake."
+    },
+    {
+      "id": "reexecute",
+      "label": "REEXECUTE",
+      "path": "dispute",
+      "actor": "EigenVerify TEE",
+      "action": "Threshold decryption key released; TEE re-runs inference on same prompt, seed, model",
+      "dataFlow": "decrypt(ciphertext, threshold_key) → tee_response [bit-exact]",
+      "stake": "Operator stake frozen",
+      "detail": "The threshold key (split across validators at commit time) is now published on-chain, making the original prompt available to the TEE. Because inference is bit-exact, an honest operator's re-execution produces the identical hash."
+    },
+    {
+      "id": "check",
+      "label": "BYTE CHECK",
+      "path": "dispute",
+      "actor": "EigenVerify contract",
+      "action": "On-chain: hash(operator_response) == hash(tee_response)?",
+      "dataFlow": "keccak256(resp_A) ==? keccak256(resp_B)",
+      "stake": "32 ETH + operator stake at risk",
+      "detail": "The entire verification logic is a single 32-byte equality predicate. No ZK circuit, no trusted oracle, no proof system. The smart contract executes this natively."
+    },
+    {
+      "id": "slash",
+      "label": "SLASH",
+      "path": "fraud",
+      "actor": "EigenLayer",
+      "action": "Hashes differ — operator cheated. Operator stake slashed: ⅓ burned, ⅔ to challenger",
+      "dataFlow": "burn(stake × 0.333) + transfer(stake × 0.667, watcher)",
+      "stake": "32 ETH slashed",
+      "detail": "The slash is irreversible and automatic — no governance vote, no committee. The EigenLayer contract executes it on-chain. The operator loses their entire restaked stake for one fraudulent inference."
+    },
+    {
+      "id": "clear",
+      "label": "CLEAR",
+      "path": "griefing",
+      "actor": "EigenVerify",
+      "action": "Hashes match — operator was honest. Watcher bond slashed; operator stake released",
+      "dataFlow": "burn(watcher_bond=32ETH) + stake_released(operator)",
+      "stake": "32 ETH watcher bond burned",
+      "detail": "Frivolous challenges are economically punished. The watcher loses their 32 ETH bond. The operator's reputation is cleared and their stake is returned with full yield."
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+---
+slug: the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference
+title: "The Bootstrapping Tax: FHE's Fundamental Limit on Private AI Inference"
+description: "BERT-base under FHE takes 149 seconds, needs 112 GB, and sustains 0.007 samples/sec. Best-case MPC takes 2.3 seconds and 4 GB. The gap traces to one operation: bootstrapping — the noise-refresh that makes FHE theoretically unlimited but practically expensive."
+pubDate: 2026-06-23T12:29:35.449Z
+author: blokz
+topics: [cryptography, machine-learning, infrastructure]
+tags: [fhe, tfhe, ckks, bootstrapping, private-inference, ppml, zama, fhevm, mpc, confidential-computing]
+artifacts: [the-fhe-inference-wall]
+difficulty: intermediate
+sources:
+  - label: "Beyond Latency: A System-Level Characterization of MPC and FHE for PPML (arXiv 2604.00169)"
+    url: "https://arxiv.org/abs/2604.00169"
+  - label: "SoK: Can Fully Homomorphic Encryption Support General AI Computation? (arXiv 2504.11604)"
+    url: "https://arxiv.org/abs/2504.11604"
+  - label: "FHE-Rollups: Scaling Confidential Smart Contracts on Ethereum and Beyond (ACM CCS 2025)"
+    url: "https://dl.acm.org/doi/10.1145/3659463.3660031"
+  - label: "Zama — awesome-zama resource list"
+    url: "https://github.com/zama-ai/awesome-zama"
+---
+
+There are three meaningful ways to give an AI model your data without exposing it to the provider. Trusted Execution Environments (TEEs) run inference inside a hardware enclave — you trust Intel or AMD not to have back-doored the chip. Secure Multi-Party Computation (MPC) splits the computation across parties who must collude to learn your input — interactive, network-dependent, but workable. Fully Homomorphic Encryption (FHE) lets the server compute directly on your ciphertext so the plaintext is never decrypted anywhere outside your device — ever.
+
+FHE is the strongest guarantee. It is also the most expensive by a wide margin. A 2026 system-level characterization paper measured exactly how wide: **BERT-base under FHE takes 149 seconds per query, needs 112 GB of memory, and achieves 0.007 samples per second at batch 128.** Best-case MPC — on a 50 Gbps LAN — takes 2.3 seconds, 4 GB, and 1.5 samples per second. The latency gap is 65×; the throughput gap is 214×.
+
+The reason traces to one cryptographic operation: bootstrapping.
+
+## The Noise Problem
+
+FHE encrypts a number into a "noisy" ciphertext. Each arithmetic operation over that ciphertext amplifies the noise. Beyond a threshold, the ciphertext becomes undecryptable. This noise budget is finite.
+
+Shallow circuits — a logistic regression, a decision tree, a short sequence of additions — can be evaluated entirely within the initial noise budget. This is called **leveled mode**: pick enough headroom upfront and never bootstrap. It works, but the depth of the circuit it can support is bounded before the deployment, not at runtime.
+
+Deep networks break leveled mode. A transformer with 12 layers (BERT-base) or 50 layers (ResNet-50) cannot fit in any practically-sized noise budget. To go deeper, you have to periodically **refresh** the ciphertext — evaluate the decryption function homomorphically over the encrypted noise, replacing the exhausted ciphertext with a fresh one carrying the same plaintext value.
+
+That refresh is bootstrapping, and it is expensive.
+
+The cost depends on the scheme family:
+
+- **BGV/BFV** (integer arithmetic): bootstrapping takes several seconds to several hours per operation, depending on parameters. Most implementations avoid it entirely by sizing for leveled mode.
+- **CKKS** (real arithmetic, SIMD-batched): functional bootstrapping via lookup tables runs approximately one minute per evaluation for 9-bit LUTs, rising to about ten minutes for 12-bit LUTs.
+- **TFHE** (bit-precise): each individual Boolean gate bootstraps in roughly 1 millisecond. Cheap per gate, but a single ReLU over 32-bit floats requires thousands of gates — so nonlinear activations still accumulate into seconds.
+
+A full transformer forward pass hits all three pain points: matrix multiplications (CKKS-friendly), nonlinear activations (TFHE-unfriendly), and enough depth that bootstrapping is unavoidable.
+
+## Three Schemes, Three Tradeoffs
+
+The three mainstream FHE families make different bets on the noise-vs-performance tradeoff:
+
+**CKKS** packs many real-number values into a single ciphertext via SIMD "slots." A 4096-slot CKKS ciphertext can compute an entire row of a weight matrix in one operation. This makes linear layers — which dominate transformer computation — fast in CKKS. The weakness is nonlinear functions: ReLU and softmax require approximation via polynomials (adding depth) or scheme switching to TFHE (adding overhead).
+
+**TFHE** operates at the bit level, evaluating Boolean circuits gate by gate. It bootstraps on every gate, which keeps noise bounded unconditionally. This makes TFHE ideal for comparisons and branching (things like `max(0, x)` or `argmax`). The downside: no SIMD for linear layers means each element of a matrix multiply is a separate, bootstrapped circuit. For a 768×768 attention weight matrix, that is 589,824 gates just for one layer's Q projection.
+
+**BGV/BFV** encrypts integers and is primarily used for applications that avoid nonlinear operations entirely — private set intersection, database queries, polynomial evaluation. It sees limited use in neural network inference.
+
+For large models, no single scheme wins cleanly. Research implementations hybrid-switch: CKKS for linear layers, TFHE for activation functions, scheme-switching at the boundary. The switching itself costs time and memory.
+
+## The Numbers
+
+<Artifact slug="the-fhe-inference-wall" />
+
+The chart above shows latency on a log scale. The left two columns — ResNet-20 (0.27M parameters) and BERT-Tiny (4.4M) — tell a different story than the right two.
+
+**Small models, leveled mode**: ResNet-20's 20-layer CNN can be evaluated in leveled CKKS without bootstrapping. FHE latency spans 0.024–7.0 seconds across implementations; MPC-A2B on a fast LAN takes 0.074 seconds. For BERT-Tiny (2 transformer layers), FHE ranges 0.23–4.0 seconds versus MPC-A2B's 0.24 seconds. At the optimistic end of the FHE range, these are nearly tied. FHE is not always the losing choice.
+
+**Large models, bootstrapping required**: The gap explodes. ResNet-50 (50 layers) requires multiple bootstrapping rounds; FHE climbs to 164 seconds against MPC-A2B's 1 second — a 164× gap — and needs an estimated 228 GB of memory. BERT-Base (12 transformer layers) takes 149 seconds and 112 GB versus MPC-A2B's 2.3 seconds and 4 GB. At batch 128, FHE sustains 0.007 samples per second against MPC-FSS's 1.5 — a 214× throughput gap.
+
+One important caveat in FHE's favor: **MPC is network-dependent, FHE is not.** MPC requires multiple rounds of communication between the parties. On a slow WAN (70 Mbps, 70 ms RTT), MPC-A2B for BERT-base can reach 47 seconds — still 3× faster than FHE's 149 seconds, but the gap narrows considerably. For globally distributed agents where parties cannot guarantee fast connectivity, FHE's network independence has real value.
+
+The comparison to [MPC-based blind inference](/articles/minutes-per-token) is instructive. The BumbleBee implementation measured BERT-base at 2.55 minutes on real multi-party deployments — not far from the FHE estimate, and both reflect the state of the technology rather than a clean architectural win either way.
+
+## What Blockchain Projects Actually Build with FHE
+
+Zama, the company behind TFHE-rs, became the world's first FHE unicorn in June 2025. Its blockchain-focused product is **fhEVM** — a modification of the EVM that adds encrypted types (`euint32`, `ebool`) to Solidity. Fhenix built an optimistic L2 on fhEVM; its CoFHE coprocessor is now deployed on Arbitrum and Base.
+
+What these systems actually do is not transformer inference. They use FHE for:
+
+- **Private state**: store encrypted balances, bids, votes, or health factors on-chain without revealing them to validators or other users
+- **Confidential DeFi**: hidden-order-book DEXes, sealed-bid auctions, dark pools with on-chain settlement
+- **Private aggregation**: compute statistics — sum, mean, argmax — over an encrypted dataset without revealing individual records
+- **Simple ML predictions**: logistic regression, small CNNs, tree models that fit in leveled mode without bootstrapping
+
+Current throughput for these simpler operations: approximately 20 transactions per second on CPU coprocessors. Fhenix's 2025 CCS paper reported 20,000× better throughput and 37× better latency compared to earlier FHE-on-chain designs. Bootstrapping for simple TFHE gates has dropped below 1 millisecond on modern GPUs.
+
+The FHE-on-chain story is therefore not "run BERT in a smart contract." It is "give a smart contract the ability to see and operate on private variables without ever decrypting them in the clear." That is a meaningful capability even if a full transformer is out of reach.
+
+## The Hardware Path
+
+FHE's core compute primitive — the Number Theoretic Transform (NTT) — is mathematically close to the Fast Fourier Transform and, critically, to matrix multiplication. As we covered in [the proving-as-matmul analysis](/articles/proving-as-matmul-how-ai-asics-are-rewriting-the-cost-floor-for-zero-knowledge-proofs), TPU v6e8 pods run NTT 40× faster than CPUs and 10× faster than H100 GPUs. The same silicon that accelerates AI training accelerates FHE.
+
+Zama has improved TFHE-rs speed by 20× since the library launched, with a roadmap to 100× and GPU-accelerated throughput targets of 500–1,000 TPS by end of 2026. For simple TFHE operations — not full transformer inference — GPU bootstrapping has already dropped to sub-millisecond.
+
+What does this mean for BERT-scale inference? A theoretical 1,000× acceleration would take BERT-base from 149 seconds to 0.15 seconds — competitive with MPC even on fast LAN. That acceleration requires not just faster NTT but GPU-optimized bootstrapping for the entire transformer circuit, which is an active research problem. A reasonable estimate is 2–3 years for BERT-scale FHE inference to reach practical latency on commodity cloud GPUs.
+
+## The Engineering Decision
+
+For AI agent builders, the choice today is clear-cut:
+
+**Use FHE for**: private inputs to smart contracts, on-chain confidential state, simple aggregation, linear or very shallow models (fewer than 4 layers, no nonlinear bootstrapping required). The blockchain-native use cases in fhEVM and Fhenix are real and deployable.
+
+**Use MPC for**: inference on medium-scale models (up to ~100M parameters) where the parties are online and on a fast network. Current implementations achieve 2–4 seconds for BERT-base on LAN-F. As shown in [the minutes-per-token breakdown](/articles/minutes-per-token), MPC at LLM scale remains its own challenge.
+
+**Use TEE for**: large models where throughput matters and hardware trust assumptions are acceptable. Intel SGX and AMD SEV add ~1–5% overhead versus plaintext, with no network dependency. The [TEE attestation cost analysis](/articles/trusting-the-quote-onchain-tee-attestation) covers what that hardware trust actually buys — and what the $1,000 interposer that forged it shows you can't fully buy.
+
+**Wait for FHE on transformers**: BERT-base in 2026 is a research benchmark, not a production option. GPU-accelerated bootstrapping for full attention layers is on the roadmap but not yet shipped. Set a calendar reminder for late 2027.
+
+## Takeaways
+
+The bootstrapping tax is not a bug in FHE — it is the price of the strongest possible privacy guarantee. CKKS and TFHE have made it far cheaper than it was five years ago, and the GPU acceleration roadmap suggests it will be cheaper still. For the operations that matter on-chain today — private state, sealed bids, simple predictions — FHE is already practical. For transformer-scale inference, 149 seconds is honest math, not pessimism.
+
+The bar chart above shows where that wall sits. Small models can often squeeze under it. Anything requiring bootstrapping across 12+ layers cannot, yet.

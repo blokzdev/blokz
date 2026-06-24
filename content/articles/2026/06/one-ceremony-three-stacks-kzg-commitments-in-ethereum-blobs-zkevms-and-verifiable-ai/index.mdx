@@ -1,0 +1,136 @@
+---
+slug: one-ceremony-three-stacks-kzg-commitments-in-ethereum-blobs-zkevms-and-verifiable-ai
+title: "One Ceremony, Three Stacks: KZG Commitments in Ethereum Blobs, zkEVMs, and Verifiable AI"
+description: "A single cryptographic primitive — the KZG polynomial commitment — quietly powers EIP-4844 blobs, zkEVM proof systems, and on-chain verifiable AI. You can verify one on Ethereum for 50,000 gas ($0.067 today). Here's the math, the ceremony, and why every zkML system depends on it."
+pubDate: 2026-06-23
+author: blokz
+topics: [zero-knowledge, cryptography, blockchain]
+tags: [kzg, polynomial-commitments, eip-4844, blobs, zkml, bls12-381, trusted-setup, halo2]
+artifacts: [kzg-opening-proof]
+difficulty: intermediate
+sources:
+  - label: "EIP-4844: Shard Blob Transactions"
+    url: "https://eips.ethereum.org/EIPS/eip-4844"
+  - label: "KZG polynomial commitments (Dankrad Feist)"
+    url: "https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html"
+  - label: "Ethereum KZG Summoning Ceremony"
+    url: "https://ceremony.ethereum.org"
+  - label: "Proto-Danksharding FAQ (Vitalik Buterin)"
+    url: "https://notes.ethereum.org/@vbuterin/proto_danksharding_faq"
+  - label: "Enabling AI ASICs for Zero Knowledge Proof (MORPH, arXiv 2604.17808)"
+    url: "https://arxiv.org/abs/2604.17808"
+---
+
+Every time an Optimism or Arbitrum sequencer posts a transaction batch to Ethereum, it uses a KZG commitment. Every time a zkSync Era proof gets verified on-chain, the verifier relies on KZG. And every zkML system that actually generates a cryptographic proof of neural network inference — ezkl, halo2-based provers, PLONK-based backends — uses a polynomial commitment scheme that KZG either directly implements or directly inspired. This isn't coincidence. It's the same 48-byte proof structure solving three different problems on the same elliptic curve.
+
+Understanding KZG from first principles is one of the highest-leverage cryptographic investments an AI × blockchain engineer can make right now.
+
+## The Commitment Idea
+
+A polynomial commitment scheme lets you do two things: *commit* to a polynomial without revealing it, then later *open* a specific evaluation — proving that your polynomial evaluates to a particular value at a particular point — without revealing the full polynomial.
+
+Take a degree-3 polynomial with four coefficients: P(x) = c₀ + c₁x + c₂x² + c₃x³. The naive approach to "committing" to P is just sending a hash of the coefficients. But a hash is opaque — you can prove nothing about evaluations without revealing everything.
+
+KZG commitments work differently. They use a **trusted setup**: a fixed set of elliptic curve points, one for each power of a secret scalar τ:
+
+```
+[τ⁰]₁, [τ¹]₁, [τ²]₁, ..., [τⁿ]₁
+```
+
+Here `[τⁱ]₁` means scalar-multiplying the generator of the G1 group on the BLS12-381 curve by τⁱ. The commitment to P is:
+
+```
+C = c₀·[τ⁰]₁ + c₁·[τ¹]₁ + c₂·[τ²]₁ + c₃·[τ³]₁
+```
+
+This is a single G1 point: 48 bytes on BLS12-381. No matter how many coefficients the polynomial has, the commitment is always 48 bytes. The crucial property is that **τ is never known** — it was destroyed during the ceremony. You can compute the commitment and the opening proof using only the public setup points, but you cannot work backwards to τ.
+
+## The Opening Proof
+
+To prove that P(z) = y for some specific z and y, you use the **quotient polynomial trick**. If P(z) = y, then (P(x) - y) has (x - z) as a factor, so:
+
+```
+Q(x) = (P(x) - y) / (x - z)
+```
+
+is a valid polynomial (no remainder). The opening proof is simply a KZG commitment to Q:
+
+```
+π = Q(τ)·G₁ = q₀·[τ⁰]₁ + q₁·[τ¹]₁ + ...
+```
+
+The verifier checks this with a **bilinear pairing** — a special operation on BLS12-381 that lets you multiply inside the exponent:
+
+```
+e(π, [τ - z]₂) = e(C - [y]₁, G₂)
+```
+
+If P(z) = y, both sides equal e(Q(τ)·G₁, (τ-z)·G₂) and the check passes. If an adversary picks a random π for a false y, they would need to know τ — which was destroyed. The security reduces to the discrete log hardness of BLS12-381.
+
+The proof is also 48 bytes: just one G1 point.
+
+<Artifact slug="kzg-opening-proof" />
+
+## The Trusted Setup: 141,416 Participants
+
+The "destroy τ" requirement sounds like a single point of failure, but the KZG ceremony solves this with **multi-party computation**. Each participant contributes their own randomness rᵢ, updating the accumulated setup. The final τ is the product of all contributions: τ = r₁ · r₂ · r₃ · ··· · r₁₄₁₄₁₆. The setup is secure as long as **even one participant** honestly destroyed their rᵢ — with 141,416 contributions between November 2022 and March 2023, the Ethereum KZG ceremony is the largest such ceremony ever conducted.
+
+The ceremony produced a setup at degree 4096 — 4,097 G1 points and 65 G2 points, published and used as-is for EIP-4844. It was extended for use in proof systems at higher degrees via subsequent specialized ceremonies.
+
+## Stack 1: EIP-4844 Blobs
+
+EIP-4844 (Proto-Danksharding), live on Ethereum mainnet since March 2024, is where most engineers first encounter KZG without knowing it. The design: instead of embedding rollup data in calldata, sequencers post **blobs** — 128 KB chunks of data that Ethereum keeps for ~18 days before pruning. A blob is nothing more than a degree-4095 polynomial: its 4,096 coefficients are field elements in the BLS12-381 scalar field (modulus 52435875175126190479447740508185965837690552500527637822603658699938581184513).
+
+When a sequencer posts a blob, the EVM does three things:
+
+1. Computes the KZG commitment `C = Σ bᵢ·[τⁱ]₁` using the same ceremony setup
+2. Hashes it: `versioned_hash = 0x01 ‖ SHA256(C)[1:]` (31 bytes, with a version prefix)
+3. Stores the versioned hash on-chain; the actual blob propagates via the consensus layer
+
+The **point evaluation precompile** at address `0x0A` is where proofs happen. Any contract can call it with 192 bytes of input: `versioned_hash ‖ z ‖ y ‖ commitment ‖ proof`. The precompile verifies that the KZG commitment inside `versioned_hash` actually evaluates to y at z — i.e., the blob does contain specific data at a specific position. This is the core primitive for **data availability sampling**: a challenger can probabilistically verify that a full blob was published by sampling random evaluation points.
+
+Cost: 50,000 gas. At the current Ethereum gas price of 0.81 gwei and ETH at $1,649, that is **$0.067 per verification**. That's cheap enough to call from a smart contract without hesitation.
+
+Each block targets 3 blobs and allows up to 6 (393,216 and 786,432 blob-gas respectively). Optimism, Base, Arbitrum, and zkSync all route their transaction data through blob transactions, with the blob fee market following the same EIP-1559-style exponential update as the regular base fee.
+
+## Stack 2: zkEVM Proof Systems
+
+ZK rollups like zkSync Era and Polygon zkEVM need to prove EVM execution validity on-chain. Their core technique: represent the execution trace as a set of polynomial equations, then use a polynomial commitment scheme to prove those equations hold. This is **PLONK** (Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge), and KZG is PLONK's standard polynomial commitment backend.
+
+In a PLONK proof for an EVM batch:
+
+- Each wire in the circuit corresponds to a polynomial evaluated at specific roots of unity
+- Gate constraints become polynomial identities: `qₗ·a + qᵣ·b + q_o·c + qₘ·a·b + qc = 0`
+- The prover commits to each wire polynomial with KZG, producing one 48-byte commitment per wire
+- A single KZG opening proof covers all evaluations at a random challenge point (batched via linear combination)
+
+The verifier checks a handful of pairing equations on-chain — roughly 300,000–600,000 gas depending on the circuit size. With today's L1 gas prices and a batch of 1,000 transactions, the proof overhead per transaction is well under $0.01.
+
+The shared BLS12-381 trusted setup means zkEVM proof systems can in principle reuse the same ceremony parameters as EIP-4844 blobs, though in practice they often run their own ceremonies at higher degree for larger circuits.
+
+## Stack 3: Verifiable AI Inference
+
+Connecting KZG to AI inference requires one more step. The core observation: a neural network forward pass is a sequence of matrix multiplications and nonlinear activations. If you quantize the model (e.g., 8-bit integers), each operation becomes arithmetic over a finite field — exactly the setting where polynomial commitment schemes work.
+
+The existing zkML landscape article on this blog ([/articles/zkml-verifiable-inference-landscape](/articles/zkml-verifiable-inference-landscape)) surveys the full proof-system landscape. The KZG angle is specific: **halo2-based zkML provers** (ezkl uses a Halo2 backend that supports both IPA and KZG commitment schemes) represent each layer's output as a polynomial evaluated at specific domain points. The commitment to that polynomial is the cryptographic "receipt" for that layer's output — you can later prove any layer evaluated correctly without re-running the forward pass.
+
+What makes this tractable is the same batching trick used in zkEVM: a single random challenge point lets you batch all layer commitments into one or two pairing checks. For small networks (MNIST-scale, ~10k parameters), proof generation takes seconds on a modern GPU. For LLM-scale models, this is still research territory — but the bottleneck is proof generation speed, not on-chain verification cost.
+
+A recent April 2026 paper (MORPH, arXiv 2604.17808) proposes repurposing AI ASICs — specifically TPUv6e8 — for ZK proof generation. The key insight: the two most expensive ZK operations, Multi-Scalar Multiplication (MSM) and Number-Theoretic Transform (NTT), can be re-expressed as dense low-precision matrix multiplications (GEMMs), which TPUs are optimized for. Initial results show up to **10× NTT throughput** compared to existing GPU-based prover frameworks. If this trend continues, the compute cost of proving AI inference will fall along the same curve as inference itself — accelerated by purpose-built silicon, with the verification cost on-chain already negligible.
+
+## What the Convergence Means
+
+Three production systems — blob data availability, ZK rollup proof verification, and on-chain AI inference proofs — share a 48-byte commitment and a 50,000-gas verification primitive. This convergence is non-trivial. It means:
+
+- **Auditability is cheap.** A smart contract can verify that a specific piece of data was present in a blob, that an EVM execution was valid, or that an AI model's output was computed correctly — all for well under $1 in gas.
+- **One setup powers everything.** The 141,416-participant KZG ceremony was run once. Its parameters are reused across blob commitments, zkEVM circuits, and emerging zkML systems. Adding a new verifiable computation on top doesn't require a new ceremony.
+- **Hardware follows math.** The MORPH result — using TPUs for ZK proofs — suggests that the long-term cost of proving AI computations will fall dramatically. The 10× NTT speedup on TPUv6e8 is early evidence that the AI-hardware and ZK-hardware supply chains may converge.
+
+The on-chain verification side is already solved: $0.067 per KZG opening proof, available to any Ethereum contract since March 2024. The remaining frontier is the prover side — generating the proof fast enough that the latency cost doesn't exceed the value of the computation being verified. For DeFi-scale decisions, latency already works. For inference-at-scale, it's the active research problem.
+
+## Takeaways
+
+- The KZG commitment (48 bytes, one G1 point on BLS12-381) and its opening proof (another 48 bytes) are the load-bearing primitive under EIP-4844 blobs, PLONK-based zkEVMs, and halo2-backed zkML proof systems.
+- Security rests on one property: τ was destroyed. The 141,416-participant ceremony makes that claim credible — an adversary would need every single participant to be colluding.
+- The on-chain cost is solved: 50,000 gas ($0.067 at June 2026 prices) for a KZG point evaluation. The bottleneck is always prover cost, not verifier cost.
+- Hardware acceleration (MORPH: TPU for NTT/MSM) is attacking the last expensive piece. When AI ASICs can generate ZK proofs at training-run throughput, the verifiable AI stack becomes practical at model inference scale.

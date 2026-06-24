@@ -1,7 +1,7 @@
 {
   "counts": {
-    "articles": 130,
-    "artifacts": 131
+    "articles": 131,
+    "artifacts": 132
   },
   "topicCounts": {
     "agents": 44,
@@ -12,14 +12,14 @@
     "defi": 32,
     "infrastructure": 43,
     "llm": 22,
-    "machine-learning": 43,
-    "research": 15,
+    "machine-learning": 44,
+    "research": 16,
     "security": 36,
     "smart-contracts": 26,
     "tokenomics": 17,
     "tooling": 1,
     "web3": 13,
-    "zero-knowledge": 17
+    "zero-knowledge": 18
   },
   "articles": [
     {
@@ -522,6 +522,36 @@
       ],
       "artifacts": [
         "the-phantom-token-cloud"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "path": "content/articles/2026/06/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference/index.mdx",
+      "url": "/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference",
+      "title": "The Activation Hash: TOPLOC and the 1,000x Receipt for Non-Interactive Verifiable Inference",
+      "description": "DiFR's seed-commitment round-trip is the last synchronization barrier to async verifiable inference. TOPLOC removes it: a locality-sensitive hash of intermediate activations compresses to 258 bytes per 32 tokens — 1,000× smaller than raw embeddings — and validates faster than inference ran.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning",
+        "research"
+      ],
+      "tags": [
+        "verifiable-inference",
+        "toploc",
+        "activation-hash",
+        "locality-sensitive-hashing",
+        "non-interactive",
+        "model-substitution",
+        "inference-markets",
+        "proof-of-intelligence"
+      ],
+      "series": "proof-of-intelligence",
+      "seriesOrder": 10,
+      "artifacts": [
+        "verifiable-inference-cost-spectrum"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3820,6 +3850,22 @@
       "topics": [
         "llm",
         "security"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "verifiable-inference-cost-spectrum",
+      "path": "content/artifacts/verifiable-inference-cost-spectrum/manifest.json",
+      "module": "src/islands/artifacts/verifiable-inference-cost-spectrum.ts",
+      "url": "/artifacts/verifiable-inference-cost-spectrum",
+      "title": "Verifiable Inference Cost Spectrum",
+      "description": "Verification overhead (ms, log scale) for five approaches to trustless LLM inference — NabaOS receipts, TOPLOC fingerprints, DiFR seed-commit, output resampling, and full ZK proof. Hover or tap a row for detail.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "chart",
+      "topics": [
+        "zero-knowledge",
+        "machine-learning"
       ],
       "draft": false
     },

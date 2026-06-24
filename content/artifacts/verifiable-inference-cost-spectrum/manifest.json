@@ -1,0 +1,23 @@
+{
+  "slug": "verifiable-inference-cost-spectrum",
+  "title": "Verifiable Inference Cost Spectrum",
+  "description": "Verification overhead (ms, log scale) for five approaches to trustless LLM inference — NabaOS receipts, TOPLOC fingerprints, DiFR seed-commit, output resampling, and full ZK proof. Hover or tap a row for detail.",
+  "pubDate": "2026-06-23T07:30:28.478Z",
+  "type": "svg",
+  "archetype": "chart",
+  "topics": [
+    "zero-knowledge",
+    "machine-learning"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "hover or tap a bar to inspect its trust model",
+    "↑/↓ + enter to navigate by keyboard"
+  ],
+  "dataSource": {
+    "label": "TOPLOC arXiv 2501.16007; NabaOS arXiv 2603.10060",
+    "url": "https://arxiv.org/abs/2501.16007"
+  },
+  "dataAsOf": "2026-06-23"
+}

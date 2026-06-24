@@ -1,0 +1,20 @@
+{
+  "slug": "model-fingerprint-lifecycle",
+  "title": "Model Fingerprint Lifecycle",
+  "description": "Interactive diagram of the five-step LLM IP protocol: embed a statistical fingerprint, commit it with Poseidon, register on-chain, prove ownership with a ZK proof, enforce via smart contract. Select an attack scenario to see which steps are vulnerable.",
+  "pubDate": "2026-06-24T09:50:28.675Z",
+  "type": "dom",
+  "archetype": "diagram",
+  "topics": [
+    "zero-knowledge",
+    "cryptography"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": ["click a step node to see its mechanics", "select an attack scenario to highlight vulnerable steps"],
+  "dataSource": {
+    "label": "Nasery et al. 2025 · Xu et al. 2024 · Zhang et al. 2025",
+    "url": "https://arxiv.org/abs/2502.07760"
+  },
+  "dataAsOf": "2026-06-24"
+}

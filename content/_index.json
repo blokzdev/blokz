@@ -1,14 +1,14 @@
 {
   "counts": {
-    "articles": 134,
-    "artifacts": 135
+    "articles": 135,
+    "artifacts": 136
   },
   "topicCounts": {
     "agents": 45,
     "ai": 14,
     "blockchain": 33,
-    "cryptography": 22,
-    "data": 19,
+    "cryptography": 23,
+    "data": 20,
     "defi": 32,
     "infrastructure": 46,
     "llm": 23,
@@ -19,9 +19,39 @@
     "tokenomics": 18,
     "tooling": 1,
     "web3": 14,
-    "zero-knowledge": 18
+    "zero-knowledge": 19
   },
   "articles": [
+    {
+      "slug": "the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip",
+      "path": "content/articles/2026/06/the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip/index.mdx",
+      "url": "/articles/the-committed-weights-scalable-llm-fingerprinting-and-the-economics-of-zk-model-ip",
+      "title": "The Committed Weights: Scalable LLM Fingerprinting and the Economics of ZK Model IP",
+      "description": "Training Llama-3.1-8B costs ~$6M. The weights are free to clone. Perinucleus sampling embeds 24,576 distinct fingerprints per model with no quality loss — and a Poseidon ZK commitment registers ownership on-chain for $0.017, enforceable by smart contract.",
+      "pubDate": "2026-06-24",
+      "topics": [
+        "zero-knowledge",
+        "cryptography",
+        "data"
+      ],
+      "tags": [
+        "model-fingerprinting",
+        "watermarking",
+        "perinucleus",
+        "fp-vec",
+        "poseidon",
+        "groth16",
+        "ip-registry",
+        "model-ip",
+        "llm-ip",
+        "zklora"
+      ],
+      "artifacts": [
+        "model-fingerprint-lifecycle"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
     {
       "slug": "the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference",
       "path": "content/articles/2026/06/the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference/index.mdx",
@@ -3680,6 +3710,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "model-fingerprint-lifecycle",
+      "path": "content/artifacts/model-fingerprint-lifecycle/manifest.json",
+      "module": "src/islands/artifacts/model-fingerprint-lifecycle.ts",
+      "url": "/artifacts/model-fingerprint-lifecycle",
+      "title": "Model Fingerprint Lifecycle",
+      "description": "Interactive diagram of the five-step LLM IP protocol: embed a statistical fingerprint, commit it with Poseidon, register on-chain, prove ownership with a ZK proof, enforce via smart contract. Select an attack scenario to see which steps are vulnerable.",
+      "pubDate": "2026-06-24",
+      "type": "dom",
+      "archetype": "diagram",
+      "topics": [
+        "zero-knowledge",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-draft-race",
       "path": "content/artifacts/the-draft-race/manifest.json",

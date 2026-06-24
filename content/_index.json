@@ -1,16 +1,16 @@
 {
   "counts": {
-    "articles": 131,
-    "artifacts": 132
+    "articles": 132,
+    "artifacts": 133
   },
   "topicCounts": {
-    "agents": 44,
+    "agents": 45,
     "ai": 14,
     "blockchain": 32,
     "cryptography": 22,
     "data": 19,
     "defi": 32,
-    "infrastructure": 43,
+    "infrastructure": 44,
     "llm": 22,
     "machine-learning": 44,
     "research": 16,
@@ -18,7 +18,7 @@
     "smart-contracts": 26,
     "tokenomics": 17,
     "tooling": 1,
-    "web3": 13,
+    "web3": 14,
     "zero-knowledge": 18
   },
   "articles": [
@@ -136,6 +136,36 @@
       ],
       "artifacts": [
         "the-cascade-calculator"
+      ],
+      "difficulty": "intermediate",
+      "draft": false
+    },
+    {
+      "slug": "payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "path": "content/articles/2026/06/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents/index.mdx",
+      "url": "/articles/payment-required-inside-x402-the-http-native-settlement-standard-for-ai-agents",
+      "title": "Payment Required: Inside x402, the HTTP-Native Settlement Standard for AI Agents",
+      "description": "HTTP 402 sat reserved for 30 years. x402 fills it: an AI agent signs an EIP-3009 authorization into a header, a facilitator settles on Base in two seconds, no ETH required. Protocol mechanics, production numbers, and where the centralization risk lives.",
+      "pubDate": "2026-06-23",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
+      ],
+      "tags": [
+        "x402",
+        "http-402",
+        "micropayments",
+        "ai-agents",
+        "eip-3009",
+        "usdc",
+        "facilitator",
+        "stablecoin-payments",
+        "machine-to-machine",
+        "coinbase"
+      ],
+      "artifacts": [
+        "the-x402-handshake"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3654,6 +3684,23 @@
       "topics": [
         "agents",
         "defi"
+      ],
+      "draft": false
+    },
+    {
+      "slug": "the-x402-handshake",
+      "path": "content/artifacts/the-x402-handshake/manifest.json",
+      "module": "src/islands/artifacts/the-x402-handshake.ts",
+      "url": "/artifacts/the-x402-handshake",
+      "title": "The x402 Handshake",
+      "description": "The x402 HTTP payment exchange: six-step sequence diagram from initial probe through EIP-3009 authorization signing, facilitator settlement, and resource delivery. Tap any step to inspect the exact header format.",
+      "pubDate": "2026-06-23",
+      "type": "svg",
+      "archetype": "diagram",
+      "topics": [
+        "agents",
+        "infrastructure",
+        "web3"
       ],
       "draft": false
     },

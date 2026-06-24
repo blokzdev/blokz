@@ -1,0 +1,16 @@
+{
+  "slug": "the-draft-race",
+  "title": "The Draft Race",
+  "description": "Animated simulation of autoregressive vs speculative decoding. Adjust acceptance rate α and draft depth K to see how speedup changes — and what happens when a draft node defects.",
+  "pubDate": "2026-06-24T04:00:00Z",
+  "type": "dom",
+  "archetype": "simulation",
+  "topics": ["machine-learning", "infrastructure"],
+  "aspect": "3/2",
+  "featured": false,
+  "controls": [
+    "drag α slider to change acceptance rate",
+    "drag K slider to change draft depth",
+    "drag c slider to change draft cost ratio"
+  ]
+}

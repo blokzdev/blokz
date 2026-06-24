@@ -1,0 +1,120 @@
+---
+slug: the-biased-draft-speculative-decodings-trust-gap-in-decentralized-inference
+title: "The Biased Draft: Speculative Decoding's Trust Gap in Decentralized Inference"
+description: "Speculative decoding accelerates LLM inference 2–4× by splitting work between a cheap draft model and an expensive verifier. When those run on different nodes in a decentralized network, three properties of the protocol that are trivially safe on one machine become open attack surfaces."
+pubDate: 2026-06-24T04:00:00Z
+author: blokz
+topics: [machine-learning, llm, infrastructure]
+tags:
+  [
+    speculative-decoding,
+    distributed-inference,
+    draft-model,
+    acceptance-rate,
+    decentralized-ai,
+    via-sd,
+    dsi,
+    cosine,
+    trust-asymmetry,
+    inference-markets,
+  ]
+artifacts: [the-draft-race]
+difficulty: intermediate
+sources:
+  - label: "Chen et al. 2023 — Accelerating Large Language Model Decoding with Speculative Sampling"
+    url: "https://arxiv.org/abs/2302.01318"
+  - label: "Timor et al. 2024 — Distributed Speculative Inference of Large Language Models (DSI)"
+    url: "https://arxiv.org/abs/2405.14105"
+  - label: "Gao et al. 2025 — CoSine: Collaborative Speculative Inference for Efficient LLM Inference Serving"
+    url: "https://arxiv.org/abs/2503.10325"
+  - label: "Xian et al. 2026 — VIA-SD: Verification via Intra-Model Routing for Speculative Decoding"
+    url: "https://arxiv.org/abs/2606.12243"
+  - label: "Liu et al. 2026 — Speculative Decoding: Performance or Illusion?"
+    url: "https://arxiv.org/abs/2601.11580"
+---
+
+Speculative decoding (SD) achieves 2–4× LLM inference speedup at no quality cost. It works on one machine, with one operator, because the draft and verify steps trust each other implicitly. Move them onto different nodes in a decentralized inference network and that implicit trust evaporates — along with three properties of the protocol that nobody had to think about before.
+
+This is not a theoretical concern. Distributed SI (DSI) is already 1.29–1.92× faster than standard single-node SI in controlled settings (Timor et al., 2024), and production systems — CoSine (2025), VIA-SD (2026) — are architecting multi-node speculative pipelines today. The engineering is moving faster than the trust model.
+
+## The mechanism
+
+Standard speculative decoding has two phases per cycle. The **draft model** — small, fast, cheap — auto-regressively generates *K* candidate tokens. The **target model** — large, expensive, authoritative — verifies all *K* candidates in a single parallel forward pass, then accepts or rejects them sequentially: accept token *i* with probability min(1, p_target(xᵢ)/p_draft(xᵢ))), stop at the first rejection and resample that position from the target distribution.
+
+The expected output per cycle is:
+
+```
+E[tokens/cycle] = (1 - α^(K+1)) / (1 - α)
+```
+
+where α is the per-token acceptance rate. With K = 4 and α = 0.85 (typical for EAGLE-class drafters on code tasks), that's 3.7 tokens per cycle. Because the target model's one forward pass takes the same time regardless of K, and the draft model costs roughly 1/r of that (r = size ratio, typically 10 for a 7B draft on a 70B target), the effective speedup is:
+
+```
+Speedup = E[tokens/cycle] / (K/r + 1)
+```
+
+With K = 4, α = 0.85, r = 10: speedup ≈ 3.71 / 1.4 = **2.65×**. EAGLE-3 achieves 3.0–3.5× in batch-size-1 greedy decoding; the gap is mostly parameter tuning. At batch size 32 the speedup collapses to near 1× because the target model is no longer memory-bandwidth-bound — the bottleneck shifts and SD stops helping. That's a separate story.
+
+<Artifact slug="the-draft-race" />
+
+## What splits across nodes
+
+On a single server, draft and verify are owned by the same operator. There is no trust gap: a biased draft only hurts the operator's own output quality, and rejecting good drafts only wastes the operator's own compute.
+
+In a decentralized inference network, the split matters:
+
+- **Draft node**: runs the small model, paid per inference request, wants to minimize per-cycle compute
+- **Verify node**: runs the large model, paid per forward pass, wants to maximize utilization
+
+DSI (Timor et al., 2024) shows that orchestrating multiple target instances across nodes achieves 1.29–1.92× speedup over single-node SI and is provably faster than non-speculative AR inference for *any* drafter quality. CoSine (Gao et al., 2025) routes requests to specialized drafters by domain expertise across heterogeneous nodes and achieves 23.2% lower latency and 32.5% higher throughput than single-node SD. VIA-SD (Xian et al., 2026) adds a third tier: a lightweight "slim-verifier" (a routed submodel) that handles medium-confidence tokens without invoking the full target model, reducing rejection rates by 10–22% and delivering 10–20% additional speedup.
+
+These are real latency wins. They also add nodes to the trust boundary.
+
+## Three trust problems that open up
+
+**1. Draft bias without detectable α change.** The draft model controls *which* K tokens it proposes. In standard SD, α is the realized acceptance rate — a high α means the draft is closely tracking the target distribution. A malicious draft node can bias the proposed distribution toward certain continuations (e.g., toward tokens that favor a particular market outcome if the agent is a trading bot) while keeping average α stable by being accurate on uncontentious positions and biased only on ambiguous ones. The verifier sees aggregate α; it cannot distinguish "systematically wrong on ambiguous tokens" from "uniformly slightly inaccurate."
+
+The attack surface is real: Liu et al. (2026) measure acceptance rate varying from 0.60 to 0.95 *across output token positions* within the same request on vLLM. Low-α positions are noise. A biased drafter exploits that noise cover.
+
+**2. Verifier retaliation.** If the draft node is paid per accepted token and the verify node is paid per forward pass, the verifier has an incentive to reject valid drafts. Each rejection forces a target resample from that position, which does generate more billable forward passes. The attack is subtle: the verifier can set its acceptance threshold slightly below what the draft model produces, increasing rejections from 15% to 30% without any single rejection being obviously wrong. The draft node's income drops while the verify node's throughput rises.
+
+**3. Payment asymmetry.** Rejected draft tokens are wasted compute by the draft node. In a pay-per-accepted model, the draft node bears 100% of the cost of rejection — including rejections caused by a biased verifier. In a pay-per-proposed model, the draft node receives payment for garbage tokens, eliminating its quality incentive. Neither model is aligned by default.
+
+## The economic game
+
+Three payment models, each with a failure mode:
+
+| Model | Draft incentive | Verifier incentive | Failure |
+|---|---|---|---|
+| Pay-per-accepted | High quality | Reject to inflate billing | Verifier retaliation |
+| Pay-per-proposed | None | Honest (no gain from rejection) | Draft floods garbage |
+| Stake-on-α | Quality (stake slashed if α drops) | Honest | Requires oracle for fair α |
+
+The most robust design combines two primitives:
+
+**Draft commitment before verify.** The draft node commits to a Merkle root over its K token proposals before the verify node begins its forward pass. This prevents the verifier from observing draft quality and selectively adjusting acceptance thresholds — the verify pass must be run honestly against the committed draft, and any discrepancy between committed draft and claimed draft is slashable. This is analogous to [commit-reveal schemes in on-chain randomness](/articles/the-biased-beacon-on-chain-randomness-and-the-ai-agent-attack-surface).
+
+**α staking.** The draft node stakes tokens against a claimed acceptance rate. Realized acceptance rate is computed per cycle (verifiable: the verifier's forward pass output determines acceptance deterministically given the target model). If realized α falls below the committed α by more than a tolerance band across a sliding window of N cycles, a fraction of stake is slashed. This aligns the draft node against both garbage drafts (which lower α) and systematic bias on low-confidence positions.
+
+Neither primitive exists in deployed decentralized inference protocols as of June 2026. CoSine uses confidence-based token fusion across multiple drafters but assumes honest nodes. VIA-SD's routing operates within a single operator's infrastructure. DSI orchestrates multiple target instances (not draft instances) and doesn't address draft honesty at all.
+
+## The α variance problem
+
+The "Performance or Illusion?" study (Liu et al., 2026) measures acceptance rate across output positions and finds it varies dramatically: early positions in a response show α ≈ 0.60–0.70, while mid-response positions stabilize at 0.80–0.95. This has a structural consequence for decentralized SD.
+
+A draft node that knows the model family and task type can predict which positions will have low α. It can focus bias on those high-uncertainty positions — where its wrong tokens are less distinguishable from honest errors — and stay close to target distribution on easy positions where rejection would be obvious. Aggregate α remains plausible. Per-position α is the attack signal that a robust protocol needs to check.
+
+This per-position check is expensive: it requires running the target model's forward pass in a mode that exposes per-token probabilities, not just accept/reject outcomes, which is a stronger disclosure than any current protocol requires of its target node.
+
+## Takeaways
+
+Speculative decoding's efficiency is real: 2–4× throughput improvement at no quality cost is a genuine advance for decentralized inference markets. DSI proves it extends across nodes with further speedup. VIA-SD shows a three-tier architecture is viable. CoSine proves multi-drafter routing delivers throughput gains at scale.
+
+The trust model has not kept pace. A complete multi-node speculative decoding protocol needs:
+
+1. **Draft commitment** (Merkle root before verify) — prevents selective verifier manipulation
+2. **Pay-per-accepted token** — draft quality-aligned payments
+3. **α staking with per-position sampling** — detects systematic bias without full distribution disclosure
+4. **Verifier stake** — slashable if forward pass output inconsistent with target model fingerprint
+
+The verifiable inference literature (covered in [the activation hash](/articles/the-activation-hash-toploc-and-the-1-000x-receipt-for-non-interactive-verifiable-inference) and [the committed sample](/articles/the-committed-sample-activation-fingerprints-for-verifiable-llm-inference)) focuses on verifying the *target* model's honesty. The draft honesty problem is structurally different and currently unaddressed.

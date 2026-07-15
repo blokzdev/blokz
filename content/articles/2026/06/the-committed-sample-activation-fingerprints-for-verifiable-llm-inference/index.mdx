@@ -3,10 +3,11 @@ slug: the-committed-sample-activation-fingerprints-for-verifiable-llm-inference
 title: "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference"
 description: "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999."
 pubDate: 2026-06-23T00:31:16.889Z
+updatedDate: 2026-07-15
 author: blokz
 topics: [machine-learning, cryptography, research]
 tags: [verifiable-inference, activation-fingerprint, difr, seed-commitment, model-substitution, quantization, orthogonal-projection, inference-markets]
-artifacts: [the-activation-receipt]
+artifacts: [the-activation-receipt, nearly-orthogonal]
 difficulty: intermediate
 series: proof-of-intelligence
 seriesOrder: 9
@@ -53,6 +54,10 @@ f_i = W · h_i
 where `h_i` is the activation vector at layer `i` (dimension d = 4096–8192 for typical frontier models) and `W` is a **random orthogonal projection matrix** of dimension k × d, with k ≪ d. The key property: `W` is derived from the shared random seed, so both provider and reference know it ahead of time.
 
 Why does this work? The **Johnson-Lindenstrauss lemma** guarantees that random orthogonal projections preserve L2 distances with high probability. An FP32 model and its 4-bit quantized counterpart have different weight matrices, so their internal activation distributions diverge substantially — even if their output tokens occasionally agree. The fingerprints `f_i` pick up that activation-level divergence far earlier than token-level discrepancies become visible.
+
+The lemma leans on a fact that is only true in high dimensions: a random projection matrix `W` has *near-orthonormal* rows, so it barely distorts the geometry it projects. That near-orthonormality is itself a consequence of dimension. Two random directions in a space of dimension `d` have a cosine similarity that concentrates on zero with standard deviation exactly `1/√d` — at the `d ≈ 4096–8192` of a frontier model's activation layer, essentially every pair is within a degree of perpendicular. The scene below makes that collapse literal: drag the dimension up and watch a sphere of random directions fall onto the equator orthogonal to a fixed reference.
+
+<Artifact slug="nearly-orthogonal" />
 
 The results from DiFR are stark:
 

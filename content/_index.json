@@ -825,6 +825,7 @@
       "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
       "description": "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999.",
       "pubDate": "2026-06-23",
+      "updatedDate": "2026-07-15",
       "topics": [
         "machine-learning",
         "cryptography",
@@ -843,7 +844,8 @@
       "series": "proof-of-intelligence",
       "seriesOrder": 9,
       "artifacts": [
-        "the-activation-receipt"
+        "the-activation-receipt",
+        "nearly-orthogonal"
       ],
       "difficulty": "intermediate",
       "draft": false

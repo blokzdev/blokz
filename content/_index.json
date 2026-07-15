@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 137
+    "artifacts": 138
   },
   "topicCounts": {
     "agents": 45,
@@ -3737,6 +3737,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "nearly-orthogonal",
+      "path": "content/artifacts/nearly-orthogonal/manifest.json",
+      "module": "src/islands/artifacts/nearly-orthogonal.ts",
+      "url": "/artifacts/nearly-orthogonal",
+      "title": "Nearly Orthogonal",
+      "description": "Two random vectors in high dimensions are almost always near-orthogonal. Slide dimension d from 3 to 8192 and watch a sphere of random directions collapse onto the equator — the geometry behind DiFR's random-projection activation fingerprints.",
+      "pubDate": "2026-07-15",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "machine-learning",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-gating-problem",
       "path": "content/artifacts/the-gating-problem/manifest.json",

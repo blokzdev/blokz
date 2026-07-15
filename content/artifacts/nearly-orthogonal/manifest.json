@@ -1,0 +1,18 @@
+{
+  "slug": "nearly-orthogonal",
+  "title": "Nearly Orthogonal",
+  "description": "Two random vectors in high dimensions are almost always near-orthogonal. Slide dimension d from 3 to 8192 and watch a sphere of random directions collapse onto the equator — the geometry behind DiFR's random-projection activation fingerprints.",
+  "pubDate": "2026-07-15T09:09:43.029Z",
+  "type": "three",
+  "archetype": "scene",
+  "topics": [
+    "machine-learning",
+    "cryptography"
+  ],
+  "aspect": "16/10",
+  "featured": false,
+  "controls": [
+    "drag to orbit the sphere",
+    "slide dimension d (3 → 8192) to watch the angles concentrate at 90°"
+  ]
+}

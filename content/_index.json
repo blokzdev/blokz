@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 137
+    "artifacts": 138
   },
   "topicCounts": {
     "agents": 45,
@@ -825,6 +825,7 @@
       "title": "The Committed Sample: Activation Fingerprints for Verifiable LLM Inference",
       "description": "LLM non-determinism has been the blocker for output-based verification. DiFR commits to a random seed before inference — and activation fingerprints built from random orthogonal projections detect 4-bit quantization in just 2 tokens at AUC > 0.999.",
       "pubDate": "2026-06-23",
+      "updatedDate": "2026-07-15",
       "topics": [
         "machine-learning",
         "cryptography",
@@ -843,7 +844,8 @@
       "series": "proof-of-intelligence",
       "seriesOrder": 9,
       "artifacts": [
-        "the-activation-receipt"
+        "the-activation-receipt",
+        "nearly-orthogonal"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3737,6 +3739,22 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "nearly-orthogonal",
+      "path": "content/artifacts/nearly-orthogonal/manifest.json",
+      "module": "src/islands/artifacts/nearly-orthogonal.ts",
+      "url": "/artifacts/nearly-orthogonal",
+      "title": "Nearly Orthogonal",
+      "description": "Two random vectors in high dimensions are almost always near-orthogonal. Slide dimension d from 3 to 8192 and watch a sphere of random directions collapse onto the equator — the geometry behind DiFR's random-projection activation fingerprints.",
+      "pubDate": "2026-07-15",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "machine-learning",
+        "cryptography"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-gating-problem",
       "path": "content/artifacts/the-gating-problem/manifest.json",

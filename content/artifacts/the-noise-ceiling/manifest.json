@@ -1,0 +1,16 @@
+{
+  "slug": "the-noise-ceiling",
+  "title": "The Noise Ceiling",
+  "description": "Watch an FHE ciphertext's noise climb toward the decryption ceiling as you evaluate a circuit — and see why CKKS bootstraps rarely-but-slowly while TFHE bootstraps constantly-but-cheaply.",
+  "pubDate": "2026-08-01T09:10:16.742Z",
+  "type": "svg",
+  "archetype": "simulation",
+  "topics": [
+    "cryptography",
+    "machine-learning",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

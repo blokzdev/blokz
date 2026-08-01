@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 138
+    "artifacts": 139
   },
   "topicCounts": {
     "agents": 45,
@@ -3739,6 +3739,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-noise-ceiling",
+      "path": "content/artifacts/the-noise-ceiling/manifest.json",
+      "module": "src/islands/artifacts/the-noise-ceiling.ts",
+      "url": "/artifacts/the-noise-ceiling",
+      "title": "The Noise Ceiling",
+      "description": "Watch an FHE ciphertext's noise climb toward the decryption ceiling as you evaluate a circuit — and see why CKKS bootstraps rarely-but-slowly while TFHE bootstraps constantly-but-cheaply.",
+      "pubDate": "2026-08-01",
+      "type": "svg",
+      "archetype": "simulation",
+      "topics": [
+        "cryptography",
+        "machine-learning",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "nearly-orthogonal",
       "path": "content/artifacts/nearly-orthogonal/manifest.json",

@@ -1,0 +1,85 @@
+{
+  "note": "FHE noise-budget mechanism parameters and measured PPML latencies. Scheme figures (bootstrap cost, gate/level model) and per-model FHE-vs-MPC latencies are drawn from the article's cited primary sources. The sawtooth mechanism is a first-order model of leveled evaluation + bootstrapping; the per-model latency/memory figures are measured values, not model output.",
+  "schemes": [
+    {
+      "id": "ckks",
+      "label": "CKKS",
+      "flavor": "SIMD · real arithmetic",
+      "levels": 16,
+      "bootstrapDepth": 2,
+      "bootstrapMs": 60000,
+      "bootstrapNote": "functional bootstrap ≈ 1 min (9-bit LUT), ≈ 10 min (12-bit LUT)",
+      "strength": "linear layers (matmul) are fast — one ciphertext packs thousands of slots",
+      "weakness": "nonlinear (ReLU/softmax) needs polynomial approx or a switch to TFHE"
+    },
+    {
+      "id": "tfhe",
+      "label": "TFHE",
+      "flavor": "bit-precise · gate bootstrapping",
+      "levels": 1,
+      "bootstrapDepth": 0,
+      "bootstrapMs": 1,
+      "bootstrapNote": "≈ 1 ms per Boolean gate (sub-ms on GPU); noise stays bounded unconditionally",
+      "strength": "comparisons/branching — max(0,x), argmax — are natural",
+      "weakness": "no SIMD: one 768×768 matmul is ~590k separately-bootstrapped gates"
+    }
+  ],
+  "models": [
+    {
+      "id": "logreg",
+      "label": "LogReg",
+      "layers": 1,
+      "regime": "leveled",
+      "fheSecondsLow": null,
+      "fheSecondsHigh": null,
+      "note": "shallow — evaluates entirely inside the initial noise budget, no bootstrap"
+    },
+    {
+      "id": "berttiny",
+      "label": "BERT-Tiny",
+      "params": "4.4M",
+      "layers": 2,
+      "regime": "leveled",
+      "fheSecondsLow": 0.23,
+      "fheSecondsHigh": 4.0,
+      "mpcSeconds": 0.24,
+      "note": "2 transformer layers fit leveled CKKS; at the optimistic end nearly tied with MPC"
+    },
+    {
+      "id": "resnet20",
+      "label": "ResNet-20",
+      "params": "0.27M",
+      "layers": 20,
+      "regime": "leveled",
+      "fheSecondsLow": 0.024,
+      "fheSecondsHigh": 7.0,
+      "mpcSeconds": 0.074,
+      "note": "20-layer CNN evaluates in leveled CKKS without bootstrapping"
+    },
+    {
+      "id": "bertbase",
+      "label": "BERT-Base",
+      "params": "110M",
+      "layers": 12,
+      "regime": "bootstrapped",
+      "fheSeconds": 149,
+      "fheMemoryGB": 112,
+      "mpcSeconds": 2.3,
+      "mpcWanSeconds": 47,
+      "throughputGap": 214,
+      "note": "12 transformer layers exceed any practical noise budget — bootstrapping unavoidable"
+    },
+    {
+      "id": "resnet50",
+      "label": "ResNet-50",
+      "params": "25.6M",
+      "layers": 50,
+      "regime": "bootstrapped",
+      "fheSeconds": 164,
+      "fheMemoryGB": 228,
+      "mpcSeconds": 1,
+      "latencyGap": 164,
+      "note": "50 layers require multiple bootstrapping rounds"
+    }
+  ]
+}

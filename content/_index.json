@@ -472,6 +472,7 @@
       "title": "The Bootstrapping Tax: FHE's Fundamental Limit on Private AI Inference",
       "description": "BERT-base under FHE takes 149 seconds, needs 112 GB, and sustains 0.007 samples/sec. Best-case MPC takes 2.3 seconds and 4 GB. The gap traces to one operation: bootstrapping — the noise-refresh that makes FHE theoretically unlimited but practically expensive.",
       "pubDate": "2026-06-23",
+      "updatedDate": "2026-08-01",
       "topics": [
         "cryptography",
         "machine-learning",
@@ -490,7 +491,8 @@
         "confidential-computing"
       ],
       "artifacts": [
-        "the-fhe-inference-wall"
+        "the-fhe-inference-wall",
+        "the-noise-ceiling"
       ],
       "difficulty": "intermediate",
       "draft": false

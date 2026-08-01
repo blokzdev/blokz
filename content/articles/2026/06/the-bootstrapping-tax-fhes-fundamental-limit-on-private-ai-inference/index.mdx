@@ -3,10 +3,11 @@ slug: the-bootstrapping-tax-fhes-fundamental-limit-on-private-ai-inference
 title: "The Bootstrapping Tax: FHE's Fundamental Limit on Private AI Inference"
 description: "BERT-base under FHE takes 149 seconds, needs 112 GB, and sustains 0.007 samples/sec. Best-case MPC takes 2.3 seconds and 4 GB. The gap traces to one operation: bootstrapping — the noise-refresh that makes FHE theoretically unlimited but practically expensive."
 pubDate: 2026-06-23T12:29:35.449Z
+updatedDate: 2026-08-01
 author: blokz
 topics: [cryptography, machine-learning, infrastructure]
 tags: [fhe, tfhe, ckks, bootstrapping, private-inference, ppml, zama, fhevm, mpc, confidential-computing]
-artifacts: [the-fhe-inference-wall]
+artifacts: [the-fhe-inference-wall, the-noise-ceiling]
 difficulty: intermediate
 sources:
   - label: "Beyond Latency: A System-Level Characterization of MPC and FHE for PPML (arXiv 2604.00169)"
@@ -54,6 +55,10 @@ The three mainstream FHE families make different bets on the noise-vs-performanc
 **BGV/BFV** encrypts integers and is primarily used for applications that avoid nonlinear operations entirely — private set intersection, database queries, polynomial evaluation. It sees limited use in neural network inference.
 
 For large models, no single scheme wins cleanly. Research implementations hybrid-switch: CKKS for linear layers, TFHE for activation functions, scheme-switching at the boundary. The switching itself costs time and memory.
+
+The noise budget makes the tradeoff concrete. Each multiplication spends down a finite budget of "levels"; when it runs out, the ciphertext must be bootstrapped — and the two schemes sit at opposite extremes of *when* that happens and *how much* each refresh costs. Drag the circuit deeper and watch the noise sawtooth: CKKS climbs for many operations then pays ~1 minute to refresh, while TFHE refreshes on every gate for ~1 millisecond.
+
+<Artifact slug="the-noise-ceiling" />
 
 ## The Numbers
 

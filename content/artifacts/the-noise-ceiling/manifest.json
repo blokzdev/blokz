@@ -12,5 +12,16 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "toggle CKKS / TFHE scheme",
+    "drag circuit-depth slider to add multiplications",
+    "drag noise-budget slider to set leveled headroom",
+    "tap Evaluate to animate the noise sawtooth",
+    "tap a model card to pin its measured FHE-vs-MPC latency"
+  ],
+  "dataSource": {
+    "label": "Beyond Latency: System-Level Characterization of MPC & FHE for PPML (arXiv 2604.00169) + SoK: Can FHE Support General AI Computation? (arXiv 2504.11604)",
+    "url": "https://arxiv.org/abs/2604.00169"
+  },
+  "dataAsOf": "2026-06-23"
 }

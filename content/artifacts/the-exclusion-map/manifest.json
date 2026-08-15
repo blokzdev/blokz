@@ -1,0 +1,16 @@
+{
+  "slug": "the-exclusion-map",
+  "title": "The Exclusion Map",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-08-15T09:09:27.044Z",
+  "type": "svg",
+  "archetype": "map",
+  "topics": [
+    "blockchain",
+    "security",
+    "agents"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

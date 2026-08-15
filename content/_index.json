@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 139
+    "artifacts": 140
   },
   "topicCounts": {
     "agents": 45,
@@ -3741,6 +3741,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-exclusion-map",
+      "path": "content/artifacts/the-exclusion-map/manifest.json",
+      "module": "src/islands/artifacts/the-exclusion-map.ts",
+      "url": "/artifacts/the-exclusion-map",
+      "title": "The Exclusion Map",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-08-15",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "blockchain",
+        "security",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-noise-ceiling",
       "path": "content/artifacts/the-noise-ceiling/manifest.json",

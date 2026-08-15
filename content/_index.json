@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 139
+    "artifacts": 140
   },
   "topicCounts": {
     "agents": 45,
@@ -711,6 +711,7 @@
       "title": "The Excluded Transaction: FOCIL, Censorship Resistance, and What Block Builders Can Deny AI Agents",
       "description": "38.6% of Ethereum blocks today go through censoring relays. FOCIL (EIP-7805) ends builder exclusion with a 16-validator committee and a 1-out-of-16 honesty assumption hardwired into the fork-choice rule — landing in the Hegota upgrade, late 2026.",
       "pubDate": "2026-06-23",
+      "updatedDate": "2026-08-15",
       "topics": [
         "blockchain",
         "security",
@@ -728,7 +729,8 @@
         "liquidation-agents"
       ],
       "artifacts": [
-        "the-focil-slot"
+        "the-focil-slot",
+        "the-exclusion-map"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3741,6 +3743,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-exclusion-map",
+      "path": "content/artifacts/the-exclusion-map/manifest.json",
+      "module": "src/islands/artifacts/the-exclusion-map.ts",
+      "url": "/artifacts/the-exclusion-map",
+      "title": "The Exclusion Map",
+      "description": "Ethereum's MEV-Boost relays mapped by inclusion policy (neutral → OFAC-censoring) and block-delivery share. 38.6% of blocks censor. Tap a relay to see what it can deny an AI agent; toggle FOCIL to watch the exclusion risk collapse.",
+      "pubDate": "2026-08-15",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "blockchain",
+        "security",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-noise-ceiling",
       "path": "content/artifacts/the-noise-ceiling/manifest.json",

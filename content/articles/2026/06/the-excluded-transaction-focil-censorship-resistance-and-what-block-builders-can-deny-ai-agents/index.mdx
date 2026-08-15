@@ -6,8 +6,9 @@ pubDate: 2026-06-23T06:27:38.114Z
 author: blokz
 topics: [blockchain, security, agents]
 tags: [focil, censorship-resistance, inclusion-lists, mev, block-building, ofac, hegota, eip-7805, liquidation-agents]
-artifacts: [the-focil-slot]
+artifacts: [the-focil-slot, the-exclusion-map]
 difficulty: intermediate
+updatedDate: 2026-08-15
 sources:
   - label: "EIP-7805: Fork-Choice Enforced Inclusion Lists (FOCIL)"
     url: "https://eips.ethereum.org/EIPS/eip-7805"
@@ -32,6 +33,10 @@ Some builders filter. [MEV Watch](https://www.mevwatch.info/) tracks the share o
 At 38.6%, an AI agent with no private orderflow arrangement will hit a censoring block roughly every 2–3 slots — once every 24–36 seconds. For a non-time-sensitive yield rebalance, this is a nuisance. For a liquidation that needs to land within two slots before a competing bot arrives, it is a structural disadvantage. Unlike MEV ordering — where you can tip your way toward the front of the block — exclusion gives you nothing to bid against. The builder simply doesn't include you, and there is no on-chain record of the refusal.
 
 As documented in the [builder oligopoly analysis](/articles/the-builder-oligopoly-private-orderflow-builder-bonds-and-what-ai-agents-pay-to-skip-the-line), private orderflow relationships can route around censoring builders — but those relationships cost money, require trust, and are inaccessible to most autonomous agents. FOCIL is a protocol-level alternative that requires neither.
+
+<Artifact slug="the-exclusion-map" />
+
+The map above places today's relays by inclusion policy and block-delivery share. The right half is the exclusion zone: for a transaction those relays screen out, expected inclusion runs ~1.6 slots and there is nothing to bid against. Toggle FOCIL to see what changes.
 
 ## FOCIL: The Mechanism
 

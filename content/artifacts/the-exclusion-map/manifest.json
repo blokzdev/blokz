@@ -1,7 +1,7 @@
 {
   "slug": "the-exclusion-map",
   "title": "The Exclusion Map",
-  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "description": "Ethereum's MEV-Boost relays mapped by inclusion policy (neutral → OFAC-censoring) and block-delivery share. 38.6% of blocks censor. Tap a relay to see what it can deny an AI agent; toggle FOCIL to watch the exclusion risk collapse.",
   "pubDate": "2026-08-15T09:09:27.044Z",
   "type": "svg",
   "archetype": "map",
@@ -10,7 +10,16 @@
     "security",
     "agents"
   ],
-  "aspect": "16/9",
+  "aspect": "520/430",
   "featured": false,
-  "controls": []
+  "controls": [
+    "tap a relay node (or its button) to inspect its policy and exclusion power",
+    "tap All to reset the selection",
+    "toggle FOCIL to see EIP-7805 neutralize the censoring zone"
+  ],
+  "dataSource": {
+    "label": "MEV Watch — censoring relay share on Ethereum (2026-06-22)",
+    "url": "https://www.mevwatch.info/"
+  },
+  "dataAsOf": "2026-06-22"
 }

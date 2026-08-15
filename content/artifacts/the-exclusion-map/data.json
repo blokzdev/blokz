@@ -1,0 +1,73 @@
+{
+  "note": "Relay block-delivery shares and censoring classification are snapshotted from MEV Watch (mevwatch.info) as of 2026-06-22, exactly as cited in the paired article. Only individually named relays carry sourced shares; unnamed relays are honestly aggregated into 'other neutral' / 'other censoring' so the five nodes sum to 100%. No fabricated per-relay numbers.",
+  "totalCensoringShare": 38.6,
+  "totalNeutralShare": 61.4,
+  "peakCensoringShare": 94.8,
+  "peakCensoringWhen": "Oct 2022 (post-Tornado-Cash sanctions)",
+  "slotSeconds": 12,
+  "builderOligopoly": { "count": 5, "share": 96.7 },
+  "relays": [
+    {
+      "id": "ultrasound",
+      "label": "Ultra Sound",
+      "abbr": "US",
+      "stance": "neutral",
+      "share": 30.0,
+      "x": 16,
+      "policy": "Neutral — does not screen against any sanctions list.",
+      "denies": "Nothing on policy grounds. Includes any valid transaction that pays the fee; ordering within the block is still the builder's call.",
+      "agentNote": "No exclusion risk. A filterable transaction lands the moment this relay's builder wins the slot."
+    },
+    {
+      "id": "otherneutral",
+      "label": "Other neutral relays",
+      "abbr": "…",
+      "stance": "neutral",
+      "share": 31.4,
+      "x": 35,
+      "aggregate": true,
+      "policy": "Aggregate of the remaining neutral relays (Agnostic, Aestus, Titan and others). None screen by OFAC list.",
+      "denies": "Nothing on policy grounds — same inclusion behaviour as Ultra Sound.",
+      "agentNote": "Safe for filterable transactions. Share is the residual of the 61.4% neutral total after Ultra Sound; individual shares are not broken out in the source snapshot."
+    },
+    {
+      "id": "othercensoring",
+      "label": "Other censoring relays",
+      "abbr": "…",
+      "stance": "censoring",
+      "share": 2.3,
+      "x": 63,
+      "aggregate": true,
+      "policy": "Aggregate of smaller relays that screen against the OFAC SDN list.",
+      "denies": "Any transaction touching a sanctioned address — silently, with no on-chain record of the refusal.",
+      "agentNote": "Small share, but every censoring block is a block your filterable transaction cannot enter. Residual of the 38.6% censoring total after the two bloXroute relays."
+    },
+    {
+      "id": "bloxroute-maxprofit",
+      "label": "bloXroute Max Profit",
+      "abbr": "bxM",
+      "stance": "censoring",
+      "share": 18.2,
+      "x": 76,
+      "policy": "Censoring — screens transactions against the OFAC SDN list.",
+      "denies": "A flagged transaction is omitted from the block. Exclusion is not something you can outbid: unlike ordering, there is nothing to tip against.",
+      "agentNote": "One of the two dominant censoring relays. If your operator wallet's funding path touched a sanctioned protocol, its blocks skip you."
+    },
+    {
+      "id": "bloxroute-regulated",
+      "label": "bloXroute Regulated",
+      "abbr": "bxR",
+      "stance": "censoring",
+      "share": 18.1,
+      "x": 88,
+      "policy": "Censoring — explicitly filters OFAC-sanctioned transactions by design.",
+      "denies": "Same as Max Profit: sanctioned transactions never enter the block, with no observable trace of the exclusion.",
+      "agentNote": "The other dominant censoring relay. Together with Max Profit it accounts for the bulk of the 38.6% censoring share."
+    }
+  ],
+  "dataSource": {
+    "label": "MEV Watch — censoring relay share on Ethereum (as of 2026-06-22)",
+    "url": "https://www.mevwatch.info/"
+  },
+  "dataAsOf": "2026-06-22"
+}

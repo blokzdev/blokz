@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 140
+    "artifacts": 141
   },
   "topicCounts": {
     "agents": 45,
@@ -3743,6 +3743,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-liquidity-surface",
+      "path": "content/artifacts/the-liquidity-surface/manifest.json",
+      "module": "src/islands/artifacts/the-liquidity-surface.ts",
+      "url": "/artifacts/the-liquidity-surface",
+      "title": "The Liquidity Surface",
+      "description": "The Width Paradox as a 3D landscape: a Uniswap v3 LP's fee reward (colour) and rebalancing cadence (height) both climb toward the narrow-range edge. Slide volatility to watch the human-vs-agent frontier move.",
+      "pubDate": "2026-09-01",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "defi",
+        "machine-learning",
+        "data"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-exclusion-map",
       "path": "content/artifacts/the-exclusion-map/manifest.json",

@@ -1,0 +1,20 @@
+{
+  "slug": "the-liquidity-surface",
+  "title": "The Liquidity Surface",
+  "description": "The Width Paradox as a 3D landscape: a Uniswap v3 LP's fee reward (colour) and rebalancing cadence (height) both climb toward the narrow-range edge. Slide volatility to watch the human-vs-agent frontier move.",
+  "pubDate": "2026-09-01T09:12:16.137Z",
+  "type": "three",
+  "archetype": "scene",
+  "topics": [
+    "defi",
+    "machine-learning",
+    "data"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": [
+    "drag to orbit the surface",
+    "slide σ to walk the volatility axis and move the iso-vol contour",
+    "tap the surface to toggle the human weekly-cadence ceiling"
+  ]
+}

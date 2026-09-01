@@ -40,7 +40,7 @@ const S_DEFAULT = 0.58; // ETH realized vol in the article
 // ── scene extents (world units) ─────────────────────────────────────────────
 const HALFX = 11; // width axis (δ)
 const HALFZ = 7; // depth axis (σ)
-const YSCALE = 10; // height axis (rebalances/yr, log-compressed)
+const YSCALE = 12.5; // height axis (rebalances/yr, log-compressed)
 const CADENCE_CAP = 400; // clamp rebalances for the height map
 
 const mult = (d: number) => 1 / (Math.sqrt(1 + d) - 1);
@@ -75,7 +75,8 @@ const _c = new THREE.Color();
 const LOG_FEE_MIN = Math.log(feeApr(D_MAX)); // widest → lowest fee
 const LOG_FEE_MAX = Math.log(feeApr(D_MIN)); // narrowest → highest fee
 function feeColor(d: number): THREE.Color {
-  const t = (Math.log(feeApr(d)) - LOG_FEE_MIN) / (LOG_FEE_MAX - LOG_FEE_MIN);
+  let t = (Math.log(feeApr(d)) - LOG_FEE_MIN) / (LOG_FEE_MAX - LOG_FEE_MIN);
+  t = Math.pow(t, 0.62); // push the warm band outward so the gradient reads across the sheet
   if (t < 0.5) return _c.copy(C_COOL).lerp(C_MID, t * 2);
   return _c.copy(C_MID).lerp(C_HOT, (t - 0.5) * 2);
 }
@@ -119,6 +120,11 @@ export default function mount(container: HTMLElement): () => void {
     .ls-legend b { color:#c7cfe6;font-weight:600; }
     .ls-ramp { height:6px;border-radius:3px;margin:4px 0 2px;
       background:linear-gradient(90deg,#5b8cff,#8b5cf6,#ffb020); }
+    /* Narrow layouts (portrait phone, rotated fullscreen) drop the side legend —
+       it would collide with the stats panel — and reveal the folded map line. */
+    .ls-map { display:none; }
+    .ls-hud.is-narrow .ls-legend { display:none; }
+    .ls-hud.is-narrow .ls-map { display:block; }
     .ls-ctrl {
       position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
       pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:5px;
@@ -142,6 +148,11 @@ export default function mount(container: HTMLElement): () => void {
   stats.className = 'ls-stats';
   hud.appendChild(stats);
 
+  // On roomy layouts a dedicated side legend reads best; when the container is
+  // narrow (portrait phone, rotated fullscreen) it would collide with the stats
+  // panel, so CSS hides it and reveals the folded map line below the slider. A
+  // ResizeObserver drives the switch off the real container width (not a
+  // mount-time guess, which breaks when fullscreen is entered wide then rotated).
   const legend = document.createElement('div');
   legend.className = 'ls-legend';
   legend.innerHTML = `
@@ -161,22 +172,28 @@ export default function mount(container: HTMLElement): () => void {
     </div>
     <input class="ls-slider" type="range" min="${S_MIN}" max="${S_MAX}" step="0.01" value="${S_DEFAULT}"
            aria-label="annualized volatility" />
-    <div class="ls-hint">drag to orbit · slide σ to walk the volatility axis · <b>tap the surface</b> to toggle the human ceiling</div>`;
+    <div class="ls-hint ls-map"><b>height</b> rebalances/yr · <b>colour</b> fee APR · <b>depth</b> volatility</div>
+    <div class="ls-hint">drag to orbit · slide σ · <b>tap</b> for the human ceiling</div>`;
   hud.appendChild(ctrl);
   container.appendChild(hud);
+
+  const applyNarrow = () => hud.classList.toggle('is-narrow', container.clientWidth < 560);
+  applyNarrow();
+  const hudRo = new ResizeObserver(applyNarrow);
+  hudRo.observe(container);
 
   const slider = ctrl.querySelector('.ls-slider') as HTMLInputElement;
   const sigVal = ctrl.querySelector('.ls-val') as HTMLElement;
 
   // ── surface geometry ────────────────────────────────────────────────────────
-  const small = isSmallScreen();
+  const small = isSmallScreen(); // mount-time vertex budget (halve on phones)
   const nx = small ? 40 : 60; // width samples
   const ny = small ? 28 : 40; // volatility samples
 
   const world = new THREE.Group();
-  world.rotation.x = 0.62; // tilt so height reads
-  world.rotation.y = -0.5; // start angled
-  world.position.y = -3.6;
+  world.rotation.x = 0.7; // tilt so the cadence height reads as a landscape
+  world.rotation.y = -0.55; // swing the tall narrow/volatile corner to the open right
+  world.position.set(1.2, -1.8, 0);
 
   // vertex buffers
   const vcount = nx * ny;
@@ -220,7 +237,7 @@ export default function mount(container: HTMLElement): () => void {
     new THREE.MeshBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.62,
       side: THREE.DoubleSide,
       depthWrite: true,
     }),
@@ -385,13 +402,14 @@ export default function mount(container: HTMLElement): () => void {
       const em = ceilEdge.material as THREE.LineBasicMaterial;
       em.opacity += ((ceilOn ? 0.55 : 0) - em.opacity) * 0.1;
     },
-    { fov: 55, z: 30 },
+    { fov: 55, z: 28 },
   );
 
   handle.scene.fog = new THREE.FogExp2(0x05070d, 0.011);
   handle.scene.add(world);
 
   return () => {
+    hudRo.disconnect();
     orbit.dispose();
     handle.dispose();
     hud.remove();

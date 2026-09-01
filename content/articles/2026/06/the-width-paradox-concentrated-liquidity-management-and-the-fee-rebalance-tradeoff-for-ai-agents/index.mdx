@@ -3,10 +3,11 @@ slug: the-width-paradox-concentrated-liquidity-management-and-the-fee-rebalance-
 title: "The Width Paradox: Concentrated Liquidity Management and the Fee-Rebalance Tradeoff for AI Agents"
 description: "Uniswap v3's capital efficiency multiplier peaks at 20× for ±10% ranges, but first-passage math shows the same position rebalances 54 times a year — making active LP management an optimization problem that requires AI-grade execution frequency."
 pubDate: 2026-06-23T10:31:19.098Z
+updatedDate: 2026-09-01
 author: blokz
 topics: [defi, machine-learning, data]
 tags: [concentrated-liquidity, uniswap-v3, clmm, impermanent-loss, lp-management, capital-efficiency, active-lp, rebalancing, gamma-strategies, volatility]
-artifacts: [the-range-optimizer]
+artifacts: [the-range-optimizer, the-liquidity-surface]
 difficulty: intermediate
 sources:
   - label: "Uniswap v3 Core Whitepaper — Adams, Zinsmeister, Salem, Keefer, Robinson (2021)"
@@ -129,6 +130,10 @@ When volatility spikes:
 - Wider ranges lose less of the fee APR and avoid frequent rebalancing.
 
 An AI agent running volatility-adaptive range management can compute the expected-net-APR for each candidate range width in real time and select the one that maximizes net return after predicted gas costs. For ETH, this typically means tightening to ±10–15% in low-vol regimes (MFPT > 10 days) and widening to ±25–30% during high-vol periods (σ > 5% daily).
+
+Seen whole, that tradeoff is a landscape. The surface below plots the two forces the paradox pits against each other over every (range width, volatility) pair — rebalancing cadence as height, fee APR as colour — both climbing toward the narrow-range edge. Slide volatility and watch the *human weekly-cadence frontier* move: the width below which a position rebalances more than once a week is agent-only territory, and it widens as volatility rises.
+
+<Artifact slug="the-liquidity-surface" />
 
 The interactive calculator below lets you explore this tradeoff directly: vary the range width, fee tier, and volatility to see how gross fee APY, expected rebalancing frequency, and net APY respond.
 

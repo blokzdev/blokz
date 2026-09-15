@@ -1,7 +1,7 @@
 {
   "slug": "the-sampling-lattice",
   "title": "The Sampling Lattice",
-  "description": "A 2D erasure-coded blob as a coordinate map. Drag a withholding block and watch reconstruction cascade or collapse; run light-node sampling to see why hiding any data means hiding a quarter of the grid — and getting caught.",
+  "description": "A 2D erasure-coded blob drawn as a coordinate map. Move a withheld block and watch reconstruction cascade or collapse; run light-node sampling to see why hiding any data means hiding a quarter of the lattice — and getting caught.",
   "pubDate": "2026-09-15T09:08:36.617Z",
   "type": "svg",
   "archetype": "map",
@@ -10,7 +10,12 @@
     "blockchain",
     "web3"
   ],
-  "aspect": "16/9",
-  "featured": false,
-  "controls": []
+  "aspect": "374/392",
+  "featured": true,
+  "controls": [
+    "tap the lattice (or use arrow keys) to move the withheld block",
+    "drag the width / height sliders to resize what the producer hides",
+    "set samples-per-node and light-node count, then Run sampling",
+    "load a preset (1 cell · 3-col strip · 8×8 · 9×9) to jump to key cases"
+  ]
 }

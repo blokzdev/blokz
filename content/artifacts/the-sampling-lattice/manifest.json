@@ -1,0 +1,16 @@
+{
+  "slug": "the-sampling-lattice",
+  "title": "The Sampling Lattice",
+  "description": "A 2D erasure-coded blob as a coordinate map. Drag a withholding block and watch reconstruction cascade or collapse; run light-node sampling to see why hiding any data means hiding a quarter of the grid — and getting caught.",
+  "pubDate": "2026-09-15T09:08:36.617Z",
+  "type": "svg",
+  "archetype": "map",
+  "topics": [
+    "data",
+    "blockchain",
+    "web3"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

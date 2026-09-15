@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 141
+    "artifacts": 142
   },
   "topicCounts": {
     "agents": 45,
@@ -3745,6 +3745,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sampling-lattice",
+      "path": "content/artifacts/the-sampling-lattice/manifest.json",
+      "module": "src/islands/artifacts/the-sampling-lattice.ts",
+      "url": "/artifacts/the-sampling-lattice",
+      "title": "The Sampling Lattice",
+      "description": "A 2D erasure-coded blob as a coordinate map. Drag a withholding block and watch reconstruction cascade or collapse; run light-node sampling to see why hiding any data means hiding a quarter of the grid — and getting caught.",
+      "pubDate": "2026-09-15",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-liquidity-surface",
       "path": "content/artifacts/the-liquidity-surface/manifest.json",

@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 141
+    "artifacts": 142
   },
   "topicCounts": {
     "agents": 45,
@@ -1536,6 +1536,7 @@
       "title": "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline",
       "description": "EIP-4844 blobs look like cheap on-chain storage, but they vanish in 18 days. Here is why DA windows break AI training pipelines and what to use instead.",
       "pubDate": "2026-06-21",
+      "updatedDate": "2026-09-15",
       "topics": [
         "data",
         "blockchain",
@@ -1543,7 +1544,8 @@
       ],
       "tags": [],
       "artifacts": [
-        "the-availability-cliff"
+        "the-availability-cliff",
+        "the-sampling-lattice"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3745,6 +3747,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-sampling-lattice",
+      "path": "content/artifacts/the-sampling-lattice/manifest.json",
+      "module": "src/islands/artifacts/the-sampling-lattice.ts",
+      "url": "/artifacts/the-sampling-lattice",
+      "title": "The Sampling Lattice",
+      "description": "A 2D erasure-coded blob drawn as a coordinate map. Move a withheld block and watch reconstruction cascade or collapse; run light-node sampling to see why hiding any data means hiding a quarter of the lattice — and getting caught.",
+      "pubDate": "2026-09-15",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "data",
+        "blockchain",
+        "web3"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-liquidity-surface",
       "path": "content/artifacts/the-liquidity-surface/manifest.json",

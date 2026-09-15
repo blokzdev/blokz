@@ -3,10 +3,11 @@ slug: blobs-are-not-buckets-the-data-availability-window-and-the-ai-training-pip
 title: "Blobs Are Not Buckets: The Data Availability Window and the AI Training Pipeline"
 description: "EIP-4844 blobs look like cheap on-chain storage, but they vanish in 18 days. Here is why DA windows break AI training pipelines and what to use instead."
 pubDate: 2026-06-21T22:31:50.957Z
+updatedDate: 2026-09-15
 author: blokz
 topics: [data, blockchain, web3]
 tags: []
-artifacts: [the-availability-cliff]
+artifacts: [the-availability-cliff, the-sampling-lattice]
 difficulty: intermediate
 sources:
   - label: "EIP-4844: Shard Blob Transactions"
@@ -106,6 +107,10 @@ Data availability sampling is widely cited as the breakthrough that makes sharde
 This is correct for its stated purpose. But "was published" and "can be retrieved in six months" are different propositions. DAS proves liveness at a moment in time. It proves nothing about persistence. A system that uses DAS correctly still has no mechanism for a client to demand retrieval of six-month-old data from a node that chose to prune it.
 
 The gap is not a flaw in DAS — it is a scope boundary. DAS was designed to make *block validation* trustless, not to be a retrieval protocol. Conflating the two is a category error that leads builders to anchor training datasets in blob space and then wonder why they cannot reproduce training runs.
+
+<Artifact slug="the-sampling-lattice" />
+
+The map above draws out *why* the "cannot hide 1% without hiding too much" claim holds. A block's data is coded into a 2D Reed–Solomon lattice, and any row or column that still holds half its cells rebuilds the whole line. Move the withheld block around and resize it: a thin strip — however wide — always reconstructs from the perpendicular lines, so to actually hide a byte the producer must black out a square that is more than half the lattice on each side, roughly a quarter of the grid. At that point a single light node sampling a dozen random cells rejects the block with ~99% probability, and the network's collective sampling makes concealment statistically hopeless. That is a liveness argument at publication time — exactly the property that says nothing about whether the same cells can be *retrieved* eighteen days later.
 
 ## Takeaways
 

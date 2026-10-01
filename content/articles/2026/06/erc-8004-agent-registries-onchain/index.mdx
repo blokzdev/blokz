@@ -6,8 +6,9 @@ pubDate: 2026-06-12T12:05:00Z
 author: blokz
 topics: [agents, blockchain, security]
 tags: [erc-8004, agent-identity, reputation, registries, base, erc-4337]
-artifacts: []
+artifacts: [the-vouch-graph]
 difficulty: intermediate
+updatedDate: 2026-10-01T09:30:00Z
 sources:
   - label: "ERC-8004: Trustless Agents (specification)"
     url: "https://eips.ethereum.org/EIPS/eip-8004"
@@ -168,6 +169,14 @@ non-zero `feedbackHash`, and fetch the `feedbackURI` evidence before counting an
 That's not a workaround — it's the design. The chain gives you a tamper-evident,
 chronologically ordered feedback log; deciding *whose* feedback means something was never
 going to be solvable in 30k gas.
+
+<Artifact slug="the-vouch-graph" />
+
+The map above is that same registry read fresh four months later: agent #25,975 is still at
+the centre, still being fed by a handful of wallets that have each filed thousands of
+identical `value=1` vouches with an empty `feedbackHash`. Step the integrity filter and the
+"flawless" five-star score collapses to *unscored* the instant you demand committed evidence
+— the whole point, made clickable.
 
 ## What to build on, and what to wait on
 

@@ -1,0 +1,24 @@
+{
+  "slug": "the-vouch-graph",
+  "title": "The Vouch Graph",
+  "description": "ERC-8004 reputation as a topological map: one agent fed 24k identical vouches by 6 wallets. Step the integrity filter and watch a 'flawless' score collapse to UNSCORED.",
+  "pubDate": "2026-10-01T09:09:00.604Z",
+  "type": "svg",
+  "archetype": "map",
+  "topics": [
+    "agents",
+    "blockchain",
+    "security"
+  ],
+  "aspect": "460/430",
+  "featured": true,
+  "controls": [
+    "step the integrity filter (naïve → evidence → allowlist)",
+    "tap a reviewer node for its vouch stream"
+  ],
+  "dataSource": {
+    "label": "ERC-8004 ReputationRegistry on Base via Blockscout",
+    "url": "https://base.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+  },
+  "dataAsOf": "2026-10-01"
+}

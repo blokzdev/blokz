@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 142
+    "artifacts": 143
   },
   "topicCounts": {
     "agents": 45,
@@ -3516,6 +3516,7 @@
       "title": "ERC-8004 in the Wild: Auditing the Trustless Agents Registries On-Chain",
       "description": "ERC-8004's agent registries went live in January. We read them straight off the chain: ~90,000 registrations across Ethereum and Base, a $0.003 ERC-4337 registration dissected — and a reputation registry already farmed with vouch spam.",
       "pubDate": "2026-06-12",
+      "updatedDate": "2026-10-01",
       "topics": [
         "agents",
         "blockchain",
@@ -3529,7 +3530,9 @@
         "base",
         "erc-4337"
       ],
-      "artifacts": [],
+      "artifacts": [
+        "the-vouch-graph"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3747,6 +3750,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-vouch-graph",
+      "path": "content/artifacts/the-vouch-graph/manifest.json",
+      "module": "src/islands/artifacts/the-vouch-graph.ts",
+      "url": "/artifacts/the-vouch-graph",
+      "title": "The Vouch Graph",
+      "description": "ERC-8004 reputation as a topological map: one agent fed 24k identical vouches by 6 wallets. Step the integrity filter and watch a 'flawless' score collapse to UNSCORED.",
+      "pubDate": "2026-10-01",
+      "type": "svg",
+      "archetype": "map",
+      "topics": [
+        "agents",
+        "blockchain",
+        "security"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-sampling-lattice",
       "path": "content/artifacts/the-sampling-lattice/manifest.json",

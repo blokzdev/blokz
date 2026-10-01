@@ -1,0 +1,83 @@
+{
+  "target": {
+    "agentId": 25975,
+    "label": "agent #25,975",
+    "chain": "Base",
+    "coordinator": "coordinator.agentmoney.net",
+    "note": "A single agent whose on-chain reputation is being manufactured by a 'miner-vouch' scheme tagged 'botcoin'."
+  },
+  "clients": [
+    {
+      "address": "0xd834A7624767dAfBBE9831df22914E805924E2a6",
+      "short": "0xd834…E2a6",
+      "vouches": 13009,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    },
+    {
+      "address": "0x6b51d0D67fF41dAB76e499546abe6b8B03Cf8732",
+      "short": "0x6b51…8732",
+      "vouches": 6905,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    },
+    {
+      "address": "0x19300Ea7765B9C676713155BA5d0Ad291aEF2fE7",
+      "short": "0x1930…2fE7",
+      "vouches": 4036,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    },
+    {
+      "address": "0x2452CCd448a24B0C36B699759e72C2611C41AA37",
+      "short": "0x2452…AA37",
+      "vouches": 65,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    },
+    {
+      "address": "0x84A2F3A3CaE4075C268C91Dd247804B9DA5c29E4",
+      "short": "0x84A2…29E4",
+      "vouches": 60,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    },
+    {
+      "address": "0xBD8885E6DeFCAb618B90bAa687Cfa647D1b3a1A5",
+      "short": "0xBD88…a1A5",
+      "vouches": 44,
+      "value": 1,
+      "tag1": "miner-vouch",
+      "tag2": "botcoin",
+      "endpoint": "https://coordinator.agentmoney.net",
+      "evidence": false
+    }
+  ],
+  "registry": {
+    "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "reputationRegistry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+    "baseRegistrations": 96653,
+    "baseHolders": 22429,
+    "ethHolders": 13281
+  },
+  "snapshot": {
+    "chainId": 8453,
+    "sampleBlock": 52026709,
+    "note": "Clients observed in the live ReputationRegistry.NewFeedback stream for agentId 25975; 'vouches' is each client's latest on-chain feedbackIndex (a lower bound on vouches it has filed for this agent). Every sampled vouch carried value=1, feedbackHash=0x0 (no committed evidence), tag1='miner-vouch', tag2='botcoin'."
+  }
+}

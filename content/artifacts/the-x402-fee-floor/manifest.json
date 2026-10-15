@@ -1,7 +1,7 @@
 {
   "slug": "the-x402-fee-floor",
   "title": "The x402 Fee Floor",
-  "description": "Push on the economics of a gasless x402 settlement: set payment size, gas price, network and facilitator subsidy to see the fee-to-value ratio, where sub-cent metering stays viable, and where card rails win.",
+  "description": "Push on the economics of a gasless x402 settlement: set payment size, gas price, ETH price and facilitator subsidy to see the fee-to-value ratio, where sub-cent metering stays viable, and how far below card rails it sits.",
   "pubDate": "2026-10-15T09:17:38.322Z",
   "type": "dom",
   "archetype": "calculator",
@@ -12,5 +12,14 @@
   ],
   "aspect": "16/9",
   "featured": false,
-  "controls": []
+  "controls": [
+    "drag the value axis or sliders to set the payment",
+    "toggle the facilitator subsidy and card-rail comparison",
+    "↩ resets to the real decoded Base settlement"
+  ],
+  "dataSource": {
+    "label": "x402 settlement 0xb571fe…d52d14 on Base · Blockscout",
+    "url": "https://base.blockscout.com/tx/0xb571fe7f2a2fa7839f804d9681a31ea4ab43f1ca2893d77868320d0317d52d14"
+  },
+  "dataAsOf": "2026-06-12"
 }

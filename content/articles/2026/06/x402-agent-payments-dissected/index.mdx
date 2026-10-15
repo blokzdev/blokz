@@ -3,10 +3,11 @@ slug: x402-agent-payments-dissected
 title: "Dissecting a 1.3-Cent Agent Payment: x402 on Base, by the Numbers"
 description: "We pulled a live x402 settlement off Base: a $0.013 USDC transfer relayed by a facilitator wallet with a nonce past 1.7 million, at an 11% gas-to-value ratio. What on-chain evidence and 100M transactions actually say about the agent economy."
 pubDate: 2026-06-12T12:04:00Z
+updatedDate: 2026-10-15T12:00:00Z
 author: blokz
 topics: [agents, blockchain, infrastructure]
 tags: [x402, payments, stablecoins, base, facilitators, on-chain-data]
-artifacts: []
+artifacts: [the-x402-fee-floor]
 difficulty: intermediate
 sources:
   - label: "The dissected settlement transaction on Base (Blockscout)"
@@ -72,6 +73,13 @@ on Base without passing gas costs through — the relayer in this transaction at
 same call on Ethereum L1 would cost dollars, not tenths of cents. Sub-cent agent payments are
 economically real today, but they exist inside a subsidy and a single L2's fee market. If
 you're pricing an API around x402, price against the unsubsidized number.
+
+<Artifact slug="the-x402-fee-floor" />
+
+The calculator above starts from this exact settlement — 86,298 L2 gas at 0.01 Gwei moving
+$0.013, an 11% gas-to-value ratio. Push the payment size down and watch it cross the *fee
+floor*, the point where gas costs more than the payment itself; push the gas price toward L1
+levels, or switch the facilitator subsidy off, and the sub-cent regime evaporates.
 
 ## The relayer fleet
 

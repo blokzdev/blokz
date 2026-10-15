@@ -1,0 +1,35 @@
+{
+  "settlement": {
+    "txShort": "0xb571fe…d52d14",
+    "network": "Base",
+    "block": 47227265,
+    "valueUsd": 0.013104,
+    "valueBaseUnits": 13104,
+    "l2GasUnits": 86298,
+    "l1DataGasUnits": 3748,
+    "effectiveGweiL2": 0.01,
+    "totalCostWei": 865744853181,
+    "l1DataWei": 2764853181,
+    "totalCostUsd": 0.00144,
+    "impliedEthUsd": 1663,
+    "feeToValuePct": 11,
+    "validWindowSeconds": 900,
+    "relayerNonce": 1735229
+  },
+  "cardRail": {
+    "fixedUsd": 0.30,
+    "pctFee": 0.029
+  },
+  "facilitator": {
+    "provider": "Coinbase CDP",
+    "freeTierPerMonth": 1000,
+    "perTxUsdAfter": 0.001,
+    "networks": ["Base", "Polygon", "Arbitrum", "World", "Solana"]
+  },
+  "adoption": {
+    "cumulativeTxLabel": "100M+",
+    "period": "through Q1 2026",
+    "over1DollarSharePct": { "from": 49, "to": 95 },
+    "midBandSharePct": { "from": 46, "to": 4 }
+  }
+}

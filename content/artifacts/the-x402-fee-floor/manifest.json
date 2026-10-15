@@ -1,0 +1,16 @@
+{
+  "slug": "the-x402-fee-floor",
+  "title": "The x402 Fee Floor",
+  "description": "Push on the economics of a gasless x402 settlement: set payment size, gas price, network and facilitator subsidy to see the fee-to-value ratio, where sub-cent metering stays viable, and where card rails win.",
+  "pubDate": "2026-10-15T09:17:38.322Z",
+  "type": "dom",
+  "archetype": "calculator",
+  "topics": [
+    "blockchain",
+    "agents",
+    "infrastructure"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

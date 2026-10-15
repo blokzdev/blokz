@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 143
+    "artifacts": 144
   },
   "topicCounts": {
     "agents": 45,
@@ -3750,6 +3750,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-x402-fee-floor",
+      "path": "content/artifacts/the-x402-fee-floor/manifest.json",
+      "module": "src/islands/artifacts/the-x402-fee-floor.ts",
+      "url": "/artifacts/the-x402-fee-floor",
+      "title": "The x402 Fee Floor",
+      "description": "Push on the economics of a gasless x402 settlement: set payment size, gas price, network and facilitator subsidy to see the fee-to-value ratio, where sub-cent metering stays viable, and where card rails win.",
+      "pubDate": "2026-10-15",
+      "type": "dom",
+      "archetype": "calculator",
+      "topics": [
+        "blockchain",
+        "agents",
+        "infrastructure"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-vouch-graph",
       "path": "content/artifacts/the-vouch-graph/manifest.json",

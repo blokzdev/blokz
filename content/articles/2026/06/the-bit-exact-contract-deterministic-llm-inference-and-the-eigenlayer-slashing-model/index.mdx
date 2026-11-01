@@ -3,10 +3,11 @@ slug: the-bit-exact-contract-deterministic-llm-inference-and-the-eigenlayer-slas
 title: "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model"
 description: "To slash a dishonest AI operator on EigenLayer you need a proof. To produce one, you need determinism. EigenAI solves both: seeded inference + optimistic re-execution inside a TEE collapses verification to a byte-equality check — slashable at Ethereum-scale security."
 pubDate: 2026-06-23T19:26:05.743Z
+updatedDate: 2026-11-01
 author: blokz
 topics: [security, infrastructure, llm]
 tags: [eigenlayer, verifiable-inference, deterministic-inference, avs, slashing, tee, eigenda, eigenverify, optimistic-challenge, llm-42]
-artifacts: [the-slashable-inference]
+artifacts: [the-slashable-inference, the-restaking-mesh]
 difficulty: intermediate
 sources:
   - label: "EigenAI: Deterministic Inference, Verifiable Results (arXiv 2602.00182)"
@@ -38,6 +39,10 @@ For a verifier expecting to re-execute and compare hashes, this is fatal. Honest
 ## EigenLayer's Slashing Requirement
 
 EigenLayer gives restakers a way to extend their ETH stake as economic security to arbitrary services — called Actively Validated Services — in exchange for yield. The EigenLayer whitepaper has a specific requirement for valid slashing conditions: faults must be **objectively attributable**, meaning a smart contract on Ethereum can verify them from on-chain evidence alone.
+
+That "one stake, many services" extension is the entire value proposition of restaking — and the entire risk. A single operator typically opts its delegated stake into several AVSs at once, so the same collateral backs all of them simultaneously. The mesh below makes both sides legible: raise the overlap and every service's backing grows, but so does the blast radius of a single fault. Tap an operator to slash it and watch each service it secures lose collateral in the same instant — the correlated slashing that makes attributable, deterministic proofs (the rest of this article) worth the engineering.
+
+<Artifact slug="the-restaking-mesh" />
 
 This requirement exists to prevent disputes. If a slash requires subjective judgment — "was this AI response correct?" — then the slashing mechanism itself becomes a governance dispute, and governance disputes destroy the security model. The 1-out-of-N honesty assumption only holds if the 1 honest party can provably demonstrate fraud to a contract that has no context, no preferences, and no appeal process.
 

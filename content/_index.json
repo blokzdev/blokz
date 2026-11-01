@@ -323,6 +323,7 @@
       "title": "The Bit-Exact Contract: Deterministic LLM Inference and the EigenLayer Slashing Model",
       "description": "To slash a dishonest AI operator on EigenLayer you need a proof. To produce one, you need determinism. EigenAI solves both: seeded inference + optimistic re-execution inside a TEE collapses verification to a byte-equality check — slashable at Ethereum-scale security.",
       "pubDate": "2026-06-23",
+      "updatedDate": "2026-11-01",
       "topics": [
         "security",
         "infrastructure",
@@ -341,7 +342,8 @@
         "llm-42"
       ],
       "artifacts": [
-        "the-slashable-inference"
+        "the-slashable-inference",
+        "the-restaking-mesh"
       ],
       "difficulty": "intermediate",
       "draft": false
@@ -3759,7 +3761,7 @@
       "module": "src/islands/artifacts/the-restaking-mesh.ts",
       "url": "/artifacts/the-restaking-mesh",
       "title": "The Restaking Mesh",
-      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "description": "Shared security as a 3D mesh: one pool of restaked ETH, operators who each extend that single stake to several AVSs, and the correlated slashing it creates. Slide the overlap, then tap an operator to slash it and watch every service it backs lose collateral at once.",
       "pubDate": "2026-11-01",
       "type": "three",
       "archetype": "scene",

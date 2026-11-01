@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 144
+    "artifacts": 145
   },
   "topicCounts": {
     "agents": 45,
@@ -3753,6 +3753,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-restaking-mesh",
+      "path": "content/artifacts/the-restaking-mesh/manifest.json",
+      "module": "src/islands/artifacts/the-restaking-mesh.ts",
+      "url": "/artifacts/the-restaking-mesh",
+      "title": "The Restaking Mesh",
+      "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+      "pubDate": "2026-11-01",
+      "type": "three",
+      "archetype": "scene",
+      "topics": [
+        "infrastructure",
+        "security",
+        "tokenomics"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-x402-fee-floor",
       "path": "content/artifacts/the-x402-fee-floor/manifest.json",

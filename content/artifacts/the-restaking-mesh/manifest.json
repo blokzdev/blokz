@@ -1,0 +1,16 @@
+{
+  "slug": "the-restaking-mesh",
+  "title": "The Restaking Mesh",
+  "description": "TODO: 20–300 char description of what this artifact shows and how to interact with it.",
+  "pubDate": "2026-11-01T09:15:56.240Z",
+  "type": "three",
+  "archetype": "scene",
+  "topics": [
+    "infrastructure",
+    "security",
+    "tokenomics"
+  ],
+  "aspect": "16/9",
+  "featured": false,
+  "controls": []
+}

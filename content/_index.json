@@ -3653,6 +3653,7 @@
       "title": "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement",
       "description": "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it.",
       "pubDate": "2026-06-12",
+      "updatedDate": "2026-11-15",
       "topics": [
         "agents",
         "blockchain",
@@ -3666,7 +3667,9 @@
         "payments",
         "account-abstraction"
       ],
-      "artifacts": [],
+      "artifacts": [
+        "the-signed-authorization"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },

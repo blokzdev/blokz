@@ -6,8 +6,9 @@ pubDate: 2026-06-12T12:00:00Z
 author: blokz
 topics: [agents, blockchain, infrastructure, security]
 tags: [x402, stablecoins, eip-3009, payments, account-abstraction]
-artifacts: []
+artifacts: [the-signed-authorization]
 difficulty: intermediate
+updatedDate: 2026-11-15T12:00:00Z
 sources:
   - label: "x402 'exact' scheme spec (EVM)"
     url: "https://github.com/coinbase/x402/blob/main/specs/schemes/exact/scheme_exact_evm.md"
@@ -115,6 +116,15 @@ graph. Coinbase's CDP facilitator covers Base, Polygon, Arbitrum, World, and Sol
 free tier of 1,000 transactions a month and **$0.001 per transaction** after — but the spec is
 open and `https://x402.org/facilitator` runs the testnet flow with no auth, so you can self-host
 and trust no one but the chain.
+
+The boundary is worth making concrete. Below is the *real* EIP-3009 authorization behind a
+Base USDC settlement — decoded from the on-chain `transferWithAuthorization` call. Play the
+facilitator: inflate the amount, redirect the payee, stretch the window, or replay it on
+another chain. Every field is inside the EIP-712 digest the payer signed, and the digest is
+recomputed live in your browser with a from-scratch keccak256 — so each tamper flips `verify()`
+from pass to revert. The facilitator broadcasts; it cannot alter a byte.
+
+<Artifact slug="the-signed-authorization" />
 
 ## What the integration actually looks like
 

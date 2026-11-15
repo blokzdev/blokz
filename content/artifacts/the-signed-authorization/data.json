@@ -1,0 +1,45 @@
+{
+  "settlement": {
+    "txShort": "0xb571fe…d52d14",
+    "txFull": "0xb571fe7f2a2fa7839f804d9681a31ea4ab43f1ca2893d77868320d0317d52d14",
+    "network": "Base",
+    "chainId": 8453,
+    "block": 47227265,
+    "selector": "0xe3ee160e",
+    "method": "transferWithAuthorization"
+  },
+  "token": {
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "version": "2",
+    "decimals": 6,
+    "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "domainSeparator": "0x02fa7265e7c5d81118673727957699e4d68f74cd74b7db77da710fe8a2c7834f"
+  },
+  "authorization": {
+    "from": "0x2b4ee3387008e5ff1a9996fc8b48d2fd61389037",
+    "to": "0xe9030014f5dae217d0a152f02a043567b16c1abf",
+    "value": "13104",
+    "valueUsdc": 0.013104,
+    "validAfter": "1781243275",
+    "validBefore": "1781244175",
+    "validWindowSeconds": 900,
+    "nonce": "0x3f2fab43d0b7721cad5a51a74b4d51ac1113531c8c56d4a024dc7ba070b29f40"
+  },
+  "signature": {
+    "v": 28,
+    "r": "0xa792fc079ab28ecb5658a426c0f9ff6a09412622bb5359a060fedfd3b201ea5a",
+    "s": "0x1ce0b95e7393f998e41ccdee57f6f45fa314b035454450fa43841beba6521258"
+  },
+  "eip712": {
+    "domainTypeHash": "0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f",
+    "transferTypeHash": "0x7c7c6cdb67a18743f49ec6fa9b35f50d52ed05cbed4cc592e13b44501c1a2267",
+    "structHash": "0xa070eda978a6d550a5fc11b7c45faf0e5fa94deacf64296b56c22e67bcba999f",
+    "digest": "0x853f03f3839e4151247b083e354d62018f14632d0f5710f0fe2be05af3711f06"
+  },
+  "altChains": [
+    { "label": "Ethereum", "chainId": 1 },
+    { "label": "Arbitrum", "chainId": 42161 },
+    { "label": "Optimism", "chainId": 10 }
+  ]
+}

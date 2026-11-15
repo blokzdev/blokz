@@ -1,7 +1,7 @@
 {
   "counts": {
     "articles": 136,
-    "artifacts": 145
+    "artifacts": 146
   },
   "topicCounts": {
     "agents": 45,
@@ -3653,6 +3653,7 @@
       "title": "How AI Agents Pay for APIs: Inside x402 and Gasless Stablecoin Settlement",
       "description": "An autonomous agent can't sign up for an API key or swipe a credit card. x402 revives HTTP 402 and settles in gasless USDC — here's the EIP-3009 handshake, the facilitator trust model, and where prompt injection breaks it.",
       "pubDate": "2026-06-12",
+      "updatedDate": "2026-11-15",
       "topics": [
         "agents",
         "blockchain",
@@ -3666,7 +3667,9 @@
         "payments",
         "account-abstraction"
       ],
-      "artifacts": [],
+      "artifacts": [
+        "the-signed-authorization"
+      ],
       "difficulty": "intermediate",
       "draft": false
     },
@@ -3755,6 +3758,23 @@
     }
   ],
   "artifacts": [
+    {
+      "slug": "the-signed-authorization",
+      "path": "content/artifacts/the-signed-authorization/manifest.json",
+      "module": "src/islands/artifacts/the-signed-authorization.ts",
+      "url": "/artifacts/the-signed-authorization",
+      "title": "The Signed Authorization",
+      "description": "Why an x402 facilitator can broadcast a payment but never redirect or skim it. Tamper with the real EIP-3009 authorization behind a Base USDC settlement — redirect, skim, or replay it on another chain — and watch the live EIP-712 digest change and verify() reject.",
+      "pubDate": "2026-11-15",
+      "type": "dom",
+      "archetype": "diagram",
+      "topics": [
+        "cryptography",
+        "security",
+        "agents"
+      ],
+      "draft": false
+    },
     {
       "slug": "the-restaking-mesh",
       "path": "content/artifacts/the-restaking-mesh/manifest.json",

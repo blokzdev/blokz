@@ -1,0 +1,25 @@
+{
+  "slug": "the-signed-authorization",
+  "title": "The Signed Authorization",
+  "description": "Why an x402 facilitator can broadcast a payment but never redirect or skim it. Tamper with the real EIP-3009 authorization behind a Base USDC settlement — redirect, skim, or replay it on another chain — and watch the live EIP-712 digest change and verify() reject.",
+  "pubDate": "2026-11-15T09:22:48.821Z",
+  "type": "dom",
+  "archetype": "diagram",
+  "topics": [
+    "cryptography",
+    "security",
+    "agents"
+  ],
+  "aspect": "16/10",
+  "featured": false,
+  "controls": [
+    "drag the skim slider to inflate the payment the facilitator relays",
+    "tap redirect / stretch-window chips, or switch the replay chain",
+    "↩ resets to the real signed Base settlement"
+  ],
+  "dataSource": {
+    "label": "x402 settlement 0xb571fe…d52d14 on Base · Blockscout",
+    "url": "https://base.blockscout.com/tx/0xb571fe7f2a2fa7839f804d9681a31ea4ab43f1ca2893d77868320d0317d52d14"
+  },
+  "dataAsOf": "2026-06-12"
+}
